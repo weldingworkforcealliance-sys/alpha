@@ -332,7 +332,14 @@ export default function DashboardPage() {
       return;
     }
 
-    const targetDate = selectedSection?.scheduled_date
+    const currentPlannerDay = plannerDays.find(
+      (day) =>
+        day.planner_day_number === selectedSection?.current_planner_day_number
+    );
+
+    const targetDate = currentPlannerDay?.scheduled_date
+      ? parseDate(currentPlannerDay.scheduled_date)
+      : selectedSection?.scheduled_date
       ? parseDate(selectedSection.scheduled_date)
       : null;
 
@@ -346,7 +353,9 @@ export default function DashboardPage() {
     setVisibleMonthIndex(targetIndex >= 0 ? targetIndex : 0);
   }, [
     selectedSection?.section_id,
+    selectedSection?.current_planner_day_number,
     selectedSection?.scheduled_date,
+    plannerDays,
     calendarMonths,
   ]);
 
