@@ -198,6 +198,7 @@ export default function DashboardPage() {
   const [deviationSummary, setDeviationSummary] = useState('');
   const [followUpNeeded, setFollowUpNeeded] = useState(false);
   const [followUpNotes, setFollowUpNotes] = useState('');
+  const [canOpenSchoolDashboard, setCanOpenSchoolDashboard] = useState(false);
 
   const [supabase] = useState(() =>
     createBrowserClient(
@@ -396,6 +397,33 @@ export default function DashboardPage() {
           router.push('/login');
           return;
         }
+
+        const currentUserId = authData.session.user.id;
+
+        const [ownerResult, membershipResult] = await Promise.all([
+          supabase.rpc('is_platform_owner'),
+          supabase
+            .from('school_memberships')
+            .select('role, status')
+            .eq('user_id', currentUserId)
+            .eq('status', 'active'),
+        ]);
+
+        const managementRoles = new Set([
+          'school_admin',
+          'program_lead',
+          'lead_instructor',
+          'viewer',
+        ]);
+
+        const hasManagementMembership = (membershipResult.data ?? []).some(
+          (membership: { role: string | null }) =>
+            membership.role ? managementRoles.has(membership.role) : false
+        );
+
+        setCanOpenSchoolDashboard(
+          Boolean(ownerResult.data) || hasManagementMembership
+        );
 
         await refreshSections();
       } catch (err) {
@@ -728,9 +756,19 @@ export default function DashboardPage() {
       <header className="dashboard-header">
         <div className="header-content">
           <h1>Living Teacher Planner</h1>
-          <button className="logout-button" onClick={handleLogout}>
-            Sign Out
-          </button>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+            {canOpenSchoolDashboard && (
+              <button
+                className="logout-button"
+                onClick={() => router.push('/school')}
+              >
+                School Dashboard
+              </button>
+            )}
+            <button className="logout-button" onClick={handleLogout}>
+              Sign Out
+            </button>
+          </div>
         </div>
       </header>
 
