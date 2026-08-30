@@ -152,6 +152,23 @@ function minuteRange(
   return `${plannedMinutes} min`;
 }
 
+function formatElapsedTime(totalSeconds: number) {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return [hours, minutes, seconds]
+    .map((value) => String(value).padStart(2, '0'))
+    .join(':');
+}
+
+function formatClockTime(timestamp: string) {
+  return new Date(timestamp).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [sections, setSections] = useState<TeachingSection[]>([]);
@@ -177,7 +194,7 @@ export default function DashboardPage() {
   const [mathSegments, setMathSegments] = useState<MathSegment[]>([]);
 
   const [actualDate, setActualDate] = useState(getLocalDateString);
-  const [actualMinutes, setActualMinutes] = useState('');
+  const [timerNow, setTimerNow] = useState(() => Date.now());
   const [deviationSummary, setDeviationSummary] = useState('');
   const [followUpNeeded, setFollowUpNeeded] = useState(false);
   const [followUpNotes, setFollowUpNotes] = useState('');
@@ -446,13 +463,7 @@ export default function DashboardPage() {
   };
 
   const handleCompleteDay = async () => {
-    if (!selectedSection || !isViewingCurrentDay) return;
-
-    const minutes = Number(actualMinutes);
-    if (!Number.isInteger(minutes) || minutes <= 0) {
-      setError('Enter the actual instructional minutes before completing the day.');
-      return;
-    }
+    if (!selectedSection || !isViewingCurrentDay || !currentDayInProgress) return;
 
     setError('');
     setActionLoading(true);
@@ -462,7 +473,7 @@ export default function DashboardPage() {
         {
           p_section_id: selectedSection.section_id,
           p_actual_date: actualDate,
-          p_actual_minutes: minutes,
+          p_actual_minutes: null,
           p_deviation_summary: deviationSummary.trim() || null,
           p_follow_up_needed: followUpNeeded,
           p_follow_up_notes: followUpNotes.trim() || null,
@@ -474,7 +485,6 @@ export default function DashboardPage() {
         return;
       }
 
-      setActualMinutes('');
       setDeviationSummary('');
       setFollowUpNeeded(false);
       setFollowUpNotes('');
@@ -610,7 +620,7 @@ export default function DashboardPage() {
     if (plannedDay) {
       const delivery = deliveryByPlannerDay.get(plannedDay.id);
       if (delivery?.delivery_status === 'completed') return 'calendar-day completed';
-      if (delivery?.delivery_status === 'started') return 'calendar-day started';
+      if (delivery?.delivery_status === 'in_progress' || delivery?.delivery_status === 'started') return 'calendar-day started';
       if (
         plannedDay.planner_day_number === selectedSection?.current_planner_day_number
       ) {
@@ -630,6 +640,48 @@ export default function DashboardPage() {
   const isViewingCurrentDay = Boolean(
     selectedSection?.guide_day_id && guideDay?.id === selectedSection.guide_day_id
   );
+
+  const currentDelivery = selectedSection?.planner_day_id
+    ? deliveryByPlannerDay.get(selectedSection.planner_day_id)
+    : undefined;
+
+  const currentDayInProgress = Boolean(
+    currentDelivery?.started_at &&
+      !currentDelivery.completed_at &&
+      (currentDelivery.delivery_status === 'in_progress' ||
+        currentDelivery.delivery_status === 'started')
+  );
+
+  const elapsedSeconds = currentDelivery?.started_at
+    ? Math.max(
+        0,
+        Math.floor(
+          ((currentDelivery.completed_at
+            ? new Date(currentDelivery.completed_at).getTime()
+            : timerNow) -
+            new Date(currentDelivery.started_at).getTime()) /
+            1000
+        )
+      )
+    : 0;
+
+  const plannedInstructionalMinutes =
+    guideSegments.reduce((total, segment) => total + segment.planned_minutes, 0) +
+    (mathLesson?.planned_minutes ?? 0);
+
+  useEffect(() => {
+    if (!currentDayInProgress) return;
+
+    setTimerNow(Date.now());
+    const timer = window.setInterval(() => setTimerNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [currentDayInProgress, currentDelivery?.started_at]);
+
+  useEffect(() => {
+    if (currentDayInProgress && currentDelivery?.actual_date) {
+      setActualDate(currentDelivery.actual_date);
+    }
+  }, [currentDayInProgress, currentDelivery?.actual_date]);
 
   const viewedGuideIndex = guideDay
     ? guideDayRefs.findIndex((day) => day.id === guideDay.id)
@@ -1111,39 +1163,40 @@ export default function DashboardPage() {
                       type="date"
                       value={actualDate}
                       onChange={(event) => setActualDate(event.target.value)}
-                      disabled={actionLoading || !isViewingCurrentDay}
+                      disabled={
+                        actionLoading || !isViewingCurrentDay || currentDayInProgress
+                      }
                     />
                   </div>
 
-                  <button
-                    className="action-button start-button"
-                    onClick={handleStartToday}
-                    disabled={actionLoading || !actualDate || !isViewingCurrentDay}
-                  >
-                    {actionLoading ? 'Processing...' : 'Start Today'}
-                  </button>
+                  {currentDayInProgress && currentDelivery?.started_at ? (
+                    <div className="class-timer-panel" role="status" aria-live="polite">
+                      <div className="class-timer-label">Class in progress</div>
+                      <div className="class-timer-value">
+                        {formatElapsedTime(elapsedSeconds)}
+                      </div>
+                      <div className="class-timer-meta">
+                        <span>Started {formatClockTime(currentDelivery.started_at)}</span>
+                        <span>Planned: {plannedInstructionalMinutes || 60} min</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      className="action-button start-button"
+                      onClick={handleStartToday}
+                      disabled={actionLoading || !actualDate || !isViewingCurrentDay}
+                    >
+                      {actionLoading ? 'Processing...' : 'Start Today'}
+                    </button>
+                  )}
 
                   <div className="form-group">
-                    <label htmlFor="actual-minutes">Actual Instructional Minutes</label>
-                    <input
-                      id="actual-minutes"
-                      type="number"
-                      min="1"
-                      step="1"
-                      value={actualMinutes}
-                      onChange={(event) => setActualMinutes(event.target.value)}
-                      placeholder="Enter minutes"
-                      disabled={actionLoading || !isViewingCurrentDay}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="deviation-summary">Deviation Summary</label>
+                    <label htmlFor="deviation-summary">Daily Comments / Deviation Summary</label>
                     <textarea
                       id="deviation-summary"
                       value={deviationSummary}
                       onChange={(event) => setDeviationSummary(event.target.value)}
-                      placeholder="Optional: note pacing or implementation differences"
+                      placeholder="Record daily comments, pacing, or implementation differences"
                       disabled={actionLoading || !isViewingCurrentDay}
                     />
                   </div>
@@ -1177,8 +1230,8 @@ export default function DashboardPage() {
                     disabled={
                       actionLoading ||
                       !actualDate ||
-                      actualMinutes === '' ||
-                      !isViewingCurrentDay
+                      !isViewingCurrentDay ||
+                      !currentDayInProgress
                     }
                   >
                     {actionLoading ? 'Processing...' : 'Complete Day'}
@@ -1326,8 +1379,9 @@ export default function DashboardPage() {
                                     <div className="calendar-event">
                                       {delivery?.delivery_status === 'completed'
                                         ? 'Completed'
-                                        : delivery?.delivery_status === 'started'
-                                        ? 'Started'
+                                        : delivery?.delivery_status === 'in_progress' ||
+                                          delivery?.delivery_status === 'started'
+                                        ? 'In progress'
                                         : plannedDay.planner_day_number ===
                                           selectedSection.current_planner_day_number
                                         ? 'Current'
@@ -1999,6 +2053,41 @@ export default function DashboardPage() {
 
         .actual-note {
           color: #dca7ff;
+        }
+
+        .class-timer-panel {
+          padding: 18px;
+          border: 1px solid rgba(0, 255, 136, 0.5);
+          border-radius: 8px;
+          background: rgba(0, 255, 136, 0.06);
+          text-align: center;
+        }
+
+        .class-timer-label {
+          color: #00ff88;
+          font-size: 12px;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+
+        .class-timer-value {
+          margin: 6px 0 8px;
+          color: #ffffff;
+          font-size: clamp(34px, 6vw, 54px);
+          font-weight: 800;
+          font-variant-numeric: tabular-nums;
+          letter-spacing: 0.04em;
+          line-height: 1;
+        }
+
+        .class-timer-meta {
+          display: flex;
+          justify-content: center;
+          gap: 10px 20px;
+          flex-wrap: wrap;
+          color: #a8a8a8;
+          font-size: 12px;
         }
 
         .actions-section :global(textarea) {
