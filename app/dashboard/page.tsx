@@ -1391,7 +1391,9 @@ export default function DashboardPage() {
                                       delivery.actual_date !==
                                         plannedDay.scheduled_date && (
                                         <div className="calendar-event actual-note">
-                                          Taught{' '}
+                                          {delivery.delivery_status === 'completed'
+                                            ? 'Taught'
+                                            : 'Started'}{' '}
                                           {parseDate(
                                             delivery.actual_date
                                           ).toLocaleDateString('en-US', {
