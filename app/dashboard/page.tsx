@@ -284,11 +284,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                <div className="rule-notice">
-                  <strong>Rule #1:</strong> Approved curriculum and course outcomes are
-                  protected and may never be edited through this frontend.
-                </div>
-
+                
                 <div className="actions-section">
                   <div className="form-group">
                     <label htmlFor="actual-date">Actual Date</label>
