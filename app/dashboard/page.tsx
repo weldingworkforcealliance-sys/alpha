@@ -45,6 +45,68 @@ interface DayDelivery {
   completed_at: string | null;
 }
 
+interface GuideDay {
+  id: string;
+  title: string | null;
+  objective: string | null;
+  materials_equipment: string | null;
+  corresponding_application: string | null;
+  evidence_check_for_understanding: string | null;
+  weekly_coaching_focus: string | null;
+  coaching_focus: string | null;
+  if_students_struggle: string | null;
+  keep_momentum: string | null;
+}
+
+interface GuideSegment {
+  id: string;
+  sequence_number: number;
+  segment_type: string;
+  segment_title: string | null;
+  planned_minutes: number;
+  instructor_actions: string | null;
+  start_minute: number | null;
+  end_minute: number | null;
+}
+
+interface GuideResource {
+  id: string;
+  sequence_number: number;
+  resource_type: string;
+  resource_title: string;
+  resource_url: string | null;
+  resource_notes: string | null;
+  required: boolean;
+}
+
+interface ProtectedOutcome {
+  id: string;
+  outcome_code: string;
+  outcome_text: string;
+  locked: boolean;
+}
+
+interface MathLesson {
+  id: string;
+  math_day_number: number;
+  title: string;
+  planned_minutes: number;
+  book_connection: string | null;
+  goal: string | null;
+  instructor_notes: string | null;
+  answers_quick_check: string | null;
+}
+
+interface MathSegment {
+  id: string;
+  sequence_number: number;
+  start_minute: number | null;
+  end_minute: number | null;
+  planned_minutes: number;
+  activity: string;
+  segment_type: string;
+}
+
 function getLocalDateString() {
   const now = new Date();
   const year = now.getFullYear();
@@ -71,6 +133,17 @@ function monthLabel(year: number, month: number) {
   });
 }
 
+function minuteRange(
+  startMinute: number | null,
+  endMinute: number | null,
+  plannedMinutes: number
+) {
+  if (startMinute !== null && endMinute !== null) {
+    return `${startMinute}–${endMinute} min`;
+  }
+  return `${plannedMinutes} min`;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [sections, setSections] = useState<TeachingSection[]>([]);
@@ -84,6 +157,14 @@ export default function DashboardPage() {
   const [plannerDays, setPlannerDays] = useState<PlannerDay[]>([]);
   const [calendarExceptions, setCalendarExceptions] = useState<CalendarException[]>([]);
   const [deliveries, setDeliveries] = useState<DayDelivery[]>([]);
+
+  const [guideLoading, setGuideLoading] = useState(false);
+  const [guideDay, setGuideDay] = useState<GuideDay | null>(null);
+  const [guideSegments, setGuideSegments] = useState<GuideSegment[]>([]);
+  const [guideResources, setGuideResources] = useState<GuideResource[]>([]);
+  const [protectedOutcomes, setProtectedOutcomes] = useState<ProtectedOutcome[]>([]);
+  const [mathLesson, setMathLesson] = useState<MathLesson | null>(null);
+  const [mathSegments, setMathSegments] = useState<MathSegment[]>([]);
 
   const [actualDate, setActualDate] = useState(getLocalDateString);
   const [actualMinutes, setActualMinutes] = useState('');
@@ -160,6 +241,111 @@ export default function DashboardPage() {
     setCalendarLoading(false);
   };
 
+  const loadGuideData = async (guideDayId: string) => {
+    setGuideLoading(true);
+    setGuideDay(null);
+    setGuideSegments([]);
+    setGuideResources([]);
+    setProtectedOutcomes([]);
+    setMathLesson(null);
+    setMathSegments([]);
+
+    const [dayResult, segmentsResult, resourcesResult, outcomesResult, mathResult] =
+      await Promise.all([
+        supabase
+          .from('course_guide_days')
+          .select(
+            'id, title, objective, materials_equipment, corresponding_application, evidence_check_for_understanding, weekly_coaching_focus, coaching_focus, if_students_struggle, keep_momentum'
+          )
+          .eq('id', guideDayId)
+          .maybeSingle(),
+        supabase
+          .from('course_guide_day_segments')
+          .select(
+            'id, sequence_number, segment_type, segment_title, planned_minutes, instructor_actions, start_minute, end_minute'
+          )
+          .eq('guide_day_id', guideDayId)
+          .order('sequence_number'),
+        supabase
+          .from('course_guide_day_resources')
+          .select(
+            'id, sequence_number, resource_type, resource_title, resource_url, resource_notes, required'
+          )
+          .eq('guide_day_id', guideDayId)
+          .order('sequence_number'),
+        supabase
+          .from('course_guide_day_outcomes')
+          .select('outcome_id')
+          .eq('guide_day_id', guideDayId),
+        supabase
+          .from('course_guide_day_math')
+          .select(
+            'id, math_day_number, title, planned_minutes, book_connection, goal, instructor_notes, answers_quick_check'
+          )
+          .eq('guide_day_id', guideDayId)
+          .maybeSingle(),
+      ]);
+
+    const guideError =
+      dayResult.error ||
+      segmentsResult.error ||
+      resourcesResult.error ||
+      outcomesResult.error;
+
+    if (guideError) {
+      setError(`Failed to load teacher guide: ${guideError.message}`);
+      console.error('Teacher guide query error:', guideError);
+      setGuideLoading(false);
+      return;
+    }
+
+    setGuideDay((dayResult.data ?? null) as GuideDay | null);
+    setGuideSegments((segmentsResult.data ?? []) as GuideSegment[]);
+    setGuideResources((resourcesResult.data ?? []) as GuideResource[]);
+
+    const outcomeIds = (outcomesResult.data ?? [])
+      .map((row: { outcome_id: string | null }) => row.outcome_id)
+      .filter((id): id is string => Boolean(id));
+
+    if (outcomeIds.length > 0) {
+      const { data: outcomeData, error: outcomeError } = await supabase
+        .from('course_outcomes')
+        .select('id, outcome_code, outcome_text, locked')
+        .in('id', outcomeIds)
+        .order('outcome_code');
+
+      if (outcomeError) {
+        setError(`Failed to load protected outcomes: ${outcomeError.message}`);
+        console.error('Outcome query error:', outcomeError);
+      } else {
+        setProtectedOutcomes((outcomeData ?? []) as ProtectedOutcome[]);
+      }
+    }
+
+    if (!mathResult.error && mathResult.data) {
+      const lesson = mathResult.data as MathLesson;
+      setMathLesson(lesson);
+
+      const { data: mathSegmentData, error: mathSegmentError } = await supabase
+        .from('course_guide_day_math_segments')
+        .select(
+          'id, sequence_number, start_minute, end_minute, planned_minutes, activity, segment_type'
+        )
+        .eq('math_lesson_id', lesson.id)
+        .order('sequence_number');
+
+      if (mathSegmentError) {
+        console.error('Math segment query error:', mathSegmentError);
+      } else {
+        setMathSegments((mathSegmentData ?? []) as MathSegment[]);
+      }
+    } else if (mathResult.error) {
+      console.error('Math lesson query error:', mathResult.error);
+    }
+
+    setGuideLoading(false);
+  };
+
   useEffect(() => {
     const loadSections = async () => {
       try {
@@ -186,6 +372,19 @@ export default function DashboardPage() {
       loadCalendarData(selectedSection.section_id);
     }
   }, [selectedSection?.section_id]);
+
+  useEffect(() => {
+    if (selectedSection?.guide_day_id) {
+      loadGuideData(selectedSection.guide_day_id);
+    } else {
+      setGuideDay(null);
+      setGuideSegments([]);
+      setGuideResources([]);
+      setProtectedOutcomes([]);
+      setMathLesson(null);
+      setMathSegments([]);
+    }
+  }, [selectedSection?.guide_day_id]);
 
   const handleStartToday = async () => {
     if (!selectedSection) return;
@@ -474,9 +673,6 @@ export default function DashboardPage() {
                         selectedSection.section_code ||
                         'Section'}
                     </p>
-                    {selectedSection.planner_day_title && (
-                      <p>{selectedSection.planner_day_title}</p>
-                    )}
                   </div>
                 </div>
 
@@ -513,6 +709,256 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 </div>
+
+                <section className="teacher-guide-section">
+                  {guideLoading ? (
+                    <div className="guide-loading">Loading today&apos;s teacher guide...</div>
+                  ) : guideDay ? (
+                    <>
+                      <div className="guide-day-heading">
+                        <div className="guide-day-title-block">
+                          <div className="guide-eyebrow">
+                            DAY {selectedSection.current_planner_day_number ?? ''}
+                          </div>
+                          <h3>{guideDay.title || selectedSection.planner_day_title}</h3>
+                        </div>
+
+                        <div className="guide-format-badge">
+                          {mathLesson
+                            ? '20 min Welding Math + 40 min WLD-105'
+                            : '60 min WLD-105'}
+                        </div>
+                      </div>
+
+                      <div className="guide-summary-row">
+                        <div className="guide-objective">
+                          <span className="guide-label">Daily Objective</span>
+                          <p>{guideDay.objective || 'No objective entered.'}</p>
+                        </div>
+
+                        <div className="guide-outcomes">
+                          <span className="guide-label">Protected Outcomes</span>
+                          <div className="outcome-chips">
+                            {protectedOutcomes.length > 0 ? (
+                              protectedOutcomes.map((outcome) => (
+                                <div className="outcome-chip" key={outcome.id}>
+                                  <strong>{outcome.outcome_code}</strong>
+                                  <span>{outcome.outcome_text}</span>
+                                </div>
+                              ))
+                            ) : (
+                              <span className="guide-muted">No linked outcomes.</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="guide-body-grid">
+                        <div className="guide-main-column">
+                          {mathLesson && (
+                            <div className="agenda-card">
+                              <div className="agenda-card-title">
+                                <div>
+                                  <span className="guide-label">Section 1</span>
+                                  <h4>
+                                    Welding Math — Day {mathLesson.math_day_number}: {mathLesson.title}
+                                  </h4>
+                                </div>
+                                <span className="agenda-duration">{mathLesson.planned_minutes} min</span>
+                              </div>
+
+                              {mathLesson.goal && (
+                                <p className="math-goal">
+                                  <strong>Goal:</strong> {mathLesson.goal}
+                                </p>
+                              )}
+
+                              {mathLesson.book_connection && (
+                                <p className="book-connection">
+                                  <strong>Book connection:</strong> {mathLesson.book_connection}
+                                </p>
+                              )}
+
+                              <div className="agenda-table-wrap">
+                                <table className="agenda-table">
+                                  <thead>
+                                    <tr>
+                                      <th>Time</th>
+                                      <th>Activity</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {mathSegments.map((segment) => (
+                                      <tr key={segment.id}>
+                                        <td>
+                                          {minuteRange(
+                                            segment.start_minute,
+                                            segment.end_minute,
+                                            segment.planned_minutes
+                                          )}
+                                        </td>
+                                        <td>{segment.activity}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+
+                              {(mathLesson.instructor_notes ||
+                                mathLesson.answers_quick_check) && (
+                                <div className="math-instructor-only">
+                                  <span className="guide-label">Instructor Only</span>
+                                  {mathLesson.instructor_notes && (
+                                    <p>
+                                      <strong>Notes:</strong> {mathLesson.instructor_notes}
+                                    </p>
+                                  )}
+                                  {mathLesson.answers_quick_check && (
+                                    <p>
+                                      <strong>Answers / quick check:</strong>{' '}
+                                      {mathLesson.answers_quick_check}
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          <div className="agenda-card">
+                            <div className="agenda-card-title">
+                              <div>
+                                <span className="guide-label">
+                                  {mathLesson ? 'Section 2' : 'Agenda'}
+                                </span>
+                                <h4>{mathLesson ? 'WLD-105 Agenda' : 'Daily Agenda'}</h4>
+                              </div>
+                              <span className="agenda-duration">
+                                {guideSegments.reduce(
+                                  (sum, segment) => sum + segment.planned_minutes,
+                                  0
+                                )}{' '}
+                                min
+                              </span>
+                            </div>
+
+                            <div className="agenda-table-wrap">
+                              <table className="agenda-table">
+                                <thead>
+                                  <tr>
+                                    <th>Time</th>
+                                    <th>Activity</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {guideSegments.map((segment) => (
+                                    <tr key={segment.id}>
+                                      <td>
+                                        {minuteRange(
+                                          segment.start_minute,
+                                          segment.end_minute,
+                                          segment.planned_minutes
+                                        )}
+                                      </td>
+                                      <td>
+                                        {segment.instructor_actions ||
+                                          segment.segment_title ||
+                                          'Activity'}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+
+                        <aside className="guide-side-column">
+                          <div className="guide-info-card">
+                            <span className="guide-label">Resources</span>
+                            {guideDay.materials_equipment && (
+                              <p>{guideDay.materials_equipment}</p>
+                            )}
+
+                            {guideResources.length > 0 && (
+                              <div className="resource-list">
+                                {guideResources.map((resource) => (
+                                  <div className="resource-item" key={resource.id}>
+                                    <strong>{resource.resource_title}</strong>
+                                    {resource.resource_url ? (
+                                      <a
+                                        href={resource.resource_url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="resource-link"
+                                      >
+                                        Open Resource
+                                      </a>
+                                    ) : (
+                                      <span className="resource-pending">
+                                        Link not added
+                                      </span>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="guide-info-card">
+                            <span className="guide-label">Corresponding Application</span>
+                            <p>
+                              {guideDay.corresponding_application ||
+                                'No corresponding application entered.'}
+                            </p>
+                          </div>
+
+                          <div className="guide-info-card">
+                            <span className="guide-label">
+                              Evidence / Check for Understanding
+                            </span>
+                            <p>
+                              {guideDay.evidence_check_for_understanding ||
+                                'No evidence check entered.'}
+                            </p>
+                          </div>
+                        </aside>
+                      </div>
+
+                      <div className="coaching-card">
+                        <div className="coaching-heading">
+                          <span className="guide-label">Instructor Coaching</span>
+                        </div>
+                        <div className="coaching-grid">
+                          {guideDay.weekly_coaching_focus && (
+                            <div>
+                              <strong>Weekly Coaching Focus</strong>
+                              <p>{guideDay.weekly_coaching_focus}</p>
+                            </div>
+                          )}
+                          <div>
+                            <strong>Coaching Focus</strong>
+                            <p>{guideDay.coaching_focus || 'No coaching note entered.'}</p>
+                          </div>
+                          <div>
+                            <strong>If Students Struggle</strong>
+                            <p>
+                              {guideDay.if_students_struggle ||
+                                'No intervention note entered.'}
+                            </p>
+                          </div>
+                          <div>
+                            <strong>Keep Momentum</strong>
+                            <p>{guideDay.keep_momentum || 'No momentum note entered.'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="guide-loading">
+                      No teacher-guide content is available for this planner day.
+                    </div>
+                  )}
+                </section>
 
                 <div className="actions-section">
                   <div className="form-group">
@@ -786,6 +1232,314 @@ export default function DashboardPage() {
       </main>
 
       <style jsx>{`
+        .teacher-guide-section {
+          margin-top: 8px;
+          margin-bottom: 20px;
+          border: 1px solid #2a2a2a;
+          border-radius: 10px;
+          overflow: hidden;
+          background: #101010;
+        }
+
+        .guide-loading {
+          padding: 24px;
+          color: #9a9a9a;
+          font-size: 14px;
+        }
+
+        .guide-day-heading {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 18px;
+          padding: 18px 20px;
+          border-bottom: 1px solid #2a2a2a;
+          background: #151515;
+        }
+
+        .guide-day-title-block {
+          min-width: 0;
+        }
+
+        .guide-eyebrow,
+        .guide-label {
+          display: block;
+          color: #8f8f8f;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+
+        .guide-day-title-block h3 {
+          margin: 4px 0 0;
+          color: #ffffff;
+          font-size: 22px;
+          line-height: 1.25;
+        }
+
+        .guide-format-badge {
+          flex: 0 0 auto;
+          padding: 8px 12px;
+          border: 1px solid #363636;
+          border-radius: 6px;
+          background: #0c0c0c;
+          color: #d7d7d7;
+          font-size: 12px;
+          font-weight: 600;
+        }
+
+        .guide-summary-row {
+          display: grid;
+          grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr);
+          gap: 0;
+          border-bottom: 1px solid #2a2a2a;
+        }
+
+        .guide-objective,
+        .guide-outcomes {
+          padding: 18px 20px;
+        }
+
+        .guide-objective {
+          border-right: 1px solid #2a2a2a;
+        }
+
+        .guide-objective p,
+        .guide-info-card p,
+        .coaching-grid p,
+        .math-goal,
+        .book-connection,
+        .math-instructor-only p {
+          margin: 8px 0 0;
+          color: #d2d2d2;
+          line-height: 1.5;
+          font-size: 14px;
+        }
+
+        .outcome-chips {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          margin-top: 9px;
+        }
+
+        .outcome-chip {
+          display: grid;
+          grid-template-columns: auto 1fr;
+          gap: 9px;
+          align-items: start;
+          padding: 8px 10px;
+          border: 1px solid #343434;
+          border-radius: 6px;
+          background: #0d0d0d;
+          color: #cfcfcf;
+          font-size: 12px;
+          line-height: 1.35;
+        }
+
+        .outcome-chip strong {
+          color: #dfff78;
+          white-space: nowrap;
+        }
+
+        .guide-muted {
+          color: #777777;
+          font-size: 12px;
+        }
+
+        .guide-body-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 2.2fr) minmax(270px, 0.8fr);
+          gap: 14px;
+          padding: 14px;
+        }
+
+        .guide-main-column,
+        .guide-side-column {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          min-width: 0;
+        }
+
+        .agenda-card,
+        .guide-info-card,
+        .coaching-card {
+          border: 1px solid #2c2c2c;
+          border-radius: 8px;
+          background: #121212;
+          overflow: hidden;
+        }
+
+        .agenda-card-title {
+          display: flex;
+          justify-content: space-between;
+          gap: 14px;
+          align-items: center;
+          padding: 12px 14px;
+          border-bottom: 1px solid #2c2c2c;
+          background: #161616;
+        }
+
+        .agenda-card-title h4 {
+          margin: 3px 0 0;
+          color: #f4f4f4;
+          font-size: 15px;
+          font-weight: 650;
+        }
+
+        .agenda-duration {
+          flex: 0 0 auto;
+          color: #9adf4b;
+          font-size: 12px;
+          font-weight: 700;
+        }
+
+        .math-goal,
+        .book-connection {
+          padding: 0 14px;
+        }
+
+        .book-connection {
+          color: #9f9f9f;
+          font-size: 12px;
+        }
+
+        .agenda-table-wrap {
+          overflow-x: auto;
+        }
+
+        .agenda-table {
+          width: 100%;
+          border-collapse: collapse;
+          table-layout: fixed;
+        }
+
+        .agenda-table th,
+        .agenda-table td {
+          padding: 10px 12px;
+          border-bottom: 1px solid #292929;
+          text-align: left;
+          vertical-align: top;
+        }
+
+        .agenda-table th {
+          color: #8d8d8d;
+          background: #101010;
+          font-size: 10px;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+        }
+
+        .agenda-table th:first-child,
+        .agenda-table td:first-child {
+          width: 110px;
+          color: #e7e7e7;
+          white-space: nowrap;
+        }
+
+        .agenda-table td {
+          color: #d0d0d0;
+          font-size: 13px;
+          line-height: 1.45;
+        }
+
+        .agenda-table tbody tr:last-child td {
+          border-bottom: 0;
+        }
+
+        .math-instructor-only {
+          margin: 12px 14px 14px;
+          padding: 12px;
+          border: 1px solid rgba(154, 223, 75, 0.28);
+          border-radius: 6px;
+          background: rgba(154, 223, 75, 0.055);
+        }
+
+        .math-instructor-only p {
+          font-size: 12px;
+        }
+
+        .guide-info-card {
+          padding: 14px;
+        }
+
+        .resource-list {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          margin-top: 14px;
+        }
+
+        .resource-item {
+          display: flex;
+          flex-direction: column;
+          gap: 7px;
+          padding-top: 10px;
+          border-top: 1px solid #292929;
+        }
+
+        .resource-item strong {
+          color: #efefef;
+          font-size: 13px;
+        }
+
+        .resource-link {
+          align-self: flex-start;
+          padding: 7px 10px;
+          border: 1px solid #9adf4b;
+          border-radius: 6px;
+          color: #caff77;
+          text-decoration: none;
+          font-size: 12px;
+          font-weight: 700;
+          background: rgba(154, 223, 75, 0.07);
+        }
+
+        .resource-link:hover {
+          background: rgba(154, 223, 75, 0.14);
+        }
+
+        .resource-pending {
+          color: #777777;
+          font-size: 11px;
+        }
+
+        .coaching-card {
+          margin: 0 14px 14px;
+        }
+
+        .coaching-heading {
+          padding: 11px 14px;
+          border-bottom: 1px solid #2c2c2c;
+          background: #161616;
+        }
+
+        .coaching-grid {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .coaching-grid > div {
+          min-height: 120px;
+          padding: 14px;
+          border-right: 1px solid #2c2c2c;
+        }
+
+        .coaching-grid > div:last-child {
+          border-right: 0;
+        }
+
+        .coaching-grid strong {
+          color: #e7e7e7;
+          font-size: 12px;
+        }
+
+        .coaching-grid p {
+          font-size: 12px;
+        }
+
         .class-calendar-section {
           margin-top: 8px;
           padding: 20px;
@@ -1033,6 +1787,28 @@ export default function DashboardPage() {
         }
 
         @media (max-width: 900px) {
+          .guide-body-grid,
+          .guide-summary-row {
+            grid-template-columns: 1fr;
+          }
+
+          .guide-objective {
+            border-right: 0;
+            border-bottom: 1px solid #2a2a2a;
+          }
+
+          .coaching-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .coaching-grid > div:nth-child(2) {
+            border-right: 0;
+          }
+
+          .coaching-grid > div:nth-child(-n + 2) {
+            border-bottom: 1px solid #2c2c2c;
+          }
+
           .calendar-day {
             min-height: 78px;
             padding: 5px;
@@ -1044,6 +1820,28 @@ export default function DashboardPage() {
         }
 
         @media (max-width: 700px) {
+          .guide-day-heading {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
+          .guide-format-badge {
+            width: 100%;
+          }
+
+          .coaching-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .coaching-grid > div {
+            border-right: 0;
+            border-bottom: 1px solid #2c2c2c;
+          }
+
+          .coaching-grid > div:last-child {
+            border-bottom: 0;
+          }
+
           .calendar-title-row {
             flex-direction: column;
           }
