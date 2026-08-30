@@ -47,6 +47,8 @@ interface DayDelivery {
 
 interface GuideDay {
   id: string;
+  guide_id: string;
+  planner_day_number: number;
   title: string | null;
   objective: string | null;
   materials_equipment: string | null;
@@ -56,6 +58,12 @@ interface GuideDay {
   coaching_focus: string | null;
   if_students_struggle: string | null;
   keep_momentum: string | null;
+}
+
+interface GuideDayRef {
+  id: string;
+  planner_day_number: number;
+  title: string | null;
 }
 
 interface GuideSegment {
@@ -160,6 +168,8 @@ export default function DashboardPage() {
 
   const [guideLoading, setGuideLoading] = useState(false);
   const [guideDay, setGuideDay] = useState<GuideDay | null>(null);
+  const [guideDayRefs, setGuideDayRefs] = useState<GuideDayRef[]>([]);
+  const [viewedGuideDayId, setViewedGuideDayId] = useState<string | null>(null);
   const [guideSegments, setGuideSegments] = useState<GuideSegment[]>([]);
   const [guideResources, setGuideResources] = useState<GuideResource[]>([]);
   const [protectedOutcomes, setProtectedOutcomes] = useState<ProtectedOutcome[]>([]);
@@ -255,7 +265,7 @@ export default function DashboardPage() {
         supabase
           .from('course_guide_days')
           .select(
-            'id, title, objective, materials_equipment, corresponding_application, evidence_check_for_understanding, weekly_coaching_focus, coaching_focus, if_students_struggle, keep_momentum'
+            'id, guide_id, planner_day_number, title, objective, materials_equipment, corresponding_application, evidence_check_for_understanding, weekly_coaching_focus, coaching_focus, if_students_struggle, keep_momentum'
           )
           .eq('id', guideDayId)
           .maybeSingle(),
@@ -299,9 +309,24 @@ export default function DashboardPage() {
       return;
     }
 
-    setGuideDay((dayResult.data ?? null) as GuideDay | null);
+    const loadedGuideDay = (dayResult.data ?? null) as GuideDay | null;
+    setGuideDay(loadedGuideDay);
     setGuideSegments((segmentsResult.data ?? []) as GuideSegment[]);
     setGuideResources((resourcesResult.data ?? []) as GuideResource[]);
+
+    if (loadedGuideDay && !guideDayRefs.some((day) => day.id === loadedGuideDay.id)) {
+      const { data: guideIndexData, error: guideIndexError } = await supabase
+        .from('course_guide_days')
+        .select('id, planner_day_number, title')
+        .eq('guide_id', loadedGuideDay.guide_id)
+        .order('planner_day_number');
+
+      if (guideIndexError) {
+        console.error('Guide day index query error:', guideIndexError);
+      } else {
+        setGuideDayRefs((guideIndexData ?? []) as GuideDayRef[]);
+      }
+    }
 
     const outcomeIds = (outcomesResult.data ?? [])
       .map((row: { outcome_id: string | null }) => row.outcome_id)
@@ -374,8 +399,13 @@ export default function DashboardPage() {
   }, [selectedSection?.section_id]);
 
   useEffect(() => {
-    if (selectedSection?.guide_day_id) {
-      loadGuideData(selectedSection.guide_day_id);
+    setGuideDayRefs([]);
+    setViewedGuideDayId(selectedSection?.guide_day_id ?? null);
+  }, [selectedSection?.section_id, selectedSection?.guide_day_id]);
+
+  useEffect(() => {
+    if (viewedGuideDayId) {
+      loadGuideData(viewedGuideDayId);
     } else {
       setGuideDay(null);
       setGuideSegments([]);
@@ -384,10 +414,10 @@ export default function DashboardPage() {
       setMathLesson(null);
       setMathSegments([]);
     }
-  }, [selectedSection?.guide_day_id]);
+  }, [viewedGuideDayId]);
 
   const handleStartToday = async () => {
-    if (!selectedSection) return;
+    if (!selectedSection || !isViewingCurrentDay) return;
 
     setError('');
     setActionLoading(true);
@@ -416,7 +446,7 @@ export default function DashboardPage() {
   };
 
   const handleCompleteDay = async () => {
-    if (!selectedSection) return;
+    if (!selectedSection || !isViewingCurrentDay) return;
 
     const minutes = Number(actualMinutes);
     if (!Number.isInteger(minutes) || minutes <= 0) {
@@ -595,6 +625,41 @@ export default function DashboardPage() {
     return 'calendar-day';
   };
 
+  const currentDayNumber = selectedSection?.current_planner_day_number ?? null;
+  const viewedDayNumber = guideDay?.planner_day_number ?? null;
+  const isViewingCurrentDay = Boolean(
+    selectedSection?.guide_day_id && guideDay?.id === selectedSection.guide_day_id
+  );
+
+  const viewedGuideIndex = guideDay
+    ? guideDayRefs.findIndex((day) => day.id === guideDay.id)
+    : -1;
+
+  const viewGuideDayByNumber = (dayNumber: number) => {
+    const target = guideDayRefs.find(
+      (day) => day.planner_day_number === dayNumber
+    );
+    if (target) setViewedGuideDayId(target.id);
+  };
+
+  const viewPreviousGuideDay = () => {
+    if (viewedGuideIndex > 0) {
+      setViewedGuideDayId(guideDayRefs[viewedGuideIndex - 1].id);
+    }
+  };
+
+  const viewNextGuideDay = () => {
+    if (viewedGuideIndex >= 0 && viewedGuideIndex < guideDayRefs.length - 1) {
+      setViewedGuideDayId(guideDayRefs[viewedGuideIndex + 1].id);
+    }
+  };
+
+  const returnToCurrentGuideDay = () => {
+    if (selectedSection?.guide_day_id) {
+      setViewedGuideDayId(selectedSection.guide_day_id);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="dashboard-container">
@@ -711,16 +776,87 @@ export default function DashboardPage() {
                 </div>
 
                 <section className="teacher-guide-section">
+                  <div className="guide-browser">
+                    <button
+                      type="button"
+                      className="guide-browser-button"
+                      onClick={viewPreviousGuideDay}
+                      disabled={viewedGuideIndex <= 0 || guideLoading}
+                    >
+                      ‹ Previous Day
+                    </button>
+
+                    <div className="guide-browser-center">
+                      <span className="guide-browser-status">
+                        {isViewingCurrentDay
+                          ? `Current Teaching Day: ${currentDayNumber ?? ''}`
+                          : viewedDayNumber
+                          ? `Previewing Day ${viewedDayNumber}`
+                          : 'Teacher Guide'}
+                      </span>
+                      <label className="guide-day-select-label">
+                        Go to Day
+                        <select
+                          value={viewedDayNumber ?? ''}
+                          onChange={(event) =>
+                            viewGuideDayByNumber(Number(event.target.value))
+                          }
+                          disabled={guideDayRefs.length === 0 || guideLoading}
+                        >
+                          {guideDayRefs.map((day) => (
+                            <option key={day.id} value={day.planner_day_number}>
+                              Day {day.planner_day_number}
+                              {day.title ? ` — ${day.title}` : ''}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="guide-browser-button"
+                      onClick={viewNextGuideDay}
+                      disabled={
+                        viewedGuideIndex < 0 ||
+                        viewedGuideIndex >= guideDayRefs.length - 1 ||
+                        guideLoading
+                      }
+                    >
+                      Next Day ›
+                    </button>
+
+                    {!isViewingCurrentDay && guideDay && (
+                      <button
+                        type="button"
+                        className="back-current-button"
+                        onClick={returnToCurrentGuideDay}
+                      >
+                        Back to Current Day
+                      </button>
+                    )}
+                  </div>
+
+                  {!isViewingCurrentDay && guideDay && (
+                    <div className="preview-banner">
+                      <strong>Previewing Day {viewedDayNumber}.</strong>{' '}
+                      Current class day is Day {currentDayNumber}. Viewing another day does
+                      not change class progress.
+                    </div>
+                  )}
+
                   {guideLoading ? (
-                    <div className="guide-loading">Loading today&apos;s teacher guide...</div>
+                    <div className="guide-loading">Loading teacher guide...</div>
                   ) : guideDay ? (
                     <>
                       <div className="guide-day-heading">
                         <div className="guide-day-title-block">
                           <div className="guide-eyebrow">
-                            DAY {selectedSection.current_planner_day_number ?? ''}
+                            DAY {guideDay.planner_day_number}
                           </div>
-                          <h3>{guideDay.title || selectedSection.planner_day_title}</h3>
+                          <h3>
+                            {guideDay.title || `Planner Day ${guideDay.planner_day_number}`}
+                          </h3>
                         </div>
 
                         <div className="guide-format-badge">
@@ -961,6 +1097,13 @@ export default function DashboardPage() {
                 </section>
 
                 <div className="actions-section">
+                  {!isViewingCurrentDay && guideDay && (
+                    <div className="preview-actions-lock">
+                      Preview mode is read-only. Return to the current teaching day to start,
+                      complete, or record instructional notes.
+                    </div>
+                  )}
+
                   <div className="form-group">
                     <label htmlFor="actual-date">Actual Date</label>
                     <input
@@ -968,14 +1111,14 @@ export default function DashboardPage() {
                       type="date"
                       value={actualDate}
                       onChange={(event) => setActualDate(event.target.value)}
-                      disabled={actionLoading}
+                      disabled={actionLoading || !isViewingCurrentDay}
                     />
                   </div>
 
                   <button
                     className="action-button start-button"
                     onClick={handleStartToday}
-                    disabled={actionLoading || !actualDate}
+                    disabled={actionLoading || !actualDate || !isViewingCurrentDay}
                   >
                     {actionLoading ? 'Processing...' : 'Start Today'}
                   </button>
@@ -990,7 +1133,7 @@ export default function DashboardPage() {
                       value={actualMinutes}
                       onChange={(event) => setActualMinutes(event.target.value)}
                       placeholder="Enter minutes"
-                      disabled={actionLoading}
+                      disabled={actionLoading || !isViewingCurrentDay}
                     />
                   </div>
 
@@ -1001,7 +1144,7 @@ export default function DashboardPage() {
                       value={deviationSummary}
                       onChange={(event) => setDeviationSummary(event.target.value)}
                       placeholder="Optional: note pacing or implementation differences"
-                      disabled={actionLoading}
+                      disabled={actionLoading || !isViewingCurrentDay}
                     />
                   </div>
 
@@ -1010,7 +1153,7 @@ export default function DashboardPage() {
                       type="checkbox"
                       checked={followUpNeeded}
                       onChange={(event) => setFollowUpNeeded(event.target.checked)}
-                      disabled={actionLoading}
+                      disabled={actionLoading || !isViewingCurrentDay}
                     />{' '}
                     Follow-up needed
                   </label>
@@ -1023,7 +1166,7 @@ export default function DashboardPage() {
                         value={followUpNotes}
                         onChange={(event) => setFollowUpNotes(event.target.value)}
                         placeholder="Describe the follow-up needed"
-                        disabled={actionLoading}
+                        disabled={actionLoading || !isViewingCurrentDay}
                       />
                     </div>
                   )}
@@ -1031,7 +1174,12 @@ export default function DashboardPage() {
                   <button
                     className="action-button complete-button"
                     onClick={handleCompleteDay}
-                    disabled={actionLoading || !actualDate || actualMinutes === ''}
+                    disabled={
+                      actionLoading ||
+                      !actualDate ||
+                      actualMinutes === '' ||
+                      !isViewingCurrentDay
+                    }
                   >
                     {actionLoading ? 'Processing...' : 'Complete Day'}
                   </button>
@@ -1239,6 +1387,100 @@ export default function DashboardPage() {
           border-radius: 10px;
           overflow: hidden;
           background: #101010;
+        }
+
+        .guide-browser {
+          display: grid;
+          grid-template-columns: auto minmax(260px, 1fr) auto auto;
+          gap: 10px;
+          align-items: center;
+          padding: 12px 14px;
+          border-bottom: 1px solid #2a2a2a;
+          background: #0b0b0b;
+        }
+
+        .guide-browser-center {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          min-width: 0;
+        }
+
+        .guide-browser-status {
+          color: #dedede;
+          font-size: 13px;
+          font-weight: 700;
+          white-space: nowrap;
+        }
+
+        .guide-day-select-label {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          color: #8f8f8f;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .guide-day-select-label select {
+          max-width: 320px;
+          padding: 7px 9px;
+          border: 1px solid #343434;
+          border-radius: 6px;
+          background: #111111;
+          color: #e5e5e5;
+          font: inherit;
+          text-transform: none;
+          letter-spacing: normal;
+        }
+
+        .guide-browser-button,
+        .back-current-button {
+          min-height: 36px;
+          padding: 7px 11px;
+          border: 1px solid #343434;
+          border-radius: 6px;
+          background: #111111;
+          color: #d8d8d8;
+          cursor: pointer;
+          font-size: 12px;
+          font-weight: 700;
+        }
+
+        .guide-browser-button:hover:not(:disabled),
+        .back-current-button:hover:not(:disabled) {
+          border-color: #00ff88;
+          color: #00ff88;
+        }
+
+        .guide-browser-button:disabled {
+          opacity: 0.35;
+          cursor: not-allowed;
+        }
+
+        .back-current-button {
+          border-color: rgba(0, 255, 136, 0.45);
+          color: #00ff88;
+        }
+
+        .preview-banner,
+        .preview-actions-lock {
+          padding: 10px 14px;
+          border-bottom: 1px solid rgba(255, 187, 71, 0.28);
+          background: rgba(255, 187, 71, 0.08);
+          color: #e7c27c;
+          font-size: 12px;
+          line-height: 1.45;
+        }
+
+        .preview-actions-lock {
+          grid-column: 1 / -1;
+          margin-bottom: 4px;
+          border: 1px solid rgba(255, 187, 71, 0.28);
+          border-radius: 6px;
         }
 
         .guide-loading {
@@ -1787,6 +2029,20 @@ export default function DashboardPage() {
         }
 
         @media (max-width: 900px) {
+          .guide-browser {
+            grid-template-columns: 1fr 1fr;
+          }
+
+          .guide-browser-center {
+            grid-column: 1 / -1;
+            grid-row: 1;
+            justify-content: space-between;
+          }
+
+          .back-current-button {
+            grid-column: 1 / -1;
+          }
+
           .guide-body-grid,
           .guide-summary-row {
             grid-template-columns: 1fr;
@@ -1820,6 +2076,29 @@ export default function DashboardPage() {
         }
 
         @media (max-width: 700px) {
+          .guide-browser {
+            grid-template-columns: 1fr 1fr;
+          }
+
+          .guide-browser-center {
+            flex-direction: column;
+            align-items: stretch;
+          }
+
+          .guide-browser-status {
+            white-space: normal;
+            text-align: center;
+          }
+
+          .guide-day-select-label {
+            justify-content: center;
+          }
+
+          .guide-day-select-label select {
+            width: 100%;
+            max-width: none;
+          }
+
           .guide-day-heading {
             flex-direction: column;
             align-items: flex-start;
