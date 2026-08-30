@@ -155,7 +155,7 @@ export default function OwnerAdminPage() {
   }, [profiles, profileUserId, passwordUserId]);
   useEffect(() => { if (selectedProfile) setProfileName(selectedProfile.display_name ?? ''); }, [selectedProfile?.id]);
 
-  const runAction = async (fn: () => Promise<{ error: { message: string } | null }>, success: string) => {
+  const runAction = async (fn: () => PromiseLike<{ error: { message: string } | null }>, success: string) => {
     setBusy(true); setError(''); setNotice('');
     try {
       const result = await fn();

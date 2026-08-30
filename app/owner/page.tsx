@@ -736,6 +736,15 @@ export default function OwnerDashboardPage() {
         </div>
 
         <div className="header-actions">
+          <button className="secondary" onClick={() => router.push('/owner/admin')}>
+            ADMIN
+          </button>
+          <button className="secondary" onClick={() => router.push('/training')}>
+            Training Mode
+          </button>
+          <button className="secondary" onClick={() => router.push('/accounts')}>
+            Account Management
+          </button>
           <button className="secondary" onClick={() => router.push('/school')}>
             School Dashboard
           </button>
@@ -1884,4 +1893,3 @@ const styles = `
     }
   }
 `;
-

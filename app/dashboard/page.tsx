@@ -199,6 +199,7 @@ export default function DashboardPage() {
   const [followUpNeeded, setFollowUpNeeded] = useState(false);
   const [followUpNotes, setFollowUpNotes] = useState('');
   const [canOpenSchoolDashboard, setCanOpenSchoolDashboard] = useState(false);
+  const [canOpenOwnerDashboard, setCanOpenOwnerDashboard] = useState(false);
 
   const [supabase] = useState(() =>
     createBrowserClient(
@@ -424,6 +425,7 @@ export default function DashboardPage() {
         setCanOpenSchoolDashboard(
           Boolean(ownerResult.data) || hasManagementMembership
         );
+        setCanOpenOwnerDashboard(Boolean(ownerResult.data));
 
         await refreshSections();
       } catch (err) {
@@ -757,6 +759,20 @@ export default function DashboardPage() {
         <div className="header-content">
           <h1>Living Teacher Planner</h1>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+            {canOpenOwnerDashboard && (
+              <button
+                className="logout-button"
+                onClick={() => router.push('/owner')}
+              >
+                Owner Dashboard
+              </button>
+            )}
+            <button
+              className="logout-button"
+              onClick={() => router.push('/training')}
+            >
+              Training Mode
+            </button>
             {canOpenSchoolDashboard && (
               <button
                 className="logout-button"

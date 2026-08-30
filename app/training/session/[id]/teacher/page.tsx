@@ -170,7 +170,7 @@ export default function TrainingTeacherPage() {
     return()=>window.clearInterval(id);
   },[]);
 
-  const run = async (fn:()=>Promise<{error:any}>, message:string) => {
+  const run = async (fn:()=>PromiseLike<{error:any}>, message:string) => {
     setBusy(true);setError('');setNotice('');
     try{const r=await fn();if(r.error)throw r.error;setNotice(message);await fetchMain();}
     catch(err){setError(err instanceof Error?err.message:String(err));}

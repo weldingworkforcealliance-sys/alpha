@@ -593,6 +593,19 @@ export default function SchoolDashboardPage() {
         </div>
 
         <div className="header-actions">
+          {isPlatformOwner && (
+            <button className="secondary" onClick={() => router.push('/owner')}>
+              Owner Dashboard
+            </button>
+          )}
+          <button className="secondary" onClick={() => router.push('/training')}>
+            Training Mode
+          </button>
+          {canManage && (
+            <button className="secondary" onClick={() => router.push('/accounts')}>
+              Account Management
+            </button>
+          )}
           <button className="secondary" onClick={() => router.push('/dashboard')}>
             Teacher Dashboard
           </button>
@@ -1683,4 +1696,3 @@ const styles = `
     }
   }
 `;
-
