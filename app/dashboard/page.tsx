@@ -79,6 +79,7 @@ export default function DashboardPage() {
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [calendarLoading, setCalendarLoading] = useState(false);
+  const [visibleMonthIndex, setVisibleMonthIndex] = useState(0);
 
   const [plannerDays, setPlannerDays] = useState<PlannerDay[]>([]);
   const [calendarExceptions, setCalendarExceptions] = useState<CalendarException[]>([]);
@@ -323,6 +324,32 @@ export default function DashboardPage() {
     return months;
   }, [plannerDays, calendarExceptions]);
 
+  const visibleMonth = calendarMonths[visibleMonthIndex] ?? null;
+
+  useEffect(() => {
+    if (calendarMonths.length === 0) {
+      setVisibleMonthIndex(0);
+      return;
+    }
+
+    const targetDate = selectedSection?.scheduled_date
+      ? parseDate(selectedSection.scheduled_date)
+      : null;
+
+    const targetIndex = targetDate
+      ? calendarMonths.findIndex(
+          ({ year, month }) =>
+            year === targetDate.getFullYear() && month === targetDate.getMonth()
+        )
+      : 0;
+
+    setVisibleMonthIndex(targetIndex >= 0 ? targetIndex : 0);
+  }, [
+    selectedSection?.section_id,
+    selectedSection?.scheduled_date,
+    calendarMonths,
+  ]);
+
   const nextNoClassDay = useMemo(() => {
     const today = getLocalDateString();
     return (
@@ -478,165 +505,6 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                <section className="class-calendar-section">
-                  <div className="calendar-title-row">
-                    <div>
-                      <h3>Class Calendar</h3>
-                      <p>Scheduled days, actual delivery, and PVHS no-class reminders.</p>
-                    </div>
-                  </div>
-
-                  {nextNoClassDay && (
-                    <div className="calendar-reminder">
-                      <strong>Upcoming no welding class:</strong>{' '}
-                      {parseDate(nextNoClassDay.exception_date).toLocaleDateString(
-                        'en-US',
-                        { weekday: 'long', month: 'long', day: 'numeric' }
-                      )}
-                      {' — '}
-                      {nextNoClassDay.reason || nextNoClassDay.exception_type}
-                    </div>
-                  )}
-
-                  <div className="calendar-legend">
-                    <span><i className="legend-dot current-dot" />Current day</span>
-                    <span><i className="legend-dot completed-dot" />Completed</span>
-                    <span><i className="legend-dot planned-dot" />Planned</span>
-                    <span><i className="legend-dot no-class-dot" />No welding class</span>
-                    <span><i className="legend-dot actual-dot" />Actual/rescheduled</span>
-                  </div>
-
-                  {calendarLoading ? (
-                    <p className="calendar-loading">Loading class calendar...</p>
-                  ) : (
-                    <div className="calendar-months">
-                      {calendarMonths.map(({ year, month }) => {
-                        const firstDay = new Date(year, month, 1).getDay();
-                        const daysInMonth = new Date(year, month + 1, 0).getDate();
-                        const cells: Array<number | null> = [];
-
-                        for (let i = 0; i < firstDay; i += 1) cells.push(null);
-                        for (let day = 1; day <= daysInMonth; day += 1) cells.push(day);
-
-                        return (
-                          <div className="calendar-month" key={`${year}-${month}`}>
-                            <h4>{monthLabel(year, month)}</h4>
-                            <div className="calendar-weekdays">
-                              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(
-                                (weekday) => (
-                                  <div key={weekday}>{weekday}</div>
-                                )
-                              )}
-                            </div>
-
-                            <div className="calendar-grid">
-                              {cells.map((day, index) => {
-                                if (day === null) {
-                                  return (
-                                    <div
-                                      className="calendar-day blank"
-                                      key={`blank-${index}`}
-                                    />
-                                  );
-                                }
-
-                                const key = dateKey(new Date(year, month, day));
-                                const plannedDay = plannerDayByDate.get(key);
-                                const exception = exceptionByDate.get(key);
-                                const delivery = plannedDay
-                                  ? deliveryByPlannerDay.get(plannedDay.id)
-                                  : undefined;
-
-                                const actualDeliveries =
-                                  actualDeliveriesByDate.get(key) ?? [];
-                                const rescheduledDeliveries = actualDeliveries.filter(
-                                  (item) => {
-                                    const planned = plannerDayById.get(
-                                      item.planner_day_id
-                                    );
-                                    return planned?.scheduled_date !== key;
-                                  }
-                                );
-
-                                return (
-                                  <div
-                                    className={getDayClass(
-                                      key,
-                                      plannedDay,
-                                      exception
-                                    )}
-                                    key={key}
-                                  >
-                                    <div className="calendar-date-number">{day}</div>
-
-                                    {exception &&
-                                      !exception.counts_as_teaching_day && (
-                                        <>
-                                          <div className="calendar-event strong">
-                                            NO WELDING
-                                          </div>
-                                          <div className="calendar-event">
-                                            {exception.reason ||
-                                              exception.exception_type}
-                                          </div>
-                                        </>
-                                      )}
-
-                                    {plannedDay && (
-                                      <>
-                                        <div className="calendar-event strong">
-                                          Day {plannedDay.planner_day_number}
-                                        </div>
-                                        <div className="calendar-event">
-                                          {delivery?.delivery_status === 'completed'
-                                            ? 'Completed'
-                                            : delivery?.delivery_status === 'started'
-                                            ? 'Started'
-                                            : plannedDay.planner_day_number ===
-                                              selectedSection.current_planner_day_number
-                                            ? 'Current'
-                                            : 'Planned'}
-                                        </div>
-                                        {delivery?.actual_date &&
-                                          delivery.actual_date !==
-                                            plannedDay.scheduled_date && (
-                                            <div className="calendar-event actual-note">
-                                              Taught{' '}
-                                              {parseDate(
-                                                delivery.actual_date
-                                              ).toLocaleDateString('en-US', {
-                                                month: 'short',
-                                                day: 'numeric',
-                                              })}
-                                            </div>
-                                          )}
-                                      </>
-                                    )}
-
-                                    {rescheduledDeliveries.map((item) => {
-                                      const planned = plannerDayById.get(
-                                        item.planner_day_id
-                                      );
-                                      return planned ? (
-                                        <div
-                                          className="calendar-event actual-note"
-                                          key={`${key}-${item.planner_day_id}`}
-                                        >
-                                          Actual Day {planned.planner_day_number}
-                                        </div>
-                                      ) : null;
-                                    })}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </section>
-
                 <div className="actions-section">
                   <div className="form-group">
                     <label htmlFor="actual-date">Actual Date</label>
@@ -713,6 +581,195 @@ export default function DashboardPage() {
                     {actionLoading ? 'Processing...' : 'Complete Day'}
                   </button>
                 </div>
+
+
+                <section className="class-calendar-section">
+                  <div className="calendar-title-row">
+                    <div>
+                      <h3>Class Calendar</h3>
+                      <p>PVHS schedule and no-class reminders.</p>
+                    </div>
+
+                    {visibleMonth && (
+                      <div className="calendar-month-controls">
+                        <button
+                          type="button"
+                          className="calendar-nav-button"
+                          onClick={() =>
+                            setVisibleMonthIndex((index) => Math.max(0, index - 1))
+                          }
+                          disabled={visibleMonthIndex === 0}
+                          aria-label="Previous month"
+                        >
+                          ‹ Previous
+                        </button>
+
+                        <strong>
+                          {monthLabel(visibleMonth.year, visibleMonth.month)}
+                        </strong>
+
+                        <button
+                          type="button"
+                          className="calendar-nav-button"
+                          onClick={() =>
+                            setVisibleMonthIndex((index) =>
+                              Math.min(calendarMonths.length - 1, index + 1)
+                            )
+                          }
+                          disabled={visibleMonthIndex >= calendarMonths.length - 1}
+                          aria-label="Next month"
+                        >
+                          Next ›
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {nextNoClassDay && (
+                    <div className="calendar-reminder">
+                      <strong>Upcoming no welding class:</strong>{' '}
+                      {parseDate(nextNoClassDay.exception_date).toLocaleDateString(
+                        'en-US',
+                        { weekday: 'long', month: 'long', day: 'numeric' }
+                      )}
+                      {' — '}
+                      {nextNoClassDay.reason || nextNoClassDay.exception_type}
+                    </div>
+                  )}
+
+                  <div className="calendar-legend">
+                    <span><i className="legend-dot current-dot" />Current</span>
+                    <span><i className="legend-dot completed-dot" />Completed</span>
+                    <span><i className="legend-dot planned-dot" />Planned</span>
+                    <span><i className="legend-dot no-class-dot" />No welding</span>
+                    <span><i className="legend-dot actual-dot" />Actual/rescheduled</span>
+                  </div>
+
+                  {calendarLoading ? (
+                    <p className="calendar-loading">Loading class calendar...</p>
+                  ) : visibleMonth ? (
+                    <div className="calendar-month single-month">
+                      <div className="calendar-weekdays">
+                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(
+                          (weekday) => (
+                            <div key={weekday}>{weekday}</div>
+                          )
+                        )}
+                      </div>
+
+                      <div className="calendar-grid">
+                        {(() => {
+                          const { year, month } = visibleMonth;
+                          const firstDay = new Date(year, month, 1).getDay();
+                          const daysInMonth = new Date(year, month + 1, 0).getDate();
+                          const cells: Array<number | null> = [];
+
+                          for (let i = 0; i < firstDay; i += 1) cells.push(null);
+                          for (let day = 1; day <= daysInMonth; day += 1) cells.push(day);
+
+                          return cells.map((day, index) => {
+                            if (day === null) {
+                              return (
+                                <div
+                                  className="calendar-day blank"
+                                  key={`blank-${index}`}
+                                />
+                              );
+                            }
+
+                            const key = dateKey(new Date(year, month, day));
+                            const plannedDay = plannerDayByDate.get(key);
+                            const exception = exceptionByDate.get(key);
+                            const delivery = plannedDay
+                              ? deliveryByPlannerDay.get(plannedDay.id)
+                              : undefined;
+
+                            const actualDeliveries =
+                              actualDeliveriesByDate.get(key) ?? [];
+                            const rescheduledDeliveries = actualDeliveries.filter(
+                              (item) => {
+                                const planned = plannerDayById.get(
+                                  item.planner_day_id
+                                );
+                                return planned?.scheduled_date !== key;
+                              }
+                            );
+
+                            return (
+                              <div
+                                className={getDayClass(key, plannedDay, exception)}
+                                key={key}
+                              >
+                                <div className="calendar-date-number">{day}</div>
+
+                                {exception &&
+                                  !exception.counts_as_teaching_day && (
+                                    <>
+                                      <div className="calendar-event strong">
+                                        NO WELDING
+                                      </div>
+                                      <div className="calendar-event">
+                                        {exception.reason ||
+                                          exception.exception_type}
+                                      </div>
+                                    </>
+                                  )}
+
+                                {plannedDay && (
+                                  <>
+                                    <div className="calendar-event strong">
+                                      Day {plannedDay.planner_day_number}
+                                    </div>
+                                    <div className="calendar-event">
+                                      {delivery?.delivery_status === 'completed'
+                                        ? 'Completed'
+                                        : delivery?.delivery_status === 'started'
+                                        ? 'Started'
+                                        : plannedDay.planner_day_number ===
+                                          selectedSection.current_planner_day_number
+                                        ? 'Current'
+                                        : 'Planned'}
+                                    </div>
+                                    {delivery?.actual_date &&
+                                      delivery.actual_date !==
+                                        plannedDay.scheduled_date && (
+                                        <div className="calendar-event actual-note">
+                                          Taught{' '}
+                                          {parseDate(
+                                            delivery.actual_date
+                                          ).toLocaleDateString('en-US', {
+                                            month: 'short',
+                                            day: 'numeric',
+                                          })}
+                                        </div>
+                                      )}
+                                  </>
+                                )}
+
+                                {rescheduledDeliveries.map((item) => {
+                                  const planned = plannerDayById.get(
+                                    item.planner_day_id
+                                  );
+                                  return planned ? (
+                                    <div
+                                      className="calendar-event actual-note"
+                                      key={`${key}-${item.planner_day_id}`}
+                                    >
+                                      Actual Day {planned.planner_day_number}
+                                    </div>
+                                  ) : null;
+                                })}
+                              </div>
+                            );
+                          });
+                        })()}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="calendar-loading">No calendar dates available.</p>
+                  )}
+                </section>
+
               </div>
             )}
           </div>
@@ -721,8 +778,11 @@ export default function DashboardPage() {
 
       <style jsx>{`
         .class-calendar-section {
-          border-top: 1px solid #2a2a2a;
-          padding-top: 24px;
+          margin-top: 8px;
+          padding: 20px;
+          border: 1px solid #2a2a2a;
+          border-radius: 8px;
+          background: #111111;
         }
 
         .calendar-title-row {
@@ -744,6 +804,41 @@ export default function DashboardPage() {
           margin: 0;
           color: #909090;
           font-size: 13px;
+        }
+
+        .calendar-month-controls {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        .calendar-month-controls strong {
+          min-width: 140px;
+          text-align: center;
+          color: #ffffff;
+          font-size: 14px;
+        }
+
+        .calendar-nav-button {
+          padding: 7px 10px;
+          border: 1px solid #3a3a3a;
+          border-radius: 6px;
+          background: #0a0a0a;
+          color: #e0e0e0;
+          cursor: pointer;
+          font-size: 12px;
+        }
+
+        .calendar-nav-button:hover:not(:disabled) {
+          border-color: #00ff88;
+          color: #00ff88;
+        }
+
+        .calendar-nav-button:disabled {
+          opacity: 0.35;
+          cursor: not-allowed;
         }
 
         .calendar-reminder {
@@ -798,9 +893,9 @@ export default function DashboardPage() {
           background: #d788ff;
         }
 
-        .calendar-months {
-          display: grid;
-          gap: 22px;
+        .single-month {
+          max-width: 820px;
+          margin: 0 auto;
         }
 
         .calendar-month {
@@ -836,7 +931,7 @@ export default function DashboardPage() {
         }
 
         .calendar-day {
-          min-height: 92px;
+          min-height: 76px;
           padding: 7px;
           border-right: 1px solid #242424;
           border-bottom: 1px solid #242424;
@@ -936,6 +1031,21 @@ export default function DashboardPage() {
 
           .calendar-event {
             font-size: 9px;
+          }
+        }
+
+        @media (max-width: 700px) {
+          .calendar-title-row {
+            flex-direction: column;
+          }
+
+          .calendar-month-controls {
+            width: 100%;
+            justify-content: space-between;
+          }
+
+          .calendar-month-controls strong {
+            min-width: 0;
           }
         }
 
