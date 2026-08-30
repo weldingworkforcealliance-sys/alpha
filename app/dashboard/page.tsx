@@ -4,200 +4,139 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 
-interface TeachingSection {
+type TabName = 'overview' | 'instructors' | 'sections' | 'activity' | 'reports';
+
+interface School {
+  id: string;
+  name: string;
+  status: string | null;
+}
+
+interface Membership {
+  id: string;
   school_id: string;
-  section_id: string;
-  section_name: string | null;
-  section_code: string | null;
+  user_id: string;
+  role: string;
+  status: string;
+}
+
+interface Profile {
+  id: string;
+  display_name: string | null;
+  email: string | null;
+}
+
+interface Course {
+  id: string;
+  school_id: string;
   course_code: string | null;
   course_name: string | null;
-  cohort_name: string | null;
+  status: string | null;
+}
+
+interface Section {
+  id: string;
+  school_id: string;
+  course_id: string;
+  section_name: string | null;
+  section_code: string | null;
+  status: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  planned_instructional_days: number | null;
+  planned_minutes_per_day: number | null;
+  start_time: string | null;
+  end_time: string | null;
+}
+
+interface SectionProgress {
+  section_id: string;
   current_planner_day_number: number | null;
-  planner_day_id: string | null;
-  scheduled_date: string | null;
-  guide_day_id: string | null;
-  planner_day_title: string | null;
+  started_at: string | null;
+  last_advanced_at: string | null;
   manual_hold: boolean;
   hold_reason: string | null;
   completed_at: string | null;
 }
 
+interface SectionInstructor {
+  id: string;
+  section_id: string;
+  instructor_id: string;
+  instructor_role: string | null;
+  active: boolean;
+}
+
 interface PlannerDay {
   id: string;
+  section_id: string;
   planner_day_number: number;
   scheduled_date: string;
   status: string | null;
 }
 
-interface CalendarException {
+interface Delivery {
   id: string;
-  exception_date: string;
-  exception_type: string;
-  reason: string | null;
-  counts_as_teaching_day: boolean;
-}
-
-interface DayDelivery {
+  section_id: string;
   planner_day_id: string;
   delivery_status: string;
   actual_date: string | null;
   started_at: string | null;
   completed_at: string | null;
+  instructor_id: string | null;
+  actual_minutes: number | null;
+  deviation_summary: string | null;
+  follow_up_needed: boolean;
+  follow_up_notes: string | null;
+  updated_at: string;
 }
 
-interface GuideDay {
-  id: string;
-  guide_id: string;
-  planner_day_number: number;
-  title: string | null;
-  objective: string | null;
-  materials_equipment: string | null;
-  corresponding_application: string | null;
-  evidence_check_for_understanding: string | null;
-  weekly_coaching_focus: string | null;
-  coaching_focus: string | null;
-  if_students_struggle: string | null;
-  keep_momentum: string | null;
-}
-
-interface GuideDayRef {
-  id: string;
-  planner_day_number: number;
-  title: string | null;
-}
-
-interface GuideSegment {
-  id: string;
-  sequence_number: number;
-  segment_type: string;
-  segment_title: string | null;
-  planned_minutes: number;
-  instructor_actions: string | null;
-  start_minute: number | null;
-  end_minute: number | null;
-}
-
-interface GuideResource {
-  id: string;
-  sequence_number: number;
-  resource_type: string;
-  resource_title: string;
-  resource_url: string | null;
-  resource_notes: string | null;
-  required: boolean;
-}
-
-interface ProtectedOutcome {
-  id: string;
-  outcome_code: string;
-  outcome_text: string;
-  locked: boolean;
-}
-
-interface MathLesson {
-  id: string;
-  math_day_number: number;
-  title: string;
-  planned_minutes: number;
-  book_connection: string | null;
-  goal: string | null;
-  instructor_notes: string | null;
-  answers_quick_check: string | null;
-}
-
-interface MathSegment {
-  id: string;
-  sequence_number: number;
-  start_minute: number | null;
-  end_minute: number | null;
-  planned_minutes: number;
-  activity: string;
-  segment_type: string;
-}
-
-function getLocalDateString() {
+function localDateKey() {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0'),
+  ].join('-');
 }
 
-function parseDate(date: string) {
-  return new Date(`${date}T12:00:00`);
-}
-
-function dateKey(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function monthLabel(year: number, month: number) {
-  return new Date(year, month, 1).toLocaleDateString('en-US', {
-    month: 'long',
+function formatDate(date: string | null) {
+  if (!date) return '—';
+  return new Date(`${date}T12:00:00`).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
     year: 'numeric',
   });
 }
 
-function minuteRange(
-  startMinute: number | null,
-  endMinute: number | null,
-  plannedMinutes: number
-) {
-  if (startMinute !== null && endMinute !== null) {
-    return `${startMinute}–${endMinute} min`;
-  }
-  return `${plannedMinutes} min`;
-}
-
-function formatElapsedTime(totalSeconds: number) {
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  return [hours, minutes, seconds]
-    .map((value) => String(value).padStart(2, '0'))
-    .join(':');
-}
-
-function formatClockTime(timestamp: string) {
-  return new Date(timestamp).toLocaleTimeString('en-US', {
+function formatDateTime(timestamp: string | null) {
+  if (!timestamp) return '—';
+  return new Date(timestamp).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
   });
 }
 
-export default function DashboardPage() {
+function formatMinutes(minutes: number | null) {
+  if (minutes === null || Number.isNaN(minutes)) return '—';
+  const hours = Math.floor(minutes / 60);
+  const remainder = minutes % 60;
+  if (!hours) return `${remainder} min`;
+  if (!remainder) return `${hours} hr`;
+  return `${hours} hr ${remainder} min`;
+}
+
+function titleCase(value: string | null | undefined) {
+  if (!value) return '—';
+  return value
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+export default function SchoolDashboardPage() {
   const router = useRouter();
-  const [sections, setSections] = useState<TeachingSection[]>([]);
-  const [selectedSection, setSelectedSection] = useState<TeachingSection | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [actionLoading, setActionLoading] = useState(false);
-  const [calendarLoading, setCalendarLoading] = useState(false);
-  const [visibleMonthIndex, setVisibleMonthIndex] = useState(0);
-
-  const [plannerDays, setPlannerDays] = useState<PlannerDay[]>([]);
-  const [calendarExceptions, setCalendarExceptions] = useState<CalendarException[]>([]);
-  const [deliveries, setDeliveries] = useState<DayDelivery[]>([]);
-
-  const [guideLoading, setGuideLoading] = useState(false);
-  const [guideDay, setGuideDay] = useState<GuideDay | null>(null);
-  const [guideDayRefs, setGuideDayRefs] = useState<GuideDayRef[]>([]);
-  const [viewedGuideDayId, setViewedGuideDayId] = useState<string | null>(null);
-  const [guideSegments, setGuideSegments] = useState<GuideSegment[]>([]);
-  const [guideResources, setGuideResources] = useState<GuideResource[]>([]);
-  const [protectedOutcomes, setProtectedOutcomes] = useState<ProtectedOutcome[]>([]);
-  const [mathLesson, setMathLesson] = useState<MathLesson | null>(null);
-  const [mathSegments, setMathSegments] = useState<MathSegment[]>([]);
-
-  const [actualDate, setActualDate] = useState(getLocalDateString);
-  const [timerNow, setTimerNow] = useState(() => Date.now());
-  const [deviationSummary, setDeviationSummary] = useState('');
-  const [followUpNeeded, setFollowUpNeeded] = useState(false);
-  const [followUpNotes, setFollowUpNotes] = useState('');
 
   const [supabase] = useState(() =>
     createBrowserClient(
@@ -206,2049 +145,1541 @@ export default function DashboardPage() {
     )
   );
 
-  const refreshSections = async (sectionId?: string) => {
-    const { data, error: queryError } = await supabase
-      .from('current_teaching_sections')
-      .select('*');
+  const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState<TabName>('overview');
 
-    if (queryError) {
-      setError(`Failed to load sections: ${queryError.message}`);
-      console.error('Query error:', queryError);
-      return;
-    }
+  const [userId, setUserId] = useState<string | null>(null);
+  const [isPlatformOwner, setIsPlatformOwner] = useState(false);
+  const [schools, setSchools] = useState<School[]>([]);
+  const [selectedSchoolId, setSelectedSchoolId] = useState<string>('');
+  const [myMembership, setMyMembership] = useState<Membership | null>(null);
 
-    const typedSections = (data ?? []) as TeachingSection[];
-    setSections(typedSections);
-
-    if (typedSections.length === 0) {
-      setSelectedSection(null);
-      return;
-    }
-
-    const selected = sectionId
-      ? typedSections.find((section) => section.section_id === sectionId)
-      : typedSections[0];
-
-    setSelectedSection(selected ?? typedSections[0]);
-  };
-
-  const loadCalendarData = async (sectionId: string) => {
-    setCalendarLoading(true);
-
-    const [daysResult, exceptionsResult, deliveriesResult] = await Promise.all([
-      supabase
-        .from('planner_days')
-        .select('id, planner_day_number, scheduled_date, status')
-        .eq('section_id', sectionId)
-        .order('planner_day_number'),
-      supabase
-        .from('section_calendar_exceptions')
-        .select('id, exception_date, exception_type, reason, counts_as_teaching_day')
-        .eq('section_id', sectionId)
-        .order('exception_date'),
-      supabase
-        .from('planner_day_delivery')
-        .select('planner_day_id, delivery_status, actual_date, started_at, completed_at')
-        .eq('section_id', sectionId),
-    ]);
-
-    const calendarError =
-      daysResult.error || exceptionsResult.error || deliveriesResult.error;
-
-    if (calendarError) {
-      setError(`Failed to load class calendar: ${calendarError.message}`);
-      console.error('Calendar query error:', calendarError);
-      setCalendarLoading(false);
-      return;
-    }
-
-    setPlannerDays((daysResult.data ?? []) as PlannerDay[]);
-    setCalendarExceptions((exceptionsResult.data ?? []) as CalendarException[]);
-    setDeliveries((deliveriesResult.data ?? []) as DayDelivery[]);
-    setCalendarLoading(false);
-  };
-
-  const loadGuideData = async (guideDayId: string) => {
-    setGuideLoading(true);
-    setGuideDay(null);
-    setGuideSegments([]);
-    setGuideResources([]);
-    setProtectedOutcomes([]);
-    setMathLesson(null);
-    setMathSegments([]);
-
-    const [dayResult, segmentsResult, resourcesResult, outcomesResult, mathResult] =
-      await Promise.all([
-        supabase
-          .from('course_guide_days')
-          .select(
-            'id, guide_id, planner_day_number, title, objective, materials_equipment, corresponding_application, evidence_check_for_understanding, weekly_coaching_focus, coaching_focus, if_students_struggle, keep_momentum'
-          )
-          .eq('id', guideDayId)
-          .maybeSingle(),
-        supabase
-          .from('course_guide_day_segments')
-          .select(
-            'id, sequence_number, segment_type, segment_title, planned_minutes, instructor_actions, start_minute, end_minute'
-          )
-          .eq('guide_day_id', guideDayId)
-          .order('sequence_number'),
-        supabase
-          .from('course_guide_day_resources')
-          .select(
-            'id, sequence_number, resource_type, resource_title, resource_url, resource_notes, required'
-          )
-          .eq('guide_day_id', guideDayId)
-          .order('sequence_number'),
-        supabase
-          .from('course_guide_day_outcomes')
-          .select('outcome_id')
-          .eq('guide_day_id', guideDayId),
-        supabase
-          .from('course_guide_day_math')
-          .select(
-            'id, math_day_number, title, planned_minutes, book_connection, goal, instructor_notes, answers_quick_check'
-          )
-          .eq('guide_day_id', guideDayId)
-          .maybeSingle(),
-      ]);
-
-    const guideError =
-      dayResult.error ||
-      segmentsResult.error ||
-      resourcesResult.error ||
-      outcomesResult.error;
-
-    if (guideError) {
-      setError(`Failed to load teacher guide: ${guideError.message}`);
-      console.error('Teacher guide query error:', guideError);
-      setGuideLoading(false);
-      return;
-    }
-
-    const loadedGuideDay = (dayResult.data ?? null) as GuideDay | null;
-    setGuideDay(loadedGuideDay);
-    setGuideSegments((segmentsResult.data ?? []) as GuideSegment[]);
-    setGuideResources((resourcesResult.data ?? []) as GuideResource[]);
-
-    if (loadedGuideDay && !guideDayRefs.some((day) => day.id === loadedGuideDay.id)) {
-      const { data: guideIndexData, error: guideIndexError } = await supabase
-        .from('course_guide_days')
-        .select('id, planner_day_number, title')
-        .eq('guide_id', loadedGuideDay.guide_id)
-        .order('planner_day_number');
-
-      if (guideIndexError) {
-        console.error('Guide day index query error:', guideIndexError);
-      } else {
-        setGuideDayRefs((guideIndexData ?? []) as GuideDayRef[]);
-      }
-    }
-
-    const outcomeIds = (outcomesResult.data ?? [])
-      .map((row: { outcome_id: string | null }) => row.outcome_id)
-      .filter((id): id is string => Boolean(id));
-
-    if (outcomeIds.length > 0) {
-      const { data: outcomeData, error: outcomeError } = await supabase
-        .from('course_outcomes')
-        .select('id, outcome_code, outcome_text, locked')
-        .in('id', outcomeIds)
-        .order('outcome_code');
-
-      if (outcomeError) {
-        setError(`Failed to load protected outcomes: ${outcomeError.message}`);
-        console.error('Outcome query error:', outcomeError);
-      } else {
-        setProtectedOutcomes((outcomeData ?? []) as ProtectedOutcome[]);
-      }
-    }
-
-    if (!mathResult.error && mathResult.data) {
-      const lesson = mathResult.data as MathLesson;
-      setMathLesson(lesson);
-
-      const { data: mathSegmentData, error: mathSegmentError } = await supabase
-        .from('course_guide_day_math_segments')
-        .select(
-          'id, sequence_number, start_minute, end_minute, planned_minutes, activity, segment_type'
-        )
-        .eq('math_lesson_id', lesson.id)
-        .order('sequence_number');
-
-      if (mathSegmentError) {
-        console.error('Math segment query error:', mathSegmentError);
-      } else {
-        setMathSegments((mathSegmentData ?? []) as MathSegment[]);
-      }
-    } else if (mathResult.error) {
-      console.error('Math lesson query error:', mathResult.error);
-    }
-
-    setGuideLoading(false);
-  };
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
+  const [progress, setProgress] = useState<SectionProgress[]>([]);
+  const [memberships, setMemberships] = useState<Membership[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [sectionInstructors, setSectionInstructors] = useState<SectionInstructor[]>([]);
+  const [plannerDays, setPlannerDays] = useState<PlannerDay[]>([]);
+  const [deliveries, setDeliveries] = useState<Delivery[]>([]);
 
   useEffect(() => {
-    const loadSections = async () => {
+    const initialize = async () => {
       try {
-        const { data: authData } = await supabase.auth.getSession();
-        if (!authData.session) {
+        const { data: sessionData } = await supabase.auth.getSession();
+
+        if (!sessionData.session) {
           router.push('/login');
           return;
         }
 
-        await refreshSections();
+        const currentUserId = sessionData.session.user.id;
+        setUserId(currentUserId);
+
+        const [ownerResult, schoolsResult, membershipsResult] = await Promise.all([
+          supabase.rpc('is_platform_owner'),
+          supabase.from('schools').select('id, name, status').order('name'),
+          supabase
+            .from('school_memberships')
+            .select('id, school_id, user_id, role, status')
+            .eq('user_id', currentUserId)
+            .eq('status', 'active'),
+        ]);
+
+        if (ownerResult.error) {
+          console.error('Owner check failed:', ownerResult.error);
+        }
+
+        if (schoolsResult.error) {
+          throw new Error(schoolsResult.error.message);
+        }
+
+        if (membershipsResult.error) {
+          throw new Error(membershipsResult.error.message);
+        }
+
+        const owner = Boolean(ownerResult.data);
+        const visibleSchools = (schoolsResult.data ?? []) as School[];
+        const myMemberships = (membershipsResult.data ?? []) as Membership[];
+
+        const managementRoles = new Set([
+          'school_admin',
+          'program_lead',
+          'lead_instructor',
+          'viewer',
+        ]);
+
+        const allowedSchoolIds = owner
+          ? new Set(visibleSchools.map((school) => school.id))
+          : new Set(
+              myMemberships
+                .filter((membership) => managementRoles.has(membership.role))
+                .map((membership) => membership.school_id)
+            );
+
+        const allowedSchools = visibleSchools.filter((school) =>
+          allowedSchoolIds.has(school.id)
+        );
+
+        setIsPlatformOwner(owner);
+        setSchools(allowedSchools);
+
+        if (allowedSchools.length === 0) {
+          setError(
+            'This account does not have School Dashboard access. Instructors should use the Teacher Dashboard.'
+          );
+          return;
+        }
+
+        setSelectedSchoolId(allowedSchools[0].id);
       } catch (err) {
-        setError('An unexpected error occurred while loading sections');
-        console.error('Load error:', err);
+        console.error(err);
+        setError(
+          err instanceof Error ? err.message : 'Failed to load School Dashboard.'
+        );
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
-    loadSections();
-  }, [supabase, router]);
+    initialize();
+  }, [router, supabase]);
 
   useEffect(() => {
-    if (selectedSection?.section_id) {
-      loadCalendarData(selectedSection.section_id);
-    }
-  }, [selectedSection?.section_id]);
+    if (!selectedSchoolId || !userId) return;
 
-  useEffect(() => {
-    setGuideDayRefs([]);
-    setViewedGuideDayId(selectedSection?.guide_day_id ?? null);
-  }, [selectedSection?.section_id, selectedSection?.guide_day_id]);
+    const loadSchool = async () => {
+      setDataLoading(true);
+      setError('');
 
-  useEffect(() => {
-    if (viewedGuideDayId) {
-      loadGuideData(viewedGuideDayId);
-    } else {
-      setGuideDay(null);
-      setGuideSegments([]);
-      setGuideResources([]);
-      setProtectedOutcomes([]);
-      setMathLesson(null);
-      setMathSegments([]);
-    }
-  }, [viewedGuideDayId]);
+      try {
+        const [
+          coursesResult,
+          sectionsResult,
+          progressResult,
+          membershipsResult,
+          instructorsResult,
+          daysResult,
+          deliveriesResult,
+        ] = await Promise.all([
+          supabase
+            .from('courses')
+            .select('id, school_id, course_code, course_name, status')
+            .eq('school_id', selectedSchoolId)
+            .order('course_code'),
+          supabase
+            .from('sections')
+            .select(
+              'id, school_id, course_id, section_name, section_code, status, start_date, end_date, planned_instructional_days, planned_minutes_per_day, start_time, end_time'
+            )
+            .eq('school_id', selectedSchoolId)
+            .order('section_name'),
+          supabase
+            .from('section_progress')
+            .select(
+              'section_id, current_planner_day_number, started_at, last_advanced_at, manual_hold, hold_reason, completed_at'
+            )
+            .eq('school_id', selectedSchoolId),
+          supabase
+            .from('school_memberships')
+            .select('id, school_id, user_id, role, status')
+            .eq('school_id', selectedSchoolId)
+            .eq('status', 'active'),
+          supabase
+            .from('section_instructors')
+            .select(
+              'id, section_id, instructor_id, instructor_role, active'
+            )
+            .eq('school_id', selectedSchoolId)
+            .eq('active', true),
+          supabase
+            .from('planner_days')
+            .select(
+              'id, section_id, planner_day_number, scheduled_date, status'
+            )
+            .eq('school_id', selectedSchoolId)
+            .order('scheduled_date'),
+          supabase
+            .from('planner_day_delivery')
+            .select(
+              'id, section_id, planner_day_id, delivery_status, actual_date, started_at, completed_at, instructor_id, actual_minutes, deviation_summary, follow_up_needed, follow_up_notes, updated_at'
+            )
+            .eq('school_id', selectedSchoolId)
+            .order('updated_at', { ascending: false }),
+        ]);
 
-  const handleStartToday = async () => {
-    if (!selectedSection || !isViewingCurrentDay) return;
+        const firstError = [
+          coursesResult.error,
+          sectionsResult.error,
+          progressResult.error,
+          membershipsResult.error,
+          instructorsResult.error,
+          daysResult.error,
+          deliveriesResult.error,
+        ].find(Boolean);
 
-    setError('');
-    setActionLoading(true);
-    try {
-      const { error: rpcError } = await supabase.rpc(
-        'start_current_planner_day',
-        {
-          p_section_id: selectedSection.section_id,
-          p_actual_date: actualDate,
+        if (firstError) {
+          throw new Error(firstError?.message ?? 'School data query failed.');
         }
-      );
 
-      if (rpcError) {
-        setError(`Failed to start day: ${rpcError.message}`);
-        return;
-      }
+        const loadedMemberships = (membershipsResult.data ?? []) as Membership[];
 
-      await refreshSections(selectedSection.section_id);
-      await loadCalendarData(selectedSection.section_id);
-    } catch (err) {
-      setError('An unexpected error occurred');
-      console.error('Start day error:', err);
-    } finally {
-      setActionLoading(false);
-    }
-  };
+        const profileIds = Array.from(
+          new Set(loadedMemberships.map((membership) => membership.user_id))
+        );
 
-  const handleCompleteDay = async () => {
-    if (!selectedSection || !isViewingCurrentDay || !currentDayInProgress) return;
+        let loadedProfiles: Profile[] = [];
 
-    setError('');
-    setActionLoading(true);
-    try {
-      const { error: rpcError } = await supabase.rpc(
-        'complete_current_planner_day',
-        {
-          p_section_id: selectedSection.section_id,
-          p_actual_date: actualDate,
-          p_actual_minutes: null,
-          p_deviation_summary: deviationSummary.trim() || null,
-          p_follow_up_needed: followUpNeeded,
-          p_follow_up_notes: followUpNotes.trim() || null,
+        if (profileIds.length > 0) {
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('id, display_name, email')
+            .in('id', profileIds);
+
+          if (profileError) {
+            throw new Error(profileError.message);
+          }
+
+          loadedProfiles = (profileData ?? []) as Profile[];
         }
-      );
 
-      if (rpcError) {
-        setError(`Failed to complete day: ${rpcError.message}`);
-        return;
+        setCourses((coursesResult.data ?? []) as Course[]);
+        setSections((sectionsResult.data ?? []) as Section[]);
+        setProgress((progressResult.data ?? []) as SectionProgress[]);
+        setMemberships(loadedMemberships);
+        setProfiles(loadedProfiles);
+        setSectionInstructors(
+          (instructorsResult.data ?? []) as SectionInstructor[]
+        );
+        setPlannerDays((daysResult.data ?? []) as PlannerDay[]);
+        setDeliveries((deliveriesResult.data ?? []) as Delivery[]);
+
+        setMyMembership(
+          loadedMemberships.find(
+            (membership) => membership.user_id === userId
+          ) ?? null
+        );
+      } catch (err) {
+        console.error(err);
+        setError(
+          err instanceof Error ? err.message : 'Failed to load school data.'
+        );
+      } finally {
+        setDataLoading(false);
       }
+    };
 
-      setDeviationSummary('');
-      setFollowUpNeeded(false);
-      setFollowUpNotes('');
-      await refreshSections(selectedSection.section_id);
-      await loadCalendarData(selectedSection.section_id);
-    } catch (err) {
-      setError('An unexpected error occurred');
-      console.error('Complete day error:', err);
-    } finally {
-      setActionLoading(false);
-    }
-  };
+    loadSchool();
+  }, [selectedSchoolId, supabase, userId]);
+
+  const selectedSchool = useMemo(
+    () => schools.find((school) => school.id === selectedSchoolId) ?? null,
+    [schools, selectedSchoolId]
+  );
+
+  const courseMap = useMemo(
+    () => new Map(courses.map((course) => [course.id, course])),
+    [courses]
+  );
+
+  const progressMap = useMemo(
+    () => new Map(progress.map((item) => [item.section_id, item])),
+    [progress]
+  );
+
+  const profileMap = useMemo(
+    () => new Map(profiles.map((profile) => [profile.id, profile])),
+    [profiles]
+  );
+
+  const sectionMap = useMemo(
+    () => new Map(sections.map((section) => [section.id, section])),
+    [sections]
+  );
+
+  const today = localDateKey();
+
+  const teachingMemberships = useMemo(
+    () =>
+      memberships.filter((membership) =>
+        ['lead_instructor', 'instructor'].includes(membership.role)
+      ),
+    [memberships]
+  );
+
+  const activeSections = useMemo(
+    () =>
+      sections.filter(
+        (section) =>
+          !['inactive', 'archived', 'completed'].includes(
+            (section.status ?? '').toLowerCase()
+          )
+      ),
+    [sections]
+  );
+
+  const todayPlannerDays = useMemo(
+    () => plannerDays.filter((day) => day.scheduled_date === today),
+    [plannerDays, today]
+  );
+
+  const todayDeliveries = useMemo(
+    () => deliveries.filter((delivery) => delivery.actual_date === today),
+    [deliveries, today]
+  );
+
+  const completedDeliveries = useMemo(
+    () =>
+      deliveries.filter(
+        (delivery) =>
+          delivery.delivery_status === 'completed' &&
+          delivery.actual_minutes !== null
+      ),
+    [deliveries]
+  );
+
+  const totalActualMinutes = completedDeliveries.reduce(
+    (sum, delivery) => sum + (delivery.actual_minutes ?? 0),
+    0
+  );
+
+  const averageMinutes =
+    completedDeliveries.length > 0
+      ? Math.round(totalActualMinutes / completedDeliveries.length)
+      : 0;
+
+  const followUpsFlagged = deliveries.filter(
+    (delivery) => delivery.follow_up_needed
+  ).length;
+
+  const heldSections = progress.filter((item) => item.manual_hold).length;
+
+  const sectionRows = useMemo(
+    () =>
+      sections.map((section) => {
+        const course = courseMap.get(section.course_id);
+        const sectionProgress = progressMap.get(section.id);
+        const assigned = sectionInstructors.filter(
+          (assignment) => assignment.section_id === section.id
+        );
+        const names = assigned
+          .map((assignment) => profileMap.get(assignment.instructor_id)?.display_name)
+          .filter((name): name is string => Boolean(name));
+
+        const currentDay = sectionProgress?.current_planner_day_number ?? 1;
+        const plannedDays = section.planned_instructional_days ?? 0;
+        const percent =
+          plannedDays > 0
+            ? Math.min(100, Math.round((currentDay / plannedDays) * 100))
+            : 0;
+
+        return {
+          section,
+          course,
+          sectionProgress,
+          instructorNames: names,
+          currentDay,
+          plannedDays,
+          percent,
+        };
+      }),
+    [sections, courseMap, progressMap, sectionInstructors, profileMap]
+  );
+
+  const instructorRows = useMemo(
+    () =>
+      teachingMemberships.map((membership) => {
+        const profile = profileMap.get(membership.user_id);
+        const assignments = sectionInstructors.filter(
+          (assignment) => assignment.instructor_id === membership.user_id
+        );
+        const assignedSections = assignments
+          .map((assignment) => sectionMap.get(assignment.section_id))
+          .filter((section): section is Section => Boolean(section));
+
+        return {
+          membership,
+          profile,
+          assignedSections,
+        };
+      }),
+    [teachingMemberships, profileMap, sectionInstructors, sectionMap]
+  );
+
+  const canManage =
+    isPlatformOwner ||
+    ['school_admin', 'program_lead'].includes(myMembership?.role ?? '');
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push('/login');
   };
 
-  const plannerDayByDate = useMemo(() => {
-    const map = new Map<string, PlannerDay>();
-    plannerDays.forEach((day) => map.set(day.scheduled_date, day));
-    return map;
-  }, [plannerDays]);
+  const downloadSectionCsv = () => {
+    const rows = [
+      [
+        'Section',
+        'Course',
+        'Status',
+        'Current Day',
+        'Planned Days',
+        'Percent Complete',
+        'Instructor(s)',
+      ],
+      ...sectionRows.map((row) => [
+        row.section.section_name ?? row.section.section_code ?? '',
+        row.course?.course_code ?? '',
+        row.section.status ?? '',
+        String(row.currentDay),
+        String(row.plannedDays),
+        String(row.percent),
+        row.instructorNames.join('; '),
+      ]),
+    ];
 
-  const plannerDayById = useMemo(() => {
-    const map = new Map<string, PlannerDay>();
-    plannerDays.forEach((day) => map.set(day.id, day));
-    return map;
-  }, [plannerDays]);
-
-  const exceptionByDate = useMemo(() => {
-    const map = new Map<string, CalendarException>();
-    calendarExceptions.forEach((exception) =>
-      map.set(exception.exception_date, exception)
-    );
-    return map;
-  }, [calendarExceptions]);
-
-  const deliveryByPlannerDay = useMemo(() => {
-    const map = new Map<string, DayDelivery>();
-    deliveries.forEach((delivery) => map.set(delivery.planner_day_id, delivery));
-    return map;
-  }, [deliveries]);
-
-  const actualDeliveriesByDate = useMemo(() => {
-    const map = new Map<string, DayDelivery[]>();
-    deliveries.forEach((delivery) => {
-      if (!delivery.actual_date) return;
-      const existing = map.get(delivery.actual_date) ?? [];
-      existing.push(delivery);
-      map.set(delivery.actual_date, existing);
-    });
-    return map;
-  }, [deliveries]);
-
-  const calendarMonths = useMemo(() => {
-    const allDates = [
-      ...plannerDays.map((day) => day.scheduled_date),
-      ...calendarExceptions.map((exception) => exception.exception_date),
-    ].sort();
-
-    if (allDates.length === 0) return [];
-
-    const start = parseDate(allDates[0]);
-    const end = parseDate(allDates[allDates.length - 1]);
-
-    const months: Array<{ year: number; month: number }> = [];
-    const cursor = new Date(start.getFullYear(), start.getMonth(), 1);
-    const endMonth = new Date(end.getFullYear(), end.getMonth(), 1);
-
-    while (cursor <= endMonth) {
-      months.push({ year: cursor.getFullYear(), month: cursor.getMonth() });
-      cursor.setMonth(cursor.getMonth() + 1);
-    }
-
-    return months;
-  }, [plannerDays, calendarExceptions]);
-
-  const visibleMonth = calendarMonths[visibleMonthIndex] ?? null;
-
-  useEffect(() => {
-    if (calendarMonths.length === 0) {
-      setVisibleMonthIndex(0);
-      return;
-    }
-
-    const currentPlannerDay = plannerDays.find(
-      (day) =>
-        day.planner_day_number === selectedSection?.current_planner_day_number
-    );
-
-    const targetDate = currentPlannerDay?.scheduled_date
-      ? parseDate(currentPlannerDay.scheduled_date)
-      : selectedSection?.scheduled_date
-      ? parseDate(selectedSection.scheduled_date)
-      : null;
-
-    const targetIndex = targetDate
-      ? calendarMonths.findIndex(
-          ({ year, month }) =>
-            year === targetDate.getFullYear() && month === targetDate.getMonth()
-        )
-      : 0;
-
-    setVisibleMonthIndex(targetIndex >= 0 ? targetIndex : 0);
-  }, [
-    selectedSection?.section_id,
-    selectedSection?.current_planner_day_number,
-    selectedSection?.scheduled_date,
-    plannerDays,
-    calendarMonths,
-  ]);
-
-  const nextNoClassDay = useMemo(() => {
-    const today = getLocalDateString();
-    return (
-      [...calendarExceptions]
-        .filter(
-          (exception) =>
-            !exception.counts_as_teaching_day && exception.exception_date >= today
-        )
-        .sort((a, b) => a.exception_date.localeCompare(b.exception_date))[0] ?? null
-    );
-  }, [calendarExceptions]);
-
-  const getDayClass = (
-    key: string,
-    plannedDay?: PlannerDay,
-    exception?: CalendarException
-  ) => {
-    if (exception && !exception.counts_as_teaching_day) return 'calendar-day no-class';
-
-    if (plannedDay) {
-      const delivery = deliveryByPlannerDay.get(plannedDay.id);
-      if (delivery?.delivery_status === 'completed') return 'calendar-day completed';
-      if (delivery?.delivery_status === 'in_progress' || delivery?.delivery_status === 'started') return 'calendar-day started';
-      if (
-        plannedDay.planner_day_number === selectedSection?.current_planner_day_number
-      ) {
-        return 'calendar-day current';
-      }
-      return 'calendar-day planned';
-    }
-
-    const actualDeliveries = actualDeliveriesByDate.get(key);
-    if (actualDeliveries?.length) return 'calendar-day actual';
-
-    return 'calendar-day';
-  };
-
-  const currentDayNumber = selectedSection?.current_planner_day_number ?? null;
-  const viewedDayNumber = guideDay?.planner_day_number ?? null;
-  const isViewingCurrentDay = Boolean(
-    selectedSection?.guide_day_id && guideDay?.id === selectedSection.guide_day_id
-  );
-
-  const currentDelivery = selectedSection?.planner_day_id
-    ? deliveryByPlannerDay.get(selectedSection.planner_day_id)
-    : undefined;
-
-  const currentDayInProgress = Boolean(
-    currentDelivery?.started_at &&
-      !currentDelivery.completed_at &&
-      (currentDelivery.delivery_status === 'in_progress' ||
-        currentDelivery.delivery_status === 'started')
-  );
-
-  const elapsedSeconds = currentDelivery?.started_at
-    ? Math.max(
-        0,
-        Math.floor(
-          ((currentDelivery.completed_at
-            ? new Date(currentDelivery.completed_at).getTime()
-            : timerNow) -
-            new Date(currentDelivery.started_at).getTime()) /
-            1000
-        )
+    const csv = rows
+      .map((row) =>
+        row
+          .map((cell) => `"${String(cell).replace(/"/g, '""')}"`)
+          .join(',')
       )
-    : 0;
+      .join('\n');
 
-  const plannedInstructionalMinutes =
-    guideSegments.reduce((total, segment) => total + segment.planned_minutes, 0) +
-    (mathLesson?.planned_minutes ?? 0);
-
-  useEffect(() => {
-    if (!currentDayInProgress) return;
-
-    setTimerNow(Date.now());
-    const timer = window.setInterval(() => setTimerNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
-  }, [currentDayInProgress, currentDelivery?.started_at]);
-
-  useEffect(() => {
-    if (currentDayInProgress && currentDelivery?.actual_date) {
-      setActualDate(currentDelivery.actual_date);
-    }
-  }, [currentDayInProgress, currentDelivery?.actual_date]);
-
-  const viewedGuideIndex = guideDay
-    ? guideDayRefs.findIndex((day) => day.id === guideDay.id)
-    : -1;
-
-  const viewGuideDayByNumber = (dayNumber: number) => {
-    const target = guideDayRefs.find(
-      (day) => day.planner_day_number === dayNumber
-    );
-    if (target) setViewedGuideDayId(target.id);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `${(selectedSchool?.name ?? 'school')
+      .replace(/[^a-z0-9]+/gi, '_')
+      .toLowerCase()}_section_report.csv`;
+    anchor.click();
+    URL.revokeObjectURL(url);
   };
 
-  const viewPreviousGuideDay = () => {
-    if (viewedGuideIndex > 0) {
-      setViewedGuideDayId(guideDayRefs[viewedGuideIndex - 1].id);
-    }
-  };
-
-  const viewNextGuideDay = () => {
-    if (viewedGuideIndex >= 0 && viewedGuideIndex < guideDayRefs.length - 1) {
-      setViewedGuideDayId(guideDayRefs[viewedGuideIndex + 1].id);
-    }
-  };
-
-  const returnToCurrentGuideDay = () => {
-    if (selectedSection?.guide_day_id) {
-      setViewedGuideDayId(selectedSection.guide_day_id);
-    }
-  };
-
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="dashboard-container">
-        <div className="loading-spinner">
-          <div className="spinner"></div>
-          <p>Loading dashboard...</p>
+      <main className="school-shell centered">
+        <div className="spinner" />
+        <p>Loading School Dashboard…</p>
+        <style jsx>{styles}</style>
+      </main>
+    );
+  }
+
+  if (!selectedSchoolId) {
+    return (
+      <main className="school-shell centered">
+        <div className="access-card">
+          <div className="eyebrow">School Dashboard</div>
+          <h1>Access unavailable</h1>
+          <p>{error || 'No school-management access was found for this account.'}</p>
+          <button onClick={() => router.push('/dashboard')}>
+            Return to Teacher Dashboard
+          </button>
         </div>
-      </div>
+        <style jsx>{styles}</style>
+      </main>
     );
   }
 
   return (
-    <div className="dashboard-container">
-      <header className="dashboard-header">
-        <div className="header-content">
-          <h1>Living Teacher Planner</h1>
-          <button className="logout-button" onClick={handleLogout}>
-            Sign Out
+    <div className="school-shell">
+      <header className="topbar">
+        <div>
+          <div className="eyebrow">Living Teacher Planner</div>
+          <h1>School Dashboard</h1>
+        </div>
+
+        <div className="header-actions">
+          <button className="secondary" onClick={() => router.push('/dashboard')}>
+            Teacher Dashboard
+          </button>
+          <button className="secondary" onClick={handleLogout}>
+            Log Out
           </button>
         </div>
       </header>
 
-      <main className="dashboard-main">
-        {error && <div className="error-message dashboard-error">{error}</div>}
-
-        {sections.length === 0 ? (
-          <div className="empty-state">
-            <p>No teaching sections found.</p>
-            <p className="empty-state-subtext">
-              Check your Supabase RLS policies and permissions.
+      <main className="page">
+        <section className="school-heading">
+          <div>
+            <div className="eyebrow">Program Management</div>
+            <h2>{selectedSchool?.name ?? 'School'}</h2>
+            <p>
+              {isPlatformOwner
+                ? 'Platform Owner view'
+                : `${titleCase(myMembership?.role)} access`}
             </p>
           </div>
-        ) : (
-          <div className="dashboard-content">
-            <div className="sections-navigation">
-              <h2>Your Sections</h2>
-              <div className="sections-list">
-                {sections.map((section) => (
-                  <button
-                    key={section.section_id}
-                    className={`section-button ${
-                      selectedSection?.section_id === section.section_id ? 'active' : ''
-                    }`}
-                    onClick={() => setSelectedSection(section)}
-                  >
-                    <div className="section-name">
-                      {section.course_code ||
-                        section.course_name ||
-                        section.section_name ||
-                        'Course'}
-                    </div>
-                    <div className="section-cohort">
-                      {section.cohort_name ||
-                        section.section_name ||
-                        section.section_code ||
-                        'Section'}
-                    </div>
-                  </button>
+
+          {schools.length > 1 && (
+            <label className="school-selector">
+              <span>School</span>
+              <select
+                value={selectedSchoolId}
+                onChange={(event) => setSelectedSchoolId(event.target.value)}
+              >
+                {schools.map((school) => (
+                  <option key={school.id} value={school.id}>
+                    {school.name}
+                  </option>
                 ))}
-              </div>
-            </div>
+              </select>
+            </label>
+          )}
+        </section>
 
-            {selectedSection && (
-              <div className="section-details">
-                <div className="section-header">
-                  <div>
-                    <h2>
-                      {selectedSection.course_code ||
-                        selectedSection.course_name ||
-                        selectedSection.section_name ||
-                        'Course'}
-                    </h2>
-                    <p className="section-cohort-text">
-                      {selectedSection.cohort_name ||
-                        selectedSection.section_name ||
-                        selectedSection.section_code ||
-                        'Section'}
-                    </p>
-                  </div>
-                </div>
+        {error && <div className="error-box">{error}</div>}
 
-                <div className="details-grid">
-                  <div className="detail-item">
-                    <label>Current Planner Day</label>
-                    <div className="detail-value highlight">
-                      {selectedSection.current_planner_day_number ?? 'Not started'}
-                    </div>
-                  </div>
+        <nav className="tabs" aria-label="School Dashboard sections">
+          {(
+            [
+              ['overview', 'Overview'],
+              ['instructors', 'Instructors'],
+              ['sections', 'Sections'],
+              ['activity', 'Activity'],
+              ['reports', 'Reports'],
+            ] as [TabName, string][]
+          ).map(([tab, label]) => (
+            <button
+              key={tab}
+              className={activeTab === tab ? 'active' : ''}
+              onClick={() => setActiveTab(tab)}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
 
-                  <div className="detail-item">
-                    <label>Scheduled Date</label>
-                    <div className="detail-value">
-                      {selectedSection.scheduled_date
-                        ? parseDate(selectedSection.scheduled_date).toLocaleDateString(
-                            'en-US',
-                            { weekday: 'short', month: 'short', day: 'numeric' }
-                          )
-                        : 'Not scheduled'}
-                    </div>
-                  </div>
-
-                  <div className="detail-item">
-                    <label>Hold Status</label>
-                    <div
-                      className={`detail-value status-${
-                        selectedSection.manual_hold ? 'hold' : 'active'
-                      }`}
-                    >
-                      {selectedSection.manual_hold
-                        ? selectedSection.hold_reason || 'On Hold'
-                        : 'Active'}
-                    </div>
-                  </div>
-                </div>
-
-                <section className="teacher-guide-section">
-                  <div className="guide-browser">
-                    <button
-                      type="button"
-                      className="guide-browser-button"
-                      onClick={viewPreviousGuideDay}
-                      disabled={viewedGuideIndex <= 0 || guideLoading}
-                    >
-                      ‹ Previous Day
-                    </button>
-
-                    <div className="guide-browser-center">
-                      <span className="guide-browser-status">
-                        {isViewingCurrentDay
-                          ? `Current Teaching Day: ${currentDayNumber ?? ''}`
-                          : viewedDayNumber
-                          ? `Previewing Day ${viewedDayNumber}`
-                          : 'Teacher Guide'}
-                      </span>
-                      <label className="guide-day-select-label">
-                        Go to Day
-                        <select
-                          value={viewedDayNumber ?? ''}
-                          onChange={(event) =>
-                            viewGuideDayByNumber(Number(event.target.value))
-                          }
-                          disabled={guideDayRefs.length === 0 || guideLoading}
-                        >
-                          {guideDayRefs.map((day) => (
-                            <option key={day.id} value={day.planner_day_number}>
-                              Day {day.planner_day_number}
-                              {day.title ? ` — ${day.title}` : ''}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    </div>
-
-                    <button
-                      type="button"
-                      className="guide-browser-button"
-                      onClick={viewNextGuideDay}
-                      disabled={
-                        viewedGuideIndex < 0 ||
-                        viewedGuideIndex >= guideDayRefs.length - 1 ||
-                        guideLoading
-                      }
-                    >
-                      Next Day ›
-                    </button>
-
-                    {!isViewingCurrentDay && guideDay && (
-                      <button
-                        type="button"
-                        className="back-current-button"
-                        onClick={returnToCurrentGuideDay}
-                      >
-                        Back to Current Day
-                      </button>
-                    )}
-                  </div>
-
-                  {!isViewingCurrentDay && guideDay && (
-                    <div className="preview-banner">
-                      <strong>Previewing Day {viewedDayNumber}.</strong>{' '}
-                      Current class day is Day {currentDayNumber}. Viewing another day does
-                      not change class progress.
-                    </div>
-                  )}
-
-                  {guideLoading ? (
-                    <div className="guide-loading">Loading teacher guide...</div>
-                  ) : guideDay ? (
-                    <>
-                      <div className="guide-day-heading">
-                        <div className="guide-day-title-block">
-                          <div className="guide-eyebrow">
-                            DAY {guideDay.planner_day_number}
-                          </div>
-                          <h3>
-                            {guideDay.title || `Planner Day ${guideDay.planner_day_number}`}
-                          </h3>
-                        </div>
-
-                        <div className="guide-format-badge">
-                          {mathLesson
-                            ? '20 min Welding Math + 40 min WLD-105'
-                            : '60 min WLD-105'}
-                        </div>
-                      </div>
-
-                      <div className="guide-summary-row">
-                        <div className="guide-objective">
-                          <span className="guide-label">Daily Objective</span>
-                          <p>{guideDay.objective || 'No objective entered.'}</p>
-                        </div>
-
-                        <div className="guide-outcomes">
-                          <span className="guide-label">Protected Outcomes</span>
-                          <div className="outcome-chips">
-                            {protectedOutcomes.length > 0 ? (
-                              protectedOutcomes.map((outcome) => (
-                                <div className="outcome-chip" key={outcome.id}>
-                                  <strong>{outcome.outcome_code}</strong>
-                                  <span>{outcome.outcome_text}</span>
-                                </div>
-                              ))
-                            ) : (
-                              <span className="guide-muted">No linked outcomes.</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="guide-body-grid">
-                        <div className="guide-main-column">
-                          {mathLesson && (
-                            <div className="agenda-card">
-                              <div className="agenda-card-title">
-                                <div>
-                                  <span className="guide-label">Section 1</span>
-                                  <h4>
-                                    Welding Math — Day {mathLesson.math_day_number}: {mathLesson.title}
-                                  </h4>
-                                </div>
-                                <span className="agenda-duration">{mathLesson.planned_minutes} min</span>
-                              </div>
-
-                              {mathLesson.goal && (
-                                <p className="math-goal">
-                                  <strong>Goal:</strong> {mathLesson.goal}
-                                </p>
-                              )}
-
-                              {mathLesson.book_connection && (
-                                <p className="book-connection">
-                                  <strong>Book connection:</strong> {mathLesson.book_connection}
-                                </p>
-                              )}
-
-                              <div className="agenda-table-wrap">
-                                <table className="agenda-table">
-                                  <thead>
-                                    <tr>
-                                      <th>Time</th>
-                                      <th>Activity</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {mathSegments.map((segment) => (
-                                      <tr key={segment.id}>
-                                        <td>
-                                          {minuteRange(
-                                            segment.start_minute,
-                                            segment.end_minute,
-                                            segment.planned_minutes
-                                          )}
-                                        </td>
-                                        <td>{segment.activity}</td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-
-                              {(mathLesson.instructor_notes ||
-                                mathLesson.answers_quick_check) && (
-                                <div className="math-instructor-only">
-                                  <span className="guide-label">Instructor Only</span>
-                                  {mathLesson.instructor_notes && (
-                                    <p>
-                                      <strong>Notes:</strong> {mathLesson.instructor_notes}
-                                    </p>
-                                  )}
-                                  {mathLesson.answers_quick_check && (
-                                    <p>
-                                      <strong>Answers / quick check:</strong>{' '}
-                                      {mathLesson.answers_quick_check}
-                                    </p>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          <div className="agenda-card">
-                            <div className="agenda-card-title">
-                              <div>
-                                <span className="guide-label">
-                                  {mathLesson ? 'Section 2' : 'Agenda'}
-                                </span>
-                                <h4>{mathLesson ? 'WLD-105 Agenda' : 'Daily Agenda'}</h4>
-                              </div>
-                              <span className="agenda-duration">
-                                {guideSegments.reduce(
-                                  (sum, segment) => sum + segment.planned_minutes,
-                                  0
-                                )}{' '}
-                                min
-                              </span>
-                            </div>
-
-                            <div className="agenda-table-wrap">
-                              <table className="agenda-table">
-                                <thead>
-                                  <tr>
-                                    <th>Time</th>
-                                    <th>Activity</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {guideSegments.map((segment) => (
-                                    <tr key={segment.id}>
-                                      <td>
-                                        {minuteRange(
-                                          segment.start_minute,
-                                          segment.end_minute,
-                                          segment.planned_minutes
-                                        )}
-                                      </td>
-                                      <td>
-                                        {segment.instructor_actions ||
-                                          segment.segment_title ||
-                                          'Activity'}
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </div>
-
-                        <aside className="guide-side-column">
-                          <div className="guide-info-card">
-                            <span className="guide-label">Resources</span>
-                            {guideDay.materials_equipment && (
-                              <p>{guideDay.materials_equipment}</p>
-                            )}
-
-                            {guideResources.length > 0 && (
-                              <div className="resource-list">
-                                {guideResources.map((resource) => (
-                                  <div className="resource-item" key={resource.id}>
-                                    <strong>{resource.resource_title}</strong>
-                                    {resource.resource_url ? (
-                                      <a
-                                        href={resource.resource_url}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="resource-link"
-                                      >
-                                        Open Resource
-                                      </a>
-                                    ) : (
-                                      <span className="resource-pending">
-                                        Link not added
-                                      </span>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="guide-info-card">
-                            <span className="guide-label">Corresponding Application</span>
-                            <p>
-                              {guideDay.corresponding_application ||
-                                'No corresponding application entered.'}
-                            </p>
-                          </div>
-
-                          <div className="guide-info-card">
-                            <span className="guide-label">
-                              Evidence / Check for Understanding
-                            </span>
-                            <p>
-                              {guideDay.evidence_check_for_understanding ||
-                                'No evidence check entered.'}
-                            </p>
-                          </div>
-                        </aside>
-                      </div>
-
-                      <div className="coaching-card">
-                        <div className="coaching-heading">
-                          <span className="guide-label">Instructor Coaching</span>
-                        </div>
-                        <div className="coaching-grid">
-                          {guideDay.weekly_coaching_focus && (
-                            <div>
-                              <strong>Weekly Coaching Focus</strong>
-                              <p>{guideDay.weekly_coaching_focus}</p>
-                            </div>
-                          )}
-                          <div>
-                            <strong>Coaching Focus</strong>
-                            <p>{guideDay.coaching_focus || 'No coaching note entered.'}</p>
-                          </div>
-                          <div>
-                            <strong>If Students Struggle</strong>
-                            <p>
-                              {guideDay.if_students_struggle ||
-                                'No intervention note entered.'}
-                            </p>
-                          </div>
-                          <div>
-                            <strong>Keep Momentum</strong>
-                            <p>{guideDay.keep_momentum || 'No momentum note entered.'}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="guide-loading">
-                      No teacher-guide content is available for this planner day.
-                    </div>
-                  )}
-                </section>
-
-                <div className="actions-section">
-                  {!isViewingCurrentDay && guideDay && (
-                    <div className="preview-actions-lock">
-                      Preview mode is read-only. Return to the current teaching day to start,
-                      complete, or record instructional notes.
-                    </div>
-                  )}
-
-                  <div className="form-group">
-                    <label htmlFor="actual-date">Actual Date</label>
-                    <input
-                      id="actual-date"
-                      type="date"
-                      value={actualDate}
-                      onChange={(event) => setActualDate(event.target.value)}
-                      disabled={
-                        actionLoading || !isViewingCurrentDay || currentDayInProgress
-                      }
-                    />
-                  </div>
-
-                  {currentDayInProgress && currentDelivery?.started_at ? (
-                    <div className="class-timer-panel" role="status" aria-live="polite">
-                      <div className="class-timer-label">Class in progress</div>
-                      <div className="class-timer-value">
-                        {formatElapsedTime(elapsedSeconds)}
-                      </div>
-                      <div className="class-timer-meta">
-                        <span>Started {formatClockTime(currentDelivery.started_at)}</span>
-                        <span>Planned: {plannedInstructionalMinutes || 60} min</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      className="action-button start-button"
-                      onClick={handleStartToday}
-                      disabled={actionLoading || !actualDate || !isViewingCurrentDay}
-                    >
-                      {actionLoading ? 'Processing...' : 'Start Today'}
-                    </button>
-                  )}
-
-                  <div className="form-group">
-                    <label htmlFor="deviation-summary">Daily Comments / Deviation Summary</label>
-                    <textarea
-                      id="deviation-summary"
-                      value={deviationSummary}
-                      onChange={(event) => setDeviationSummary(event.target.value)}
-                      placeholder="Record daily comments, pacing, or implementation differences"
-                      disabled={actionLoading || !isViewingCurrentDay}
-                    />
-                  </div>
-
-                  <label className="follow-up-check">
-                    <input
-                      type="checkbox"
-                      checked={followUpNeeded}
-                      onChange={(event) => setFollowUpNeeded(event.target.checked)}
-                      disabled={actionLoading || !isViewingCurrentDay}
-                    />{' '}
-                    Follow-up needed
-                  </label>
-
-                  {followUpNeeded && (
-                    <div className="form-group">
-                      <label htmlFor="follow-up-notes">Follow-up Notes</label>
-                      <textarea
-                        id="follow-up-notes"
-                        value={followUpNotes}
-                        onChange={(event) => setFollowUpNotes(event.target.value)}
-                        placeholder="Describe the follow-up needed"
-                        disabled={actionLoading || !isViewingCurrentDay}
-                      />
-                    </div>
-                  )}
-
-                  <button
-                    className="action-button complete-button"
-                    onClick={handleCompleteDay}
-                    disabled={
-                      actionLoading ||
-                      !actualDate ||
-                      !isViewingCurrentDay ||
-                      !currentDayInProgress
+        {dataLoading ? (
+          <section className="loading-panel">
+            <div className="spinner" />
+            <p>Loading school information…</p>
+          </section>
+        ) : (
+          <>
+            {activeTab === 'overview' && (
+              <section className="stack">
+                <div className="metric-grid">
+                  <Metric label="Active Sections" value={activeSections.length} />
+                  <Metric label="Instructors" value={teachingMemberships.length} />
+                  <Metric label="Classes Today" value={todayPlannerDays.length} />
+                  <Metric
+                    label="In Progress"
+                    value={
+                      todayDeliveries.filter(
+                        (delivery) => delivery.delivery_status === 'in_progress'
+                      ).length
                     }
-                  >
-                    {actionLoading ? 'Processing...' : 'Complete Day'}
-                  </button>
+                    accent
+                  />
+                  <Metric
+                    label="Completed Today"
+                    value={
+                      todayDeliveries.filter(
+                        (delivery) => delivery.delivery_status === 'completed'
+                      ).length
+                    }
+                  />
+                  <Metric label="Follow-Ups Flagged" value={followUpsFlagged} warn />
                 </div>
 
-
-                <section className="class-calendar-section">
-                  <div className="calendar-title-row">
+                <div className="panel">
+                  <div className="panel-header">
                     <div>
-                      <h3>Class Calendar</h3>
-                      <p>PVHS schedule and no-class reminders.</p>
+                      <div className="eyebrow">Current Progress</div>
+                      <h3>Sections</h3>
                     </div>
+                    <span>{sectionRows.length} total</span>
+                  </div>
 
-                    {visibleMonth && (
-                      <div className="calendar-month-controls">
-                        <button
-                          type="button"
-                          className="calendar-nav-button"
-                          onClick={() =>
-                            setVisibleMonthIndex((index) => Math.max(0, index - 1))
-                          }
-                          disabled={visibleMonthIndex === 0}
-                          aria-label="Previous month"
-                        >
-                          ‹ Previous
-                        </button>
+                  <div className="section-list">
+                    {sectionRows.length === 0 ? (
+                      <div className="empty">No sections found.</div>
+                    ) : (
+                      sectionRows.map((row) => (
+                        <article className="section-row" key={row.section.id}>
+                          <div className="section-main">
+                            <strong>
+                              {row.section.section_name ??
+                                row.section.section_code ??
+                                'Unnamed Section'}
+                            </strong>
+                            <span>
+                              {row.course?.course_code ?? 'Course'} ·{' '}
+                              {row.instructorNames.join(', ') || 'Instructor not assigned'}
+                            </span>
+                          </div>
 
-                        <strong>
-                          {monthLabel(visibleMonth.year, visibleMonth.month)}
-                        </strong>
+                          <div className="progress-block">
+                            <div className="progress-copy">
+                              <span>
+                                Day {row.currentDay} of {row.plannedDays || '—'}
+                              </span>
+                              <strong>{row.percent}%</strong>
+                            </div>
+                            <div className="progress-track">
+                              <div
+                                className="progress-fill"
+                                style={{ width: `${row.percent}%` }}
+                              />
+                            </div>
+                          </div>
 
-                        <button
-                          type="button"
-                          className="calendar-nav-button"
-                          onClick={() =>
-                            setVisibleMonthIndex((index) =>
-                              Math.min(calendarMonths.length - 1, index + 1)
-                            )
-                          }
-                          disabled={visibleMonthIndex >= calendarMonths.length - 1}
-                          aria-label="Next month"
-                        >
-                          Next ›
-                        </button>
-                      </div>
+                          <div className="status-stack">
+                            <span
+                              className={`status ${
+                                row.sectionProgress?.manual_hold ? 'hold' : 'normal'
+                              }`}
+                            >
+                              {row.sectionProgress?.manual_hold
+                                ? 'On Hold'
+                                : titleCase(row.section.status)}
+                            </span>
+                            {row.sectionProgress?.last_advanced_at && (
+                              <small>
+                                Updated{' '}
+                                {formatDateTime(row.sectionProgress.last_advanced_at)}
+                              </small>
+                            )}
+                          </div>
+                        </article>
+                      ))
                     )}
                   </div>
+                </div>
 
-                  {nextNoClassDay && (
-                    <div className="calendar-reminder">
-                      <strong>Upcoming no welding class:</strong>{' '}
-                      {parseDate(nextNoClassDay.exception_date).toLocaleDateString(
-                        'en-US',
-                        { weekday: 'long', month: 'long', day: 'numeric' }
-                      )}
-                      {' — '}
-                      {nextNoClassDay.reason || nextNoClassDay.exception_type}
+                <div className="two-column">
+                  <div className="panel">
+                    <div className="eyebrow">Instructional Time</div>
+                    <h3>{formatMinutes(totalActualMinutes)}</h3>
+                    <p>Recorded completed instructional time</p>
+                    <div className="mini-stats">
+                      <span>
+                        <strong>{completedDeliveries.length}</strong>
+                        completed teaching days
+                      </span>
+                      <span>
+                        <strong>{averageMinutes || '—'}</strong>
+                        average minutes per completed class
+                      </span>
                     </div>
-                  )}
-
-                  <div className="calendar-legend">
-                    <span><i className="legend-dot current-dot" />Current</span>
-                    <span><i className="legend-dot completed-dot" />Completed</span>
-                    <span><i className="legend-dot planned-dot" />Planned</span>
-                    <span><i className="legend-dot no-class-dot" />No welding</span>
-                    <span><i className="legend-dot actual-dot" />Actual/rescheduled</span>
                   </div>
 
-                  {calendarLoading ? (
-                    <p className="calendar-loading">Loading class calendar...</p>
-                  ) : visibleMonth ? (
-                    <div className="calendar-month single-month">
-                      <div className="calendar-weekdays">
-                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(
-                          (weekday) => (
-                            <div key={weekday}>{weekday}</div>
-                          )
-                        )}
-                      </div>
-
-                      <div className="calendar-grid">
-                        {(() => {
-                          const { year, month } = visibleMonth;
-                          const firstDay = new Date(year, month, 1).getDay();
-                          const daysInMonth = new Date(year, month + 1, 0).getDate();
-                          const cells: Array<number | null> = [];
-
-                          for (let i = 0; i < firstDay; i += 1) cells.push(null);
-                          for (let day = 1; day <= daysInMonth; day += 1) cells.push(day);
-
-                          return cells.map((day, index) => {
-                            if (day === null) {
-                              return (
-                                <div
-                                  className="calendar-day blank"
-                                  key={`blank-${index}`}
-                                />
-                              );
-                            }
-
-                            const key = dateKey(new Date(year, month, day));
-                            const plannedDay = plannerDayByDate.get(key);
-                            const exception = exceptionByDate.get(key);
-                            const delivery = plannedDay
-                              ? deliveryByPlannerDay.get(plannedDay.id)
-                              : undefined;
-
-                            const actualDeliveries =
-                              actualDeliveriesByDate.get(key) ?? [];
-                            const rescheduledDeliveries = actualDeliveries.filter(
-                              (item) => {
-                                const planned = plannerDayById.get(
-                                  item.planner_day_id
-                                );
-                                return planned?.scheduled_date !== key;
-                              }
-                            );
-
-                            return (
-                              <div
-                                className={getDayClass(key, plannedDay, exception)}
-                                key={key}
-                              >
-                                <div className="calendar-date-number">{day}</div>
-
-                                {exception &&
-                                  !exception.counts_as_teaching_day && (
-                                    <>
-                                      <div className="calendar-event strong">
-                                        NO WELDING
-                                      </div>
-                                      <div className="calendar-event">
-                                        {exception.reason ||
-                                          exception.exception_type}
-                                      </div>
-                                    </>
-                                  )}
-
-                                {plannedDay && (
-                                  <>
-                                    <div className="calendar-event strong">
-                                      Day {plannedDay.planner_day_number}
-                                    </div>
-                                    <div className="calendar-event">
-                                      {delivery?.delivery_status === 'completed'
-                                        ? 'Completed'
-                                        : delivery?.delivery_status === 'in_progress' ||
-                                          delivery?.delivery_status === 'started'
-                                        ? 'In progress'
-                                        : plannedDay.planner_day_number ===
-                                          selectedSection.current_planner_day_number
-                                        ? 'Current'
-                                        : 'Planned'}
-                                    </div>
-                                    {delivery?.actual_date &&
-                                      delivery.actual_date !==
-                                        plannedDay.scheduled_date && (
-                                        <div className="calendar-event actual-note">
-                                          {delivery.delivery_status === 'completed'
-                                            ? 'Taught'
-                                            : 'Started'}{' '}
-                                          {parseDate(
-                                            delivery.actual_date
-                                          ).toLocaleDateString('en-US', {
-                                            month: 'short',
-                                            day: 'numeric',
-                                          })}
-                                        </div>
-                                      )}
-                                  </>
-                                )}
-
-                                {rescheduledDeliveries.map((item) => {
-                                  const planned = plannerDayById.get(
-                                    item.planner_day_id
-                                  );
-                                  return planned ? (
-                                    <div
-                                      className="calendar-event actual-note"
-                                      key={`${key}-${item.planner_day_id}`}
-                                    >
-                                      Actual Day {planned.planner_day_number}
-                                    </div>
-                                  ) : null;
-                                })}
-                              </div>
-                            );
-                          });
-                        })()}
-                      </div>
+                  <div className="panel">
+                    <div className="eyebrow">Attention</div>
+                    <h3>{followUpsFlagged + heldSections}</h3>
+                    <p>Items requiring review</p>
+                    <div className="mini-stats">
+                      <span>
+                        <strong>{followUpsFlagged}</strong>
+                        follow-ups flagged
+                      </span>
+                      <span>
+                        <strong>{heldSections}</strong>
+                        sections on manual hold
+                      </span>
                     </div>
-                  ) : (
-                    <p className="calendar-loading">No calendar dates available.</p>
-                  )}
-                </section>
-
-              </div>
+                  </div>
+                </div>
+              </section>
             )}
-          </div>
+
+            {activeTab === 'instructors' && (
+              <section className="panel">
+                <div className="panel-header">
+                  <div>
+                    <div className="eyebrow">Staff Organization</div>
+                    <h3>Instructors</h3>
+                  </div>
+                  <span>
+                    {canManage ? 'Management access' : 'Read-only access'}
+                  </span>
+                </div>
+
+                <div className="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Instructor</th>
+                        <th>Role</th>
+                        <th>Assigned Sections</th>
+                        <th>Section Count</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {instructorRows.map((row) => (
+                        <tr key={row.membership.id}>
+                          <td>
+                            <strong>
+                              {row.profile?.display_name ?? 'Name unavailable'}
+                            </strong>
+                            <small>{row.profile?.email ?? ''}</small>
+                          </td>
+                          <td>{titleCase(row.membership.role)}</td>
+                          <td>
+                            {row.assignedSections
+                              .map(
+                                (section) =>
+                                  section.section_name ??
+                                  section.section_code ??
+                                  'Unnamed section'
+                              )
+                              .join(', ') || 'No active section assignment'}
+                          </td>
+                          <td>{row.assignedSections.length}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {canManage && (
+                  <div className="management-note">
+                    Instructor assignment controls will be added after this dashboard
+                    view is verified against real school data.
+                  </div>
+                )}
+              </section>
+            )}
+
+            {activeTab === 'sections' && (
+              <section className="panel">
+                <div className="panel-header">
+                  <div>
+                    <div className="eyebrow">Course Delivery</div>
+                    <h3>Sections</h3>
+                  </div>
+                  <span>{sectionRows.length} sections</span>
+                </div>
+
+                <div className="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Section</th>
+                        <th>Course</th>
+                        <th>Instructor</th>
+                        <th>Progress</th>
+                        <th>Schedule</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sectionRows.map((row) => (
+                        <tr key={row.section.id}>
+                          <td>
+                            <strong>
+                              {row.section.section_name ??
+                                row.section.section_code ??
+                                'Unnamed Section'}
+                            </strong>
+                            <small>{row.section.section_code ?? ''}</small>
+                          </td>
+                          <td>{row.course?.course_code ?? '—'}</td>
+                          <td>{row.instructorNames.join(', ') || 'Unassigned'}</td>
+                          <td>
+                            Day {row.currentDay} / {row.plannedDays || '—'}
+                          </td>
+                          <td>
+                            {formatDate(row.section.start_date)} to{' '}
+                            {formatDate(row.section.end_date)}
+                          </td>
+                          <td>
+                            <span
+                              className={`status ${
+                                row.sectionProgress?.manual_hold ? 'hold' : 'normal'
+                              }`}
+                            >
+                              {row.sectionProgress?.manual_hold
+                                ? 'On Hold'
+                                : titleCase(row.section.status)}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            )}
+
+            {activeTab === 'activity' && (
+              <section className="panel">
+                <div className="panel-header">
+                  <div>
+                    <div className="eyebrow">Recent Instruction</div>
+                    <h3>Activity</h3>
+                  </div>
+                  <span>{deliveries.length} delivery records</span>
+                </div>
+
+                <div className="activity-list">
+                  {deliveries.slice(0, 50).map((delivery) => {
+                    const section = sectionMap.get(delivery.section_id);
+                    const instructor = delivery.instructor_id
+                      ? profileMap.get(delivery.instructor_id)
+                      : null;
+
+                    return (
+                      <article className="activity-row" key={delivery.id}>
+                        <div>
+                          <strong>
+                            {section?.section_name ??
+                              section?.section_code ??
+                              'Section'}
+                          </strong>
+                          <span>
+                            {instructor?.display_name ?? 'Instructor'} ·{' '}
+                            {formatDate(delivery.actual_date)}
+                          </span>
+                        </div>
+
+                        <div>
+                          <span className={`status ${delivery.delivery_status}`}>
+                            {titleCase(delivery.delivery_status)}
+                          </span>
+                          <small>
+                            {delivery.actual_minutes !== null
+                              ? `${delivery.actual_minutes} min`
+                              : 'Time not completed'}
+                          </small>
+                        </div>
+
+                        <div className="activity-note">
+                          {delivery.deviation_summary || 'No daily deviation/comment'}
+                          {delivery.follow_up_needed && (
+                            <span className="follow-up">Follow-up flagged</span>
+                          )}
+                        </div>
+                      </article>
+                    );
+                  })}
+
+                  {deliveries.length === 0 && (
+                    <div className="empty">No instructional activity recorded yet.</div>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {activeTab === 'reports' && (
+              <section className="stack">
+                <div className="report-actions">
+                  <button onClick={() => window.print()}>Print School Report</button>
+                  <button onClick={downloadSectionCsv}>Download Section CSV</button>
+                </div>
+
+                <div className="metric-grid">
+                  <Metric
+                    label="Recorded Instruction"
+                    value={formatMinutes(totalActualMinutes)}
+                  />
+                  <Metric
+                    label="Completed Teaching Days"
+                    value={completedDeliveries.length}
+                  />
+                  <Metric
+                    label="Average Class"
+                    value={averageMinutes ? `${averageMinutes} min` : '—'}
+                  />
+                  <Metric label="Sections On Hold" value={heldSections} warn />
+                  <Metric label="Follow-Ups Flagged" value={followUpsFlagged} warn />
+                  <Metric label="Active Courses" value={courses.length} />
+                </div>
+
+                <div className="panel">
+                  <div className="eyebrow">Section Report</div>
+                  <h3>Progress Summary</h3>
+
+                  <div className="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Section</th>
+                          <th>Course</th>
+                          <th>Day</th>
+                          <th>Completion</th>
+                          <th>Instructor</th>
+                          <th>Hold</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sectionRows.map((row) => (
+                          <tr key={row.section.id}>
+                            <td>
+                              {row.section.section_name ??
+                                row.section.section_code ??
+                                'Unnamed Section'}
+                            </td>
+                            <td>{row.course?.course_code ?? '—'}</td>
+                            <td>
+                              {row.currentDay} / {row.plannedDays || '—'}
+                            </td>
+                            <td>{row.percent}%</td>
+                            <td>
+                              {row.instructorNames.join(', ') || 'Unassigned'}
+                            </td>
+                            <td>
+                              {row.sectionProgress?.manual_hold ? 'Yes' : 'No'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="report-footnote">
+                  This first report layer summarizes operational teaching data. Formal
+                  semester, instructor, course, regional, and cross-school report
+                  formats can now build on the same records without creating duplicate
+                  reporting data.
+                </div>
+              </section>
+            )}
+          </>
         )}
       </main>
 
-      <style jsx>{`
-        .teacher-guide-section {
-          margin-top: 8px;
-          margin-bottom: 20px;
-          border: 1px solid #2a2a2a;
-          border-radius: 10px;
-          overflow: hidden;
-          background: #101010;
-        }
-
-        .guide-browser {
-          display: grid;
-          grid-template-columns: auto minmax(260px, 1fr) auto auto;
-          gap: 10px;
-          align-items: center;
-          padding: 12px 14px;
-          border-bottom: 1px solid #2a2a2a;
-          background: #0b0b0b;
-        }
-
-        .guide-browser-center {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 12px;
-          min-width: 0;
-        }
-
-        .guide-browser-status {
-          color: #dedede;
-          font-size: 13px;
-          font-weight: 700;
-          white-space: nowrap;
-        }
-
-        .guide-day-select-label {
-          display: inline-flex;
-          align-items: center;
-          gap: 7px;
-          color: #8f8f8f;
-          font-size: 11px;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-
-        .guide-day-select-label select {
-          max-width: 320px;
-          padding: 7px 9px;
-          border: 1px solid #343434;
-          border-radius: 6px;
-          background: #111111;
-          color: #e5e5e5;
-          font: inherit;
-          text-transform: none;
-          letter-spacing: normal;
-        }
-
-        .guide-browser-button,
-        .back-current-button {
-          min-height: 36px;
-          padding: 7px 11px;
-          border: 1px solid #343434;
-          border-radius: 6px;
-          background: #111111;
-          color: #d8d8d8;
-          cursor: pointer;
-          font-size: 12px;
-          font-weight: 700;
-        }
-
-        .guide-browser-button:hover:not(:disabled),
-        .back-current-button:hover:not(:disabled) {
-          border-color: #00ff88;
-          color: #00ff88;
-        }
-
-        .guide-browser-button:disabled {
-          opacity: 0.35;
-          cursor: not-allowed;
-        }
-
-        .back-current-button {
-          border-color: rgba(0, 255, 136, 0.45);
-          color: #00ff88;
-        }
-
-        .preview-banner,
-        .preview-actions-lock {
-          padding: 10px 14px;
-          border-bottom: 1px solid rgba(255, 187, 71, 0.28);
-          background: rgba(255, 187, 71, 0.08);
-          color: #e7c27c;
-          font-size: 12px;
-          line-height: 1.45;
-        }
-
-        .preview-actions-lock {
-          grid-column: 1 / -1;
-          margin-bottom: 4px;
-          border: 1px solid rgba(255, 187, 71, 0.28);
-          border-radius: 6px;
-        }
-
-        .guide-loading {
-          padding: 24px;
-          color: #9a9a9a;
-          font-size: 14px;
-        }
-
-        .guide-day-heading {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 18px;
-          padding: 18px 20px;
-          border-bottom: 1px solid #2a2a2a;
-          background: #151515;
-        }
-
-        .guide-day-title-block {
-          min-width: 0;
-        }
-
-        .guide-eyebrow,
-        .guide-label {
-          display: block;
-          color: #8f8f8f;
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-        }
-
-        .guide-day-title-block h3 {
-          margin: 4px 0 0;
-          color: #ffffff;
-          font-size: 22px;
-          line-height: 1.25;
-        }
-
-        .guide-format-badge {
-          flex: 0 0 auto;
-          padding: 8px 12px;
-          border: 1px solid #363636;
-          border-radius: 6px;
-          background: #0c0c0c;
-          color: #d7d7d7;
-          font-size: 12px;
-          font-weight: 600;
-        }
-
-        .guide-summary-row {
-          display: grid;
-          grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr);
-          gap: 0;
-          border-bottom: 1px solid #2a2a2a;
-        }
-
-        .guide-objective,
-        .guide-outcomes {
-          padding: 18px 20px;
-        }
-
-        .guide-objective {
-          border-right: 1px solid #2a2a2a;
-        }
-
-        .guide-objective p,
-        .guide-info-card p,
-        .coaching-grid p,
-        .math-goal,
-        .book-connection,
-        .math-instructor-only p {
-          margin: 8px 0 0;
-          color: #d2d2d2;
-          line-height: 1.5;
-          font-size: 14px;
-        }
-
-        .outcome-chips {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          margin-top: 9px;
-        }
-
-        .outcome-chip {
-          display: grid;
-          grid-template-columns: auto 1fr;
-          gap: 9px;
-          align-items: start;
-          padding: 8px 10px;
-          border: 1px solid #343434;
-          border-radius: 6px;
-          background: #0d0d0d;
-          color: #cfcfcf;
-          font-size: 12px;
-          line-height: 1.35;
-        }
-
-        .outcome-chip strong {
-          color: #dfff78;
-          white-space: nowrap;
-        }
-
-        .guide-muted {
-          color: #777777;
-          font-size: 12px;
-        }
-
-        .guide-body-grid {
-          display: grid;
-          grid-template-columns: minmax(0, 2.2fr) minmax(270px, 0.8fr);
-          gap: 14px;
-          padding: 14px;
-        }
-
-        .guide-main-column,
-        .guide-side-column {
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-          min-width: 0;
-        }
-
-        .agenda-card,
-        .guide-info-card,
-        .coaching-card {
-          border: 1px solid #2c2c2c;
-          border-radius: 8px;
-          background: #121212;
-          overflow: hidden;
-        }
-
-        .agenda-card-title {
-          display: flex;
-          justify-content: space-between;
-          gap: 14px;
-          align-items: center;
-          padding: 12px 14px;
-          border-bottom: 1px solid #2c2c2c;
-          background: #161616;
-        }
-
-        .agenda-card-title h4 {
-          margin: 3px 0 0;
-          color: #f4f4f4;
-          font-size: 15px;
-          font-weight: 650;
-        }
-
-        .agenda-duration {
-          flex: 0 0 auto;
-          color: #9adf4b;
-          font-size: 12px;
-          font-weight: 700;
-        }
-
-        .math-goal,
-        .book-connection {
-          padding: 0 14px;
-        }
-
-        .book-connection {
-          color: #9f9f9f;
-          font-size: 12px;
-        }
-
-        .agenda-table-wrap {
-          overflow-x: auto;
-        }
-
-        .agenda-table {
-          width: 100%;
-          border-collapse: collapse;
-          table-layout: fixed;
-        }
-
-        .agenda-table th,
-        .agenda-table td {
-          padding: 10px 12px;
-          border-bottom: 1px solid #292929;
-          text-align: left;
-          vertical-align: top;
-        }
-
-        .agenda-table th {
-          color: #8d8d8d;
-          background: #101010;
-          font-size: 10px;
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-        }
-
-        .agenda-table th:first-child,
-        .agenda-table td:first-child {
-          width: 110px;
-          color: #e7e7e7;
-          white-space: nowrap;
-        }
-
-        .agenda-table td {
-          color: #d0d0d0;
-          font-size: 13px;
-          line-height: 1.45;
-        }
-
-        .agenda-table tbody tr:last-child td {
-          border-bottom: 0;
-        }
-
-        .math-instructor-only {
-          margin: 12px 14px 14px;
-          padding: 12px;
-          border: 1px solid rgba(154, 223, 75, 0.28);
-          border-radius: 6px;
-          background: rgba(154, 223, 75, 0.055);
-        }
-
-        .math-instructor-only p {
-          font-size: 12px;
-        }
-
-        .guide-info-card {
-          padding: 14px;
-        }
-
-        .resource-list {
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-          margin-top: 14px;
-        }
-
-        .resource-item {
-          display: flex;
-          flex-direction: column;
-          gap: 7px;
-          padding-top: 10px;
-          border-top: 1px solid #292929;
-        }
-
-        .resource-item strong {
-          color: #efefef;
-          font-size: 13px;
-        }
-
-        .resource-link {
-          align-self: flex-start;
-          padding: 7px 10px;
-          border: 1px solid #9adf4b;
-          border-radius: 6px;
-          color: #caff77;
-          text-decoration: none;
-          font-size: 12px;
-          font-weight: 700;
-          background: rgba(154, 223, 75, 0.07);
-        }
-
-        .resource-link:hover {
-          background: rgba(154, 223, 75, 0.14);
-        }
-
-        .resource-pending {
-          color: #777777;
-          font-size: 11px;
-        }
-
-        .coaching-card {
-          margin: 0 14px 14px;
-        }
-
-        .coaching-heading {
-          padding: 11px 14px;
-          border-bottom: 1px solid #2c2c2c;
-          background: #161616;
-        }
-
-        .coaching-grid {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-        }
-
-        .coaching-grid > div {
-          min-height: 120px;
-          padding: 14px;
-          border-right: 1px solid #2c2c2c;
-        }
-
-        .coaching-grid > div:last-child {
-          border-right: 0;
-        }
-
-        .coaching-grid strong {
-          color: #e7e7e7;
-          font-size: 12px;
-        }
-
-        .coaching-grid p {
-          font-size: 12px;
-        }
-
-        .class-calendar-section {
-          margin-top: 8px;
-          padding: 20px;
-          border: 1px solid #2a2a2a;
-          border-radius: 8px;
-          background: #111111;
-        }
-
-        .calendar-title-row {
-          display: flex;
-          justify-content: space-between;
-          gap: 16px;
-          align-items: flex-start;
-          margin-bottom: 14px;
-        }
-
-        .calendar-title-row h3 {
-          margin: 0 0 4px;
-          font-size: 20px;
-          color: #ffffff;
-        }
-
-        .calendar-title-row p,
-        .calendar-loading {
-          margin: 0;
-          color: #909090;
-          font-size: 13px;
-        }
-
-        .calendar-month-controls {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          flex-wrap: wrap;
-          justify-content: flex-end;
-        }
-
-        .calendar-month-controls strong {
-          min-width: 140px;
-          text-align: center;
-          color: #ffffff;
-          font-size: 14px;
-        }
-
-        .calendar-nav-button {
-          padding: 7px 10px;
-          border: 1px solid #3a3a3a;
-          border-radius: 6px;
-          background: #0a0a0a;
-          color: #e0e0e0;
-          cursor: pointer;
-          font-size: 12px;
-        }
-
-        .calendar-nav-button:hover:not(:disabled) {
-          border-color: #00ff88;
-          color: #00ff88;
-        }
-
-        .calendar-nav-button:disabled {
-          opacity: 0.35;
-          cursor: not-allowed;
-        }
-
-        .calendar-reminder {
-          padding: 12px 14px;
-          margin-bottom: 14px;
-          border: 1px solid rgba(255, 140, 66, 0.45);
-          border-radius: 6px;
-          background: rgba(255, 140, 66, 0.08);
-          color: #ffb27c;
-          font-size: 14px;
-        }
-
-        .calendar-legend {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 10px 18px;
-          margin-bottom: 18px;
-          color: #b0b0b0;
-          font-size: 12px;
-        }
-
-        .calendar-legend span {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-        }
-
-        .legend-dot {
-          width: 9px;
-          height: 9px;
-          border-radius: 50%;
-          display: inline-block;
-        }
-
-        .current-dot {
-          background: #00ff88;
-        }
-
-        .completed-dot {
-          background: #00b4ff;
-        }
-
-        .planned-dot {
-          background: #777777;
-        }
-
-        .no-class-dot {
-          background: #ff8c42;
-        }
-
-        .actual-dot {
-          background: #d788ff;
-        }
-
-        .single-month {
-          max-width: 820px;
-          margin: 0 auto;
-        }
-
-        .calendar-month {
-          border: 1px solid #2a2a2a;
-          border-radius: 8px;
-          overflow: hidden;
-          background: #111111;
-        }
-
-        .calendar-month h4 {
-          margin: 0;
-          padding: 12px 14px;
-          background: #161616;
-          color: #ffffff;
-          font-size: 15px;
-          border-bottom: 1px solid #2a2a2a;
-        }
-
-        .calendar-weekdays,
-        .calendar-grid {
-          display: grid;
-          grid-template-columns: repeat(7, minmax(0, 1fr));
-        }
-
-        .calendar-weekdays div {
-          padding: 8px 4px;
-          text-align: center;
-          color: #777777;
-          font-size: 11px;
-          font-weight: 600;
-          text-transform: uppercase;
-          border-bottom: 1px solid #242424;
-        }
-
-        .calendar-day {
-          min-height: 76px;
-          padding: 7px;
-          border-right: 1px solid #242424;
-          border-bottom: 1px solid #242424;
-          background: #111111;
-          overflow: hidden;
-        }
-
-        .calendar-day.blank {
-          background: #0d0d0d;
-        }
-
-        .calendar-day.planned {
-          background: rgba(255, 255, 255, 0.018);
-        }
-
-        .calendar-day.current {
-          background: rgba(0, 255, 136, 0.11);
-          box-shadow: inset 0 0 0 1px rgba(0, 255, 136, 0.45);
-        }
-
-        .calendar-day.completed {
-          background: rgba(0, 180, 255, 0.1);
-        }
-
-        .calendar-day.started {
-          background: rgba(0, 255, 136, 0.06);
-        }
-
-        .calendar-day.no-class {
-          background: rgba(255, 140, 66, 0.11);
-          box-shadow: inset 0 0 0 1px rgba(255, 140, 66, 0.32);
-        }
-
-        .calendar-day.actual {
-          background: rgba(215, 136, 255, 0.08);
-        }
-
-        .calendar-date-number {
-          color: #8a8a8a;
-          font-size: 11px;
-          margin-bottom: 7px;
-        }
-
-        .calendar-event {
-          font-size: 10px;
-          line-height: 1.25;
-          color: #b0b0b0;
-          margin-top: 3px;
-          overflow-wrap: anywhere;
-        }
-
-        .calendar-event.strong {
-          color: #ffffff;
-          font-weight: 700;
-        }
-
-        .no-class .calendar-event.strong {
-          color: #ff9b59;
-        }
-
-        .actual-note {
-          color: #dca7ff;
-        }
-
-        .class-timer-panel {
-          padding: 18px;
-          border: 1px solid rgba(0, 255, 136, 0.5);
-          border-radius: 8px;
-          background: rgba(0, 255, 136, 0.06);
-          text-align: center;
-        }
-
-        .class-timer-label {
-          color: #00ff88;
-          font-size: 12px;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-        }
-
-        .class-timer-value {
-          margin: 6px 0 8px;
-          color: #ffffff;
-          font-size: clamp(34px, 6vw, 54px);
-          font-weight: 800;
-          font-variant-numeric: tabular-nums;
-          letter-spacing: 0.04em;
-          line-height: 1;
-        }
-
-        .class-timer-meta {
-          display: flex;
-          justify-content: center;
-          gap: 10px 20px;
-          flex-wrap: wrap;
-          color: #a8a8a8;
-          font-size: 12px;
-        }
-
-        .actions-section :global(textarea) {
-          width: 100%;
-          min-height: 82px;
-          resize: vertical;
-          padding: 12px 16px;
-          background-color: #0a0a0a;
-          border: 1px solid #2a2a2a;
-          border-radius: 6px;
-          color: #e0e0e0;
-          font: inherit;
-        }
-
-        .actions-section :global(textarea:focus) {
-          outline: none;
-          border-color: #00ff88;
-          box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
-        }
-
-        .follow-up-check {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          min-height: 44px;
-          color: #e0e0e0;
-          font-size: 14px;
-        }
-
-        @media (max-width: 900px) {
-          .guide-browser {
-            grid-template-columns: 1fr 1fr;
-          }
-
-          .guide-browser-center {
-            grid-column: 1 / -1;
-            grid-row: 1;
-            justify-content: space-between;
-          }
-
-          .back-current-button {
-            grid-column: 1 / -1;
-          }
-
-          .guide-body-grid,
-          .guide-summary-row {
-            grid-template-columns: 1fr;
-          }
-
-          .guide-objective {
-            border-right: 0;
-            border-bottom: 1px solid #2a2a2a;
-          }
-
-          .coaching-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-          }
-
-          .coaching-grid > div:nth-child(2) {
-            border-right: 0;
-          }
-
-          .coaching-grid > div:nth-child(-n + 2) {
-            border-bottom: 1px solid #2c2c2c;
-          }
-
-          .calendar-day {
-            min-height: 78px;
-            padding: 5px;
-          }
-
-          .calendar-event {
-            font-size: 9px;
-          }
-        }
-
-        @media (max-width: 700px) {
-          .guide-browser {
-            grid-template-columns: 1fr 1fr;
-          }
-
-          .guide-browser-center {
-            flex-direction: column;
-            align-items: stretch;
-          }
-
-          .guide-browser-status {
-            white-space: normal;
-            text-align: center;
-          }
-
-          .guide-day-select-label {
-            justify-content: center;
-          }
-
-          .guide-day-select-label select {
-            width: 100%;
-            max-width: none;
-          }
-
-          .guide-day-heading {
-            flex-direction: column;
-            align-items: flex-start;
-          }
-
-          .guide-format-badge {
-            width: 100%;
-          }
-
-          .coaching-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .coaching-grid > div {
-            border-right: 0;
-            border-bottom: 1px solid #2c2c2c;
-          }
-
-          .coaching-grid > div:last-child {
-            border-bottom: 0;
-          }
-
-          .calendar-title-row {
-            flex-direction: column;
-          }
-
-          .calendar-month-controls {
-            width: 100%;
-            justify-content: space-between;
-          }
-
-          .calendar-month-controls strong {
-            min-width: 0;
-          }
-        }
-
-        @media (max-width: 600px) {
-          .calendar-weekdays div {
-            font-size: 9px;
-          }
-
-          .calendar-day {
-            min-height: 64px;
-            padding: 4px;
-          }
-
-          .calendar-date-number {
-            margin-bottom: 4px;
-          }
-
-          .calendar-event {
-            font-size: 8px;
-          }
-
-          .calendar-reminder {
-            font-size: 12px;
-          }
-        }
-      `}</style>
+      <style jsx>{styles}</style>
     </div>
   );
 }
+
+function Metric({
+  label,
+  value,
+  accent = false,
+  warn = false,
+}: {
+  label: string;
+  value: string | number;
+  accent?: boolean;
+  warn?: boolean;
+}) {
+  return (
+    <div className={`metric ${accent ? 'accent' : ''} ${warn ? 'warn' : ''}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+const styles = `
+  :global(body) {
+    background: #0a0a0a;
+  }
+
+  .school-shell {
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 18% 0%, rgba(0,255,136,.07), transparent 26rem),
+      #0a0a0a;
+    color: #e0e0e0;
+  }
+
+  .centered {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 18px;
+    padding: 24px;
+  }
+
+  .topbar {
+    min-height: 82px;
+    padding: 18px 28px;
+    border-bottom: 1px solid #252525;
+    background: rgba(18,18,18,.94);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+  }
+
+  h1, h2, h3, p {
+    margin: 0;
+  }
+
+  h1 {
+    color: #fff;
+    font-size: 25px;
+  }
+
+  h2 {
+    color: #fff;
+    font-size: clamp(25px, 3vw, 38px);
+    margin-top: 3px;
+  }
+
+  h3 {
+    color: #fff;
+    font-size: 21px;
+    margin-top: 4px;
+  }
+
+  .eyebrow {
+    color: #00ff88;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .header-actions, .report-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  button, select {
+    font: inherit;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  .secondary,
+  .report-actions button,
+  .access-card button {
+    padding: 10px 15px;
+    border-radius: 7px;
+    border: 1px solid #303030;
+    background: #171717;
+    color: #e8e8e8;
+    font-weight: 700;
+  }
+
+  .secondary:hover,
+  .report-actions button:hover,
+  .access-card button:hover {
+    border-color: #00ff88;
+    color: #00ff88;
+  }
+
+  .page {
+    width: min(1500px, calc(100% - 36px));
+    margin: 0 auto;
+    padding: 30px 0 60px;
+  }
+
+  .school-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  .school-heading p {
+    color: #929292;
+    margin-top: 6px;
+  }
+
+  .school-selector {
+    display: grid;
+    gap: 6px;
+    min-width: 260px;
+  }
+
+  .school-selector span {
+    color: #777;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+  }
+
+  .school-selector select {
+    width: 100%;
+    padding: 11px 13px;
+    border-radius: 7px;
+    border: 1px solid #303030;
+    background: #171717;
+    color: #eee;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 7px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid #242424;
+  }
+
+  .tabs button {
+    white-space: nowrap;
+    padding: 10px 16px;
+    border-radius: 7px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #999;
+    font-weight: 800;
+  }
+
+  .tabs button:hover {
+    color: #ddd;
+    background: #151515;
+  }
+
+  .tabs button.active {
+    color: #00ff88;
+    border-color: rgba(0,255,136,.45);
+    background: rgba(0,255,136,.08);
+  }
+
+  .stack {
+    display: grid;
+    gap: 18px;
+  }
+
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  .metric {
+    min-height: 110px;
+    padding: 17px;
+    border: 1px solid #292929;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #191919, #131313);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .metric span {
+    color: #858585;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 800;
+  }
+
+  .metric strong {
+    color: #fff;
+    font-size: 28px;
+    line-height: 1.1;
+  }
+
+  .metric.accent {
+    border-color: rgba(0,255,136,.55);
+    box-shadow: inset 0 0 24px rgba(0,255,136,.04);
+  }
+
+  .metric.accent strong {
+    color: #00ff88;
+  }
+
+  .metric.warn strong {
+    color: #ff9a52;
+  }
+
+  .panel {
+    border: 1px solid #292929;
+    border-radius: 10px;
+    background: #151515;
+    padding: 22px;
+  }
+
+  .panel > p {
+    color: #8c8c8c;
+    margin-top: 7px;
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+
+  .panel-header > span {
+    color: #777;
+    font-size: 12px;
+  }
+
+  .section-list,
+  .activity-list {
+    display: grid;
+    gap: 9px;
+  }
+
+  .section-row {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.2fr) minmax(260px, 1fr) 170px;
+    gap: 24px;
+    align-items: center;
+    padding: 16px;
+    border: 1px solid #262626;
+    border-radius: 8px;
+    background: #111;
+  }
+
+  .section-main,
+  .status-stack,
+  .activity-row > div {
+    display: grid;
+    gap: 4px;
+  }
+
+  .section-main strong {
+    color: #f2f2f2;
+  }
+
+  .section-main span,
+  .activity-row span,
+  small {
+    color: #828282;
+    font-size: 12px;
+  }
+
+  .progress-block {
+    display: grid;
+    gap: 8px;
+  }
+
+  .progress-copy {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    color: #a7a7a7;
+    font-size: 12px;
+  }
+
+  .progress-copy strong {
+    color: #00ff88;
+  }
+
+  .progress-track {
+    height: 7px;
+    border-radius: 999px;
+    background: #282828;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #00ff88;
+    border-radius: inherit;
+  }
+
+  .status-stack {
+    justify-items: start;
+  }
+
+  .status {
+    display: inline-flex;
+    width: fit-content;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #222;
+    color: #bbb;
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .status.normal,
+  .status.completed {
+    color: #00ff88;
+    background: rgba(0,255,136,.08);
+  }
+
+  .status.hold {
+    color: #ff9a52;
+    background: rgba(255,154,82,.1);
+  }
+
+  .status.in_progress {
+    color: #00b4ff;
+    background: rgba(0,180,255,.1);
+  }
+
+  .two-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  .mini-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .mini-stats span {
+    padding: 12px;
+    border-radius: 8px;
+    background: #101010;
+    color: #7e7e7e;
+    font-size: 12px;
+  }
+
+  .mini-stats strong {
+    display: block;
+    color: #e7e7e7;
+    font-size: 19px;
+    margin-bottom: 3px;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 760px;
+  }
+
+  th {
+    padding: 11px 12px;
+    text-align: left;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-size: 10px;
+    border-bottom: 1px solid #2b2b2b;
+  }
+
+  td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #242424;
+    color: #cfcfcf;
+    font-size: 13px;
+    vertical-align: top;
+  }
+
+  td strong,
+  td small {
+    display: block;
+  }
+
+  td small {
+    margin-top: 4px;
+  }
+
+  tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .management-note,
+  .report-footnote {
+    margin-top: 18px;
+    padding: 13px 15px;
+    border: 1px solid #2b2b2b;
+    border-radius: 8px;
+    background: #101010;
+    color: #7f7f7f;
+    font-size: 12px;
+  }
+
+  .activity-row {
+    display: grid;
+    grid-template-columns: minmax(180px, .7fr) 170px minmax(240px, 1.3fr);
+    gap: 20px;
+    padding: 14px;
+    border: 1px solid #252525;
+    border-radius: 8px;
+    background: #101010;
+  }
+
+  .activity-note {
+    color: #b5b5b5;
+    font-size: 13px;
+  }
+
+  .follow-up {
+    width: fit-content;
+    margin-top: 7px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    color: #ff9a52 !important;
+    background: rgba(255,154,82,.1);
+    font-size: 10px !important;
+    font-weight: 800;
+  }
+
+  .report-actions {
+    justify-content: flex-end;
+  }
+
+  .report-actions button:first-child {
+    border-color: rgba(0,255,136,.45);
+    color: #00ff88;
+  }
+
+  .error-box {
+    margin-bottom: 18px;
+    padding: 12px 15px;
+    border: 1px solid rgba(255,90,90,.35);
+    background: rgba(255,90,90,.08);
+    color: #ff8b8b;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+
+  .loading-panel {
+    min-height: 360px;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 16px;
+    color: #888;
+  }
+
+  .spinner {
+    width: 42px;
+    height: 42px;
+    border: 3px solid #2b2b2b;
+    border-top-color: #00ff88;
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .empty {
+    padding: 28px 15px;
+    text-align: center;
+    color: #6f6f6f;
+  }
+
+  .access-card {
+    width: min(520px, 100%);
+    padding: 28px;
+    border: 1px solid #292929;
+    border-radius: 10px;
+    background: #151515;
+  }
+
+  .access-card h1 {
+    margin: 5px 0 10px;
+  }
+
+  .access-card p {
+    color: #999;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 1180px) {
+    .metric-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .section-row {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .status-stack {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .topbar,
+    .school-heading {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .header-actions {
+      width: 100%;
+    }
+
+    .header-actions button {
+      flex: 1;
+    }
+
+    .page {
+      width: min(100% - 24px, 1500px);
+      padding-top: 22px;
+    }
+
+    .school-selector {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .metric-grid,
+    .two-column,
+    .mini-stats {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .section-row,
+    .activity-row {
+      grid-template-columns: 1fr;
+      gap: 13px;
+    }
+
+    .status-stack {
+      grid-column: auto;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .metric-grid,
+    .mini-stats {
+      grid-template-columns: 1fr;
+    }
+
+    .panel {
+      padding: 16px;
+    }
+
+    .metric {
+      min-height: 94px;
+    }
+  }
+
+  @media print {
+    .topbar,
+    .tabs,
+    .report-actions,
+    .school-selector {
+      display: none !important;
+    }
+
+    .school-shell {
+      background: white;
+      color: black;
+    }
+
+    .page {
+      width: 100%;
+      padding: 0;
+    }
+
+    .panel,
+    .metric {
+      border-color: #bbb;
+      background: white;
+      color: black;
+      break-inside: avoid;
+    }
+
+    h2, h3, .metric strong, td {
+      color: black;
+    }
+
+    .eyebrow,
+    .metric span,
+    th,
+    .report-footnote {
+      color: #444;
+    }
+  }
+`;
