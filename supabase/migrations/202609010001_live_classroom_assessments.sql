@@ -62,8 +62,15 @@ alter table public.assessment_questions enable row level security;
 alter table public.classroom_sessions enable row level security;
 alter table public.classroom_submissions enable row level security;
 
+revoke all on public.assessment_modules from anon, authenticated;
 revoke all on public.assessment_questions from anon, authenticated;
-revoke all on public.classroom_submissions from anon;
+revoke all on public.classroom_sessions from anon, authenticated;
+revoke all on public.classroom_submissions from anon, authenticated;
+
+-- The instructor UI reads these two tables directly. RLS below restricts
+-- every row to the session's instructor or the Platform Owner.
+grant select on public.classroom_sessions to authenticated;
+grant select on public.classroom_submissions to authenticated;
 
 drop policy if exists classroom_sessions_instructor_read on public.classroom_sessions;
 create policy classroom_sessions_instructor_read on public.classroom_sessions for select to authenticated
@@ -157,11 +164,18 @@ begin
   return jsonb_build_object('score',correct,'possible_score',total,'percent',round(100.0*correct/greatest(total,1)));
 end $$;
 
+revoke execute on function public.make_classroom_join_code() from public, anon, authenticated;
+revoke execute on function public.start_classroom_session(uuid,text) from public, anon, authenticated;
+revoke execute on function public.list_assessment_modules() from public, anon, authenticated;
+revoke execute on function public.end_classroom_session(uuid) from public, anon, authenticated;
+revoke execute on function public.get_classroom_assessment(text) from public, anon, authenticated;
+revoke execute on function public.submit_classroom_assessment(text,text,text,jsonb) from public, anon, authenticated;
+
 grant execute on function public.start_classroom_session(uuid,text) to authenticated;
 grant execute on function public.list_assessment_modules() to authenticated;
 grant execute on function public.end_classroom_session(uuid) to authenticated;
-grant execute on function public.get_classroom_assessment(text) to anon,authenticated;
-grant execute on function public.submit_classroom_assessment(text,text,text,jsonb) to anon,authenticated;
+grant execute on function public.get_classroom_assessment(text) to anon, authenticated;
+grant execute on function public.submit_classroom_assessment(text,text,text,jsonb) to anon, authenticated;
 
 insert into public.assessment_modules(slug,title,description,category,estimated_minutes,sort_order,version)
 values('preclass_math','Pre-Class Welding Math Assessment','Measures fractions, decimals, shop arithmetic, tape measurement, layout, area, and conversions.','Welding Mathematics',20,10,1)
