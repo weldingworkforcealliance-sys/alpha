@@ -65,8 +65,8 @@ export default function AccountSetupPage() {
       return;
     }
 
-    if (!/^\d{6}$/.test(otp.trim())) {
-      setError('Enter the 6-digit verification code from your email.');
+    if (!/^\d{6,10}$/.test(otp.trim())) {
+      setError('Enter the verification code from your email.');
       return;
     }
 
@@ -147,8 +147,8 @@ export default function AccountSetupPage() {
         {!ready ? (
           <>
             <p>
-              Enter your school email address and the 6-digit verification
-              code from your invitation email.
+              Enter your school email address and the verification code from
+              your invitation email.
             </p>
 
             {error && <div className="error">{error}</div>}
@@ -166,14 +166,14 @@ export default function AccountSetupPage() {
               </label>
 
               <label>
-                6-Digit Verification Code
+                Verification Code
                 <input
                   type="text"
                   inputMode="numeric"
-                  maxLength={6}
+                  maxLength={10}
                   value={otp}
                   onChange={(e) =>
-                    setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))
+                    setOtp(e.target.value.replace(/\D/g, '').slice(0, 10))
                   }
                   autoComplete="one-time-code"
                 />
