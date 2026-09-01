@@ -171,7 +171,9 @@ begin
     end if;
     domains:=jsonb_set(domains,array[q.domain],domain_row,true);
   end loop;
-  if jsonb_object_length(p_answers)<>total then raise exception 'Every question must be answered'; end if;
+  if jsonb_typeof(p_answers)<>'object'
+     or (select count(*) from jsonb_object_keys(p_answers))<>total
+  then raise exception 'Every question must be answered'; end if;
   insert into public.classroom_submissions(classroom_session_id,student_name,student_id,answers,score,possible_score,domain_scores)
   values(s.id,trim(p_student_name),trim(p_student_id),p_answers,correct,total,domains);
   return jsonb_build_object('score',correct,'possible_score',total,'percent',round(100.0*correct/greatest(total,1)));
