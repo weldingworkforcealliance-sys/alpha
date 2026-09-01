@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import './styles.css';
+import './agenda/agenda.css';
 
 export default function RootLayout({
   children,
