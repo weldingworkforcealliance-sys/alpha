@@ -773,6 +773,12 @@ export default function DashboardPage() {
             >
               Training Mode
             </button>
+            <button
+              className="logout-button"
+              onClick={() => router.push('/classroom')}
+            >
+              Live Classroom
+            </button>
             {canOpenSchoolDashboard && (
               <button
                 className="logout-button"
