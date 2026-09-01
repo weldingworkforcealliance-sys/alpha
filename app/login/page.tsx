@@ -25,15 +25,20 @@ export default function LoginPage() {
 
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
+        email: email.trim().toLowerCase(),
         password,
       });
 
       if (signInError) {
-        setError(signInError.message || 'Failed to sign in');
+        setError(
+          signInError.message === 'Invalid login credentials'
+            ? 'Email/password not recognized. First-time users should complete account setup. Existing users can reset their password below.'
+            : signInError.message || 'Failed to sign in'
+        );
         return;
       }
 
+      await supabase.rpc('activate_my_invited_memberships');
       router.push('/dashboard');
     } catch (err) {
       console.error(err);
@@ -60,6 +65,7 @@ export default function LoginPage() {
               placeholder="your.email@example.com"
               required
               disabled={isLoading}
+              autoComplete="email"
             />
           </label>
 
@@ -72,6 +78,7 @@ export default function LoginPage() {
               placeholder="••••••••"
               required
               disabled={isLoading}
+              autoComplete="current-password"
             />
           </label>
 
@@ -81,6 +88,17 @@ export default function LoginPage() {
             {isLoading ? 'Signing in…' : 'Sign In to Live Platform'}
           </button>
         </form>
+
+        <div className="account-help">
+          <button onClick={() => router.push('/account-setup')}>
+            <strong>First-Time Setup</strong>
+            <span>Use the verification code from your invitation email.</span>
+          </button>
+          <button onClick={() => router.push('/reset-password')}>
+            <strong>Reset Password</strong>
+            <span>Already activated? Set a new password by email code.</span>
+          </button>
+        </div>
 
         <div className="divider"><span>OR</span></div>
 
@@ -154,6 +172,24 @@ export default function LoginPage() {
           color: #00ff88;
           font-weight: 800;
         }
+        .account-help {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+          margin-top: 16px;
+        }
+        .account-help button {
+          display: grid;
+          gap: 5px;
+          text-align: left;
+          padding: 13px;
+          border: 1px solid #343434;
+          border-radius: 8px;
+          background: #101010;
+          color: #ddd;
+        }
+        .account-help strong { color: #00ff88; font-size: 13px; }
+        .account-help span { color: #888; font-size: 10px; line-height: 1.4; }
         .divider {
           display: flex;
           align-items: center;
@@ -191,9 +227,10 @@ export default function LoginPage() {
           background: rgba(255,80,80,.08);
           color: #ff9090;
           font-size: 12px;
+          line-height: 1.4;
         }
         @media (max-width: 520px) {
-          .alternate-grid { grid-template-columns: 1fr; }
+          .account-help, .alternate-grid { grid-template-columns: 1fr; }
           .card { padding: 24px; }
         }
       `}</style>
