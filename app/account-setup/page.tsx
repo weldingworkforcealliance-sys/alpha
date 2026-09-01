@@ -18,6 +18,10 @@ export default function AccountSetupPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+
+  const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
+
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -26,9 +30,6 @@ export default function AccountSetupPage() {
       setError('');
 
       try {
-        /*
-          PKCE confirmation links normally arrive with ?code=...
-        */
         const params = new URLSearchParams(window.location.search);
         const code = params.get('code');
 
@@ -36,26 +37,62 @@ export default function AccountSetupPage() {
           const { error: exchangeError } =
             await supabase.auth.exchangeCodeForSession(code);
 
-          if (exchangeError) throw exchangeError;
+          if (!exchangeError) {
+            setReady(true);
+            return;
+          }
         }
 
         const { data } = await supabase.auth.getSession();
 
-        if (!data.session) {
-          setError(
-            'This setup link is invalid or has expired. Ask your school administrator to resend the setup email.'
-          );
-          return;
+        if (data.session) {
+          setReady(true);
         }
-
-        setReady(true);
       } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
+        console.error(err);
       }
     };
 
     prepare();
   }, [supabase]);
+
+  const verifyCode = async () => {
+    setError('');
+    setMessage('');
+
+    if (!email.trim()) {
+      setError('Enter the email address that received the invitation.');
+      return;
+    }
+
+    if (!/^\d{6}$/.test(otp.trim())) {
+      setError('Enter the 6-digit verification code from your email.');
+      return;
+    }
+
+    setBusy(true);
+
+    try {
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        email: email.trim().toLowerCase(),
+        token: otp.trim(),
+        type: 'email',
+      });
+
+      if (verifyError) throw verifyError;
+
+      setReady(true);
+      setMessage('Email verified. Create your password below.');
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'The verification code could not be verified.'
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const finishSetup = async () => {
     setError('');
@@ -106,40 +143,83 @@ export default function AccountSetupPage() {
       <section className="card">
         <div className="eyebrow">Living Teacher Planner</div>
         <h1>Complete Account Setup</h1>
-        <p>
-          Create your password. Your invited school access becomes active only
-          after this step is completed.
-        </p>
 
-        {error && <div className="error">{error}</div>}
-        {message && <div className="success">{message}</div>}
+        {!ready ? (
+          <>
+            <p>
+              Enter your school email address and the 6-digit verification
+              code from your invitation email.
+            </p>
 
-        {ready && (
-          <div className="form">
-            <label>
-              New Password
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="new-password"
-              />
-            </label>
+            {error && <div className="error">{error}</div>}
+            {message && <div className="success">{message}</div>}
 
-            <label>
-              Confirm Password
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                autoComplete="new-password"
-              />
-            </label>
+            <div className="form">
+              <label>
+                Email
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+                />
+              </label>
 
-            <button disabled={busy} onClick={finishSetup}>
-              {busy ? 'Activating Account…' : 'Activate My Account'}
-            </button>
-          </div>
+              <label>
+                6-Digit Verification Code
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={otp}
+                  onChange={(e) =>
+                    setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))
+                  }
+                  autoComplete="one-time-code"
+                />
+              </label>
+
+              <button disabled={busy} onClick={verifyCode}>
+                {busy ? 'Verifying…' : 'Verify Code'}
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p>
+              Create your password. Your invited school access becomes active
+              after this step is completed.
+            </p>
+
+            {error && <div className="error">{error}</div>}
+            {message && <div className="success">{message}</div>}
+
+            <div className="form">
+              <label>
+                New Password
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="new-password"
+                />
+              </label>
+
+              <label>
+                Confirm Password
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
+                />
+              </label>
+
+              <button disabled={busy} onClick={finishSetup}>
+                {busy ? 'Activating Account…' : 'Activate My Account'}
+              </button>
+            </div>
+          </>
         )}
       </section>
 
@@ -150,7 +230,11 @@ export default function AccountSetupPage() {
           place-items: center;
           padding: 24px;
           background:
-            radial-gradient(circle at 20% 0%, rgba(0,255,136,.08), transparent 28rem),
+            radial-gradient(
+              circle at 20% 0%,
+              rgba(0, 255, 136, 0.08),
+              transparent 28rem
+            ),
             #080808;
           color: #ddd;
         }
@@ -166,7 +250,7 @@ export default function AccountSetupPage() {
         .eyebrow {
           color: #00ff88;
           text-transform: uppercase;
-          letter-spacing: .12em;
+          letter-spacing: 0.12em;
           font-size: 10px;
           font-weight: 900;
         }
@@ -207,36 +291,38 @@ export default function AccountSetupPage() {
 
         button {
           padding: 12px;
-          border: 1px solid rgba(0,255,136,.5);
+          border: 1px solid rgba(0, 255, 136, 0.5);
           border-radius: 7px;
-          background: rgba(0,255,136,.07);
+          background: rgba(0, 255, 136, 0.07);
           color: #00ff88;
           font-weight: 850;
           cursor: pointer;
         }
 
         button:disabled {
-          opacity: .5;
+          opacity: 0.5;
           cursor: not-allowed;
         }
 
-        .error, .success {
-          margin-bottom: 15px;
-          padding: 10px 12px;
+        .error,
+        .success {
+          margin-bottom: 16px;
+          padding: 11px;
           border-radius: 7px;
-          font-size: 12px;
+          font-size: 13px;
+          line-height: 1.4;
         }
 
         .error {
-          color: #ff9090;
-          border: 1px solid rgba(255,80,80,.3);
-          background: rgba(255,80,80,.07);
+          border: 1px solid rgba(255, 80, 80, 0.4);
+          background: rgba(255, 80, 80, 0.08);
+          color: #ff9898;
         }
 
         .success {
-          color: #80ffbb;
-          border: 1px solid rgba(0,255,136,.3);
-          background: rgba(0,255,136,.06);
+          border: 1px solid rgba(0, 255, 136, 0.35);
+          background: rgba(0, 255, 136, 0.07);
+          color: #7dffbd;
         }
       `}</style>
     </main>
