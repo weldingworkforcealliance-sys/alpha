@@ -7,6 +7,7 @@ import TeacherIdentityBar from './teacher-identity-bar';
 import ReviewQueueLink from './review-queue-link';
 import AgendaNotePolicyBanner from './agenda-note-policy-banner';
 import CohortWorkspaceBar from './cohort-workspace-bar';
+import BetaUiConsistency from './beta-ui-consistency';
 import './styles.css';
 import './agenda/agenda.css';
 
@@ -72,6 +73,7 @@ export default function RootLayout({
           <CohortWorkspaceBar pathname={pathname} />
           <TeacherIdentityBar pathname={pathname} />
           <AgendaNotePolicyBanner pathname={pathname} />
+          <BetaUiConsistency pathname={pathname} />
           {children}
         </div>
       </body>
