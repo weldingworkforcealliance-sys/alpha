@@ -12,9 +12,18 @@ type SectionRow = {
   section_code: string | null;
 };
 
+type InstructorRow = {
+  instructor_id: string;
+  display_name: string;
+};
+
+const STORAGE_KEY = 'ltp_selected_section_id';
+const SECTION_EVENT = 'ltp:section-change';
+
 export default function TeacherIdentityBar({ pathname }: { pathname: string }) {
-  const [name, setName] = useState('');
-  const [classLabels, setClassLabels] = useState<string[]>([]);
+  const [instructorNames, setInstructorNames] = useState<string[]>([]);
+  const [classLabel, setClassLabel] = useState('');
+  const [selectedSectionId, setSelectedSectionId] = useState('');
   const [visible, setVisible] = useState(false);
   const [supabase] = useState(() =>
     createBrowserClient(
@@ -23,82 +32,107 @@ export default function TeacherIdentityBar({ pathname }: { pathname: string }) {
     )
   );
 
+  const supportedPage = pathname === '/dashboard' || pathname === '/agenda';
+
   useEffect(() => {
-    const shouldShow = pathname === '/dashboard' || pathname === '/agenda';
-    if (!shouldShow) {
+    if (!supportedPage) {
       setVisible(false);
+      setSelectedSectionId('');
       return;
     }
+
+    const syncSelection = (event?: Event) => {
+      const customEvent = event as CustomEvent<{ sectionId?: string }> | undefined;
+      const eventSectionId = customEvent?.detail?.sectionId;
+      const savedSectionId = window.localStorage.getItem(STORAGE_KEY) ?? '';
+      setSelectedSectionId(eventSectionId || savedSectionId);
+    };
+
+    syncSelection();
+    window.addEventListener(SECTION_EVENT, syncSelection as EventListener);
+    window.addEventListener('storage', syncSelection);
+
+    return () => {
+      window.removeEventListener(SECTION_EVENT, syncSelection as EventListener);
+      window.removeEventListener('storage', syncSelection);
+    };
+  }, [supportedPage]);
+
+  useEffect(() => {
+    if (!supportedPage) return;
+
+    let cancelled = false;
 
     const loadIdentity = async () => {
       try {
         const { data: sessionData } = await supabase.auth.getSession();
-        const user = sessionData.session?.user;
-        if (!user) {
+        if (!sessionData.session || cancelled) {
           setVisible(false);
           return;
         }
 
-        const [profileResult, assignmentResult] = await Promise.all([
-          supabase
-            .from('profiles')
-            .select('display_name, email')
-            .eq('id', user.id)
-            .maybeSingle(),
-          supabase
-            .from('section_instructors')
-            .select('section_id')
-            .eq('instructor_id', user.id)
-            .eq('active', true),
-        ]);
+        let sectionId = selectedSectionId;
+        let section: SectionRow | null = null;
 
-        if (assignmentResult.error) {
-          console.error('Failed to load instructor assignments:', assignmentResult.error);
-          setVisible(false);
-          return;
+        if (sectionId) {
+          const selectedResult = await supabase
+            .from('current_teaching_sections')
+            .select(
+              'section_id, course_code, course_name, cohort_name, section_name, section_code'
+            )
+            .eq('section_id', sectionId)
+            .maybeSingle();
+
+          if (!selectedResult.error) {
+            section = (selectedResult.data ?? null) as SectionRow | null;
+          }
         }
 
-        const assignmentIds = Array.from(
-          new Set((assignmentResult.data ?? []).map((row) => row.section_id))
+        if (!section) {
+          const fallbackResult = await supabase
+            .from('current_teaching_sections')
+            .select(
+              'section_id, course_code, course_name, cohort_name, section_name, section_code'
+            )
+            .limit(1)
+            .maybeSingle();
+
+          if (fallbackResult.error || !fallbackResult.data) {
+            setVisible(false);
+            return;
+          }
+
+          section = fallbackResult.data as SectionRow;
+          sectionId = section.section_id;
+          window.localStorage.setItem(STORAGE_KEY, sectionId);
+          setSelectedSectionId(sectionId);
+        }
+
+        const { data: assignedData, error: assignedError } = await supabase.rpc(
+          'get_section_instructor_names',
+          { p_section_id: sectionId }
         );
 
-        if (assignmentIds.length === 0) {
-          setVisible(false);
-          return;
+        if (cancelled) return;
+
+        if (assignedError) {
+          console.error('Failed to load assigned instructors:', assignedError);
+          setInstructorNames([]);
+        } else {
+          const names = ((assignedData ?? []) as InstructorRow[])
+            .map((row) => row.display_name?.trim())
+            .filter((name): name is string => Boolean(name));
+          setInstructorNames(Array.from(new Set(names)));
         }
 
-        const { data: sectionData, error: sectionError } = await supabase
-          .from('current_teaching_sections')
-          .select(
-            'section_id, course_code, course_name, cohort_name, section_name, section_code'
-          )
-          .in('section_id', assignmentIds);
+        const course = section.course_code || section.course_name || 'Course';
+        const group =
+          section.cohort_name ||
+          section.section_name ||
+          section.section_code ||
+          'Section';
 
-        if (sectionError) {
-          console.error('Failed to load assigned section labels:', sectionError);
-          setVisible(false);
-          return;
-        }
-
-        const profile = profileResult.data;
-        setName(
-          profile?.display_name?.trim() ||
-            profile?.email?.trim() ||
-            user.email ||
-            'Instructor'
-        );
-
-        const labels = ((sectionData ?? []) as SectionRow[]).map((section) => {
-          const course = section.course_code || section.course_name || 'Course';
-          const group =
-            section.cohort_name ||
-            section.section_name ||
-            section.section_code ||
-            'Section';
-          return `${course} · ${group}`;
-        });
-
-        setClassLabels(Array.from(new Set(labels)));
+        setClassLabel(`${course} · ${group}`);
         setVisible(true);
       } catch (error) {
         console.error('Failed to load teacher identity bar:', error);
@@ -107,13 +141,22 @@ export default function TeacherIdentityBar({ pathname }: { pathname: string }) {
     };
 
     loadIdentity();
-  }, [pathname, supabase]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedSectionId, supportedPage, supabase]);
 
   if (!visible) return null;
 
+  const instructorLabel = instructorNames.length === 1 ? 'Assigned Instructor' : 'Assigned Instructors';
+  const instructorText = instructorNames.length
+    ? instructorNames.join(' | ')
+    : 'No instructor assigned';
+
   return (
     <div
-      aria-label="Assigned instructor"
+      aria-label="Assigned instructor and selected class"
       style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -128,12 +171,12 @@ export default function TeacherIdentityBar({ pathname }: { pathname: string }) {
       }}
     >
       <div>
-        <span style={{ color: '#8a8a8a', fontWeight: 700 }}>Assigned Instructor: </span>
-        <strong style={{ color: '#00ff88' }}>{name}</strong>
+        <span style={{ color: '#8a8a8a', fontWeight: 700 }}>{instructorLabel}: </span>
+        <strong style={{ color: '#00ff88' }}>{instructorText}</strong>
       </div>
       <div style={{ color: '#aaa', textAlign: 'right' }}>
-        <span style={{ fontWeight: 700 }}>Assigned Class{classLabels.length === 1 ? '' : 'es'}: </span>
-        {classLabels.join(' | ')}
+        <span style={{ fontWeight: 700 }}>Selected Class: </span>
+        {classLabel}
       </div>
     </div>
   );
