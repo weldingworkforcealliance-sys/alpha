@@ -14,6 +14,6 @@ Operational rule for the PCCC LTG beta:
 
 ## Status
 
-Implemented in the production database on 2026-09-02. Rollback testing confirmed that an unassigned active PCCC instructor can see all six PCCC beta sections, start a different class as coverage, write an agenda note while covering, complete the day, and then lose temporary instructor status after completion. Test data was rolled back.
+Implemented in the production database on 2026-09-02. Rollback testing confirmed that Richard Genco, while not directly assigned to PVHS B WLD 105, could see all six PCCC beta sections, start PVHS B WLD 105 as the covering instructor, save an agenda-slot note during coverage, complete Day 1, and then lose temporary instructor status after completion. The test advanced to Day 2 inside the transaction and all test data/progress was rolled back afterward.
 
 No additional Netlify deployment was required for the access model because the existing Planner and Agenda UI respond to the database views and permission functions.
