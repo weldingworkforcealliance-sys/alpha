@@ -1,0 +1,166 @@
+/* Instructor Coaching — Emerald Uplift
+   Positive visual treatment for coaching guidance only.
+   No curriculum, guide content, permissions, or planner behavior is changed. */
+
+.night-shift-shell .coaching-card {
+  position: relative;
+  overflow: hidden;
+  margin: 14px !important;
+  border: 1px solid rgba(116, 214, 78, 0.62) !important;
+  border-radius: 12px !important;
+  background:
+    radial-gradient(circle at 12% 4%, rgba(130, 230, 78, 0.14), transparent 22rem),
+    radial-gradient(circle at 90% 92%, rgba(85, 181, 58, 0.11), transparent 20rem),
+    linear-gradient(145deg, #0b1710 0%, #0c1d12 46%, #08130d 100%) !important;
+  box-shadow:
+    0 14px 36px rgba(0, 0, 0, 0.28),
+    0 0 24px rgba(103, 205, 65, 0.10),
+    inset 0 1px rgba(255, 255, 255, 0.025) !important;
+}
+
+.night-shift-shell .coaching-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(120, 216, 72, 0.14), transparent 17%, transparent 83%, rgba(120, 216, 72, 0.08)),
+    radial-gradient(circle at 7% 15%, rgba(164, 240, 104, 0.18) 0 1px, transparent 2px),
+    radial-gradient(circle at 94% 18%, rgba(164, 240, 104, 0.12) 0 1px, transparent 2px);
+  opacity: .75;
+}
+
+.night-shift-shell .coaching-heading {
+  position: relative;
+  z-index: 1;
+  display: flex !important;
+  align-items: center;
+  min-height: 56px;
+  padding: 14px 18px !important;
+  border-bottom: 1px solid rgba(116, 214, 78, 0.36) !important;
+  background: linear-gradient(90deg, rgba(65, 132, 43, 0.14), rgba(10, 28, 17, 0.18)) !important;
+}
+
+.night-shift-shell .coaching-heading::before {
+  content: '✦';
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin-right: 11px;
+  border: 1px solid rgba(139, 227, 86, 0.50);
+  border-radius: 50%;
+  background: rgba(83, 167, 54, 0.13);
+  color: #a7ef72;
+  font-size: 17px;
+  box-shadow: 0 0 17px rgba(113, 221, 69, 0.15);
+}
+
+.night-shift-shell .coaching-heading .guide-label {
+  color: #a7ef72 !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  letter-spacing: .11em !important;
+  text-transform: uppercase;
+  text-shadow: 0 0 14px rgba(121, 226, 76, 0.12);
+}
+
+.night-shift-shell .coaching-grid {
+  position: relative;
+  z-index: 1;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  padding: 12px !important;
+  background: transparent !important;
+}
+
+.night-shift-shell .coaching-grid > div {
+  position: relative;
+  min-height: 138px;
+  padding: 17px 17px 16px 18px !important;
+  border: 1px solid rgba(109, 207, 67, 0.42) !important;
+  border-radius: 10px !important;
+  background:
+    linear-gradient(145deg, rgba(29, 68, 37, 0.42), rgba(9, 27, 16, 0.76)) !important;
+  box-shadow:
+    inset 3px 0 rgba(134, 224, 81, 0.44),
+    0 8px 20px rgba(0, 0, 0, 0.16) !important;
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+
+.night-shift-shell .coaching-grid > div:hover {
+  transform: translateY(-1px);
+  border-color: rgba(147, 230, 93, 0.68) !important;
+  box-shadow:
+    inset 3px 0 #8dde58,
+    0 10px 24px rgba(0, 0, 0, 0.20),
+    0 0 18px rgba(112, 219, 67, 0.10) !important;
+}
+
+.night-shift-shell .coaching-grid strong {
+  display: block !important;
+  margin-bottom: 7px !important;
+  color: #a7ef72 !important;
+  font-size: 13px !important;
+  font-weight: 850 !important;
+  letter-spacing: .01em;
+}
+
+.night-shift-shell .coaching-grid p {
+  margin: 0 !important;
+  color: #d6dfd6 !important;
+  font-size: 12px !important;
+  line-height: 1.55 !important;
+}
+
+.night-shift-shell .coaching-grid > div:nth-child(1)::after,
+.night-shift-shell .coaching-grid > div:nth-child(2)::after,
+.night-shift-shell .coaching-grid > div:nth-child(3)::after,
+.night-shift-shell .coaching-grid > div:nth-child(4)::after {
+  position: absolute;
+  right: 13px;
+  top: 11px;
+  color: rgba(165, 239, 112, 0.22);
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.night-shift-shell .coaching-grid > div:nth-child(1)::after { content: '↗'; }
+.night-shift-shell .coaching-grid > div:nth-child(2)::after { content: '◎'; }
+.night-shift-shell .coaching-grid > div:nth-child(3)::after { content: '?'; }
+.night-shift-shell .coaching-grid > div:nth-child(4)::after { content: '▲'; }
+
+@media (max-width: 760px) {
+  .night-shift-shell .coaching-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .night-shift-shell .coaching-grid > div {
+    min-height: auto;
+  }
+}
+
+@media print {
+  .night-shift-shell .coaching-card {
+    color: #17211a !important;
+    border-color: #79a969 !important;
+    background: #f1f8ee !important;
+    box-shadow: none !important;
+  }
+
+  .night-shift-shell .coaching-heading,
+  .night-shift-shell .coaching-grid > div {
+    background: #f7fbf5 !important;
+    box-shadow: none !important;
+  }
+
+  .night-shift-shell .coaching-heading .guide-label,
+  .night-shift-shell .coaching-grid strong {
+    color: #39722f !important;
+  }
+
+  .night-shift-shell .coaching-grid p {
+    color: #344136 !important;
+  }
+}
