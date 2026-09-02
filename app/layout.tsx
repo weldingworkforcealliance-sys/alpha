@@ -14,6 +14,7 @@ import './desktop-layout-fix.css';
 import './large-text-fields.css';
 import './night-shift-theme.css';
 import './night-shift-global.css';
+import './coaching-positive-theme.css';
 
 export default function RootLayout({
   children,
