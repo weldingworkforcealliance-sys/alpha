@@ -973,8 +973,14 @@ export default function DashboardPage() {
 
                         <div className="guide-format-badge">
                           {mathLesson
-                            ? '20 min Welding Math + 40 min WLD-105'
-                            : '60 min WLD-105'}
+                            ? `${guideSegments.reduce(
+                                (sum, segment) => sum + segment.planned_minutes,
+                                0
+                              )} min WLD-105 + ${mathLesson.planned_minutes} min Welding Math`
+                            : `${guideSegments.reduce(
+                                (sum, segment) => sum + segment.planned_minutes,
+                                0
+                              )} min WLD-105`}
                         </div>
                       </div>
 
@@ -1003,11 +1009,58 @@ export default function DashboardPage() {
 
                       <div className="guide-body-grid">
                         <div className="guide-main-column">
+                          <div className="agenda-card">
+                            <div className="agenda-card-title">
+                              <div>
+                                <span className="guide-label">
+                                  {mathLesson ? 'Section 1' : 'Agenda'}
+                                </span>
+                                <h4>{mathLesson ? 'WLD-105 Agenda' : 'Daily Agenda'}</h4>
+                              </div>
+                              <span className="agenda-duration">
+                                {guideSegments.reduce(
+                                  (sum, segment) => sum + segment.planned_minutes,
+                                  0
+                                )}{' '}
+                                min
+                              </span>
+                            </div>
+
+                            <div className="agenda-table-wrap">
+                              <table className="agenda-table">
+                                <thead>
+                                  <tr>
+                                    <th>Time</th>
+                                    <th>Activity</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {guideSegments.map((segment) => (
+                                    <tr key={segment.id}>
+                                      <td>
+                                        {minuteRange(
+                                          segment.start_minute,
+                                          segment.end_minute,
+                                          segment.planned_minutes
+                                        )}
+                                      </td>
+                                      <td>
+                                        {segment.instructor_actions ||
+                                          segment.segment_title ||
+                                          'Activity'}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+
                           {mathLesson && (
                             <div className="agenda-card">
                               <div className="agenda-card-title">
                                 <div>
-                                  <span className="guide-label">Section 1</span>
+                                  <span className="guide-label">Section 2</span>
                                   <h4>
                                     Welding Math — Day {mathLesson.math_day_number}: {mathLesson.title}
                                   </h4>
@@ -1071,53 +1124,6 @@ export default function DashboardPage() {
                               )}
                             </div>
                           )}
-
-                          <div className="agenda-card">
-                            <div className="agenda-card-title">
-                              <div>
-                                <span className="guide-label">
-                                  {mathLesson ? 'Section 2' : 'Agenda'}
-                                </span>
-                                <h4>{mathLesson ? 'WLD-105 Agenda' : 'Daily Agenda'}</h4>
-                              </div>
-                              <span className="agenda-duration">
-                                {guideSegments.reduce(
-                                  (sum, segment) => sum + segment.planned_minutes,
-                                  0
-                                )}{' '}
-                                min
-                              </span>
-                            </div>
-
-                            <div className="agenda-table-wrap">
-                              <table className="agenda-table">
-                                <thead>
-                                  <tr>
-                                    <th>Time</th>
-                                    <th>Activity</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {guideSegments.map((segment) => (
-                                    <tr key={segment.id}>
-                                      <td>
-                                        {minuteRange(
-                                          segment.start_minute,
-                                          segment.end_minute,
-                                          segment.planned_minutes
-                                        )}
-                                      </td>
-                                      <td>
-                                        {segment.instructor_actions ||
-                                          segment.segment_title ||
-                                          'Activity'}
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
                         </div>
 
                         <aside className="guide-side-column">
