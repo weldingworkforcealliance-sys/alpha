@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import TeacherIdentityBar from './teacher-identity-bar';
 import ReviewQueueLink from './review-queue-link';
 import AgendaNotePolicyBanner from './agenda-note-policy-banner';
+import CohortWorkspaceBar from './cohort-workspace-bar';
 import './styles.css';
 import './agenda/agenda.css';
 
@@ -68,6 +69,7 @@ export default function RootLayout({
               <ReviewQueueLink />
             </nav>
           )}
+          <CohortWorkspaceBar pathname={pathname} />
           <TeacherIdentityBar pathname={pathname} />
           <AgendaNotePolicyBanner pathname={pathname} />
           {children}
