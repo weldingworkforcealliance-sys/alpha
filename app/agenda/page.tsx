@@ -650,11 +650,26 @@ export default function AgendaPage() {
               )}
             </section>
 
+            <section className="agenda-section">
+              <div className="section-title-row">
+                <div>
+                  <div className="eyebrow">{mathLesson ? 'Section 1 · Daily Agenda' : 'Daily Agenda'}</div>
+                  <h3>{selectedSection?.course_code || 'Course'} Instruction</h3>
+                </div>
+                <strong>{guideSegments.reduce((sum, item) => sum + item.planned_minutes, 0)} min</strong>
+              </div>
+              <div className="slot-list">
+                {guideSegments.map((segment, index) =>
+                  renderSlot('guide', segment, index, guideSegments.length)
+                )}
+              </div>
+            </section>
+
             {mathLesson && (
               <section className="agenda-section">
                 <div className="section-title-row">
                   <div>
-                    <div className="eyebrow">Welding Math</div>
+                    <div className="eyebrow">Section 2 · Welding Math</div>
                     <h3>
                       Day {mathLesson.math_day_number}: {mathLesson.title}
                     </h3>
@@ -668,21 +683,6 @@ export default function AgendaPage() {
                 </div>
               </section>
             )}
-
-            <section className="agenda-section">
-              <div className="section-title-row">
-                <div>
-                  <div className="eyebrow">Daily Agenda</div>
-                  <h3>{selectedSection?.course_code || 'Course'} Instruction</h3>
-                </div>
-                <strong>{guideSegments.reduce((sum, item) => sum + item.planned_minutes, 0)} min</strong>
-              </div>
-              <div className="slot-list">
-                {guideSegments.map((segment, index) =>
-                  renderSlot('guide', segment, index, guideSegments.length)
-                )}
-              </div>
-            </section>
 
             {!canAddNotes && (
               <div className="note-access-message">
