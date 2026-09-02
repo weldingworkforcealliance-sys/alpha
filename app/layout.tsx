@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import TeacherIdentityBar from './teacher-identity-bar';
 import ReviewQueueLink from './review-queue-link';
+import AgendaNotePolicyBanner from './agenda-note-policy-banner';
 import './styles.css';
 import './agenda/agenda.css';
 
@@ -68,6 +69,7 @@ export default function RootLayout({
             </nav>
           )}
           <TeacherIdentityBar pathname={pathname} />
+          <AgendaNotePolicyBanner pathname={pathname} />
           {children}
         </div>
       </body>
