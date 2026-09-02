@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import TeacherIdentityBar from './teacher-identity-bar';
+import ReviewQueueLink from './review-queue-link';
 import './styles.css';
 import './agenda/agenda.css';
 
@@ -63,6 +64,7 @@ export default function RootLayout({
               >
                 Agenda Workspace
               </Link>
+              <ReviewQueueLink />
             </nav>
           )}
           <TeacherIdentityBar pathname={pathname} />
