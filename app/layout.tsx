@@ -9,6 +9,7 @@ import AgendaNotePolicyBanner from './agenda-note-policy-banner';
 import CohortWorkspaceBar from './cohort-workspace-bar';
 import BetaUiConsistency from './beta-ui-consistency';
 import './styles.css';
+import './desktop-layout-fix.css';
 import './agenda/agenda.css';
 
 export default function RootLayout({
