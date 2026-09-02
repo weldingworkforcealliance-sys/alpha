@@ -13,6 +13,7 @@ import './agenda/agenda.css';
 import './desktop-layout-fix.css';
 import './large-text-fields.css';
 import './night-shift-theme.css';
+import './night-shift-global.css';
 
 export default function RootLayout({
   children,
@@ -20,12 +21,29 @@ export default function RootLayout({
   children: ReactNode;
 }) {
   const pathname = usePathname();
-  const hideWorkspaceNav =
+  const isStudentJoin = pathname.startsWith('/join/');
+  const isTrainingRoute = pathname.startsWith('/training');
+  const isAuthRoute =
     pathname === '/login' ||
     pathname === '/account-setup' ||
     pathname === '/forgot-password' ||
-    pathname === '/reset-password';
-  const nightShiftPlanner = pathname === '/dashboard' || pathname === '/agenda';
+    pathname === '/reset-password' ||
+    pathname === '/training/login';
+  const isPrimaryPlannerRoute = pathname === '/dashboard' || pathname === '/agenda';
+
+  const hideWorkspaceNav = isAuthRoute;
+  const useNightShift = !isStudentJoin;
+  const isSecondaryRoute =
+    useNightShift && !isAuthRoute && !isTrainingRoute && !isPrimaryPlannerRoute;
+
+  const bodyClassName = [
+    useNightShift ? 'night-shift-shell' : '',
+    isAuthRoute ? 'ltg-auth-route' : '',
+    isTrainingRoute ? 'ltg-training-route' : '',
+    isSecondaryRoute ? 'ltg-secondary-route' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <html lang="en">
@@ -34,7 +52,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Living Teacher Planner</title>
       </head>
-      <body className={nightShiftPlanner ? 'night-shift-shell' : undefined}>
+      <body className={bodyClassName || undefined}>
         <div className="app-container">
           {!hideWorkspaceNav && (
             <nav aria-label="Planner workspace navigation">
