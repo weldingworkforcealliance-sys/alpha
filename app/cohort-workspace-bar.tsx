@@ -27,6 +27,8 @@ type WorkspaceGroup = {
   rows: WorkspaceRow[];
 };
 
+const STORAGE_KEY = 'ltp_selected_section_id';
+
 function normalize(value: string | null | undefined) {
   return (value ?? '').replace(/\s+/g, ' ').trim().toLowerCase();
 }
@@ -120,6 +122,7 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
   const activateSection = useCallback(
     (row: WorkspaceRow) => {
       setSelectedSectionId(row.section_id);
+      window.localStorage.setItem(STORAGE_KEY, row.section_id);
 
       if (pathname === '/dashboard') {
         const button = findDashboardButton(row);
@@ -154,6 +157,7 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
       });
       if (matched) {
         setSelectedSectionId(matched.section_id);
+        window.localStorage.setItem(STORAGE_KEY, matched.section_id);
         return true;
       }
       return false;
@@ -166,6 +170,7 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
         : null;
       if (matched) {
         setSelectedSectionId(matched.section_id);
+        window.localStorage.setItem(STORAGE_KEY, matched.section_id);
         return true;
       }
     }
@@ -182,6 +187,8 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
     }
 
     let cancelled = false;
+    setSelectedSectionId('');
+    setPreferredSectionId('');
 
     const load = async () => {
       const { data: sessionData } = await supabase.auth.getSession();
@@ -209,8 +216,13 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
       const assignedIds = new Set(
         (assignmentResult.data ?? []).map((row: { section_id: string }) => row.section_id)
       );
+      const savedSectionId = window.localStorage.getItem(STORAGE_KEY);
+      const savedPreferred = loadedRows.find(
+        (row) => row.section_id === savedSectionId
+      );
       const assignedPreferred = loadedRows.find((row) => assignedIds.has(row.section_id));
       const defaultPreferred =
+        savedPreferred ??
         assignedPreferred ??
         loadedRows.find((row) => row.course_code === 'WLD 105') ??
         loadedRows[0];
@@ -223,7 +235,7 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
     return () => {
       cancelled = true;
     };
-  }, [supportedPage, supabase]);
+  }, [pathname, supportedPage, supabase]);
 
   useEffect(() => {
     if (!supportedPage || rows.length === 0) return;
@@ -252,10 +264,16 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
 
     const sync = () => {
       hideLegacySelectors();
-      if (!detectPageSelection() && !selectedSectionId) {
+
+      if (!selectedSectionId) {
         const preferred = rows.find((row) => row.section_id === preferredSectionId);
-        if (preferred) activateSection(preferred);
+        if (preferred) {
+          activateSection(preferred);
+          return;
+        }
       }
+
+      detectPageSelection();
     };
 
     const timer = window.setTimeout(sync, 75);
