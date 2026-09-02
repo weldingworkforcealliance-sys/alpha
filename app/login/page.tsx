@@ -49,189 +49,419 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="shell">
-      <section className="card">
-        <div className="eyebrow">Living Teacher Planner</div>
-        <h1>Sign In</h1>
-        <p className="sub">Live production access</p>
+    <main className="login-shell">
+      <section className="login-frame">
+        <aside className="brand-panel">
+          <div className="brand-lockup">
+            <div className="brand-mark">LTG</div>
+            <div>
+              <div className="brand-name">Living Teacher</div>
+              <div className="brand-name">Planner</div>
+            </div>
+          </div>
 
-        <form onSubmit={handleLogin}>
-          <label>
-            Email
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your.email@example.com"
-              required
-              disabled={isLoading}
-              autoComplete="email"
-            />
-          </label>
+          <div className="brand-copy">
+            <div className="eyebrow">Night Shift Workspace</div>
+            <h1>Teach the plan.<br />Capture what works.</h1>
+            <p>
+              One working space for daily instruction, protected curriculum,
+              connected assessments, and school-level learning.
+            </p>
+          </div>
 
-          <label>
-            Password
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              disabled={isLoading}
-              autoComplete="current-password"
-            />
-          </label>
+          <div className="mode-stack" aria-label="Platform access modes">
+            <div className="mode-row live">
+              <span className="mode-dot" />
+              <div><strong>Live Platform</strong><small>Production planner and reporting</small></div>
+            </div>
+            <div className="mode-row training-row">
+              <span className="mode-dot" />
+              <div><strong>Training Mode</strong><small>Isolated practice workspace</small></div>
+            </div>
+            <div className="mode-row demo-row">
+              <span className="mode-dot" />
+              <div><strong>Public Demo</strong><small>Limited sample with nothing saved</small></div>
+            </div>
+          </div>
 
-          {error && <div className="error">{error}</div>}
+          <div className="brand-foot">Living Teacher Planner · Welding Workforce Alliance</div>
+        </aside>
 
-          <button className="primary" type="submit" disabled={isLoading}>
-            {isLoading ? 'Signing in…' : 'Sign In to Live Platform'}
-          </button>
-        </form>
+        <section className="signin-panel">
+          <div className="signin-head">
+            <div className="eyebrow">Authorized Access</div>
+            <h2>Sign in to LTG</h2>
+            <p>Use the account assigned to your school or program.</p>
+          </div>
 
-        <div className="account-help">
-          <button onClick={() => router.push('/account-setup')}>
-            <strong>First-Time Setup</strong>
-            <span>Use the verification code from your invitation email.</span>
-          </button>
-          <button onClick={() => router.push('/reset-password')}>
-            <strong>Reset Password</strong>
-            <span>Already activated? Set a new password by email code.</span>
-          </button>
-        </div>
+          <form onSubmit={handleLogin}>
+            <label>
+              Email
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your.email@example.com"
+                required
+                disabled={isLoading}
+                autoComplete="email"
+              />
+            </label>
 
-        <div className="divider"><span>OR</span></div>
+            <label>
+              Password
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                disabled={isLoading}
+                autoComplete="current-password"
+              />
+            </label>
 
-        <div className="alternate-grid">
-          <button className="demo" onClick={() => router.push('/demo')}>
-            <strong>Try Demo</strong>
-            <span>Public · limited sample · nothing saved</span>
-          </button>
+            {error && <div className="error">{error}</div>}
 
-          <button className="training" onClick={() => router.push('/training/login')}>
-            <strong>Training Mode</strong>
-            <span>Authorized users · full training workspace</span>
-          </button>
-        </div>
+            <button className="primary signin-button" type="submit" disabled={isLoading}>
+              {isLoading ? 'Signing in…' : 'Enter Live Platform'}
+            </button>
+          </form>
+
+          <div className="account-tools">
+            <button onClick={() => router.push('/account-setup')}>
+              <span>First-Time Setup</span>
+              <small>Activate an invited account</small>
+            </button>
+            <button onClick={() => router.push('/reset-password')}>
+              <span>Reset Password</span>
+              <small>Recover an existing account</small>
+            </button>
+          </div>
+
+          <div className="divider"><span>OTHER ACCESS</span></div>
+
+          <div className="alternate-grid">
+            <button className="training-access" onClick={() => router.push('/training/login')}>
+              <span className="access-kicker">TRAINING</span>
+              <strong>Open Training Mode</strong>
+              <small>Full sandbox for authorized users</small>
+            </button>
+
+            <button className="demo-access" onClick={() => router.push('/demo')}>
+              <span className="access-kicker">DEMO</span>
+              <strong>Try Public Demo</strong>
+              <small>Limited sample · nothing saved</small>
+            </button>
+          </div>
+        </section>
       </section>
 
       <style jsx>{`
-        .shell {
+        .login-shell {
           min-height: 100vh;
           display: grid;
           place-items: center;
-          padding: 24px;
+          padding: 34px;
+          background: transparent;
+          color: #e4e0da;
+        }
+
+        .login-frame {
+          width: min(980px, 100%);
+          display: grid;
+          grid-template-columns: minmax(0, .9fr) minmax(420px, 1.1fr);
+          overflow: hidden;
+          border: 1px solid #2b3d45;
+          border-radius: 16px;
+          background: #10191e;
+          box-shadow: 0 30px 90px rgba(0,0,0,.46);
+        }
+
+        .brand-panel {
+          min-height: 650px;
+          display: flex;
+          flex-direction: column;
+          padding: 34px;
+          border-right: 1px solid #263840;
           background:
-            radial-gradient(circle at 12% 0%, rgba(0,255,136,.09), transparent 28rem),
-            radial-gradient(circle at 88% 12%, rgba(0,180,255,.07), transparent 26rem),
-            #080808;
-          color: #e8e8e8;
+            radial-gradient(circle at 20% 82%, rgba(169,106,72,.14), transparent 18rem),
+            radial-gradient(circle at 85% 14%, rgba(76,159,172,.10), transparent 18rem),
+            linear-gradient(155deg, #0d181d, #0a1216 65%, #0e171b);
         }
-        .card {
-          width: min(500px, 100%);
-          padding: 32px;
-          border: 1px solid #2a2a2a;
-          border-radius: 12px;
-          background: #141414;
-          box-shadow: 0 24px 80px rgba(0,0,0,.35);
+
+        .brand-lockup {
+          display: flex;
+          align-items: center;
+          gap: 14px;
         }
-        .eyebrow {
-          color: #00ff88;
+
+        .brand-mark {
+          width: 57px;
+          height: 64px;
+          display: grid;
+          place-items: center;
+          flex: 0 0 auto;
+          color: #f0b184;
+          font-size: 14px;
+          font-weight: 900;
+          letter-spacing: .08em;
+          border: 2px solid #d8844d;
+          clip-path: polygon(50% 0, 92% 18%, 92% 68%, 50% 100%, 8% 68%, 8% 18%);
+          background: #111d22;
+          box-shadow: 0 0 28px rgba(169,106,72,.18);
+        }
+
+        .brand-name {
+          color: #ddd9d3;
+          font-size: 18px;
+          font-weight: 850;
+          line-height: 1.05;
+          letter-spacing: .02em;
           text-transform: uppercase;
-          letter-spacing: .12em;
-          font-size: 11px;
-          font-weight: 800;
         }
-        h1 { margin: 6px 0 2px; color: white; font-size: 32px; }
-        .sub { margin: 0 0 24px; color: #888; }
-        form { display: grid; gap: 15px; }
+
+        .brand-copy {
+          margin: auto 0 34px;
+        }
+
+        .eyebrow {
+          color: #d8844d;
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: .16em;
+          text-transform: uppercase;
+        }
+
+        .brand-copy h1 {
+          margin: 12px 0 15px;
+          color: #f0ece5;
+          font-size: clamp(34px, 4vw, 48px);
+          font-weight: 650;
+          line-height: 1.02;
+          letter-spacing: -.035em;
+        }
+
+        .brand-copy p {
+          max-width: 430px;
+          margin: 0;
+          color: #8d9ba1;
+          font-size: 14px;
+          line-height: 1.65;
+        }
+
+        .mode-stack {
+          display: grid;
+          gap: 8px;
+          padding-top: 21px;
+          border-top: 1px solid #263840;
+        }
+
+        .mode-row {
+          display: grid;
+          grid-template-columns: 10px 1fr;
+          gap: 10px;
+          align-items: start;
+          padding: 9px 0;
+        }
+
+        .mode-dot {
+          width: 7px;
+          height: 7px;
+          margin-top: 5px;
+          border-radius: 50%;
+          background: #76a995;
+          box-shadow: 0 0 10px rgba(118,169,149,.34);
+        }
+
+        .training-row .mode-dot { background: #d8844d; box-shadow: 0 0 10px rgba(216,132,77,.30); }
+        .demo-row .mode-dot { background: #4c9fac; box-shadow: 0 0 10px rgba(76,159,172,.30); }
+        .mode-row div { display: grid; gap: 2px; }
+        .mode-row strong { color: #cbd2d3; font-size: 12px; }
+        .mode-row small { color: #66757b; font-size: 10px; }
+
+        .brand-foot {
+          margin-top: 24px;
+          color: #536168;
+          font-size: 9px;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+        }
+
+        .signin-panel {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          padding: 48px 46px;
+          background:
+            linear-gradient(145deg, rgba(255,255,255,.014), transparent 44%),
+            #10191e;
+        }
+
+        .signin-head h2 {
+          margin: 7px 0 5px;
+          color: #eee9e2;
+          font-size: 30px;
+          font-weight: 700;
+          letter-spacing: -.025em;
+        }
+
+        .signin-head p {
+          margin: 0 0 26px;
+          color: #87959b;
+          font-size: 13px;
+        }
+
+        form { display: grid; gap: 16px; }
+
         label {
           display: grid;
           gap: 7px;
-          color: #aaa;
-          font-size: 12px;
-          font-weight: 700;
+          color: #a3afb3;
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: .04em;
+          text-transform: uppercase;
         }
+
         input {
           width: 100%;
+          min-height: 46px;
           padding: 12px 13px;
-          border: 1px solid #303030;
+          border: 1px solid #31444c;
           border-radius: 8px;
-          background: #0d0d0d;
-          color: #eee;
+          background: #0b1317;
+          color: #ece8e2;
           font: inherit;
         }
-        input:focus { outline: none; border-color: #00ff88; }
+
+        input:focus {
+          outline: none;
+          border-color: #4c9fac;
+          box-shadow: 0 0 0 3px rgba(76,159,172,.10);
+        }
+
         button { font: inherit; cursor: pointer; }
         button:disabled { opacity: .5; cursor: not-allowed; }
-        .primary {
-          padding: 13px 15px;
+
+        .signin-button {
+          min-height: 46px;
+          margin-top: 2px;
+          border: 1px solid rgba(216,132,77,.65);
           border-radius: 8px;
-          border: 1px solid rgba(0,255,136,.55);
-          background: rgba(0,255,136,.08);
-          color: #00ff88;
-          font-weight: 800;
+          background: linear-gradient(180deg, rgba(169,106,72,.22), rgba(122,73,48,.13));
+          color: #f0b88e;
+          font-weight: 850;
         }
-        .account-help {
+
+        .signin-button:hover:not(:disabled) {
+          border-color: #e69a66;
+          color: #ffd2b2;
+        }
+
+        .account-tools {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 10px;
-          margin-top: 16px;
+          gap: 9px;
+          margin-top: 14px;
         }
-        .account-help button {
+
+        .account-tools button {
           display: grid;
-          gap: 5px;
+          gap: 3px;
           text-align: left;
-          padding: 13px;
-          border: 1px solid #343434;
+          padding: 12px;
+          border: 1px solid #2d3e45;
           border-radius: 8px;
-          background: #101010;
-          color: #ddd;
+          background: #0d161a;
+          color: #b7c1c4;
         }
-        .account-help strong { color: #00ff88; font-size: 13px; }
-        .account-help span { color: #888; font-size: 10px; line-height: 1.4; }
+
+        .account-tools button:hover { border-color: #4c6872; }
+        .account-tools span { font-size: 11px; font-weight: 800; }
+        .account-tools small { color: #68767c; font-size: 9px; }
+
         .divider {
           display: flex;
           align-items: center;
           gap: 12px;
-          margin: 24px 0 18px;
-          color: #666;
-          font-size: 10px;
-          font-weight: 800;
+          margin: 24px 0 16px;
+          color: #5b6970;
+          font-size: 9px;
+          font-weight: 900;
+          letter-spacing: .12em;
         }
-        .divider::before, .divider::after {
+
+        .divider::before,
+        .divider::after {
           content: '';
           height: 1px;
-          background: #292929;
           flex: 1;
+          background: #293940;
         }
-        .alternate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        .alternate-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 9px;
+        }
+
         .alternate-grid button {
-          min-height: 94px;
+          min-height: 96px;
           display: grid;
           align-content: center;
-          gap: 5px;
+          gap: 4px;
           text-align: left;
-          padding: 15px;
+          padding: 14px;
           border-radius: 9px;
-          background: #101010;
+          background: #0d161a;
         }
-        .alternate-grid strong { font-size: 14px; }
-        .alternate-grid span { color: #777; font-size: 10px; line-height: 1.4; }
-        .demo { border: 1px solid rgba(0,180,255,.35); color: #55cfff; }
-        .training { border: 1px solid rgba(255,154,82,.4); color: #ffad70; }
+
+        .access-kicker {
+          font-size: 8px;
+          font-weight: 900;
+          letter-spacing: .13em;
+        }
+
+        .alternate-grid strong { color: #d7ddde; font-size: 12px; }
+        .alternate-grid small { color: #68767c; font-size: 9px; line-height: 1.35; }
+        .training-access { border: 1px solid rgba(216,132,77,.42); }
+        .training-access .access-kicker { color: #d8844d; }
+        .demo-access { border: 1px solid rgba(76,159,172,.42); }
+        .demo-access .access-kicker { color: #4c9fac; }
+        .training-access:hover { border-color: rgba(216,132,77,.76); }
+        .demo-access:hover { border-color: rgba(76,159,172,.76); }
+
         .error {
           padding: 10px 12px;
-          border: 1px solid rgba(255,80,80,.35);
+          border: 1px solid rgba(195,109,90,.44);
           border-radius: 7px;
-          background: rgba(255,80,80,.08);
-          color: #ff9090;
-          font-size: 12px;
-          line-height: 1.4;
+          background: rgba(195,109,90,.08);
+          color: #eca08f;
+          font-size: 11px;
+          line-height: 1.45;
         }
+
+        @media (max-width: 820px) {
+          .login-shell { padding: 18px; }
+          .login-frame { grid-template-columns: 1fr; }
+          .brand-panel { min-height: auto; padding: 26px; border-right: 0; border-bottom: 1px solid #263840; }
+          .brand-copy { margin: 46px 0 25px; }
+          .brand-copy h1 { font-size: 36px; }
+          .brand-foot { display: none; }
+          .signin-panel { padding: 32px 26px; }
+        }
+
         @media (max-width: 520px) {
-          .account-help, .alternate-grid { grid-template-columns: 1fr; }
-          .card { padding: 24px; }
+          .login-shell { padding: 0; place-items: stretch; }
+          .login-frame { border: 0; border-radius: 0; min-height: 100vh; }
+          .brand-panel { padding: 22px; }
+          .brand-copy { margin: 34px 0 18px; }
+          .brand-copy h1 { font-size: 31px; }
+          .mode-stack { display: none; }
+          .signin-panel { padding: 30px 22px 38px; }
+          .account-tools,
+          .alternate-grid { grid-template-columns: 1fr; }
         }
       `}</style>
     </main>
