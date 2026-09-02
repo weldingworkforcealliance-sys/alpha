@@ -1140,7 +1140,11 @@ export default function DashboardPage() {
                                     <strong>{resource.resource_title}</strong>
                                     {resource.resource_url ? (
                                       <a
-                                        href={resource.resource_url}
+                                        href={
+                                          resource.resource_url.startsWith('/classroom')
+                                            ? `${resource.resource_url}${resource.resource_url.includes('?') ? '&' : '?'}section=${encodeURIComponent(selectedSection?.section_id ?? '')}`
+                                            : resource.resource_url
+                                        }
                                         target="_blank"
                                         rel="noreferrer"
                                         className="resource-link"
