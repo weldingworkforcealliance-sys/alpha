@@ -1,0 +1,71 @@
+/* LTG system-wide writing-field standard.
+   Free-text fields are intentionally large to support full instructional thinking. */
+
+textarea {
+  display: block;
+  width: 100% !important;
+  min-width: 0;
+  min-height: 140px !important;
+  padding: 14px 16px;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  background: #0d0d0d;
+  color: #eeeeee;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.55;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+textarea::placeholder {
+  color: #777;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #00ff88;
+  box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+}
+
+/* Agenda activity editing deserves even more room than an ordinary note. */
+.workspace-shell .edit-grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+  width: 100%;
+}
+
+.workspace-shell .edit-grid > label {
+  display: grid;
+  width: 100%;
+  gap: 8px;
+}
+
+.workspace-shell .edit-grid > label:first-child {
+  grid-row: auto !important;
+}
+
+.workspace-shell .edit-grid textarea {
+  min-height: 180px !important;
+}
+
+.workspace-shell .note-area textarea,
+#deviation-summary,
+#follow-up-notes {
+  min-height: 160px !important;
+}
+
+/* Review/admin note areas should visually invite explanation rather than fragments. */
+.review-notes,
+.review-notes label {
+  width: 100%;
+}
+
+@media (max-width: 760px) {
+  textarea {
+    min-height: 130px !important;
+  }
+
+  .workspace-shell .edit-grid textarea {
+    min-height: 160px !important;
+  }
+}
