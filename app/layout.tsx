@@ -12,7 +12,7 @@ import './styles.css';
 import './agenda/agenda.css';
 import './desktop-layout-fix.css';
 import './large-text-fields.css';
-import './hybrid-theme.css';
+import './night-shift-theme.css';
 
 export default function RootLayout({
   children,
@@ -25,6 +25,7 @@ export default function RootLayout({
     pathname === '/account-setup' ||
     pathname === '/forgot-password' ||
     pathname === '/reset-password';
+  const nightShiftPlanner = pathname === '/dashboard' || pathname === '/agenda';
 
   return (
     <html lang="en">
@@ -33,11 +34,19 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Living Teacher Planner</title>
       </head>
-      <body>
+      <body className={nightShiftPlanner ? 'night-shift-shell' : undefined}>
         <div className="app-container">
           {!hideWorkspaceNav && (
             <nav aria-label="Planner workspace navigation">
-              <span className="ltg-brand">Living Teacher Planner</span>
+              <div className="ltg-brand">
+                <span className="ltg-brand-mark">LTG</span>
+                <span className="ltg-brand-copy">
+                  Living Teacher
+                  <br />
+                  Planner
+                </span>
+              </div>
+              <div className="ltg-nav-section-label">Workspace</div>
               <Link
                 href="/dashboard"
                 className={`ltg-nav-link ${pathname === '/dashboard' ? 'active' : ''}`}

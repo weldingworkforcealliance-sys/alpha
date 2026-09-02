@@ -1,0 +1,1274 @@
+/* Living Teacher Planner — Night Shift Studio
+   Screen theme for the teacher Planner and Agenda Workspace.
+   Visual only. Curriculum, permissions, progress, grading, and database behavior are unchanged. */
+
+body.night-shift-shell {
+  --ns-bg: #090e11;
+  --ns-rail: #0b1216;
+  --ns-panel: #10191e;
+  --ns-panel-2: #132027;
+  --ns-panel-3: #17262d;
+  --ns-line: #27373e;
+  --ns-line-soft: #1d2b31;
+  --ns-text: #e4e0da;
+  --ns-muted: #97a2a7;
+  --ns-faint: #657178;
+  --ns-copper: #a96a48;
+  --ns-copper-bright: #d8844d;
+  --ns-copper-soft: rgba(169, 106, 72, 0.14);
+  --ns-teal: #4c9fac;
+  --ns-teal-deep: #203b46;
+  --ns-teal-soft: rgba(76, 159, 172, 0.13);
+  --ns-success: #76a995;
+  --ns-danger: #c36d5a;
+  --ns-shadow: 0 14px 38px rgba(0, 0, 0, 0.34);
+  margin: 0;
+  background:
+    radial-gradient(circle at 78% 8%, rgba(169, 106, 72, 0.055), transparent 23rem),
+    linear-gradient(145deg, #080d10, #0b1216 42%, #091015);
+  color: var(--ns-text);
+}
+
+body.night-shift-shell,
+body.night-shift-shell button,
+body.night-shift-shell input,
+body.night-shift-shell select,
+body.night-shift-shell textarea {
+  font-family: "Segoe UI Variable", "Segoe UI", Inter, Arial, sans-serif;
+}
+
+.night-shift-shell .app-container {
+  min-height: 100vh;
+  background:
+    linear-gradient(rgba(255,255,255,.008) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.008) 1px, transparent 1px),
+    transparent;
+  background-size: 34px 34px;
+}
+
+/* ===== Left navigation rail ===== */
+.night-shift-shell nav[aria-label='Planner workspace navigation'] {
+  display: flex !important;
+  flex-direction: column;
+  align-items: stretch !important;
+  gap: 7px !important;
+  padding: 20px 16px !important;
+  background:
+    radial-gradient(circle at 45% 73%, rgba(169,106,72,.09), transparent 10rem),
+    linear-gradient(180deg, #0d171c, #091116 62%, #0b1418) !important;
+  border-right: 1px solid #223239 !important;
+  border-bottom: 0 !important;
+  box-shadow: inset -1px 0 rgba(255,255,255,.018), 12px 0 36px rgba(0,0,0,.15);
+  overflow: hidden;
+  z-index: 20;
+}
+
+.night-shift-shell nav[aria-label='Planner workspace navigation']::after {
+  content: '';
+  position: absolute;
+  left: -36px;
+  bottom: 80px;
+  width: 220px;
+  height: 170px;
+  pointer-events: none;
+  opacity: .42;
+  background:
+    radial-gradient(circle at 58% 52%, rgba(216,132,77,.28) 0 1px, transparent 2px),
+    repeating-conic-gradient(from 12deg at 58% 52%, transparent 0 8deg, rgba(216,132,77,.1) 9deg, transparent 10deg 18deg);
+  filter: blur(.2px);
+  mask-image: radial-gradient(circle, #000 0 26%, transparent 72%);
+}
+
+.night-shift-shell .ltg-brand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 82px;
+  margin: 0 0 16px !important;
+  padding: 4px 4px 17px;
+  border-bottom: 1px solid #223239;
+  color: var(--ns-text);
+}
+
+.night-shift-shell .ltg-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 58px;
+  flex: 0 0 auto;
+  color: #f3c39f;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .07em;
+  border: 2px solid var(--ns-copper-bright);
+  clip-path: polygon(50% 0, 92% 18%, 92% 68%, 50% 100%, 8% 68%, 8% 18%);
+  background:
+    radial-gradient(circle at 50% 68%, rgba(216,132,77,.22), transparent 38%),
+    #111c21;
+  box-shadow: 0 0 22px rgba(169,106,72,.15);
+}
+
+.night-shift-shell .ltg-brand-copy {
+  color: #d9d6d0;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: .015em;
+  text-transform: uppercase;
+}
+
+.night-shift-shell .ltg-nav-section-label {
+  margin: 0 10px 4px;
+  color: #58666d;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.night-shift-shell nav[aria-label='Planner workspace navigation'] a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 47px;
+  padding: 0 13px !important;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #b7c0c4 !important;
+  text-decoration: none !important;
+  font-size: 14px !important;
+  font-weight: 650 !important;
+  transition: color .15s ease, border-color .15s ease, background .15s ease;
+}
+
+.night-shift-shell nav[aria-label='Planner workspace navigation'] a::before {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  color: #7f8d93;
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.night-shift-shell nav a[href='/dashboard']::before { content: '▦'; }
+.night-shift-shell nav a[href='/agenda']::before { content: '≡'; }
+.night-shift-shell nav a[href='/review-queue']::before { content: '✓'; }
+
+.night-shift-shell nav[aria-label='Planner workspace navigation'] a:hover {
+  color: #f0e8df !important;
+  border-color: #2b3d45;
+  background: rgba(255,255,255,.025);
+}
+
+.night-shift-shell nav[aria-label='Planner workspace navigation'] a.active,
+.night-shift-shell nav[aria-label='Planner workspace navigation'] a[href='/dashboard'][aria-current='page'],
+.night-shift-shell nav[aria-label='Planner workspace navigation'] a[href='/agenda'][aria-current='page'] {
+  color: #f1a56e !important;
+  border-color: rgba(76,159,172,.34);
+  background: linear-gradient(90deg, rgba(32,59,70,.8), rgba(14,30,36,.8));
+  box-shadow: inset 3px 0 var(--ns-copper-bright), 0 8px 24px rgba(0,0,0,.11);
+}
+
+/* ===== Desktop shell ===== */
+@media (min-width: 980px) {
+  .night-shift-shell .app-container {
+    display: grid !important;
+    grid-template-columns: 248px minmax(0, 1fr);
+    grid-auto-rows: min-content;
+    align-items: start;
+  }
+
+  .night-shift-shell nav[aria-label='Planner workspace navigation'] {
+    position: sticky;
+    top: 0;
+    grid-column: 1;
+    grid-row: 1 / 999;
+    width: 248px;
+    height: 100vh;
+  }
+
+  .night-shift-shell .app-container > :not(nav[aria-label='Planner workspace navigation']) {
+    grid-column: 2;
+    min-width: 0;
+  }
+}
+
+/* ===== Class selector ===== */
+.night-shift-shell section[aria-label='Class workspace selector'] {
+  padding: 14px 20px 13px !important;
+  background: rgba(9, 16, 20, .94) !important;
+  border-bottom: 1px solid #213138 !important;
+}
+
+.night-shift-shell section[aria-label='Class workspace selector'] > div {
+  max-width: none !important;
+  gap: 9px !important;
+}
+
+.night-shift-shell section[aria-label='Class workspace selector'] > div > div:first-child {
+  color: var(--ns-copper-bright) !important;
+  font-size: 10px !important;
+  letter-spacing: .13em !important;
+}
+
+.night-shift-shell section[aria-label='Class workspace selector'] button {
+  min-height: 38px !important;
+  padding: 9px 15px !important;
+  border: 1px solid #304149 !important;
+  border-radius: 7px !important;
+  background: #111c21 !important;
+  color: #b9c2c6 !important;
+  box-shadow: none !important;
+}
+
+.night-shift-shell section[aria-label='Class workspace selector'] button:hover {
+  border-color: rgba(216,132,77,.72) !important;
+  color: #f0dfd1 !important;
+  transform: translateY(-1px);
+}
+
+/* Existing active buttons carry the old green color inline. Use that state marker to remap them. */
+.night-shift-shell section[aria-label='Class workspace selector'] button[style*='0, 255, 136'],
+.night-shift-shell section[aria-label='Class workspace selector'] button[style*='0,255,136'] {
+  border-color: var(--ns-copper-bright) !important;
+  background: linear-gradient(180deg, rgba(32,59,70,.9), rgba(16,31,37,.92)) !important;
+  color: #f1b083 !important;
+  box-shadow: inset 3px 0 var(--ns-copper-bright) !important;
+}
+
+.night-shift-shell div[aria-label='Assigned instructor and selected class'] {
+  padding: 9px 20px !important;
+  background: #0d161a !important;
+  border-bottom: 1px solid #213138 !important;
+  color: #aab4b8 !important;
+}
+
+.night-shift-shell div[aria-label='Assigned instructor and selected class'] span {
+  color: #7f8d93 !important;
+}
+
+.night-shift-shell div[aria-label='Assigned instructor and selected class'] strong {
+  color: #d79a71 !important;
+}
+
+/* ===== Dashboard top bar ===== */
+.night-shift-shell .dashboard-container {
+  min-height: auto !important;
+  background: transparent !important;
+  color: var(--ns-text) !important;
+}
+
+.night-shift-shell .dashboard-header {
+  padding: 13px 20px !important;
+  background:
+    radial-gradient(circle at 76% 20%, rgba(169,106,72,.07), transparent 24rem),
+    #0c1519 !important;
+  border-bottom: 1px solid #223239 !important;
+}
+
+.night-shift-shell .dashboard-header .header-content {
+  max-width: none !important;
+  gap: 18px;
+}
+
+.night-shift-shell .dashboard-header h1 {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+  clip: auto !important;
+  white-space: normal !important;
+  color: #ebe6df !important;
+  font-size: 23px !important;
+  font-weight: 650 !important;
+  letter-spacing: -.02em;
+}
+
+.night-shift-shell .dashboard-header .logout-button {
+  min-height: 34px;
+  padding: 7px 11px !important;
+  border: 1px solid #2d4048 !important;
+  border-radius: 7px !important;
+  background: #101c21 !important;
+  color: #aeb9bd !important;
+  font-size: 11px !important;
+  box-shadow: none !important;
+}
+
+.night-shift-shell .dashboard-header .logout-button:hover {
+  border-color: rgba(216,132,77,.72) !important;
+  color: #efb28a !important;
+}
+
+.night-shift-shell .dashboard-main {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 16px 18px 34px !important;
+}
+
+.night-shift-shell .dashboard-content {
+  grid-template-columns: minmax(0,1fr) !important;
+  gap: 0 !important;
+}
+
+.night-shift-shell .section-details {
+  display: grid !important;
+  grid-template-columns: 248px minmax(0, 1fr);
+  grid-template-areas:
+    'status guide'
+    'actions actions'
+    'calendar calendar';
+  align-items: start;
+  gap: 14px !important;
+  width: 100%;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.night-shift-shell .section-header {
+  display: none !important;
+}
+
+/* ===== Day overview column ===== */
+.night-shift-shell .details-grid {
+  grid-area: status;
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+  align-content: start;
+}
+
+.night-shift-shell .detail-item {
+  min-height: 112px;
+  justify-content: center;
+  padding: 17px 18px !important;
+  border: 1px solid var(--ns-line) !important;
+  border-radius: 9px !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.018), transparent 45%),
+    var(--ns-panel) !important;
+  box-shadow: 0 9px 22px rgba(0,0,0,.13);
+}
+
+.night-shift-shell .detail-item label {
+  color: #d39065 !important;
+  font-size: 10px !important;
+  font-weight: 850 !important;
+  letter-spacing: .1em !important;
+  text-transform: uppercase;
+}
+
+.night-shift-shell .detail-value {
+  color: #ddd9d2 !important;
+  font-size: 18px !important;
+}
+
+.night-shift-shell .detail-value.highlight {
+  color: #e8e3dc !important;
+  font-size: 31px !important;
+  font-weight: 500 !important;
+}
+
+.night-shift-shell .detail-value.status-active {
+  color: #72a897 !important;
+}
+
+.night-shift-shell .detail-value.status-hold {
+  color: #d8844d !important;
+}
+
+/* ===== Teacher guide ===== */
+.night-shift-shell .teacher-guide-section {
+  grid-area: guide;
+  margin: 0 !important;
+  border: 1px solid var(--ns-line) !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+  background: var(--ns-panel) !important;
+  box-shadow: var(--ns-shadow) !important;
+}
+
+.night-shift-shell .guide-browser {
+  padding: 10px 12px !important;
+  border-bottom: 1px solid #26363d !important;
+  background: #0b1418 !important;
+}
+
+.night-shift-shell .guide-browser-status {
+  color: #c9c8c4 !important;
+}
+
+.night-shift-shell .guide-day-select-label {
+  color: #74838a !important;
+}
+
+.night-shift-shell .guide-day-select-label select,
+.night-shift-shell .guide-browser-button,
+.night-shift-shell .back-current-button {
+  border: 1px solid #304149 !important;
+  border-radius: 6px !important;
+  background: #101b20 !important;
+  color: #c3c9cb !important;
+}
+
+.night-shift-shell .guide-browser-button:hover:not(:disabled),
+.night-shift-shell .back-current-button:hover:not(:disabled) {
+  border-color: var(--ns-copper-bright) !important;
+  color: #efa877 !important;
+}
+
+.night-shift-shell .back-current-button {
+  color: #e09a6b !important;
+  border-color: rgba(216,132,77,.46) !important;
+}
+
+.night-shift-shell .guide-day-heading {
+  position: relative;
+  padding: 18px 20px !important;
+  border-bottom: 1px solid var(--ns-line) !important;
+  background:
+    radial-gradient(circle at 91% 25%, rgba(216,132,77,.15) 0 1px, transparent 2px),
+    radial-gradient(ellipse at 94% 36%, rgba(169,106,72,.15), transparent 13rem),
+    linear-gradient(180deg, #111d22, #10191e) !important;
+  overflow: hidden;
+}
+
+.night-shift-shell .guide-day-heading::after {
+  content: '';
+  position: absolute;
+  right: -10px;
+  top: -34px;
+  width: 250px;
+  height: 130px;
+  opacity: .42;
+  pointer-events: none;
+  background: repeating-conic-gradient(from 8deg at 80% 54%, transparent 0 6deg, rgba(216,132,77,.16) 7deg, transparent 8deg 14deg);
+  mask-image: radial-gradient(ellipse at 80% 54%, #000 0 8%, transparent 64%);
+}
+
+.night-shift-shell .guide-eyebrow,
+.night-shift-shell .guide-label {
+  color: #d8844d !important;
+  font-size: 10px !important;
+  font-weight: 850 !important;
+  letter-spacing: .07em !important;
+}
+
+.night-shift-shell .guide-day-title-block h3 {
+  position: relative;
+  z-index: 1;
+  color: #ede8e2 !important;
+  font-size: 23px !important;
+  font-weight: 620 !important;
+  letter-spacing: -.015em;
+}
+
+.night-shift-shell .guide-format-badge {
+  position: relative;
+  z-index: 1;
+  padding: 7px 10px !important;
+  border: 1px solid #2b3c43 !important;
+  border-radius: 6px !important;
+  background: #0c171b !important;
+  color: #b7c0c3 !important;
+}
+
+.night-shift-shell .guide-summary-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.55fr) minmax(250px, .95fr) !important;
+  gap: 0 !important;
+  border-bottom: 1px solid var(--ns-line) !important;
+  background: #101a1f !important;
+}
+
+.night-shift-shell .guide-objective,
+.night-shift-shell .guide-outcomes {
+  padding: 15px 18px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.night-shift-shell .guide-objective {
+  border-right: 1px solid var(--ns-line) !important;
+}
+
+.night-shift-shell .guide-objective p,
+.night-shift-shell .guide-info-card p,
+.night-shift-shell .coaching-grid p,
+.night-shift-shell .math-goal,
+.night-shift-shell .book-connection,
+.night-shift-shell .math-instructor-only p {
+  color: #b9c0c2 !important;
+  line-height: 1.48 !important;
+}
+
+.night-shift-shell .outcome-chips {
+  gap: 7px !important;
+}
+
+.night-shift-shell .outcome-chip {
+  border: 1px solid #304047 !important;
+  border-radius: 6px !important;
+  background: #0c161a !important;
+  color: #c2c7c8 !important;
+}
+
+.night-shift-shell .outcome-chip strong {
+  color: #e6a276 !important;
+}
+
+.night-shift-shell .guide-body-grid {
+  grid-template-columns: minmax(0, 2.18fr) minmax(265px, .82fr) !important;
+  gap: 13px !important;
+  padding: 13px !important;
+  background: #0d171b !important;
+}
+
+.night-shift-shell .guide-main-column,
+.night-shift-shell .guide-side-column {
+  gap: 12px !important;
+}
+
+.night-shift-shell .agenda-card,
+.night-shift-shell .guide-info-card,
+.night-shift-shell .coaching-card {
+  border: 1px solid var(--ns-line) !important;
+  border-radius: 8px !important;
+  background: #101a1f !important;
+  box-shadow: 0 8px 22px rgba(0,0,0,.13) !important;
+}
+
+.night-shift-shell .agenda-card-title {
+  padding: 11px 14px !important;
+  border-bottom: 1px solid var(--ns-line) !important;
+  background: #121f24 !important;
+}
+
+.night-shift-shell .agenda-card-title h4 {
+  color: #dfddd8 !important;
+  font-size: 15px !important;
+  font-weight: 650 !important;
+}
+
+.night-shift-shell .agenda-duration {
+  color: #e69a69 !important;
+  background: transparent !important;
+  font-weight: 800 !important;
+}
+
+/* Welding Math uses restrained teal, while staying in the same dark family. */
+.night-shift-shell .guide-main-column > .agenda-card:nth-child(2) {
+  border-color: #31525c !important;
+  box-shadow: inset 3px 0 var(--ns-teal), 0 8px 22px rgba(0,0,0,.13) !important;
+}
+
+.night-shift-shell .guide-main-column > .agenda-card:nth-child(2) .agenda-card-title {
+  background: linear-gradient(90deg, rgba(32,59,70,.72), #121f24) !important;
+}
+
+.night-shift-shell .guide-main-column > .agenda-card:nth-child(2) .agenda-duration {
+  color: #72b8c2 !important;
+}
+
+/* Return the lesson agenda to a compact, scan-first operations table. */
+.night-shift-shell .agenda-table-wrap {
+  padding: 0 !important;
+  overflow-x: auto !important;
+}
+
+.night-shift-shell .agenda-table {
+  display: table !important;
+  width: 100% !important;
+  border-collapse: collapse !important;
+  table-layout: fixed !important;
+}
+
+.night-shift-shell .agenda-table thead {
+  display: table-header-group !important;
+}
+
+.night-shift-shell .agenda-table tbody {
+  display: table-row-group !important;
+}
+
+.night-shift-shell .agenda-table tbody tr {
+  display: table-row !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+.night-shift-shell .agenda-table th,
+.night-shift-shell .agenda-table td {
+  display: table-cell !important;
+  padding: 9px 12px !important;
+  border: 0 !important;
+  border-bottom: 1px solid #26353b !important;
+  background: transparent !important;
+  text-align: left;
+  vertical-align: top;
+}
+
+.night-shift-shell .agenda-table th {
+  color: #8f9ca1 !important;
+  background: #0d171b !important;
+  font-size: 10px !important;
+  font-weight: 750 !important;
+  letter-spacing: .06em !important;
+  text-transform: uppercase;
+}
+
+.night-shift-shell .agenda-table th:first-child,
+.night-shift-shell .agenda-table td:first-child {
+  width: 112px !important;
+  color: #e3a06f !important;
+  font-size: 12px !important;
+  font-weight: 750 !important;
+  white-space: nowrap;
+}
+
+.night-shift-shell .agenda-table td {
+  color: #bcc3c5 !important;
+  font-size: 12.5px !important;
+  line-height: 1.45 !important;
+}
+
+.night-shift-shell .agenda-table tbody tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+.night-shift-shell .math-goal,
+.night-shift-shell .book-connection {
+  padding: 0 14px !important;
+}
+
+.night-shift-shell .book-connection {
+  color: #89969b !important;
+}
+
+.night-shift-shell .math-instructor-only {
+  margin: 12px 14px 14px !important;
+  border: 1px solid #2d4650 !important;
+  background: rgba(32,59,70,.24) !important;
+}
+
+/* ===== Resources / right rail ===== */
+.night-shift-shell .guide-info-card {
+  padding: 14px !important;
+  background: #101a1f !important;
+}
+
+.night-shift-shell .resource-list {
+  gap: 9px !important;
+}
+
+.night-shift-shell .resource-item {
+  padding: 11px 0 0 !important;
+  border: 0 !important;
+  border-top: 1px solid #26353b !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.night-shift-shell .resource-item strong {
+  color: #d8d6d1 !important;
+}
+
+.night-shift-shell .resource-link {
+  align-self: flex-start !important;
+  padding: 8px 12px !important;
+  border: 1px solid var(--ns-copper-bright) !important;
+  border-radius: 6px !important;
+  background: rgba(169,106,72,.06) !important;
+  color: #e9a273 !important;
+}
+
+.night-shift-shell .resource-link:hover {
+  background: rgba(169,106,72,.13) !important;
+}
+
+/* ===== Coaching ===== */
+.night-shift-shell .coaching-card {
+  margin: 0 13px 13px !important;
+  background: #0f191e !important;
+}
+
+.night-shift-shell .coaching-heading {
+  padding: 10px 13px !important;
+  border-bottom: 1px solid var(--ns-line) !important;
+  background: #101c21 !important;
+}
+
+.night-shift-shell .coaching-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.night-shift-shell .coaching-grid > div {
+  min-height: 116px !important;
+  padding: 13px 14px !important;
+  border: 0 !important;
+  border-right: 1px solid var(--ns-line) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.night-shift-shell .coaching-grid > div:last-child {
+  border-right: 0 !important;
+}
+
+.night-shift-shell .coaching-grid strong {
+  color: #dfa072 !important;
+  font-size: 11.5px !important;
+}
+
+.night-shift-shell .coaching-grid p {
+  color: #abb4b7 !important;
+  font-size: 11.5px !important;
+}
+
+/* ===== Daily notes and action controls ===== */
+.night-shift-shell .actions-section {
+  grid-area: actions;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 225px 225px;
+  gap: 12px 14px !important;
+  align-items: stretch;
+  padding: 15px !important;
+  border: 1px solid var(--ns-line) !important;
+  border-radius: 9px !important;
+  background: #0d171b !important;
+  box-shadow: 0 10px 26px rgba(0,0,0,.16);
+}
+
+.night-shift-shell .actions-section .preview-actions-lock {
+  grid-column: 1 / -1;
+}
+
+.night-shift-shell .actions-section > .form-group:has(#actual-date) {
+  grid-column: 1;
+  max-width: 245px;
+}
+
+.night-shift-shell .actions-section > .form-group:has(#deviation-summary) {
+  grid-column: 1;
+}
+
+.night-shift-shell .actions-section > .form-group:has(#follow-up-notes) {
+  grid-column: 1;
+}
+
+.night-shift-shell .actions-section .start-button,
+.night-shift-shell .actions-section .class-timer-panel {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  align-self: stretch;
+}
+
+.night-shift-shell .actions-section .complete-button {
+  grid-column: 3;
+  grid-row: 1 / span 3;
+  align-self: stretch;
+}
+
+.night-shift-shell .actions-section .follow-up-check {
+  grid-column: 1;
+}
+
+.night-shift-shell .actions-section .form-group label,
+.night-shift-shell .follow-up-check {
+  color: #9ba7ab !important;
+}
+
+.night-shift-shell .actions-section input[type='date'],
+.night-shift-shell .actions-section textarea,
+.night-shift-shell .workspace-shell input,
+.night-shift-shell .workspace-shell select,
+.night-shift-shell .workspace-shell textarea {
+  border: 1px solid #304149 !important;
+  border-radius: 7px !important;
+  background: #091317 !important;
+  color: #e2ded8 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.018) !important;
+}
+
+.night-shift-shell textarea::placeholder,
+.night-shift-shell input::placeholder {
+  color: #617078 !important;
+}
+
+.night-shift-shell textarea:focus,
+.night-shift-shell input:focus,
+.night-shift-shell select:focus {
+  outline: none !important;
+  border-color: rgba(76,159,172,.72) !important;
+  box-shadow: 0 0 0 3px rgba(76,159,172,.09) !important;
+}
+
+.night-shift-shell .action-button {
+  min-height: 92px !important;
+  padding: 18px !important;
+  border-radius: 8px !important;
+  font-size: 17px !important;
+  font-weight: 620 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  box-shadow: none !important;
+}
+
+.night-shift-shell .start-button {
+  border: 1px solid #b26e45 !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.04), transparent 35%),
+    linear-gradient(145deg, #8a4e2e, #6f3d25) !important;
+  color: #f3e2d5 !important;
+  box-shadow: inset 0 0 28px rgba(216,132,77,.08) !important;
+}
+
+.night-shift-shell .start-button:hover:not(:disabled) {
+  border-color: #d8844d !important;
+  background: linear-gradient(145deg, #955735, #78442a) !important;
+}
+
+.night-shift-shell .complete-button {
+  border: 1px solid #315b66 !important;
+  background: linear-gradient(145deg, #153640, #102a32) !important;
+  color: #d8e2e4 !important;
+}
+
+.night-shift-shell .complete-button:hover:not(:disabled) {
+  border-color: #4c9fac !important;
+}
+
+.night-shift-shell .class-timer-panel {
+  padding: 17px !important;
+  border: 1px solid #315b66 !important;
+  border-radius: 8px !important;
+  background: rgba(32,59,70,.45) !important;
+}
+
+.night-shift-shell .class-timer-label { color: #73b7c1 !important; }
+.night-shift-shell .class-timer-value { color: #e0e5e4 !important; }
+.night-shift-shell .class-timer-meta { color: #87959a !important; }
+
+/* ===== Calendar ===== */
+.night-shift-shell .class-calendar-section {
+  grid-area: calendar;
+  margin-top: 0 !important;
+  padding: 17px !important;
+  border: 1px solid var(--ns-line) !important;
+  border-radius: 9px !important;
+  background: #0d171b !important;
+}
+
+.night-shift-shell .calendar-title-row h3,
+.night-shift-shell .calendar-month-controls strong {
+  color: #e0ddd7 !important;
+}
+
+.night-shift-shell .calendar-title-row p,
+.night-shift-shell .calendar-loading,
+.night-shift-shell .calendar-legend {
+  color: #7d898e !important;
+}
+
+.night-shift-shell .calendar-nav-button {
+  border: 1px solid #304149 !important;
+  background: #101b20 !important;
+  color: #b5bec1 !important;
+}
+
+.night-shift-shell .calendar-nav-button:hover:not(:disabled) {
+  border-color: var(--ns-copper-bright) !important;
+  color: #e7a276 !important;
+}
+
+.night-shift-shell .calendar-reminder {
+  border: 1px solid rgba(169,106,72,.44) !important;
+  background: rgba(169,106,72,.08) !important;
+  color: #d99a71 !important;
+}
+
+.night-shift-shell .calendar-month,
+.night-shift-shell .calendar-day,
+.night-shift-shell .calendar-day.blank {
+  border-color: #26363d !important;
+  background: #0e181d !important;
+}
+
+.night-shift-shell .calendar-weekdays div,
+.night-shift-shell .calendar-day {
+  border-color: #26363d !important;
+}
+
+.night-shift-shell .calendar-weekdays div,
+.night-shift-shell .calendar-date-number,
+.night-shift-shell .calendar-event {
+  color: #7f8d93 !important;
+}
+
+.night-shift-shell .calendar-event.strong {
+  color: #c8cbca !important;
+}
+
+.night-shift-shell .calendar-day.current {
+  background: rgba(32,59,70,.68) !important;
+  box-shadow: inset 0 0 0 1px #4c9fac !important;
+}
+
+.night-shift-shell .calendar-day.completed {
+  background: rgba(42,77,83,.42) !important;
+}
+
+.night-shift-shell .calendar-day.no-class {
+  background: rgba(138,70,55,.18) !important;
+  box-shadow: inset 0 0 0 1px rgba(195,109,90,.35) !important;
+}
+
+.night-shift-shell .no-class .calendar-event.strong {
+  color: #d7846f !important;
+}
+
+/* ===== Agenda Workspace ===== */
+.night-shift-shell .workspace-shell {
+  min-height: calc(100vh - 1px) !important;
+  padding: 18px !important;
+  background: transparent !important;
+  color: var(--ns-text) !important;
+}
+
+.night-shift-shell .workspace-shell .workspace {
+  width: min(1420px, 100%) !important;
+  gap: 14px !important;
+}
+
+.night-shift-shell .workspace-shell .workspace-header {
+  padding: 16px 18px;
+  border: 1px solid var(--ns-line);
+  border-radius: 9px;
+  background:
+    radial-gradient(ellipse at 90% 10%, rgba(169,106,72,.11), transparent 18rem),
+    #101a1f;
+  box-shadow: 0 10px 24px rgba(0,0,0,.14);
+}
+
+.night-shift-shell .workspace-shell h1,
+.night-shift-shell .workspace-shell h2,
+.night-shift-shell .workspace-shell h3 {
+  color: #e5e1db !important;
+  font-weight: 620 !important;
+}
+
+.night-shift-shell .workspace-shell .eyebrow {
+  color: #d8844d !important;
+}
+
+.night-shift-shell .workspace-shell .workspace-header p,
+.night-shift-shell .workspace-shell .day-heading p {
+  color: #8f9b9f !important;
+}
+
+.night-shift-shell .workspace-shell .back-button,
+.night-shift-shell .workspace-shell .secondary,
+.night-shift-shell .workspace-shell .owner-controls button {
+  border: 1px solid #304149 !important;
+  background: #101b20 !important;
+  color: #b7c0c3 !important;
+}
+
+.night-shift-shell .workspace-shell .back-button:hover,
+.night-shift-shell .workspace-shell .owner-controls button:hover:not(:disabled) {
+  border-color: var(--ns-copper-bright) !important;
+  color: #e7a276 !important;
+}
+
+.night-shift-shell .workspace-shell .primary,
+.night-shift-shell .workspace-shell .note-save,
+.night-shift-shell .workspace-shell .owner-controls .edit-button {
+  border: 1px solid rgba(216,132,77,.66) !important;
+  background: rgba(169,106,72,.12) !important;
+  color: #e9a374 !important;
+}
+
+.night-shift-shell .workspace-shell .protection-banner,
+.night-shift-shell .workspace-shell .panel,
+.night-shift-shell .workspace-shell .note-access-message {
+  border: 1px solid var(--ns-line) !important;
+  background: #10191e !important;
+  color: #9da8ac !important;
+}
+
+.night-shift-shell .workspace-shell .owner-banner,
+.night-shift-shell .workspace-shell .success-box {
+  border: 1px solid rgba(76,159,172,.38) !important;
+  background: rgba(32,59,70,.38) !important;
+  color: #9cc8cf !important;
+}
+
+.night-shift-shell .workspace-shell .selector-panel,
+.night-shift-shell .workspace-shell .day-heading,
+.night-shift-shell .workspace-shell .agenda-section {
+  border: 1px solid var(--ns-line) !important;
+  border-radius: 9px !important;
+  background: #10191e !important;
+}
+
+.night-shift-shell .workspace-shell .selector-panel {
+  padding: 13px !important;
+}
+
+.night-shift-shell .workspace-shell label {
+  color: #9ca7ab !important;
+}
+
+.night-shift-shell .workspace-shell .day-heading {
+  padding: 16px 18px !important;
+  background:
+    radial-gradient(ellipse at 92% 18%, rgba(169,106,72,.1), transparent 17rem),
+    #10191e !important;
+}
+
+.night-shift-shell .workspace-shell .objective-box {
+  color: #adb6b9 !important;
+}
+
+.night-shift-shell .workspace-shell .objective-box strong {
+  color: #d89a70 !important;
+}
+
+.night-shift-shell .workspace-shell .section-title-row {
+  padding: 13px 15px !important;
+  border-bottom: 1px solid var(--ns-line) !important;
+  background: #121f24 !important;
+}
+
+.night-shift-shell .workspace-shell .section-title-row > strong {
+  color: #e09c6e !important;
+}
+
+.night-shift-shell .workspace-shell .slot {
+  border-bottom: 1px solid #26353b !important;
+}
+
+.night-shift-shell .workspace-shell .slot-main {
+  padding: 13px 15px !important;
+  background: #0f191e !important;
+}
+
+.night-shift-shell .workspace-shell .time-box {
+  color: #e0a06f !important;
+}
+
+.night-shift-shell .workspace-shell .time-box span {
+  color: #6f7d83 !important;
+}
+
+.night-shift-shell .workspace-shell .activity-text {
+  color: #bbc2c4 !important;
+}
+
+.night-shift-shell .workspace-shell .note-area {
+  padding-top: 13px !important;
+  border-top: 1px dashed #314148 !important;
+  background: #0b1519 !important;
+}
+
+.night-shift-shell .workspace-shell .note-save {
+  min-height: 46px !important;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1180px) {
+  .night-shift-shell .section-details {
+    grid-template-columns: 210px minmax(0, 1fr);
+  }
+
+  .night-shift-shell .guide-body-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .night-shift-shell .guide-side-column {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .night-shift-shell .actions-section {
+    grid-template-columns: minmax(0, 1fr) 190px 190px;
+  }
+}
+
+@media (max-width: 979px) {
+  .night-shift-shell .app-container {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .night-shift-shell nav[aria-label='Planner workspace navigation'] {
+    position: relative;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center !important;
+    padding: 10px 12px !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid #223239 !important;
+  }
+
+  .night-shift-shell nav[aria-label='Planner workspace navigation']::after {
+    display: none;
+  }
+
+  .night-shift-shell .ltg-brand {
+    width: 100%;
+    min-height: 54px;
+    margin-bottom: 2px !important;
+    padding-bottom: 9px;
+  }
+
+  .night-shift-shell .ltg-brand-mark {
+    width: 38px;
+    height: 42px;
+    font-size: 10px;
+  }
+
+  .night-shift-shell .ltg-brand-copy {
+    font-size: 14px;
+  }
+
+  .night-shift-shell .ltg-nav-section-label {
+    display: none;
+  }
+
+  .night-shift-shell nav[aria-label='Planner workspace navigation'] a {
+    min-height: 40px;
+    padding: 0 10px !important;
+    font-size: 12px !important;
+  }
+
+  .night-shift-shell .section-details {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'status'
+      'guide'
+      'actions'
+      'calendar';
+  }
+
+  .night-shift-shell .details-grid {
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+  }
+
+  .night-shift-shell .guide-summary-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .night-shift-shell .guide-objective {
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--ns-line) !important;
+  }
+
+  .night-shift-shell .coaching-grid {
+    grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+  }
+
+  .night-shift-shell .coaching-grid > div:nth-child(2) {
+    border-right: 0 !important;
+  }
+
+  .night-shift-shell .coaching-grid > div:nth-child(-n+2) {
+    border-bottom: 1px solid var(--ns-line) !important;
+  }
+
+  .night-shift-shell .actions-section {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .night-shift-shell .actions-section > .form-group:has(#actual-date),
+  .night-shift-shell .actions-section > .form-group:has(#deviation-summary),
+  .night-shift-shell .actions-section > .form-group:has(#follow-up-notes),
+  .night-shift-shell .actions-section .follow-up-check {
+    grid-column: 1 / -1 !important;
+  }
+
+  .night-shift-shell .actions-section .start-button,
+  .night-shift-shell .actions-section .class-timer-panel {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+  }
+
+  .night-shift-shell .actions-section .complete-button {
+    grid-column: 2 !important;
+    grid-row: auto !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .night-shift-shell .dashboard-main,
+  .night-shift-shell .workspace-shell {
+    padding: 10px !important;
+  }
+
+  .night-shift-shell section[aria-label='Class workspace selector'],
+  .night-shift-shell div[aria-label='Assigned instructor and selected class'],
+  .night-shift-shell .dashboard-header {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .night-shift-shell .details-grid,
+  .night-shift-shell .guide-side-column,
+  .night-shift-shell .coaching-grid,
+  .night-shift-shell .actions-section {
+    grid-template-columns: 1fr !important;
+  }
+
+  .night-shift-shell .detail-item {
+    min-height: 84px;
+  }
+
+  .night-shift-shell .guide-day-heading {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+
+  .night-shift-shell .guide-summary-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .night-shift-shell .coaching-grid > div,
+  .night-shift-shell .coaching-grid > div:nth-child(2) {
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--ns-line) !important;
+  }
+
+  .night-shift-shell .coaching-grid > div:last-child {
+    border-bottom: 0 !important;
+  }
+
+  .night-shift-shell .actions-section > *,
+  .night-shift-shell .actions-section .start-button,
+  .night-shift-shell .actions-section .complete-button,
+  .night-shift-shell .actions-section .class-timer-panel {
+    grid-column: 1 !important;
+  }
+
+  .night-shift-shell .action-button {
+    min-height: 64px !important;
+  }
+
+  .night-shift-shell .agenda-table th:first-child,
+  .night-shift-shell .agenda-table td:first-child {
+    width: 88px !important;
+  }
+}
