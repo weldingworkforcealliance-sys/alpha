@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import TeacherIdentityBar from './teacher-identity-bar';
 import './styles.css';
 import './agenda/agenda.css';
 
@@ -64,6 +65,7 @@ export default function RootLayout({
               </Link>
             </nav>
           )}
+          <TeacherIdentityBar pathname={pathname} />
           {children}
         </div>
       </body>
