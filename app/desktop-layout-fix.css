@@ -1,0 +1,12 @@
+/* Desktop planner layout after class selector moved above the planner. */
+@media (min-width: 769px) {
+  .dashboard-content {
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+  }
+
+  .section-details {
+    width: 100%;
+    max-width: none;
+  }
+}
