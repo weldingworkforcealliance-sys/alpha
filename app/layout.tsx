@@ -31,7 +31,7 @@ export default function RootLayout({
     pathname === '/training/login';
   const isPrimaryPlannerRoute = pathname === '/dashboard' || pathname === '/agenda';
 
-  const hideWorkspaceNav = isAuthRoute;
+  const hideWorkspaceNav = isAuthRoute || isStudentJoin;
   const useNightShift = !isStudentJoin;
   const isSecondaryRoute =
     useNightShift && !isAuthRoute && !isTrainingRoute && !isPrimaryPlannerRoute;
