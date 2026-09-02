@@ -28,6 +28,7 @@ type WorkspaceGroup = {
 };
 
 const STORAGE_KEY = 'ltp_selected_section_id';
+const SECTION_EVENT = 'ltp:section-change';
 
 function normalize(value: string | null | undefined) {
   return (value ?? '').replace(/\s+/g, ' ').trim().toLowerCase();
@@ -123,6 +124,9 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
     (row: WorkspaceRow) => {
       setSelectedSectionId(row.section_id);
       window.localStorage.setItem(STORAGE_KEY, row.section_id);
+      window.dispatchEvent(
+        new CustomEvent(SECTION_EVENT, { detail: { sectionId: row.section_id } })
+      );
 
       if (pathname === '/dashboard') {
         const button = findDashboardButton(row);
@@ -156,8 +160,15 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
         return text.includes(course) && Boolean(cohort) && text.includes(cohort);
       });
       if (matched) {
-        setSelectedSectionId(matched.section_id);
-        window.localStorage.setItem(STORAGE_KEY, matched.section_id);
+        if (matched.section_id !== selectedSectionId) {
+          setSelectedSectionId(matched.section_id);
+          window.localStorage.setItem(STORAGE_KEY, matched.section_id);
+          window.dispatchEvent(
+            new CustomEvent(SECTION_EVENT, {
+              detail: { sectionId: matched.section_id },
+            })
+          );
+        }
         return true;
       }
       return false;
@@ -169,14 +180,21 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
         ? rows.find((row) => row.section_id === select.value)
         : null;
       if (matched) {
-        setSelectedSectionId(matched.section_id);
-        window.localStorage.setItem(STORAGE_KEY, matched.section_id);
+        if (matched.section_id !== selectedSectionId) {
+          setSelectedSectionId(matched.section_id);
+          window.localStorage.setItem(STORAGE_KEY, matched.section_id);
+          window.dispatchEvent(
+            new CustomEvent(SECTION_EVENT, {
+              detail: { sectionId: matched.section_id },
+            })
+          );
+        }
         return true;
       }
     }
 
     return false;
-  }, [findAgendaSelect, pathname, rows]);
+  }, [findAgendaSelect, pathname, rows, selectedSectionId]);
 
   useEffect(() => {
     if (!supportedPage) {
