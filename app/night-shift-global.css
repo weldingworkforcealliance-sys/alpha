@@ -1,0 +1,383 @@
+/* Living Teacher Planner — Night Shift shared route treatment
+   Extends the current Night Shift visual language beyond Planner/Agenda.
+   Visual-only. Does not alter curriculum, permissions, assessments, or production data. */
+
+/* ===== Auth routes ===== */
+body.night-shift-shell.ltg-auth-route {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(76,159,172,.11), transparent 28rem),
+    radial-gradient(circle at 82% 82%, rgba(169,106,72,.10), transparent 30rem),
+    linear-gradient(145deg, #070d10, #0b1418 46%, #091116);
+}
+
+.ltg-auth-route .app-container {
+  min-height: 100vh !important;
+  background:
+    linear-gradient(rgba(255,255,255,.009) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.009) 1px, transparent 1px),
+    transparent !important;
+  background-size: 34px 34px !important;
+}
+
+@media (min-width: 980px) {
+  .night-shift-shell.ltg-auth-route .app-container {
+    display: block !important;
+  }
+
+  .night-shift-shell.ltg-auth-route .app-container > :not(nav[aria-label='Planner workspace navigation']) {
+    grid-column: auto !important;
+  }
+}
+
+.ltg-auth-route .shell {
+  min-height: 100vh !important;
+  background: transparent !important;
+  color: var(--ns-text) !important;
+}
+
+.ltg-auth-route .card {
+  border: 1px solid #2a3a41 !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.018), transparent 42%),
+    #10191e !important;
+  color: var(--ns-text) !important;
+  box-shadow: 0 26px 70px rgba(0,0,0,.42) !important;
+}
+
+.ltg-auth-route .eyebrow {
+  color: var(--ns-copper-bright) !important;
+}
+
+.ltg-auth-route h1,
+.ltg-auth-route h2,
+.ltg-auth-route strong {
+  color: #eee9e2 !important;
+}
+
+.ltg-auth-route p,
+.ltg-auth-route .sub,
+.ltg-auth-route label,
+.ltg-auth-route span {
+  color: #93a0a5;
+}
+
+.ltg-auth-route input,
+.ltg-auth-route select,
+.ltg-auth-route textarea {
+  border-color: #31444c !important;
+  background: #0b1317 !important;
+  color: #ece8e2 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.015);
+}
+
+.ltg-auth-route input:focus,
+.ltg-auth-route select:focus,
+.ltg-auth-route textarea:focus {
+  outline: none !important;
+  border-color: var(--ns-teal) !important;
+  box-shadow: 0 0 0 3px rgba(76,159,172,.10) !important;
+}
+
+.ltg-auth-route button {
+  border-color: #33454d !important;
+  background: #111c21 !important;
+  color: #c7d0d3 !important;
+}
+
+.ltg-auth-route button:hover:not(:disabled) {
+  border-color: rgba(216,132,77,.72) !important;
+  color: #f0c2a2 !important;
+}
+
+.ltg-auth-route form button[type='submit'],
+.ltg-auth-route .primary {
+  border-color: rgba(216,132,77,.64) !important;
+  background: linear-gradient(180deg, rgba(169,106,72,.20), rgba(122,73,48,.13)) !important;
+  color: #f0b88e !important;
+}
+
+.ltg-auth-route .error {
+  border-color: rgba(195,109,90,.46) !important;
+  background: rgba(195,109,90,.09) !important;
+  color: #efa08e !important;
+}
+
+.ltg-auth-route .success,
+.ltg-auth-route .notice {
+  border-color: rgba(118,169,149,.40) !important;
+  background: rgba(118,169,149,.08) !important;
+  color: #9dc9b8 !important;
+}
+
+/* ===== Training routes ===== */
+.ltg-training-route .shell,
+.ltg-training-route .loading {
+  background:
+    radial-gradient(circle at 78% 4%, rgba(169,106,72,.055), transparent 23rem),
+    #091015 !important;
+  color: var(--ns-text) !important;
+}
+
+.ltg-training-route .banner,
+.ltg-training-route .training-banner,
+.ltg-training-route .demo-banner {
+  background: linear-gradient(90deg, #6f432f, #8d5638, #6f432f) !important;
+  color: #f5e9df !important;
+  border-bottom: 1px solid rgba(216,132,77,.32) !important;
+  box-shadow: 0 6px 22px rgba(0,0,0,.20);
+}
+
+.ltg-training-route header {
+  background:
+    radial-gradient(circle at 82% 20%, rgba(169,106,72,.07), transparent 22rem),
+    #0c1519 !important;
+  border-color: #23343b !important;
+}
+
+.ltg-training-route .panel,
+.ltg-training-route .card,
+.ltg-training-route .session,
+.ltg-training-route .people > div,
+.ltg-training-route .activity > div,
+.ltg-training-route .actions-list > div,
+.ltg-training-route .fact {
+  border-color: #293a41 !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.016), transparent 44%),
+    #10191e !important;
+  color: var(--ns-text) !important;
+  box-shadow: 0 10px 26px rgba(0,0,0,.13);
+}
+
+.ltg-training-route .eyebrow {
+  color: var(--ns-copper-bright) !important;
+}
+
+.ltg-training-route h1,
+.ltg-training-route h2,
+.ltg-training-route h3,
+.ltg-training-route strong {
+  color: #ece7e0 !important;
+}
+
+.ltg-training-route p,
+.ltg-training-route small,
+.ltg-training-route .session span,
+.ltg-training-route .activity span,
+.ltg-training-route .empty {
+  color: #89979d !important;
+}
+
+.ltg-training-route button {
+  border-color: #304149 !important;
+  background: #111c21 !important;
+  color: #bcc7ca !important;
+  box-shadow: none !important;
+}
+
+.ltg-training-route button:hover:not(:disabled) {
+  border-color: rgba(216,132,77,.72) !important;
+  color: #efb28a !important;
+}
+
+.ltg-training-route .primary {
+  border-color: rgba(216,132,77,.62) !important;
+  background: rgba(169,106,72,.12) !important;
+  color: #efad80 !important;
+}
+
+.ltg-training-route .danger {
+  border-color: rgba(195,109,90,.46) !important;
+  background: rgba(195,109,90,.07) !important;
+  color: #e89482 !important;
+}
+
+.ltg-training-route input,
+.ltg-training-route select,
+.ltg-training-route textarea {
+  border-color: #304149 !important;
+  background: #0b1418 !important;
+  color: #e9e4de !important;
+}
+
+.ltg-training-route input:focus,
+.ltg-training-route select:focus,
+.ltg-training-route textarea:focus {
+  outline: none !important;
+  border-color: var(--ns-teal) !important;
+  box-shadow: 0 0 0 3px rgba(76,159,172,.10) !important;
+}
+
+.ltg-training-route .thead {
+  background: #0d161a !important;
+  color: #718087 !important;
+}
+
+.ltg-training-route .trow {
+  border-color: #26363d !important;
+  color: #aeb8bc !important;
+}
+
+.ltg-training-route .hold {
+  border-color: rgba(216,132,77,.38) !important;
+  background: rgba(169,106,72,.08) !important;
+  color: #e3a57b !important;
+}
+
+.ltg-training-route .dot.on {
+  background: var(--ns-success) !important;
+  box-shadow: 0 0 10px rgba(118,169,149,.35);
+}
+
+.ltg-training-route .error {
+  border-color: rgba(195,109,90,.42) !important;
+  background: rgba(195,109,90,.08) !important;
+  color: #eca08f !important;
+}
+
+.ltg-training-route .notice {
+  border-color: rgba(118,169,149,.38) !important;
+  background: rgba(118,169,149,.07) !important;
+  color: #9dc7b7 !important;
+}
+
+/* ===== Demo / classroom / accounts / owner / school / review pages ===== */
+.ltg-secondary-route .shell,
+.ltg-secondary-route .loading,
+.ltg-secondary-route main {
+  background-color: transparent !important;
+  color: var(--ns-text) !important;
+}
+
+.ltg-secondary-route .shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 80% 2%, rgba(76,159,172,.045), transparent 26rem),
+    transparent !important;
+}
+
+.ltg-secondary-route header {
+  background:
+    radial-gradient(circle at 78% 20%, rgba(169,106,72,.065), transparent 24rem),
+    #0c1519 !important;
+  border-color: #23343b !important;
+}
+
+.ltg-secondary-route .demo-banner,
+.ltg-secondary-route .banner {
+  background: linear-gradient(90deg, #1b3b46, #254b57, #1b3b46) !important;
+  border-color: rgba(76,159,172,.30) !important;
+  color: #dbe8eb !important;
+}
+
+.ltg-secondary-route .card,
+.ltg-secondary-route .panel,
+.ltg-secondary-route .section,
+.ltg-secondary-route .metric,
+.ltg-secondary-route .stat,
+.ltg-secondary-route .tile,
+.ltg-secondary-route .row,
+.ltg-secondary-route .table-card,
+.ltg-secondary-route .queue-card {
+  border-color: #293a41 !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.016), transparent 44%),
+    #10191e !important;
+  color: var(--ns-text) !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,.12);
+}
+
+.ltg-secondary-route .eyebrow {
+  color: var(--ns-copper-bright) !important;
+}
+
+.ltg-secondary-route h1,
+.ltg-secondary-route h2,
+.ltg-secondary-route h3,
+.ltg-secondary-route strong {
+  color: #ece7e0 !important;
+}
+
+.ltg-secondary-route p,
+.ltg-secondary-route small,
+.ltg-secondary-route label,
+.ltg-secondary-route .muted,
+.ltg-secondary-route .sub {
+  color: #8d9aa0 !important;
+}
+
+.ltg-secondary-route button,
+.ltg-secondary-route a.button {
+  border-color: #304149 !important;
+  background: #111c21 !important;
+  color: #bcc7ca !important;
+}
+
+.ltg-secondary-route button:hover:not(:disabled),
+.ltg-secondary-route a.button:hover {
+  border-color: rgba(216,132,77,.70) !important;
+  color: #efb28a !important;
+}
+
+.ltg-secondary-route .primary,
+.ltg-secondary-route button.primary {
+  border-color: rgba(216,132,77,.60) !important;
+  background: rgba(169,106,72,.12) !important;
+  color: #efad80 !important;
+}
+
+.ltg-secondary-route input,
+.ltg-secondary-route select,
+.ltg-secondary-route textarea {
+  border-color: #304149 !important;
+  background: #0b1418 !important;
+  color: #e9e4de !important;
+}
+
+.ltg-secondary-route input:focus,
+.ltg-secondary-route select:focus,
+.ltg-secondary-route textarea:focus {
+  outline: none !important;
+  border-color: var(--ns-teal) !important;
+  box-shadow: 0 0 0 3px rgba(76,159,172,.10) !important;
+}
+
+.ltg-secondary-route .error {
+  border-color: rgba(195,109,90,.42) !important;
+  background: rgba(195,109,90,.08) !important;
+  color: #eca08f !important;
+}
+
+.ltg-secondary-route .success,
+.ltg-secondary-route .notice {
+  border-color: rgba(118,169,149,.38) !important;
+  background: rgba(118,169,149,.07) !important;
+  color: #9dc7b7 !important;
+}
+
+/* Keep temporary training reports printer-friendly even though the screen view is Night Shift. */
+@media print {
+  body.night-shift-shell.ltg-training-route,
+  .ltg-training-route .shell,
+  .ltg-training-route main {
+    background: #fff !important;
+    color: #222 !important;
+  }
+
+  .ltg-training-route .panel,
+  .ltg-training-route .fact,
+  .ltg-training-route .actions-list > div {
+    background: #fff !important;
+    border-color: #d5d5d5 !important;
+    color: #222 !important;
+    box-shadow: none !important;
+  }
+
+  .ltg-training-route h1,
+  .ltg-training-route h2,
+  .ltg-training-route h3,
+  .ltg-training-route strong {
+    color: #222 !important;
+  }
+}
