@@ -103,21 +103,27 @@
 }
 
 .workspace-shell .note-area {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 10px;
-  align-items: end;
-  padding: 12px 16px 14px 142px;
+  align-items: stretch;
+  padding: 14px 16px 16px 142px;
   background: #0c0c0c;
   border-top: 1px dashed #292929;
 }
 
 .workspace-shell .note-area label {
-  flex: 1;
+  width: 100%;
   min-width: 0;
 }
 
+.workspace-shell .note-area textarea {
+  width: 100%;
+  min-height: 96px;
+}
+
 .workspace-shell .note-save {
-  flex: 0 0 auto;
+  width: 100%;
   min-height: 42px;
   padding: 9px 13px;
   border: 1px solid rgba(0, 255, 136, 0.55);
@@ -154,12 +160,6 @@
 
   .workspace-shell .note-area {
     padding-left: 16px;
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .workspace-shell .note-save {
-    width: 100%;
   }
 }
 
