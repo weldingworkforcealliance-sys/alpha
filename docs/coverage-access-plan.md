@@ -11,3 +11,9 @@ Operational rule for the PCCC LTG beta:
 - Completion remains tied to the instructor who actually started the day, with school/program management and Platform Owner override.
 - Coverage is recorded for audit/reporting and ends when the day is completed.
 - Protected curriculum/outcomes are unchanged by coverage access.
+
+## Status
+
+Implemented in the production database on 2026-09-02. Rollback testing confirmed that an unassigned active PCCC instructor can see all six PCCC beta sections, start a different class as coverage, write an agenda note while covering, complete the day, and then lose temporary instructor status after completion. Test data was rolled back.
+
+No additional Netlify deployment was required for the access model because the existing Planner and Agenda UI respond to the database views and permission functions.
