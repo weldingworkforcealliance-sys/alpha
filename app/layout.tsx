@@ -12,6 +12,7 @@ import './styles.css';
 import './agenda/agenda.css';
 import './desktop-layout-fix.css';
 import './large-text-fields.css';
+import './hybrid-theme.css';
 
 export default function RootLayout({
   children,
@@ -35,37 +36,17 @@ export default function RootLayout({
       <body>
         <div className="app-container">
           {!hideWorkspaceNav && (
-            <nav
-              aria-label="Planner workspace navigation"
-              style={{
-                display: 'flex',
-                gap: '10px',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                padding: '10px 16px',
-                borderBottom: '1px solid #242424',
-                background: '#0d0d0d',
-              }}
-            >
+            <nav aria-label="Planner workspace navigation">
+              <span className="ltg-brand">Living Teacher Planner</span>
               <Link
                 href="/dashboard"
-                style={{
-                  color: pathname === '/dashboard' ? '#00ff88' : '#c8c8c8',
-                  textDecoration: 'none',
-                  fontWeight: 800,
-                  fontSize: '13px',
-                }}
+                className={`ltg-nav-link ${pathname === '/dashboard' ? 'active' : ''}`}
               >
                 Planner
               </Link>
               <Link
                 href="/agenda"
-                style={{
-                  color: pathname === '/agenda' ? '#00ff88' : '#c8c8c8',
-                  textDecoration: 'none',
-                  fontWeight: 800,
-                  fontSize: '13px',
-                }}
+                className={`ltg-nav-link ${pathname === '/agenda' ? 'active' : ''}`}
               >
                 Agenda Workspace
               </Link>
