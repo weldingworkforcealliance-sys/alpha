@@ -25,6 +25,7 @@ export default function RootLayout({
   const pathname = usePathname();
   const isStudentJoin = pathname.startsWith('/join/');
   const isTrainingRoute = pathname.startsWith('/training');
+  const isAccountRoute = pathname.startsWith('/accounts');
   const isAuthRoute =
     pathname === '/login' ||
     pathname === '/account-setup' ||
@@ -80,6 +81,23 @@ export default function RootLayout({
                 Agenda Workspace
               </Link>
               <ReviewQueueLink />
+              {isAccountRoute && (
+                <>
+                  <div className="ltg-nav-section-label">Account Tools</div>
+                  <Link
+                    href="/accounts"
+                    className={`ltg-nav-link ${pathname === '/accounts' ? 'active' : ''}`}
+                  >
+                    Account Management
+                  </Link>
+                  <Link
+                    href="/accounts/diagnostics"
+                    className={`ltg-nav-link ${pathname === '/accounts/diagnostics' ? 'active' : ''}`}
+                  >
+                    Invitation Diagnostics
+                  </Link>
+                </>
+              )}
             </nav>
           )}
           <CohortWorkspaceBar pathname={pathname} />
