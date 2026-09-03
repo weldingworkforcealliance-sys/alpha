@@ -81,6 +81,12 @@ export default function RootLayout({
               >
                 Agenda Workspace
               </Link>
+              <Link
+                href="/time-clock"
+                className={`ltg-nav-link ${pathname.startsWith('/time-clock') ? 'active' : ''}`}
+              >
+                Employee Time Clock
+              </Link>
               <ReviewQueueLink />
               {isAccountRoute && (
                 <>
