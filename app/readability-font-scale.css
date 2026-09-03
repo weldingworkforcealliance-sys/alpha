@@ -1,0 +1,93 @@
+/* LTG readability pass — raises the smallest interface text roughly two size steps.
+   Large headings and primary values are intentionally left alone so hierarchy is preserved. */
+
+body.night-shift-shell {
+  --ltg-small: 13px;
+  --ltg-small-plus: 14px;
+  --ltg-body-readable: 15px;
+}
+
+/* Small uppercase labels, eyebrows, table headings, and helper captions. */
+body.night-shift-shell .ltg-nav-section-label,
+body.night-shift-shell section[aria-label='Class workspace selector'] > div > div:first-child,
+body.night-shift-shell .detail-item label,
+body.night-shift-shell .guide-label,
+body.night-shift-shell .guide-eyebrow,
+body.night-shift-shell .eyebrow,
+body.night-shift-shell .agenda-table th,
+body.night-shift-shell .thead,
+body.night-shift-shell .fact span,
+body.night-shift-shell .metric span,
+body.night-shift-shell .metrics span,
+body.night-shift-shell .guide-day-select-label,
+body.night-shift-shell .calendar-legend,
+body.night-shift-shell .calendar-day-label,
+body.night-shift-shell .resource-type,
+body.night-shift-shell .segment-type,
+body.night-shift-shell .section-label,
+body.night-shift-shell .status-label {
+  font-size: var(--ltg-small) !important;
+  line-height: 1.35 !important;
+}
+
+/* General secondary copy that previously sat around 10–12px. */
+body.night-shift-shell small,
+body.night-shift-shell .helper-text,
+body.night-shift-shell .muted,
+body.night-shift-shell .guide-browser-status,
+body.night-shift-shell .section-cohort-text,
+body.night-shift-shell .teacher-identity,
+body.night-shift-shell div[aria-label='Assigned instructor and selected class'],
+body.night-shift-shell .coaching-grid p,
+body.night-shift-shell .guide-info-card p,
+body.night-shift-shell .resource-card p,
+body.night-shift-shell .math-goal,
+body.night-shift-shell .book-connection,
+body.night-shift-shell .math-instructor-only p,
+body.night-shift-shell .calendar-day,
+body.night-shift-shell .calendar-day small,
+body.night-shift-shell .trow,
+body.night-shift-shell .people small,
+body.night-shift-shell .activity small,
+body.night-shift-shell .activity span {
+  font-size: var(--ltg-small-plus) !important;
+  line-height: 1.45 !important;
+}
+
+/* Buttons and form controls must be readable without competing with headings. */
+body.night-shift-shell button,
+body.night-shift-shell input,
+body.night-shift-shell select,
+body.night-shift-shell textarea {
+  font-size: var(--ltg-small-plus) !important;
+}
+
+/* Navigation was already larger, but gets a modest bump to match the new floor. */
+body.night-shift-shell nav[aria-label='Planner workspace navigation'] a {
+  font-size: 15px !important;
+}
+
+body.night-shift-shell .dashboard-header .logout-button {
+  font-size: var(--ltg-small) !important;
+}
+
+/* Improve reading comfort for instructional paragraphs without inflating titles. */
+body.night-shift-shell .guide-day-heading p,
+body.night-shift-shell .daily-objective,
+body.night-shift-shell .protected-outcome,
+body.night-shift-shell .agenda-table td,
+body.night-shift-shell .segment-content,
+body.night-shift-shell .resource-notes,
+body.night-shift-shell .coaching-grid > div > p {
+  font-size: var(--ltg-body-readable) !important;
+  line-height: 1.5 !important;
+}
+
+/* Preserve useful density on smaller screens while keeping the higher minimum. */
+@media (max-width: 760px) {
+  body.night-shift-shell {
+    --ltg-small: 12px;
+    --ltg-small-plus: 13px;
+    --ltg-body-readable: 14px;
+  }
+}
