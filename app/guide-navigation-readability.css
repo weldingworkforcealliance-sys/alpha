@@ -1,0 +1,134 @@
+/* LTG Teacher Guide Navigation — readability and scanability
+   Makes the 55-day guide browser easier to read without changing planner behavior. */
+
+body.night-shift-shell .guide-browser {
+  display: grid !important;
+  grid-template-columns: minmax(170px, .7fr) minmax(420px, 1.8fr) minmax(170px, .7fr) !important;
+  align-items: stretch !important;
+  gap: 14px !important;
+  padding: 16px 18px !important;
+  min-height: 92px;
+  background: linear-gradient(180deg, #0d181d, #0a1317) !important;
+  border-bottom: 1px solid #31434a !important;
+}
+
+body.night-shift-shell .guide-browser-center {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: center !important;
+  gap: 9px !important;
+  min-width: 0;
+  padding: 2px 8px;
+}
+
+body.night-shift-shell .guide-browser-status {
+  display: block !important;
+  color: #f0ece5 !important;
+  font-size: 18px !important;
+  line-height: 1.25 !important;
+  font-weight: 800 !important;
+  letter-spacing: .01em !important;
+  text-align: center;
+  white-space: normal !important;
+}
+
+body.night-shift-shell .guide-day-select-label {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center !important;
+  gap: 11px !important;
+  width: 100%;
+  color: #d49a73 !important;
+  font-size: 14px !important;
+  line-height: 1.25 !important;
+  font-weight: 850 !important;
+  letter-spacing: .07em !important;
+  text-transform: uppercase;
+}
+
+body.night-shift-shell .guide-day-select-label select {
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 50px !important;
+  padding: 10px 42px 10px 14px !important;
+  border: 1px solid #45616b !important;
+  border-radius: 8px !important;
+  background: #101d22 !important;
+  color: #f1ede7 !important;
+  font-size: 16px !important;
+  line-height: 1.35 !important;
+  font-weight: 650 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  cursor: pointer;
+}
+
+body.night-shift-shell .guide-day-select-label select:hover,
+body.night-shift-shell .guide-day-select-label select:focus {
+  border-color: #58a9b6 !important;
+  box-shadow: 0 0 0 2px rgba(76,159,172,.12), 0 0 20px rgba(76,159,172,.08) !important;
+  outline: none;
+}
+
+body.night-shift-shell .guide-day-select-label select option {
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  background: #10191e;
+  color: #f0ece5;
+}
+
+body.night-shift-shell .guide-browser-button,
+body.night-shift-shell .back-current-button {
+  min-height: 50px !important;
+  padding: 11px 16px !important;
+  border-radius: 8px !important;
+  font-size: 16px !important;
+  line-height: 1.2 !important;
+  font-weight: 750 !important;
+  align-self: center;
+}
+
+body.night-shift-shell .guide-browser-button:not(:disabled):hover,
+body.night-shift-shell .back-current-button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+body.night-shift-shell .back-current-button {
+  color: #f0b78f !important;
+  border-color: rgba(216,132,77,.55) !important;
+}
+
+@media (max-width: 1100px) {
+  body.night-shift-shell .guide-browser {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  body.night-shift-shell .guide-browser-center {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+}
+
+@media (max-width: 700px) {
+  body.night-shift-shell .guide-browser {
+    grid-template-columns: 1fr !important;
+    padding: 14px !important;
+  }
+
+  body.night-shift-shell .guide-browser-center,
+  body.night-shift-shell .guide-browser-button,
+  body.night-shift-shell .back-current-button {
+    grid-column: 1;
+    width: 100%;
+  }
+
+  body.night-shift-shell .guide-day-select-label {
+    grid-template-columns: 1fr;
+    gap: 7px !important;
+  }
+
+  body.night-shift-shell .guide-browser-status {
+    text-align: left;
+  }
+}
