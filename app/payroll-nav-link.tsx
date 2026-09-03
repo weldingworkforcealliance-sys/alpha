@@ -33,11 +33,19 @@ export default function PayrollNavLink() {
           .eq('status', 'active'),
       ]);
 
-      const allowed = Boolean(ownerResult.data) || (membershipResult.data ?? []).some((row: { role: string; status: string }) => PAYROLL_ROLES.has(row.role));
+      const allowed =
+        Boolean(ownerResult.data) ||
+        (membershipResult.data ?? []).some((row: { role: string; status: string }) =>
+          PAYROLL_ROLES.has(row.role)
+        );
+
       if (active) setVisible(allowed);
     };
+
     load();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [supabase]);
 
   if (!visible) return null;
@@ -47,7 +55,7 @@ export default function PayrollNavLink() {
       href="/time-clock/payroll"
       className={`ltg-nav-link ${pathname.startsWith('/time-clock/payroll') ? 'active' : ''}`}
     >
-      Weekly Payroll Reports
+      Weekly Time Reports
     </Link>
   );
 }
