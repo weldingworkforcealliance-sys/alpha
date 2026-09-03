@@ -9,6 +9,7 @@ import PayrollNavLink from './payroll-nav-link';
 import AgendaNotePolicyBanner from './agenda-note-policy-banner';
 import CohortWorkspaceBar from './cohort-workspace-bar';
 import BetaUiConsistency from './beta-ui-consistency';
+import ClockAwareLogoutGuard from './clock-aware-logout-guard';
 import './styles.css';
 import './agenda/agenda.css';
 import './desktop-layout-fix.css';
@@ -58,6 +59,7 @@ export default function RootLayout({
         <title>Living Teacher Planner</title>
       </head>
       <body className={bodyClassName || undefined}>
+        <ClockAwareLogoutGuard />
         <div className="app-container">
           {!hideWorkspaceNav && (
             <nav aria-label="Planner workspace navigation">
