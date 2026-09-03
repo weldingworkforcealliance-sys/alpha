@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import TeacherIdentityBar from './teacher-identity-bar';
 import ReviewQueueLink from './review-queue-link';
+import PayrollNavLink from './payroll-nav-link';
 import AgendaNotePolicyBanner from './agenda-note-policy-banner';
 import CohortWorkspaceBar from './cohort-workspace-bar';
 import BetaUiConsistency from './beta-ui-consistency';
@@ -83,10 +84,11 @@ export default function RootLayout({
               </Link>
               <Link
                 href="/time-clock"
-                className={`ltg-nav-link ${pathname.startsWith('/time-clock') ? 'active' : ''}`}
+                className={`ltg-nav-link ${pathname === '/time-clock' ? 'active' : ''}`}
               >
                 Employee Time Clock
               </Link>
+              <PayrollNavLink />
               <ReviewQueueLink />
               {isAccountRoute && (
                 <>
