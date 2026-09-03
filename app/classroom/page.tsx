@@ -7,7 +7,7 @@ import { createBrowserClient } from '@supabase/ssr';
 
 type Section = { section_id:string; section_name:string|null; section_code:string|null; course_code:string|null; course_name:string|null };
 type Assessment = { slug:string; title:string; description:string|null; category:string; estimated_minutes:number|null; question_count:number; instructions:string|null; allow_team_members:boolean };
-type Session = { id:string; join_code:string; status:string; started_at:string; section_id:string; assessment_slug:string; expected_students:number };
+type Session = { id:string; join_code:string; status:string; started_at:string; expires_at:string; section_id:string; assessment_slug:string; expected_students:number };
 type Submission = { id:string; student_name:string; student_id:string; team_members:string|null; score:number; possible_score:number; submitted_at:string; domain_scores:Record<string,{correct:number,total:number}> };
 type ReportQuestion = { key:string; number:number; domain:string; text:string; options:Record<string,string>|null; student_answer:string; correct_answer:string; is_correct:boolean; explanation:string|null };
 type Report = { submission:Submission & { percent:number; assessment_title:string }; questions:ReportQuestion[] };
@@ -35,7 +35,7 @@ export default function ClassroomPage() {
   const submitted=submissions.length;
   const remaining=Math.max((session?.expected_students??expectedStudents)-submitted,0);
   const progress=Math.min(100,Math.round(100*submitted/Math.max(session?.expected_students??expectedStudents,1)));
-  const joinUrl=session&&typeof window!=='undefined'?`${window.location.origin}/join/${session.join_code}`:'';
+  const joinUrl=session?.status==='active'&&typeof window!=='undefined'?`${window.location.origin}/join/${session.join_code}`:'';
 
   const loadSubmissions=async(sessionId:string)=>{
     const {data,error:e}=await supabase.from('classroom_submissions')
@@ -50,6 +50,10 @@ export default function ClassroomPage() {
       try{
         const {data:auth}=await supabase.auth.getSession();
         if(!auth.session){router.replace('/login');return;}
+
+        const {error:expireError}=await supabase.rpc('expire_classroom_sessions');
+        if(expireError) throw expireError;
+
         const [{data:s,error:se},{data:a,error:ae}]=await Promise.all([
           supabase.from('current_teaching_sections').select('section_id,section_name,section_code,course_code,course_name'),
           supabase.rpc('list_assessment_modules_v2')
@@ -62,16 +66,28 @@ export default function ClassroomPage() {
         const params=new URLSearchParams(window.location.search);
         const requestedSection=params.get('section');
         const requestedAssessment=params.get('assessment');
-        const validSection=sectionRows.some(row=>row.section_id===requestedSection)?requestedSection:sectionRows[0]?.section_id;
-        const validAssessment=assessmentRows.some(row=>row.slug===requestedAssessment)?requestedAssessment:assessmentRows[0]?.slug;
-        if(validSection)setSectionId(validSection);
-        if(validAssessment)setAssessmentSlug(validAssessment);
+        const validRequestedSection=requestedSection&&sectionRows.some(row=>row.section_id===requestedSection)?requestedSection:null;
+        const validRequestedAssessment=requestedAssessment&&assessmentRows.some(row=>row.slug===requestedAssessment)?requestedAssessment:null;
+        const initialSection=validRequestedSection??sectionRows[0]?.section_id??'';
+        const initialAssessment=validRequestedAssessment??assessmentRows[0]?.slug??'';
+        if(initialSection)setSectionId(initialSection);
+        if(initialAssessment)setAssessmentSlug(initialAssessment);
 
+        const hasRequestedContext=Boolean(requestedSection||requestedAssessment);
+        const requestedContextIsValid=(!requestedSection||Boolean(validRequestedSection))&&(!requestedAssessment||Boolean(validRequestedAssessment));
         const sectionIds=sectionRows.map(row=>row.section_id);
-        if(sectionIds.length){
-          const {data:active,error:activeError}=await supabase.from('classroom_sessions')
-            .select('id,join_code,status,started_at,section_id,assessment_slug,expected_students')
-            .eq('status','active').in('section_id',sectionIds).order('started_at',{ascending:false}).limit(1).maybeSingle();
+
+        if(sectionIds.length&&(!hasRequestedContext||requestedContextIsValid)){
+          let activeQuery=supabase.from('classroom_sessions')
+            .select('id,join_code,status,started_at,expires_at,section_id,assessment_slug,expected_students')
+            .eq('status','active')
+            .gt('expires_at',new Date().toISOString())
+            .in('section_id',sectionIds);
+
+          if(validRequestedSection)activeQuery=activeQuery.eq('section_id',validRequestedSection);
+          if(validRequestedAssessment)activeQuery=activeQuery.eq('assessment_slug',validRequestedAssessment);
+
+          const {data:active,error:activeError}=await activeQuery.order('started_at',{ascending:false}).limit(1).maybeSingle();
           if(activeError)throw activeError;
           if(active){
             const restored=active as Session;
@@ -84,14 +100,14 @@ export default function ClassroomPage() {
   },[router,supabase]);
 
   useEffect(()=>{
-    if(!session)return;
+    if(!session||session.status!=='active'||!joinUrl){setQr('');return;}
     QRCode.toDataURL(joinUrl,{width:340,margin:2,color:{dark:'#050505',light:'#ffffff'}}).then(setQr).catch(e=>setError(e.message));
     loadSubmissions(session.id).catch(e=>setError(e.message));
     const channel=supabase.channel(`classroom-${session.id}`)
       .on('postgres_changes',{event:'INSERT',schema:'public',table:'classroom_submissions',filter:`classroom_session_id=eq.${session.id}`},()=>loadSubmissions(session.id))
       .subscribe();
     return()=>{void supabase.removeChannel(channel);};
-  },[session?.id,joinUrl,supabase]);
+  },[session?.id,session?.status,joinUrl,supabase]);
 
   const start=async()=>{
     if(!sectionId||!assessmentSlug)return;
@@ -100,9 +116,9 @@ export default function ClassroomPage() {
       const {data,error:e}=await supabase.rpc('start_classroom_session_v2',{p_section_id:sectionId,p_assessment_slug:assessmentSlug,p_expected_students:expectedStudents});
       if(e)throw e;
       const {data:row,error:re}=await supabase.from('classroom_sessions')
-        .select('id,join_code,status,started_at,section_id,assessment_slug,expected_students').eq('id',data).single();
+        .select('id,join_code,status,started_at,expires_at,section_id,assessment_slug,expected_students').eq('id',data).single();
       if(re)throw re;
-      setSubmissions([]);setSession(row as Session);
+      setSubmissions([]);setReport(null);setSession(row as Session);
     }catch(e){setError(e instanceof Error?e.message:String(e));}
     finally{setBusy(false);}
   };
@@ -155,8 +171,8 @@ export default function ClassroomPage() {
         {!sections.length&&<p className="muted">No assigned teaching sections were found for this account.</p>}
       </section>:<>
         <section className="panel live-grid">
-          <div><div className={session.status==='active'?'live':'ended'}>● {session.status==='active'?'LIVE':'ENDED'}</div><div className="eyebrow">{selectedSection?.course_code} · {selectedSection?.section_name??selectedSection?.section_code}</div><h2>{selectedAssessment?.title??session.assessment_slug}</h2><div className="code">{session.join_code}</div><a href={joinUrl} target="_blank" rel="noreferrer">{joinUrl}</a><div className="actions"><button onClick={()=>navigator.clipboard.writeText(joinUrl)}>Copy Link</button><button onClick={()=>openAnswerKey(session.assessment_slug)}>Answer Key</button><button className="danger" disabled={busy||session.status!=='active'} onClick={end}>End Session</button>{session.status==='ended'&&<button className="primary" onClick={()=>{setSession(null);setReport(null);}}>New Session</button>}</div></div>
-          <div className="qr">{qr&&<img src={qr} alt="QR code for students to join the assessment"/>}</div>
+          <div><div className={session.status==='active'?'live':'ended'}>● {session.status==='active'?'LIVE':'ENDED'}</div><div className="eyebrow">{selectedSection?.course_code} · {selectedSection?.section_name??selectedSection?.section_code}</div><h2>{selectedAssessment?.title??session.assessment_slug}</h2>{session.status==='active'?<><div className="code">{session.join_code}</div><a href={joinUrl} target="_blank" rel="noreferrer">{joinUrl}</a><p className="muted">Join code valid until {new Date(session.expires_at).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}.</p></>:<p className="muted">Session ended. The student join code is no longer valid.</p>}<div className="actions">{session.status==='active'&&<button onClick={()=>navigator.clipboard.writeText(joinUrl)}>Copy Link</button>}<button onClick={()=>openAnswerKey(session.assessment_slug)}>Answer Key</button><button className="danger" disabled={busy||session.status!=='active'} onClick={end}>End Session</button>{session.status==='ended'&&<button className="primary" onClick={()=>{setSession(null);setReport(null);setQr('');}}>New Session</button>}</div></div>
+          <div className="qr">{session.status==='active'&&qr&&<img src={qr} alt="QR code for students to join the assessment"/>}</div>
         </section>
         <section className="panel"><div className="results-head"><div><div className="eyebrow">Live Progress</div><h2>{submitted} submitted · {remaining} remaining</h2></div><button disabled={!submissions.length} onClick={exportCsv}>Export CSV</button></div><div className="progress"><span style={{width:`${progress}%`}}/></div><div className="progress-label">{progress}% of {session.expected_students} expected students</div>
           <div className="table-wrap"><table><thead><tr><th>Student</th><th>ID / Team</th><th>Score</th><th>Percent</th><th>Submitted</th><th>Report</th></tr></thead><tbody>{submissions.map(s=><tr key={s.id}><td>{s.student_name}</td><td>{s.student_id}{s.team_members&&<small>{s.team_members}</small>}</td><td>{s.score}/{s.possible_score}</td><td><strong>{Math.round(100*s.score/s.possible_score)}%</strong></td><td>{new Date(s.submitted_at).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}</td><td><button disabled={busy} onClick={()=>openReport(s.id)}>View</button></td></tr>)}</tbody></table>{!submissions.length&&<div className="empty">Waiting for student submissions…</div>}</div>
