@@ -28,6 +28,11 @@ type Pair = {
   active: boolean;
 };
 type Student = { id: string; display_name: string; external_student_id: string | null };
+type ReportingSettings = {
+  school_id: string;
+  pvhs_reporting_enabled: boolean;
+  readiness_note: string;
+};
 
 function sectionLabel(section: Section, courses: Map<string, Course>) {
   const course = courses.get(section.course_id);
@@ -53,12 +58,19 @@ export default function AttendanceAdminPage() {
   const [pairActive, setPairActive] = useState(true);
   const [bulkNames, setBulkNames] = useState('');
   const [roster, setRoster] = useState<Student[]>([]);
+  const [pvhsReportingEnabled, setPvhsReportingEnabled] = useState(false);
+  const [reportingReadinessNote, setReportingReadinessNote] = useState(
+    'PVHS email reporting is pending server configuration and a controlled delivery test.'
+  );
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
 
-  const courseMap = useMemo(() => new Map(courses.map((course) => [course.id, course])), [courses]);
+  const courseMap = useMemo(
+    () => new Map(courses.map((course) => [course.id, course])),
+    [courses]
+  );
   const selectedPair = useMemo(
     () => pairs.find((pair) => pair.id === selectedPairId) ?? null,
     [pairs, selectedPairId]
@@ -90,7 +102,11 @@ export default function AttendanceAdminPage() {
     const ids = (memberships ?? []).map((row: { school_id: string }) => row.school_id);
     if (!ids.length) throw new Error('School administration access is required.');
 
-    const { data, error } = await supabase.from('schools').select('id,name').in('id', ids).order('name');
+    const { data, error } = await supabase
+      .from('schools')
+      .select('id,name')
+      .in('id', ids)
+      .order('name');
     if (error) throw error;
     const loaded = (data ?? []) as School[];
     setSchools(loaded);
@@ -99,7 +115,7 @@ export default function AttendanceAdminPage() {
 
   const loadSchoolData = async (targetSchoolId: string) => {
     if (!targetSchoolId) return;
-    const [sectionResult, courseResult, pairResult] = await Promise.all([
+    const [sectionResult, courseResult, pairResult, readinessResult] = await Promise.all([
       supabase
         .from('sections')
         .select('id,school_id,course_id,section_name,section_code,cohort_id,status')
@@ -112,15 +128,32 @@ export default function AttendanceAdminPage() {
         .order('course_code'),
       supabase
         .from('attendance_pairs')
-        .select('id,school_id,pair_name,primary_section_id,completion_section_id,attendance_mode,report_email,report_delay_minutes,active')
+        .select(
+          'id,school_id,pair_name,primary_section_id,completion_section_id,attendance_mode,report_email,report_delay_minutes,active'
+        )
         .eq('school_id', targetSchoolId)
         .order('created_at'),
+      supabase
+        .from('attendance_reporting_settings')
+        .select('school_id,pvhs_reporting_enabled,readiness_note')
+        .eq('school_id', targetSchoolId)
+        .maybeSingle(),
     ]);
-    const firstError = sectionResult.error || courseResult.error || pairResult.error;
+
+    const firstError =
+      sectionResult.error || courseResult.error || pairResult.error || readinessResult.error;
     if (firstError) throw firstError;
+
     setSections((sectionResult.data ?? []) as Section[]);
     setCourses((courseResult.data ?? []) as Course[]);
     setPairs((pairResult.data ?? []) as Pair[]);
+
+    const readiness = (readinessResult.data ?? null) as ReportingSettings | null;
+    setPvhsReportingEnabled(Boolean(readiness?.pvhs_reporting_enabled));
+    setReportingReadinessNote(
+      readiness?.readiness_note ||
+        'PVHS email reporting is pending server configuration and a controlled delivery test.'
+    );
   };
 
   const loadRoster = async (pairId: string) => {
@@ -205,6 +238,11 @@ export default function AttendanceAdminPage() {
 
   const savePair = async () => {
     if (!schoolId || !primarySectionId || !completionSectionId) return;
+    if (mode === 'pvhs' && !pvhsReportingEnabled) {
+      setError(reportingReadinessNote);
+      return;
+    }
+
     setBusy(true);
     setError('');
     setNotice('');
@@ -245,7 +283,9 @@ export default function AttendanceAdminPage() {
       const result = Array.isArray(data) ? data[0] : data;
       setBulkNames('');
       await loadRoster(selectedPairId);
-      setNotice(`Roster updated. ${result?.enrolled ?? 0} student row(s) enrolled in the shared class pair.`);
+      setNotice(
+        `Roster updated. ${result?.enrolled ?? 0} student row(s) enrolled in the shared class pair.`
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -288,6 +328,11 @@ export default function AttendanceAdminPage() {
 
       {error && <div className={`${styles.notice} ${styles.error}`}>{error}</div>}
       {notice && <div className={`${styles.notice} ${styles.success}`}>{notice}</div>}
+      {!pvhsReportingEnabled && schoolId && (
+        <div className={`${styles.notice} ${styles.warning}`}>
+          <strong>PVHS email reporting is safely disabled.</strong> {reportingReadinessNote} Standard attendance is available now.
+        </div>
+      )}
 
       <section className={styles.toolbar}>
         <label className={styles.field}>
@@ -350,7 +395,9 @@ export default function AttendanceAdminPage() {
             Attendance mode
             <select value={mode} onChange={(event) => setMode(event.target.value as 'standard' | 'pvhs')}>
               <option value="standard">Standard</option>
-              <option value="pvhs">PVHS + delayed email report</option>
+              <option value="pvhs" disabled={!pvhsReportingEnabled}>
+                PVHS + delayed email report{pvhsReportingEnabled ? '' : ' · activation pending'}
+              </option>
             </select>
           </label>
           <label className={styles.field}>
@@ -360,7 +407,7 @@ export default function AttendanceAdminPage() {
               value={reportEmail}
               onChange={(event) => setReportEmail(event.target.value)}
               placeholder={mode === 'pvhs' ? 'attendance@pvhs.example' : 'Not used in Standard mode'}
-              disabled={mode !== 'pvhs'}
+              disabled={mode !== 'pvhs' || !pvhsReportingEnabled}
             />
           </label>
           <label className={styles.field}>
@@ -371,7 +418,7 @@ export default function AttendanceAdminPage() {
               max={1440}
               value={reportDelay}
               onChange={(event) => setReportDelay(Number(event.target.value) || 0)}
-              disabled={mode !== 'pvhs'}
+              disabled={mode !== 'pvhs' || !pvhsReportingEnabled}
             />
           </label>
           <label style={{ color: '#b7c9c5', paddingBottom: 9 }}>
@@ -379,7 +426,17 @@ export default function AttendanceAdminPage() {
           </label>
         </div>
 
-        <button type="button" className={styles.actionButton} onClick={savePair} disabled={busy || !primarySectionId || !completionSectionId}>
+        <button
+          type="button"
+          className={styles.actionButton}
+          onClick={savePair}
+          disabled={
+            busy ||
+            !primarySectionId ||
+            !completionSectionId ||
+            (mode === 'pvhs' && !pvhsReportingEnabled)
+          }
+        >
           {busy ? 'Saving…' : 'Save Attendance Pair'}
         </button>
       </section>
