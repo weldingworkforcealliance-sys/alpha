@@ -45,6 +45,13 @@ Completed in live beta-genco and tracked by `202609050002_harden_rpc_grants_and_
 - Left the active agenda note/review workflow intact, including `agenda_change_reviews`.
 - Did not alter approved curriculum, course outcomes, classroom submissions, planner delivery records, payroll records, time-clock entries, or training data.
 
+Also completed and tracked by `202609050003_fix_section_instructor_names_access.sql`:
+
+- Repaired the active `get_section_instructor_names(uuid)` RPC that was returning HTTP 400 when a school member viewed a section they were not personally assigned to teach.
+- Aligned the RPC with `current_teaching_sections`: platform owners and active school members may view assigned instructor names for visible sections.
+- Changed that SECURITY DEFINER function to `search_path=''` with fully qualified table/function references.
+- Verified as Richard Genco that PVHS B now returns the assigned instructor name rather than `Access denied`.
+
 ## Verification evidence
 
 - Current repository code uses `start_classroom_session_v2`, `list_assessment_modules_v2`, and `submit_classroom_assessment_v2`.
@@ -52,15 +59,16 @@ Completed in live beta-genco and tracked by `202609050002_harden_rpc_grants_and_
 - After hardening, `anon` can execute only the two intended student classroom RPCs.
 - Current instructor classroom RPCs remain executable by `authenticated`.
 - Deprecated v1 classroom and old planner RPCs are no longer executable by `anon` or `authenticated` but remain available to `service_role` during the observation period.
+- `change_proposals` and `proposal_votes` were verified empty before removal.
+- The repaired instructor-name RPC was reproduced under an authenticated school-member identity against PVHS B and returned the assigned instructor successfully.
 
 ## Remaining high-priority work
 
-1. Remove the product-level hardcoded Connected Classroom expected enrollment default (`17`) and derive it from section/cohort data with a safe editable fallback.
+1. Remove the product-level hardcoded Connected Classroom expected enrollment default (`17`) and derive it from section/cohort data or recent section session history with a safe editable fallback.
 2. Decide when to physically drop the staged-deprecated v1 classroom and old planner functions after an observation period confirms no external client use.
-3. Investigate the active `get_section_instructor_names` HTTP 400 responses observed in API logs; the teacher identity UI currently has fallback behavior, but the RPC should be corrected or retired.
-4. Review remaining empty legacy planner tables (`planner_day_coverage`, `planner_day_implementations`, `planner_day_versions`) before deciding whether they are future architecture or removable residue.
-5. Add ESLint plus unit/Playwright regression coverage for critical planner, classroom, time-clock, invitation, and logout workflows.
-6. Continue security review of SECURITY DEFINER routines that still use `search_path=public`; migrate appropriate routines to explicit object qualification / empty search path without breaking policy helpers.
+3. Review remaining empty legacy planner tables (`planner_day_coverage`, `planner_day_implementations`, `planner_day_versions`) before deciding whether they are future architecture or removable residue.
+4. Add ESLint plus unit/Playwright regression coverage for critical planner, classroom, time-clock, invitation, and logout workflows.
+5. Continue security review of SECURITY DEFINER routines that still use `search_path=public`; migrate appropriate routines to explicit object qualification / empty search path without breaking policy helpers.
 
 ## Constraints
 
