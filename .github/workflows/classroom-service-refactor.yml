@@ -1,0 +1,38 @@
+name: Classroom Service Refactor
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - maintenance/run-classroom-service-refactor
+
+permissions:
+  contents: write
+
+jobs:
+  refactor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Apply refactor
+        run: python maintenance/classroom-service-refactor.py
+      - name: Validate
+        run: |
+          npm ci
+          npm run lint
+          npm run build
+          git diff --check
+      - name: Commit refactor
+        run: |
+          git config user.name "weldingworkforcealliance-sys"
+          git config user.email "weldingworkforcealliance@gmail.com"
+          git add app/classroom/page.tsx app/classroom/planner/page.tsx
+          git commit -m "Share classroom session service across launchers"
+          git push
