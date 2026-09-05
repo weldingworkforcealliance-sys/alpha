@@ -1,7 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+import { useEffect, useMemo, useState } from 'react';
+import { getSupabase } from '@/lib/supabase-browser';
+import {
+  publishSelectedSection,
+  readSelectedSectionId,
+  subscribeSelectedSection,
+} from '@/lib/section-selection';
 
 type WorkspaceRow = {
   workspace_id: string;
@@ -27,37 +32,26 @@ type WorkspaceGroup = {
   rows: WorkspaceRow[];
 };
 
-const STORAGE_KEY = 'ltp_selected_section_id';
-const SECTION_EVENT = 'ltp:section-change';
-
-function normalize(value: string | null | undefined) {
-  return (value ?? '').replace(/\s+/g, ' ').trim().toLowerCase();
-}
-
 function courseLabel(row: WorkspaceRow) {
   return row.course_code || row.course_name || 'Course';
 }
 
 export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
   const supportedPage = pathname === '/dashboard' || pathname === '/agenda';
-  const [supabase] = useState(() =>
-    createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-    )
-  );
+  const [supabase] = useState(getSupabase);
   const [rows, setRows] = useState<WorkspaceRow[]>([]);
   const [selectedSectionId, setSelectedSectionId] = useState('');
-  const [preferredSectionId, setPreferredSectionId] = useState('');
 
   const groups = useMemo<WorkspaceGroup[]>(() => {
     const map = new Map<string, WorkspaceGroup>();
+
     rows.forEach((row) => {
       const existing = map.get(row.workspace_id);
       if (existing) {
         existing.rows.push(row);
         return;
       }
+
       map.set(row.workspace_id, {
         id: row.workspace_id,
         name: row.workspace_name,
@@ -90,123 +84,14 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
     [groups, selectedRow]
   );
 
-  const findDashboardButton = useCallback((row: WorkspaceRow) => {
-    const buttons = Array.from(
-      document.querySelectorAll<HTMLButtonElement>('.sections-list .section-button')
-    );
-    const course = normalize(courseLabel(row));
-    const cohort = normalize(row.cohort_name);
-    const section = normalize(row.section_name);
-
-    return (
-      buttons.find((button) => {
-        const text = normalize(button.textContent);
-        return text.includes(course) && Boolean(cohort) && text.includes(cohort);
-      }) ??
-      buttons.find((button) => {
-        const text = normalize(button.textContent);
-        return text.includes(course) && Boolean(section) && text.includes(section);
-      }) ??
-      null
-    );
-  }, []);
-
-  const findAgendaSelect = useCallback(() => {
-    const sectionIds = new Set(rows.map((row) => row.section_id));
-    return (
-      Array.from(document.querySelectorAll<HTMLSelectElement>('select')).find((select) =>
-        Array.from(select.options).some((option) => sectionIds.has(option.value))
-      ) ?? null
-    );
-  }, [rows]);
-
-  const activateSection = useCallback(
-    (row: WorkspaceRow) => {
-      setSelectedSectionId(row.section_id);
-      window.localStorage.setItem(STORAGE_KEY, row.section_id);
-      window.dispatchEvent(
-        new CustomEvent(SECTION_EVENT, { detail: { sectionId: row.section_id } })
-      );
-
-      if (pathname === '/dashboard') {
-        const button = findDashboardButton(row);
-        if (button) button.click();
-        return;
-      }
-
-      if (pathname === '/agenda') {
-        const select = findAgendaSelect();
-        if (select && select.value !== row.section_id) {
-          select.value = row.section_id;
-          select.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-      }
-    },
-    [findAgendaSelect, findDashboardButton, pathname]
-  );
-
-  const detectPageSelection = useCallback(() => {
-    if (!rows.length) return false;
-
-    if (pathname === '/dashboard') {
-      const active = document.querySelector<HTMLButtonElement>(
-        '.sections-list .section-button.active'
-      );
-      if (!active) return false;
-      const text = normalize(active.textContent);
-      const matched = rows.find((row) => {
-        const course = normalize(courseLabel(row));
-        const cohort = normalize(row.cohort_name);
-        return text.includes(course) && Boolean(cohort) && text.includes(cohort);
-      });
-      if (matched) {
-        if (matched.section_id !== selectedSectionId) {
-          setSelectedSectionId(matched.section_id);
-          window.localStorage.setItem(STORAGE_KEY, matched.section_id);
-          window.dispatchEvent(
-            new CustomEvent(SECTION_EVENT, {
-              detail: { sectionId: matched.section_id },
-            })
-          );
-        }
-        return true;
-      }
-      return false;
-    }
-
-    if (pathname === '/agenda') {
-      const select = findAgendaSelect();
-      const matched = select
-        ? rows.find((row) => row.section_id === select.value)
-        : null;
-      if (matched) {
-        if (matched.section_id !== selectedSectionId) {
-          setSelectedSectionId(matched.section_id);
-          window.localStorage.setItem(STORAGE_KEY, matched.section_id);
-          window.dispatchEvent(
-            new CustomEvent(SECTION_EVENT, {
-              detail: { sectionId: matched.section_id },
-            })
-          );
-        }
-        return true;
-      }
-    }
-
-    return false;
-  }, [findAgendaSelect, pathname, rows, selectedSectionId]);
-
   useEffect(() => {
     if (!supportedPage) {
       setRows([]);
       setSelectedSectionId('');
-      setPreferredSectionId('');
       return;
     }
 
     let cancelled = false;
-    setSelectedSectionId('');
-    setPreferredSectionId('');
 
     const load = async () => {
       const { data: sessionData } = await supabase.auth.getSession();
@@ -234,101 +119,50 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
       const assignedIds = new Set(
         (assignmentResult.data ?? []).map((row: { section_id: string }) => row.section_id)
       );
-      const savedSectionId = window.localStorage.getItem(STORAGE_KEY);
+      const savedSectionId = readSelectedSectionId();
       const savedPreferred = loadedRows.find(
         (row) => row.section_id === savedSectionId
       );
       const assignedPreferred = loadedRows.find((row) => assignedIds.has(row.section_id));
-      const defaultPreferred =
-        savedPreferred ??
-        assignedPreferred ??
-        loadedRows.find((row) => row.course_code === 'WLD 105') ??
-        loadedRows[0];
+      const defaultPreferred = savedPreferred ?? assignedPreferred ?? loadedRows[0] ?? null;
 
       setRows(loadedRows);
-      setPreferredSectionId(defaultPreferred?.section_id ?? '');
+      setSelectedSectionId(defaultPreferred?.section_id ?? '');
+
+      if (defaultPreferred && defaultPreferred.section_id !== savedSectionId) {
+        publishSelectedSection(defaultPreferred.section_id);
+      }
     };
 
     load();
+
     return () => {
       cancelled = true;
     };
-  }, [pathname, supportedPage, supabase]);
+  }, [supportedPage, supabase]);
 
   useEffect(() => {
-    if (!supportedPage || rows.length === 0) return;
+    if (!supportedPage) return;
 
-    const hidden = new Map<HTMLElement, string>();
-
-    const hideLegacySelectors = () => {
-      if (pathname === '/dashboard') {
-        document.querySelectorAll<HTMLElement>('.sections-navigation').forEach((element) => {
-          if (!hidden.has(element)) {
-            hidden.set(element, element.style.display);
-            element.style.display = 'none';
-          }
-        });
+    return subscribeSelectedSection((sectionId) => {
+      if (rows.some((row) => row.section_id === sectionId)) {
+        setSelectedSectionId(sectionId);
       }
-
-      if (pathname === '/agenda') {
-        const select = findAgendaSelect();
-        const label = select?.closest('label') as HTMLElement | null;
-        if (label && !hidden.has(label)) {
-          hidden.set(label, label.style.display);
-          label.style.display = 'none';
-        }
-      }
-    };
-
-    const sync = () => {
-      hideLegacySelectors();
-
-      if (!selectedSectionId) {
-        const preferred = rows.find((row) => row.section_id === preferredSectionId);
-        if (preferred) {
-          activateSection(preferred);
-          return;
-        }
-      }
-
-      detectPageSelection();
-    };
-
-    const timer = window.setTimeout(sync, 75);
-    const observer = new MutationObserver(sync);
-    observer.observe(document.body, {
-      subtree: true,
-      childList: true,
-      attributes: true,
-      attributeFilter: ['class', 'value'],
     });
-
-    return () => {
-      window.clearTimeout(timer);
-      observer.disconnect();
-      hidden.forEach((display, element) => {
-        element.style.display = display;
-      });
-    };
-  }, [
-    activateSection,
-    detectPageSelection,
-    findAgendaSelect,
-    pathname,
-    preferredSectionId,
-    rows,
-    selectedSectionId,
-    supportedPage,
-  ]);
+  }, [rows, supportedPage]);
 
   if (!supportedPage || groups.length === 0) return null;
+
+  const activateSection = (row: WorkspaceRow) => {
+    if (row.section_id === selectedSectionId) return;
+    setSelectedSectionId(row.section_id);
+    publishSelectedSection(row.section_id);
+  };
 
   const selectWorkspace = (group: WorkspaceGroup) => {
     const currentCourse = selectedRow?.course_code;
     const target =
-      group.rows.find((row) => row.course_code === currentCourse) ??
-      group.rows.find((row) => row.course_code === 'WLD 105') ??
-      group.rows[0];
+      group.rows.find((row) => row.course_code === currentCourse) ?? group.rows[0];
     if (target) activateSection(target);
   };
 
