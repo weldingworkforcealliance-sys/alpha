@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import TeacherIdentityBar from './teacher-identity-bar';
 import ReviewQueueLink from './review-queue-link';
 import PayrollNavLink from './payroll-nav-link';
+import PlannerUtilityNavLinks from './planner-utility-nav-links';
 import AgendaNotePolicyBanner from './agenda-note-policy-banner';
 import CohortWorkspaceBar from './cohort-workspace-bar';
 import './styles.css';
@@ -104,6 +105,7 @@ export default function RootLayout({
               </Link>
               <PayrollNavLink />
               <ReviewQueueLink />
+              <PlannerUtilityNavLinks />
               {isAccountRoute && (
                 <>
                   <div className="ltg-nav-section-label">Account Tools</div>
