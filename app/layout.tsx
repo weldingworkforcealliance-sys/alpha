@@ -19,6 +19,7 @@ import './night-shift-global.css';
 import './coaching-positive-theme.css';
 import './readability-font-scale.css';
 import './guide-navigation-readability.css';
+import './resource-focus-highlight.css';
 
 export default function RootLayout({
   children,
