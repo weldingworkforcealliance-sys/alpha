@@ -3,17 +3,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { getSupabase } from '@/lib/supabase-browser';
+import { REVIEW_QUEUE_ROLES } from '@/lib/access-roles';
 
 export default function ReviewQueueLink() {
   const pathname = usePathname();
   const [visible, setVisible] = useState(false);
-  const [supabase] = useState(() =>
-    createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-    )
-  );
+  const [supabase] = useState(getSupabase);
 
   useEffect(() => {
     const loadAccess = async () => {
@@ -41,7 +37,7 @@ export default function ReviewQueueLink() {
 
         const canManageSchool = (membershipResult.data ?? []).some(
           (membership: { role: string | null }) =>
-            membership.role === 'school_admin' || membership.role === 'program_lead'
+            Boolean(membership.role && REVIEW_QUEUE_ROLES.has(membership.role))
         );
 
         setVisible(Boolean(ownerResult.data) || canManageSchool);
