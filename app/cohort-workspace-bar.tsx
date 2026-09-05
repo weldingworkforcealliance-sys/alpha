@@ -37,7 +37,8 @@ function courseLabel(row: WorkspaceRow) {
 }
 
 export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
-  const supportedPage = pathname === '/dashboard' || pathname === '/agenda';
+  const supportedPage =
+    pathname === '/planner' || pathname === '/dashboard' || pathname === '/agenda';
   const [supabase] = useState(getSupabase);
   const [rows, setRows] = useState<WorkspaceRow[]>([]);
   const [selectedSectionId, setSelectedSectionId] = useState('');
