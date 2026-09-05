@@ -3,7 +3,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import QRCode from 'qrcode';
-import { createBrowserClient } from '@supabase/ssr';
+import { getSupabase } from '@/lib/supabase-browser';
+import {
+  type ClassroomSession,
+  type ClassroomSubmission,
+  createClassroomSession,
+  endClassroomSession,
+  expireClassroomSessions,
+  findActiveClassroomSession,
+  loadClassroomSubmissions,
+  subscribeClassroomSubmissions,
+} from '@/lib/classroom-session';
 
 type Section = {
   section_id: string;
@@ -24,35 +34,13 @@ type Assessment = {
   allow_team_members: boolean;
 };
 
-type Session = {
-  id: string;
-  join_code: string;
-  status: string;
-  started_at: string;
-  expires_at: string;
-  section_id: string;
-  assessment_slug: string;
-  expected_students: number;
-};
+type Session = ClassroomSession;
 
-type Submission = {
-  id: string;
-  student_name: string;
-  student_id: string;
-  team_members: string | null;
-  score: number;
-  possible_score: number;
-  submitted_at: string;
-};
+type Submission = ClassroomSubmission;
 
 export default function PlannerAssessmentLauncher() {
   const router = useRouter();
-  const [supabase] = useState(() =>
-    createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-    )
-  );
+  const [supabase] = useState(getSupabase);
 
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -73,15 +61,6 @@ export default function PlannerAssessmentLauncher() {
   const submitted = submissions.length;
   const remaining = Math.max((session?.expected_students ?? expectedStudents) - submitted, 0);
 
-  const loadSubmissions = async (sessionId: string) => {
-    const { data, error: submissionError } = await supabase
-      .from('classroom_submissions')
-      .select('id,student_name,student_id,team_members,score,possible_score,submitted_at')
-      .eq('classroom_session_id', sessionId)
-      .order('submitted_at', { ascending: false });
-    if (submissionError) throw submissionError;
-    setSubmissions((data ?? []) as Submission[]);
-  };
 
   useEffect(() => {
     let alive = true;
@@ -102,8 +81,7 @@ export default function PlannerAssessmentLauncher() {
           throw new Error('This planner assessment link is incomplete. Return to the planner and open the assessment from the assigned day.');
         }
 
-        const { error: expireError } = await supabase.rpc('expire_classroom_sessions');
-        if (expireError) throw expireError;
+        await expireClassroomSessions(supabase);
 
         const [sectionResult, assessmentResult] = await Promise.all([
           supabase
@@ -132,20 +110,12 @@ export default function PlannerAssessmentLauncher() {
         setSection(exactSection);
         setAssessment(exactAssessment);
 
-        const { data: active, error: activeError } = await supabase
-          .from('classroom_sessions')
-          .select('id,join_code,status,started_at,expires_at,section_id,assessment_slug,expected_students')
-          .eq('section_id', requestedSection)
-          .eq('assessment_slug', requestedAssessment)
-          .eq('status', 'active')
-          .gt('expires_at', new Date().toISOString())
-          .order('started_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
+        const restored = await findActiveClassroomSession(supabase, {
+          sectionId: requestedSection,
+          assessmentSlug: requestedAssessment,
+        });
 
-        if (activeError) throw activeError;
-        if (active && alive) {
-          const restored = active as Session;
+        if (restored && alive) {
           setSession(restored);
           setExpectedStudents(restored.expected_students);
         }
@@ -176,27 +146,18 @@ export default function PlannerAssessmentLauncher() {
       .then(setQr)
       .catch((err) => setError(err instanceof Error ? err.message : String(err)));
 
-    loadSubmissions(session.id).catch((err) =>
-      setError(err instanceof Error ? err.message : String(err))
+    const refreshSubmissions = () =>
+      loadClassroomSubmissions(supabase, session.id)
+        .then(setSubmissions)
+        .catch((err) => setError(err instanceof Error ? err.message : String(err)));
+
+    refreshSubmissions();
+    return subscribeClassroomSubmissions(
+      supabase,
+      session.id,
+      refreshSubmissions,
+      'planner-classroom'
     );
-
-    const channel = supabase
-      .channel(`planner-classroom-${session.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'classroom_submissions',
-          filter: `classroom_session_id=eq.${session.id}`,
-        },
-        () => loadSubmissions(session.id)
-      )
-      .subscribe();
-
-    return () => {
-      void supabase.removeChannel(channel);
-    };
   }, [joinUrl, session?.id, session?.status, supabase]);
 
   const startAssessment = async () => {
@@ -207,29 +168,11 @@ export default function PlannerAssessmentLauncher() {
     setNotice('');
 
     try {
-      const { data: sessionId, error: startError } = await supabase.rpc(
-        'start_classroom_session_v2',
-        {
-          p_section_id: section.section_id,
-          p_assessment_slug: assessment.slug,
-          p_expected_students: expectedStudents,
-        }
-      );
-      if (startError) throw startError;
-      if (!sessionId) throw new Error('The classroom session was not created.');
-
-      const { data: row, error: rowError } = await supabase
-        .from('classroom_sessions')
-        .select('id,join_code,status,started_at,expires_at,section_id,assessment_slug,expected_students')
-        .eq('id', sessionId)
-        .single();
-      if (rowError) throw rowError;
-
-      const created = row as Session;
-      if (created.section_id !== section.section_id || created.assessment_slug !== assessment.slug) {
-        throw new Error('The created session did not match this planner assessment.');
-      }
-
+      const created = await createClassroomSession(supabase, {
+        sectionId: section.section_id,
+        assessmentSlug: assessment.slug,
+        expectedStudents,
+      });
       setSubmissions([]);
       setSession(created);
       setNotice('Assessment is live. Students may scan the QR code now.');
@@ -247,10 +190,7 @@ export default function PlannerAssessmentLauncher() {
     setNotice('');
 
     try {
-      const { error: endError } = await supabase.rpc('end_classroom_session', {
-        p_session_id: session.id,
-      });
-      if (endError) throw endError;
+      await endClassroomSession(supabase, session.id);
       setSession({ ...session, status: 'ended' });
       setQr('');
       setNotice('Assessment session ended. The student join code is no longer valid.');

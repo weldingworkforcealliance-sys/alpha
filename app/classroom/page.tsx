@@ -3,19 +3,29 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import QRCode from 'qrcode';
-import { createBrowserClient } from '@supabase/ssr';
+import { getSupabase } from '@/lib/supabase-browser';
+import {
+  type ClassroomSession,
+  type ClassroomSubmission,
+  createClassroomSession,
+  endClassroomSession,
+  expireClassroomSessions,
+  findActiveClassroomSession,
+  loadClassroomSubmissions,
+  subscribeClassroomSubmissions,
+} from '@/lib/classroom-session';
 
 type Section = { section_id:string; section_name:string|null; section_code:string|null; course_code:string|null; course_name:string|null };
 type Assessment = { slug:string; title:string; description:string|null; category:string; estimated_minutes:number|null; question_count:number; instructions:string|null; allow_team_members:boolean };
-type Session = { id:string; join_code:string; status:string; started_at:string; expires_at:string; section_id:string; assessment_slug:string; expected_students:number };
-type Submission = { id:string; student_name:string; student_id:string; team_members:string|null; score:number; possible_score:number; submitted_at:string; domain_scores:Record<string,{correct:number,total:number}> };
+type Session = ClassroomSession;
+type Submission = ClassroomSubmission;
 type ReportQuestion = { key:string; number:number; domain:string; text:string; options:Record<string,string>|null; student_answer:string; correct_answer:string; is_correct:boolean; explanation:string|null };
 type Report = { submission:Submission & { percent:number; assessment_title:string }; questions:ReportQuestion[] };
 type AnswerKey = { assessment:{slug:string;title:string;instructions:string|null}; questions:Array<Omit<ReportQuestion,'student_answer'|'is_correct'> & {accepted_answers:string[]|null}> };
 
 export default function ClassroomPage() {
   const router=useRouter();
-  const [supabase]=useState(()=>createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!));
+  const [supabase]=useState(getSupabase);
   const [sections,setSections]=useState<Section[]>([]);
   const [assessments,setAssessments]=useState<Assessment[]>([]);
   const [sectionId,setSectionId]=useState('');
@@ -37,13 +47,6 @@ export default function ClassroomPage() {
   const progress=Math.min(100,Math.round(100*submitted/Math.max(session?.expected_students??expectedStudents,1)));
   const joinUrl=session?.status==='active'&&typeof window!=='undefined'?`${window.location.origin}/join/${session.join_code}`:'';
 
-  const loadSubmissions=async(sessionId:string)=>{
-    const {data,error:e}=await supabase.from('classroom_submissions')
-      .select('id,student_name,student_id,team_members,score,possible_score,submitted_at,domain_scores')
-      .eq('classroom_session_id',sessionId).order('submitted_at',{ascending:false});
-    if(e) throw e;
-    setSubmissions((data??[]) as Submission[]);
-  };
 
   useEffect(()=>{
     (async()=>{
@@ -51,8 +54,7 @@ export default function ClassroomPage() {
         const {data:auth}=await supabase.auth.getSession();
         if(!auth.session){router.replace('/login');return;}
 
-        const {error:expireError}=await supabase.rpc('expire_classroom_sessions');
-        if(expireError) throw expireError;
+        await expireClassroomSessions(supabase);
 
         const [{data:s,error:se},{data:a,error:ae}]=await Promise.all([
           supabase.from('current_teaching_sections').select('section_id,section_name,section_code,course_code,course_name'),
@@ -78,19 +80,12 @@ export default function ClassroomPage() {
         const sectionIds=sectionRows.map(row=>row.section_id);
 
         if(sectionIds.length&&(!hasRequestedContext||requestedContextIsValid)){
-          let activeQuery=supabase.from('classroom_sessions')
-            .select('id,join_code,status,started_at,expires_at,section_id,assessment_slug,expected_students')
-            .eq('status','active')
-            .gt('expires_at',new Date().toISOString())
-            .in('section_id',sectionIds);
-
-          if(validRequestedSection)activeQuery=activeQuery.eq('section_id',validRequestedSection);
-          if(validRequestedAssessment)activeQuery=activeQuery.eq('assessment_slug',validRequestedAssessment);
-
-          const {data:active,error:activeError}=await activeQuery.order('started_at',{ascending:false}).limit(1).maybeSingle();
-          if(activeError)throw activeError;
-          if(active){
-            const restored=active as Session;
+          const restored=await findActiveClassroomSession(supabase,{
+            sectionIds,
+            sectionId:validRequestedSection??undefined,
+            assessmentSlug:validRequestedAssessment??undefined,
+          });
+          if(restored){
             setSession(restored);setSectionId(restored.section_id);setAssessmentSlug(restored.assessment_slug);setExpectedStudents(restored.expected_students);
           }
         }
@@ -102,23 +97,19 @@ export default function ClassroomPage() {
   useEffect(()=>{
     if(!session||session.status!=='active'||!joinUrl){setQr('');return;}
     QRCode.toDataURL(joinUrl,{width:340,margin:2,color:{dark:'#050505',light:'#ffffff'}}).then(setQr).catch(e=>setError(e.message));
-    loadSubmissions(session.id).catch(e=>setError(e.message));
-    const channel=supabase.channel(`classroom-${session.id}`)
-      .on('postgres_changes',{event:'INSERT',schema:'public',table:'classroom_submissions',filter:`classroom_session_id=eq.${session.id}`},()=>loadSubmissions(session.id))
-      .subscribe();
-    return()=>{void supabase.removeChannel(channel);};
+    const refreshSubmissions=()=>loadClassroomSubmissions(supabase,session.id)
+      .then(setSubmissions)
+      .catch(e=>setError(e instanceof Error?e.message:String(e)));
+    refreshSubmissions();
+    return subscribeClassroomSubmissions(supabase,session.id,refreshSubmissions);
   },[session?.id,session?.status,joinUrl,supabase]);
 
   const start=async()=>{
     if(!sectionId||!assessmentSlug)return;
     setBusy(true);setError('');
     try{
-      const {data,error:e}=await supabase.rpc('start_classroom_session_v2',{p_section_id:sectionId,p_assessment_slug:assessmentSlug,p_expected_students:expectedStudents});
-      if(e)throw e;
-      const {data:row,error:re}=await supabase.from('classroom_sessions')
-        .select('id,join_code,status,started_at,expires_at,section_id,assessment_slug,expected_students').eq('id',data).single();
-      if(re)throw re;
-      setSubmissions([]);setReport(null);setSession(row as Session);
+      const created=await createClassroomSession(supabase,{sectionId,assessmentSlug,expectedStudents});
+      setSubmissions([]);setReport(null);setSession(created);
     }catch(e){setError(e instanceof Error?e.message:String(e));}
     finally{setBusy(false);}
   };
@@ -126,9 +117,11 @@ export default function ClassroomPage() {
   const end=async()=>{
     if(!session)return;
     setBusy(true);setError('');
-    const {error:e}=await supabase.rpc('end_classroom_session',{p_session_id:session.id});
-    setBusy(false);
-    if(e)setError(e.message);else setSession({...session,status:'ended'});
+    try{
+      await endClassroomSession(supabase,session.id);
+      setSession({...session,status:'ended'});
+    }catch(e){setError(e instanceof Error?e.message:String(e));}
+    finally{setBusy(false);}
   };
 
   const openReport=async(id:string)=>{
