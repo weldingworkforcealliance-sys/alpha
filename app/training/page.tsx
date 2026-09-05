@@ -22,7 +22,6 @@ export default function TrainingHubPage() {
   const [error,setError] = useState('');
   const [notice,setNotice] = useState('');
   const [owner,setOwner] = useState(false);
-  const [userId,setUserId] = useState('');
   const [schools,setSchools] = useState<School[]>([]);
   const [memberships,setMemberships] = useState<Membership[]>([]);
   const [sessions,setSessions] = useState<SessionRow[]>([]);
@@ -40,7 +39,6 @@ export default function TrainingHubPage() {
       return;
     }
     const uid = auth.session.user.id;
-    setUserId(uid);
 
     const [ownerResult, membershipResult, schoolResult, sessionResult, reportResult] = await Promise.all([
       supabase.rpc('is_platform_owner'),
