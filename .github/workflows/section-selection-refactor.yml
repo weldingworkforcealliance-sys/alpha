@@ -1,0 +1,133 @@
+name: Section Selection Refactor
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - maintenance/run-section-selection-refactor
+
+permissions:
+  contents: write
+
+jobs:
+  refactor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply direct React section selection refactor
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new, label):
+              p = Path(path)
+              text = p.read_text()
+              if old not in text:
+                  raise SystemExit(f'Missing expected block: {label} in {path}')
+              p.write_text(text.replace(old, new, 1))
+
+          dashboard = 'app/dashboard/page.tsx'
+          agenda = 'app/agenda/page.tsx'
+
+          replace_once(
+              dashboard,
+              "import { useEffect, useMemo, useState } from 'react';\nimport { useRouter } from 'next/navigation';\nimport { createBrowserClient } from '@supabase/ssr';",
+              "import { useEffect, useMemo, useState } from 'react';\nimport { useRouter } from 'next/navigation';\nimport { getSupabase } from '@/lib/supabase-browser';\nimport { SCHOOL_DASHBOARD_ROLES } from '@/lib/access-roles';\nimport {\n  publishSelectedSection,\n  readSelectedSectionId,\n  subscribeSelectedSection,\n} from '@/lib/section-selection';",
+              'dashboard imports',
+          )
+
+          replace_once(
+              dashboard,
+              "  const [supabase] = useState(() =>\n    createBrowserClient(\n      process.env.NEXT_PUBLIC_SUPABASE_URL!,\n      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!\n    )\n  );",
+              "  const [supabase] = useState(getSupabase);",
+              'dashboard supabase client',
+          )
+
+          replace_once(
+              dashboard,
+              "    const selected = sectionId\n      ? typedSections.find((section) => section.section_id === sectionId)\n      : typedSections[0];\n\n    setSelectedSection(selected ?? typedSections[0]);",
+              "    const savedSectionId = readSelectedSectionId();\n    const preferredSectionId = sectionId || savedSectionId;\n    const selected =\n      typedSections.find((section) => section.section_id === preferredSectionId) ??\n      typedSections[0];\n\n    setSelectedSection(selected);\n    if (selected.section_id !== savedSectionId) {\n      publishSelectedSection(selected.section_id);\n    }",
+              'dashboard preferred section',
+          )
+
+          replace_once(
+              dashboard,
+              "        const managementRoles = new Set([\n          'school_admin',\n          'program_lead',\n          'lead_instructor',\n          'viewer',\n        ]);\n\n        const hasManagementMembership = (membershipResult.data ?? []).some(\n          (membership: { role: string | null }) =>\n            membership.role ? managementRoles.has(membership.role) : false\n        );",
+              "        const hasManagementMembership = (membershipResult.data ?? []).some(\n          (membership: { role: string | null }) =>\n            Boolean(membership.role && SCHOOL_DASHBOARD_ROLES.has(membership.role))\n        );",
+              'dashboard role policy',
+          )
+
+          replace_once(
+              dashboard,
+              "    loadSections();\n  }, [supabase, router]);\n\n  useEffect(() => {\n    if (selectedSection?.section_id) {",
+              "    loadSections();\n  }, [supabase, router]);\n\n  useEffect(() => {\n    return subscribeSelectedSection((sectionId) => {\n      setSelectedSection((current) => {\n        if (current?.section_id === sectionId) return current;\n        return sections.find((section) => section.section_id === sectionId) ?? current;\n      });\n    });\n  }, [sections]);\n\n  useEffect(() => {\n    if (selectedSection?.section_id) {",
+              'dashboard section subscription',
+          )
+
+          replace_once(
+              dashboard,
+              "            <div className=\"sections-navigation\">\n              <h2>Your Sections</h2>\n              <div className=\"sections-list\">\n                {sections.map((section) => (\n                  <button\n                    key={section.section_id}\n                    className={`section-button ${\n                      selectedSection?.section_id === section.section_id ? 'active' : ''\n                    }`}\n                    onClick={() => setSelectedSection(section)}\n                  >\n                    <div className=\"section-name\">\n                      {section.course_code ||\n                        section.course_name ||\n                        section.section_name ||\n                        'Course'}\n                    </div>\n                    <div className=\"section-cohort\">\n                      {section.cohort_name ||\n                        section.section_name ||\n                        section.section_code ||\n                        'Section'}\n                    </div>\n                  </button>\n                ))}\n              </div>\n            </div>\n\n",
+              "",
+              'dashboard legacy section buttons',
+          )
+
+          replace_once(
+              agenda,
+              "import { useCallback, useEffect, useMemo, useState } from 'react';\nimport { useRouter } from 'next/navigation';\nimport { createBrowserClient } from '@supabase/ssr';",
+              "import { useCallback, useEffect, useMemo, useState } from 'react';\nimport { useRouter } from 'next/navigation';\nimport { getSupabase } from '@/lib/supabase-browser';\nimport {\n  publishSelectedSection,\n  readSelectedSectionId,\n  subscribeSelectedSection,\n} from '@/lib/section-selection';",
+              'agenda imports',
+          )
+
+          replace_once(
+              agenda,
+              "  const [supabase] = useState(() =>\n    createBrowserClient(\n      process.env.NEXT_PUBLIC_SUPABASE_URL!,\n      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!\n    )\n  );",
+              "  const [supabase] = useState(getSupabase);",
+              'agenda supabase client',
+          )
+
+          replace_once(
+              agenda,
+              "        setIsPlatformOwner(Boolean(ownerResult.data));\n        const loadedSections = (sectionsResult.data ?? []) as TeachingSection[];\n        setSections(loadedSections);\n        setSelectedSectionId(loadedSections[0]?.section_id ?? '');",
+              "        setIsPlatformOwner(Boolean(ownerResult.data));\n        const loadedSections = (sectionsResult.data ?? []) as TeachingSection[];\n        const savedSectionId = readSelectedSectionId();\n        const preferredSection =\n          loadedSections.find((section) => section.section_id === savedSectionId) ??\n          loadedSections[0] ??\n          null;\n\n        setSections(loadedSections);\n        setSelectedSectionId(preferredSection?.section_id ?? '');\n        if (preferredSection && preferredSection.section_id !== savedSectionId) {\n          publishSelectedSection(preferredSection.section_id);\n        }",
+              'agenda preferred section',
+          )
+
+          replace_once(
+              agenda,
+              "    initialize();\n  }, [router, supabase]);\n\n  useEffect(() => {\n    if (selectedSection) {",
+              "    initialize();\n  }, [router, supabase]);\n\n  useEffect(() => {\n    return subscribeSelectedSection((sectionId) => {\n      if (sections.some((section) => section.section_id === sectionId)) {\n        setSelectedSectionId(sectionId);\n      }\n    });\n  }, [sections]);\n\n  useEffect(() => {\n    if (selectedSection) {",
+              'agenda section subscription',
+          )
+
+          replace_once(
+              agenda,
+              "          <label>\n            Class\n            <select\n              value={selectedSectionId}\n              onChange={(event) => setSelectedSectionId(event.target.value)}\n            >\n              {sections.map((section) => (\n                <option key={section.section_id} value={section.section_id}>\n                  {section.course_code || section.course_name || 'Course'} ·{' '}\n                  {section.cohort_name || section.section_name || section.section_code || 'Section'}\n                </option>\n              ))}\n            </select>\n          </label>\n\n",
+              "",
+              'agenda legacy class selector',
+          )
+
+          replace_once(
+              agenda,
+              "          grid-template-columns: repeat(2, minmax(0, 1fr));",
+              "          grid-template-columns: minmax(0, 1fr);",
+              'agenda selector grid',
+          )
+          PY
+
+      - name: Commit refactor
+        shell: bash
+        run: |
+          git config user.name "LTG Refactor Bot"
+          git config user.email "weldingworkforcealliance@gmail.com"
+          git add app/dashboard/page.tsx app/agenda/page.tsx
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Connect Planner and Agenda directly to class selection state"
+          git push origin HEAD:main
