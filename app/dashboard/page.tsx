@@ -2,7 +2,13 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { getSupabase } from '@/lib/supabase-browser';
+import { SCHOOL_DASHBOARD_ROLES } from '@/lib/access-roles';
+import {
+  publishSelectedSection,
+  readSelectedSectionId,
+  subscribeSelectedSection,
+} from '@/lib/section-selection';
 
 interface TeachingSection {
   school_id: string;
@@ -201,12 +207,7 @@ export default function DashboardPage() {
   const [canOpenSchoolDashboard, setCanOpenSchoolDashboard] = useState(false);
   const [canOpenOwnerDashboard, setCanOpenOwnerDashboard] = useState(false);
 
-  const [supabase] = useState(() =>
-    createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-    )
-  );
+  const [supabase] = useState(getSupabase);
 
   const refreshSections = async (sectionId?: string) => {
     const { data, error: queryError } = await supabase
@@ -227,11 +228,16 @@ export default function DashboardPage() {
       return;
     }
 
-    const selected = sectionId
-      ? typedSections.find((section) => section.section_id === sectionId)
-      : typedSections[0];
+    const savedSectionId = readSelectedSectionId();
+    const preferredSectionId = sectionId || savedSectionId;
+    const selected =
+      typedSections.find((section) => section.section_id === preferredSectionId) ??
+      typedSections[0];
 
-    setSelectedSection(selected ?? typedSections[0]);
+    setSelectedSection(selected);
+    if (selected.section_id !== savedSectionId) {
+      publishSelectedSection(selected.section_id);
+    }
   };
 
   const loadCalendarData = async (sectionId: string) => {
@@ -410,16 +416,9 @@ export default function DashboardPage() {
             .eq('status', 'active'),
         ]);
 
-        const managementRoles = new Set([
-          'school_admin',
-          'program_lead',
-          'lead_instructor',
-          'viewer',
-        ]);
-
         const hasManagementMembership = (membershipResult.data ?? []).some(
           (membership: { role: string | null }) =>
-            membership.role ? managementRoles.has(membership.role) : false
+            Boolean(membership.role && SCHOOL_DASHBOARD_ROLES.has(membership.role))
         );
 
         setCanOpenSchoolDashboard(
@@ -438,6 +437,15 @@ export default function DashboardPage() {
 
     loadSections();
   }, [supabase, router]);
+
+  useEffect(() => {
+    return subscribeSelectedSection((sectionId) => {
+      setSelectedSection((current) => {
+        if (current?.section_id === sectionId) return current;
+        return sections.find((section) => section.section_id === sectionId) ?? current;
+      });
+    });
+  }, [sections]);
 
   useEffect(() => {
     if (selectedSection?.section_id) {
@@ -806,34 +814,6 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="dashboard-content">
-            <div className="sections-navigation">
-              <h2>Your Sections</h2>
-              <div className="sections-list">
-                {sections.map((section) => (
-                  <button
-                    key={section.section_id}
-                    className={`section-button ${
-                      selectedSection?.section_id === section.section_id ? 'active' : ''
-                    }`}
-                    onClick={() => setSelectedSection(section)}
-                  >
-                    <div className="section-name">
-                      {section.course_code ||
-                        section.course_name ||
-                        section.section_name ||
-                        'Course'}
-                    </div>
-                    <div className="section-cohort">
-                      {section.cohort_name ||
-                        section.section_name ||
-                        section.section_code ||
-                        'Section'}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {selectedSection && (
               <div className="section-details">
                 <div className="section-header">

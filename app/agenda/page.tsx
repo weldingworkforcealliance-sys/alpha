@@ -2,7 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { getSupabase } from '@/lib/supabase-browser';
+import {
+  publishSelectedSection,
+  readSelectedSectionId,
+  subscribeSelectedSection,
+} from '@/lib/section-selection';
 
 type TeachingSection = {
   school_id: string;
@@ -93,12 +98,7 @@ function slotKey(kind: SlotKind, id: string) {
 
 export default function AgendaPage() {
   const router = useRouter();
-  const [supabase] = useState(() =>
-    createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-    )
-  );
+  const [supabase] = useState(getSupabase);
 
   const [loading, setLoading] = useState(true);
   const [dayLoading, setDayLoading] = useState(false);
@@ -287,8 +287,17 @@ export default function AgendaPage() {
 
         setIsPlatformOwner(Boolean(ownerResult.data));
         const loadedSections = (sectionsResult.data ?? []) as TeachingSection[];
+        const savedSectionId = readSelectedSectionId();
+        const preferredSection =
+          loadedSections.find((section) => section.section_id === savedSectionId) ??
+          loadedSections[0] ??
+          null;
+
         setSections(loadedSections);
-        setSelectedSectionId(loadedSections[0]?.section_id ?? '');
+        setSelectedSectionId(preferredSection?.section_id ?? '');
+        if (preferredSection && preferredSection.section_id !== savedSectionId) {
+          publishSelectedSection(preferredSection.section_id);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
       } finally {
@@ -298,6 +307,14 @@ export default function AgendaPage() {
 
     initialize();
   }, [router, supabase]);
+
+  useEffect(() => {
+    return subscribeSelectedSection((sectionId) => {
+      if (sections.some((section) => section.section_id === sectionId)) {
+        setSelectedSectionId(sectionId);
+      }
+    });
+  }, [sections]);
 
   useEffect(() => {
     if (selectedSection) {
@@ -599,21 +616,6 @@ export default function AgendaPage() {
 
         <section className="selector-panel">
           <label>
-            Class
-            <select
-              value={selectedSectionId}
-              onChange={(event) => setSelectedSectionId(event.target.value)}
-            >
-              {sections.map((section) => (
-                <option key={section.section_id} value={section.section_id}>
-                  {section.course_code || section.course_name || 'Course'} ·{' '}
-                  {section.cohort_name || section.section_name || section.section_code || 'Section'}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
             Planner Day
             <select
               value={selectedPlannerDayId}
@@ -823,7 +825,7 @@ export default function AgendaPage() {
 
         .selector-panel {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-template-columns: minmax(0, 1fr);
           gap: 14px;
           padding: 16px;
           border: 1px solid #272727;
