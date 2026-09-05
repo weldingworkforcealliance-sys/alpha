@@ -1,17 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+import { getSupabase } from '@/lib/supabase-browser';
 
 const LOGOUT_LABELS = new Set(['log out', 'logout', 'sign out']);
 
 export default function ClockAwareLogoutGuard() {
-  const [supabase] = useState(() =>
-    createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-    )
-  );
+  const [supabase] = useState(getSupabase);
 
   useEffect(() => {
     const handleLogoutClick = async (event: MouseEvent) => {
