@@ -26,60 +26,24 @@ jobs:
           cache: npm
 
       - name: Install lint dependencies
-        run: npm install --save-dev eslint@^9 @typescript-eslint/parser@^8 @typescript-eslint/eslint-plugin@^8
+        run: npm install --save-dev eslint@^10 @typescript-eslint/parser@^8 @typescript-eslint/eslint-plugin@^8
 
-      - name: Write ESLint config
+      - name: Remove confirmed dead Training Mode state
         run: |
-          cat > eslint.config.mjs <<'EOF'
-          import tsParser from '@typescript-eslint/parser';
-          import tsPlugin from '@typescript-eslint/eslint-plugin';
-
-          export default [
-            {
-              ignores: ['.next/**', 'node_modules/**', 'coverage/**'],
-            },
-            {
-              files: ['**/*.{ts,tsx}'],
-              languageOptions: {
-                parser: tsParser,
-                parserOptions: {
-                  ecmaVersion: 'latest',
-                  sourceType: 'module',
-                  ecmaFeatures: { jsx: true },
-                },
-              },
-              plugins: {
-                '@typescript-eslint': tsPlugin,
-              },
-              rules: {
-                'no-debugger': 'error',
-                'no-console': ['error', { allow: ['warn', 'error'] }],
-                '@typescript-eslint/no-unused-vars': ['warn', {
-                  argsIgnorePattern: '^_',
-                  varsIgnorePattern: '^_',
-                  caughtErrorsIgnorePattern: '^_',
-                }],
-              },
-            },
-          ];
-          EOF
-
-      - name: Update package scripts
-        run: |
-          node <<'EOF'
-          const fs = require('fs');
-          const pkg = JSON.parse(fs.readFileSync('package.json','utf8'));
-          pkg.scripts.typecheck = 'tsc --noEmit';
-          pkg.scripts.lint = 'eslint .';
-          pkg.scripts.check = 'npm run typecheck && npm run lint';
-          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          python <<'EOF'
+          from pathlib import Path
+          path = Path('app/training/page.tsx')
+          text = path.read_text()
+          text = text.replace("  const [userId,setUserId] = useState('');\n", '')
+          text = text.replace('    setUserId(uid);\n', '')
+          path.write_text(text)
           EOF
 
       - name: TypeScript check
         run: npm run typecheck
 
       - name: ESLint
-        run: npm run lint
+        run: npm run lint -- --max-warnings=0
 
       - name: Next.js build
         env:
@@ -90,10 +54,10 @@ jobs:
       - name: Diff check
         run: git diff --check
 
-      - name: Commit QA tooling
+      - name: Commit final QA cleanup
         run: |
           git config user.name "weldingworkforcealliance-sys"
           git config user.email "weldingworkforcealliance@gmail.com"
-          git add package.json package-lock.json eslint.config.mjs
-          git commit -m "Add real ESLint quality checks"
+          git add package.json package-lock.json app/training/page.tsx
+          git commit -m "Finish ESLint 10 cleanup"
           git push
