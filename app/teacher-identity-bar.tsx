@@ -2,6 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { getSupabase } from '@/lib/supabase-browser';
+import {
+  publishSelectedSection,
+  readSelectedSectionId,
+  subscribeSelectedSection,
+} from '@/lib/section-selection';
 
 type SectionRow = {
   section_id: string;
@@ -16,9 +21,6 @@ type InstructorRow = {
   instructor_id: string;
   display_name: string;
 };
-
-const STORAGE_KEY = 'ltp_selected_section_id';
-const SECTION_EVENT = 'ltp:section-change';
 
 export default function TeacherIdentityBar({ pathname }: { pathname: string }) {
   const [instructorNames, setInstructorNames] = useState<string[]>([]);
@@ -36,21 +38,8 @@ export default function TeacherIdentityBar({ pathname }: { pathname: string }) {
       return;
     }
 
-    const syncSelection = (event?: Event) => {
-      const customEvent = event as CustomEvent<{ sectionId?: string }> | undefined;
-      const eventSectionId = customEvent?.detail?.sectionId;
-      const savedSectionId = window.localStorage.getItem(STORAGE_KEY) ?? '';
-      setSelectedSectionId(eventSectionId || savedSectionId);
-    };
-
-    syncSelection();
-    window.addEventListener(SECTION_EVENT, syncSelection as EventListener);
-    window.addEventListener('storage', syncSelection);
-
-    return () => {
-      window.removeEventListener(SECTION_EVENT, syncSelection as EventListener);
-      window.removeEventListener('storage', syncSelection);
-    };
+    setSelectedSectionId(readSelectedSectionId());
+    return subscribeSelectedSection(setSelectedSectionId);
   }, [supportedPage]);
 
   useEffect(() => {
@@ -99,8 +88,8 @@ export default function TeacherIdentityBar({ pathname }: { pathname: string }) {
 
           section = fallbackResult.data as SectionRow;
           sectionId = section.section_id;
-          window.localStorage.setItem(STORAGE_KEY, sectionId);
           setSelectedSectionId(sectionId);
+          publishSelectedSection(sectionId);
         }
 
         const { data: assignedData, error: assignedError } = await supabase.rpc(
