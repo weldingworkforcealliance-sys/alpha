@@ -1,0 +1,56 @@
+name: Consolidate Browser Client
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - maintenance/run-consolidate-browser-client
+
+permissions:
+  contents: write
+
+jobs:
+  refactor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Apply consolidation
+        run: python maintenance/consolidate-browser-client.py
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript check
+        run: npm run lint
+
+      - name: Next.js build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: public-build-placeholder
+        run: npm run build
+
+      - name: Diff check
+        run: git diff --check
+
+      - name: Commit consolidation
+        run: |
+          git config user.name "weldingworkforcealliance-sys"
+          git config user.email "weldingworkforcealliance@gmail.com"
+          git add app
+          if git diff --cached --quiet; then
+            echo "No app changes to commit"
+          else
+            git commit -m "Consolidate remaining Supabase browser clients"
+            git push
+          fi
