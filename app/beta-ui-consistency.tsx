@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+import { getSupabase } from '@/lib/supabase-browser';
 
 type SectionContext = {
   section_id: string;
@@ -15,12 +15,7 @@ const SECTION_EVENT = 'ltp:section-change';
 
 export default function BetaUiConsistency({ pathname }: { pathname: string }) {
   const [section, setSection] = useState<SectionContext | null>(null);
-  const [supabase] = useState(() =>
-    createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-    )
-  );
+  const [supabase] = useState(getSupabase);
 
   useEffect(() => {
     if (pathname !== '/dashboard') {
