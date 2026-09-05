@@ -15,6 +15,9 @@ coverage/
 /build/
 /dist/
 
+# TypeScript incremental build artifacts
+*.tsbuildinfo
+
 # Misc
 .DS_Store
 *.pem
