@@ -24,7 +24,13 @@ jobs:
         run: npm ci
 
       - name: TypeScript check
-        run: npm run lint
+        run: npm run typecheck
+
+      - name: ESLint
+        run: npm run lint -- --max-warnings=0
+
+      - name: Unit tests
+        run: npm run test
 
       - name: Next.js build
         env:

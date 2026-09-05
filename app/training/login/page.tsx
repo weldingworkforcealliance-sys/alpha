@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { getSupabase } from '@/lib/supabase-browser';
 
 export default function TrainingLoginPage() {
   const router = useRouter();
@@ -11,12 +11,7 @@ export default function TrainingLoginPage() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const [supabase] = useState(() =>
-    createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-    )
-  );
+  const [supabase] = useState(getSupabase);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {

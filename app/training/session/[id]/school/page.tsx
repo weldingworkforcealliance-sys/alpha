@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { getSupabase } from '@/lib/supabase-browser';
 
 interface TrainingSession { id:string; school_id:string; session_name:string; status:string; started_at:string; expires_at:string; }
 interface StateRow { id:string; source_section_id:string; simulated_current_day:number; manual_hold:boolean; hold_reason:string|null; active_timer_started_at:string|null; }
@@ -18,7 +18,7 @@ function title(v:string){return v.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpper
 
 export default function TrainingSchoolPage(){
   const params=useParams<{id:string}>(); const sessionId=params.id; const router=useRouter();
-  const [supabase]=useState(()=>createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!));
+  const [supabase]=useState(getSupabase);
   const [loading,setLoading]=useState(true); const [busy,setBusy]=useState(false); const [error,setError]=useState(''); const [notice,setNotice]=useState('');
   const [session,setSession]=useState<TrainingSession|null>(null); const [states,setStates]=useState<StateRow[]>([]); const [sections,setSections]=useState<Section[]>([]); const [courses,setCourses]=useState<Course[]>([]); const [deliveries,setDeliveries]=useState<Delivery[]>([]); const [members,setMembers]=useState<Member[]>([]); const [profiles,setProfiles]=useState<Profile[]>([]); const [activity,setActivity]=useState<Activity[]>([]); const [canManage,setCanManage]=useState(false); const [endReason,setEndReason]=useState('');
   const sectionMap=useMemo(()=>new Map(sections.map(s=>[s.id,s])),[sections]); const courseMap=useMemo(()=>new Map(courses.map(c=>[c.id,c])),[courses]); const profileMap=useMemo(()=>new Map(profiles.map(p=>[p.id,p])),[profiles]);

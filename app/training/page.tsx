@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { getSupabase } from '@/lib/supabase-browser';
 
 interface School { id:string; name:string; }
 interface Membership { id:string; school_id:string; user_id:string; role:string; status:string; }
@@ -15,17 +15,13 @@ function fmt(value:string) {
 
 export default function TrainingHubPage() {
   const router = useRouter();
-  const [supabase] = useState(() => createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-  ));
+  const [supabase] = useState(getSupabase);
 
   const [loading,setLoading] = useState(true);
   const [busy,setBusy] = useState(false);
   const [error,setError] = useState('');
   const [notice,setNotice] = useState('');
   const [owner,setOwner] = useState(false);
-  const [userId,setUserId] = useState('');
   const [schools,setSchools] = useState<School[]>([]);
   const [memberships,setMemberships] = useState<Membership[]>([]);
   const [sessions,setSessions] = useState<SessionRow[]>([]);
@@ -43,7 +39,6 @@ export default function TrainingHubPage() {
       return;
     }
     const uid = auth.session.user.id;
-    setUserId(uid);
 
     const [ownerResult, membershipResult, schoolResult, sessionResult, reportResult] = await Promise.all([
       supabase.rpc('is_platform_owner'),

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import QRCode from 'qrcode';
 import { getSupabase } from '@/lib/supabase-browser';
+import { MAX_WELDING_CLASS_CAPACITY } from '@/lib/program-constraints';
 import {
   type ClassroomSession,
   type ClassroomSubmission,
@@ -49,7 +50,7 @@ export default function PlannerAssessmentLauncher() {
   const [section, setSection] = useState<Section | null>(null);
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [expectedStudents, setExpectedStudents] = useState(17);
+  const [expectedStudents, setExpectedStudents] = useState(MAX_WELDING_CLASS_CAPACITY);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [qr, setQr] = useState('');
 

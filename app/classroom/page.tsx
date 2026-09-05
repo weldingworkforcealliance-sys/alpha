@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import QRCode from 'qrcode';
 import { getSupabase } from '@/lib/supabase-browser';
+import { MAX_WELDING_CLASS_CAPACITY } from '@/lib/program-constraints';
 import {
   type ClassroomSession,
   type ClassroomSubmission,
@@ -30,7 +31,7 @@ export default function ClassroomPage() {
   const [assessments,setAssessments]=useState<Assessment[]>([]);
   const [sectionId,setSectionId]=useState('');
   const [assessmentSlug,setAssessmentSlug]=useState('');
-  const [expectedStudents,setExpectedStudents]=useState(17);
+  const [expectedStudents,setExpectedStudents]=useState(MAX_WELDING_CLASS_CAPACITY);
   const [session,setSession]=useState<Session|null>(null);
   const [submissions,setSubmissions]=useState<Submission[]>([]);
   const [qr,setQr]=useState('');
