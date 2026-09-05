@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { getSupabase } from '@/lib/supabase-browser';
 
 type AnyReport = Record<string, any>;
 
@@ -13,7 +13,7 @@ function fmt(v:any){
 
 export default function TrainingReportPage(){
   const params=useParams<{id:string}>(); const reportId=params.id; const router=useRouter();
-  const [supabase]=useState(()=>createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!));
+  const [supabase]=useState(getSupabase);
   const [loading,setLoading]=useState(true);const[busy,setBusy]=useState(false);const[error,setError]=useState('');const[report,setReport]=useState<AnyReport|null>(null);
 
   useEffect(()=>{(async()=>{try{const{data:auth}=await supabase.auth.getSession();if(!auth.session){router.replace('/training/login');return;}const{data,error:rpcError}=await supabase.rpc('get_training_report',{p_report_id:reportId});if(rpcError)throw rpcError;setReport((data??null) as AnyReport|null);}catch(err){setError(err instanceof Error?err.message:String(err));}finally{setLoading(false);}})();},[reportId]);

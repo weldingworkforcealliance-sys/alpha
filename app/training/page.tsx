@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { getSupabase } from '@/lib/supabase-browser';
 
 interface School { id:string; name:string; }
 interface Membership { id:string; school_id:string; user_id:string; role:string; status:string; }
@@ -15,10 +15,7 @@ function fmt(value:string) {
 
 export default function TrainingHubPage() {
   const router = useRouter();
-  const [supabase] = useState(() => createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-  ));
+  const [supabase] = useState(getSupabase);
 
   const [loading,setLoading] = useState(true);
   const [busy,setBusy] = useState(false);

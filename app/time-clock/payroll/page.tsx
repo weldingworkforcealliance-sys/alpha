@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { getSupabase } from '@/lib/supabase-browser';
 import styles from './payroll.module.css';
 
 type School = { id: string; name: string };
@@ -108,12 +108,7 @@ function csvEscape(value: unknown) {
 
 export default function WeeklyTimeReportPage() {
   const router = useRouter();
-  const [supabase] = useState(() =>
-    createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-    )
-  );
+  const [supabase] = useState(getSupabase);
 
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);

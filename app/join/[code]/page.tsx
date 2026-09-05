@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { getSupabase } from '@/lib/supabase-browser';
 
 type Question={key:string;number:number;text:string;domain:string;type:'mc'|'text';options:Record<string,string>|null};
 type SessionInfo={session_id:string;session_name:string;assessment_title:string;question_count:number;expected_students:number;instructions:string|null;allow_team_members:boolean};
 
 export default function StudentAssessmentPage(){
   const {code}=useParams<{code:string}>();
-  const [supabase]=useState(()=>createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!));
+  const [supabase]=useState(getSupabase);
   const [info,setInfo]=useState<SessionInfo|null>(null);
   const [questions,setQuestions]=useState<Question[]>([]);
   const [name,setName]=useState('');
