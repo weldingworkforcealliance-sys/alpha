@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { getSupabase } from '@/lib/supabase-browser';
+import { guardedSignOut } from '@/lib/guarded-signout';
 
 type TabName = 'overview' | 'instructors' | 'sections' | 'activity' | 'reports';
 
@@ -138,12 +139,7 @@ function titleCase(value: string | null | undefined) {
 export default function SchoolDashboardPage() {
   const router = useRouter();
 
-  const [supabase] = useState(() =>
-    createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-    )
-  );
+  const [supabase] = useState(getSupabase);
 
   const [loading, setLoading] = useState(true);
   const [dataLoading, setDataLoading] = useState(false);
@@ -513,8 +509,7 @@ export default function SchoolDashboardPage() {
     ['school_admin', 'program_lead'].includes(myMembership?.role ?? '');
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
+    await guardedSignOut();
   };
 
   const downloadSectionCsv = () => {

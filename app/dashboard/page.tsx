@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
 import { SCHOOL_DASHBOARD_ROLES } from '@/lib/access-roles';
+import { guardedSignOut } from '@/lib/guarded-signout';
 import {
   publishSelectedSection,
   readSelectedSectionId,
@@ -537,8 +538,7 @@ export default function DashboardPage() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
+    await guardedSignOut();
   };
 
   const plannerDayByDate = useMemo(() => {
@@ -703,9 +703,14 @@ export default function DashboardPage() {
       )
     : 0;
 
+  const guideInstructionalMinutes = guideSegments.reduce(
+    (total, segment) => total + segment.planned_minutes,
+    0
+  );
   const plannedInstructionalMinutes =
-    guideSegments.reduce((total, segment) => total + segment.planned_minutes, 0) +
-    (mathLesson?.planned_minutes ?? 0);
+    guideInstructionalMinutes + (mathLesson?.planned_minutes ?? 0);
+  const selectedCourseLabel =
+    selectedSection?.course_code || selectedSection?.course_name || 'Course';
 
   useEffect(() => {
     if (!currentDayInProgress) return;
@@ -953,14 +958,8 @@ export default function DashboardPage() {
 
                         <div className="guide-format-badge">
                           {mathLesson
-                            ? `${guideSegments.reduce(
-                                (sum, segment) => sum + segment.planned_minutes,
-                                0
-                              )} min WLD-105 + ${mathLesson.planned_minutes} min Welding Math`
-                            : `${guideSegments.reduce(
-                                (sum, segment) => sum + segment.planned_minutes,
-                                0
-                              )} min WLD-105`}
+                            ? `${guideInstructionalMinutes} min ${selectedCourseLabel} + ${mathLesson.planned_minutes} min Welding Math`
+                            : `${guideInstructionalMinutes} min ${selectedCourseLabel}`}
                         </div>
                       </div>
 
@@ -995,7 +994,7 @@ export default function DashboardPage() {
                                 <span className="guide-label">
                                   {mathLesson ? 'Section 1' : 'Agenda'}
                                 </span>
-                                <h4>{mathLesson ? 'WLD-105 Agenda' : 'Daily Agenda'}</h4>
+                                <h4>{mathLesson ? `${selectedCourseLabel} Agenda` : 'Daily Agenda'}</h4>
                               </div>
                               <span className="agenda-duration">
                                 {guideSegments.reduce(
@@ -1293,7 +1292,7 @@ export default function DashboardPage() {
                   <div className="calendar-title-row">
                     <div>
                       <h3>Class Calendar</h3>
-                      <p>PVHS schedule and no-class reminders.</p>
+                      <p>Class schedule and no-class reminders.</p>
                     </div>
 
                     {visibleMonth && (
