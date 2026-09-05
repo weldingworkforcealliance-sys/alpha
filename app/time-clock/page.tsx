@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { getSupabase } from '@/lib/supabase-browser';
+import { PAYROLL_ROLES, SCHOOL_MANAGEMENT_ROLES } from '@/lib/access-roles';
 import styles from './time-clock.module.css';
 
 type Employee = {
@@ -43,9 +44,6 @@ type ProfileOption = {
   display_name: string | null;
   email: string | null;
 };
-
-const MANAGER_ROLES = new Set(['school_admin', 'program_lead', 'lead_instructor']);
-const REPORT_ROLES = new Set(['school_admin', 'program_lead', 'lead_instructor', 'viewer']);
 
 function dateInputValue(date: Date) {
   const year = date.getFullYear();
@@ -105,12 +103,7 @@ function localInputToIso(value: string) {
 
 export default function TimeClockPage() {
   const router = useRouter();
-  const [supabase] = useState(() =>
-    createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-    )
-  );
+  const [supabase] = useState(getSupabase);
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -149,11 +142,11 @@ export default function TimeClockPage() {
   );
 
   const isManager = Boolean(
-    isOwner || (currentMembership && MANAGER_ROLES.has(currentMembership.role))
+    isOwner || (currentMembership && SCHOOL_MANAGEMENT_ROLES.has(currentMembership.role))
   );
 
   const canReport = Boolean(
-    isOwner || (currentMembership && REPORT_ROLES.has(currentMembership.role))
+    isOwner || (currentMembership && PAYROLL_ROLES.has(currentMembership.role))
   );
 
   const employeeById = useMemo(() => {
