@@ -24,6 +24,9 @@ jobs:
         run: npm ci
 
       - name: TypeScript check
+        run: npm run typecheck
+
+      - name: ESLint
         run: npm run lint
 
       - name: Next.js build
