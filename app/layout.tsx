@@ -26,26 +26,34 @@ export default function RootLayout({
 }) {
   const pathname = usePathname();
   const isStudentJoin = pathname.startsWith('/join/');
+  const isStudentDisplay = pathname.startsWith('/student-display/');
   const isTrainingRoute = pathname.startsWith('/training');
   const isAccountRoute = pathname.startsWith('/accounts');
+  const isAttendanceRoute = pathname.startsWith('/attendance');
   const isAuthRoute =
     pathname === '/login' ||
     pathname === '/account-setup' ||
     pathname === '/forgot-password' ||
     pathname === '/reset-password' ||
     pathname === '/training/login';
-  const isPrimaryPlannerRoute = pathname === '/dashboard' || pathname === '/agenda';
+  const isPrimaryPlannerRoute =
+    pathname === '/planner' || pathname === '/dashboard' || pathname === '/agenda';
 
-  const hideWorkspaceNav = isAuthRoute || isStudentJoin;
+  const hideWorkspaceNav = isAuthRoute || isStudentJoin || isStudentDisplay;
   const useNightShift = !isStudentJoin;
   const isSecondaryRoute =
-    useNightShift && !isAuthRoute && !isTrainingRoute && !isPrimaryPlannerRoute;
+    useNightShift &&
+    !isAuthRoute &&
+    !isTrainingRoute &&
+    !isPrimaryPlannerRoute &&
+    !isStudentDisplay;
 
   const bodyClassName = [
     useNightShift ? 'night-shift-shell' : '',
     isAuthRoute ? 'ltg-auth-route' : '',
     isTrainingRoute ? 'ltg-training-route' : '',
     isSecondaryRoute ? 'ltg-secondary-route' : '',
+    isStudentDisplay ? 'ltg-student-display-route' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -71,8 +79,8 @@ export default function RootLayout({
               </div>
               <div className="ltg-nav-section-label">Workspace</div>
               <Link
-                href="/dashboard"
-                className={`ltg-nav-link ${pathname === '/dashboard' ? 'active' : ''}`}
+                href="/planner"
+                className={`ltg-nav-link ${pathname === '/planner' ? 'active' : ''}`}
               >
                 Planner
               </Link>
@@ -81,6 +89,12 @@ export default function RootLayout({
                 className={`ltg-nav-link ${pathname === '/agenda' ? 'active' : ''}`}
               >
                 Agenda Workspace
+              </Link>
+              <Link
+                href="/attendance"
+                className={`ltg-nav-link ${isAttendanceRoute ? 'active' : ''}`}
+              >
+                Student Attendance
               </Link>
               <Link
                 href="/time-clock"
@@ -109,9 +123,9 @@ export default function RootLayout({
               )}
             </nav>
           )}
-          <CohortWorkspaceBar pathname={pathname} />
-          <TeacherIdentityBar pathname={pathname} />
-          <AgendaNotePolicyBanner pathname={pathname} />
+          {!isStudentDisplay && <CohortWorkspaceBar pathname={pathname} />}
+          {!isStudentDisplay && <TeacherIdentityBar pathname={pathname} />}
+          {!isStudentDisplay && <AgendaNotePolicyBanner pathname={pathname} />}
           {children}
         </div>
       </body>
