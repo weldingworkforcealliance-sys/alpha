@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import TeacherIdentityBar from './teacher-identity-bar';
 import ReviewQueueLink from './review-queue-link';
 import PayrollNavLink from './payroll-nav-link';
+import AttendanceNavLink from './attendance-nav-link';
 import AgendaNotePolicyBanner from './agenda-note-policy-banner';
 import CohortWorkspaceBar from './cohort-workspace-bar';
 import './styles.css';
@@ -88,6 +89,7 @@ export default function RootLayout({
               >
                 Employee Time Clock
               </Link>
+              <AttendanceNavLink />
               <PayrollNavLink />
               <ReviewQueueLink />
               {isAccountRoute && (

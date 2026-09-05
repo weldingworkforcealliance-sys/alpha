@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import AttendanceConfirmationModal from '../attendance-confirmation-modal';
 import { getSupabase } from '@/lib/supabase-browser';
 import { SCHOOL_DASHBOARD_ROLES } from '@/lib/access-roles';
 import { guardedSignOut } from '@/lib/guarded-signout';
@@ -122,6 +123,18 @@ interface MathSegment {
   segment_type: string;
 }
 
+interface AttendanceRequirement {
+  required: boolean;
+  attendance_group_id?: string;
+  group_name?: string;
+  attendance_mode?: string;
+  course_labels?: string[];
+  already_finalized?: boolean;
+  attendance_session_id?: string | null;
+  planner_section_id?: string;
+  planner_actual_date?: string;
+}
+
 function getLocalDateString() {
   const now = new Date();
   const year = now.getFullYear();
@@ -205,6 +218,8 @@ export default function DashboardPage() {
   const [deviationSummary, setDeviationSummary] = useState('');
   const [followUpNeeded, setFollowUpNeeded] = useState(false);
   const [followUpNotes, setFollowUpNotes] = useState('');
+  const [pendingAttendance, setPendingAttendance] = useState<AttendanceRequirement | null>(null);
+  const [attendanceNotice, setAttendanceNotice] = useState('');
   const [canOpenSchoolDashboard, setCanOpenSchoolDashboard] = useState(false);
   const [canOpenOwnerDashboard, setCanOpenOwnerDashboard] = useState(false);
 
@@ -501,8 +516,14 @@ export default function DashboardPage() {
     }
   };
 
-  const handleCompleteDay = async () => {
-    if (!selectedSection || !isViewingCurrentDay || !currentDayInProgress) return;
+  const completePlannerDay = async (
+    requestedSectionId?: string,
+    requestedActualDate?: string
+  ) => {
+    const sectionId = requestedSectionId ?? selectedSection?.section_id;
+    const completionDate = requestedActualDate ?? actualDate;
+    if (!sectionId) return;
+    if (!requestedSectionId && (!isViewingCurrentDay || !currentDayInProgress)) return;
 
     setError('');
     setActionLoading(true);
@@ -510,8 +531,8 @@ export default function DashboardPage() {
       const { error: rpcError } = await supabase.rpc(
         'complete_current_planner_day',
         {
-          p_section_id: selectedSection.section_id,
-          p_actual_date: actualDate,
+          p_section_id: sectionId,
+          p_actual_date: completionDate,
           p_actual_minutes: null,
           p_deviation_summary: deviationSummary.trim() || null,
           p_follow_up_needed: followUpNeeded,
@@ -527,14 +548,59 @@ export default function DashboardPage() {
       setDeviationSummary('');
       setFollowUpNeeded(false);
       setFollowUpNotes('');
-      await refreshSections(selectedSection.section_id);
-      await loadCalendarData(selectedSection.section_id);
+      const activeSectionId = readSelectedSectionId() || sectionId;
+      await refreshSections(activeSectionId);
+      await loadCalendarData(activeSectionId);
     } catch (err) {
       setError('An unexpected error occurred');
       console.error('Complete day error:', err);
     } finally {
       setActionLoading(false);
     }
+  };
+
+  const handleCompleteDay = async () => {
+    if (!selectedSection || !isViewingCurrentDay || !currentDayInProgress) return;
+
+    setError('');
+    setAttendanceNotice('');
+    setActionLoading(true);
+    try {
+      const { data, error: attendanceError } = await supabase.rpc(
+        'get_end_of_day_attendance_requirement',
+        {
+          p_section_id: selectedSection.section_id,
+          p_attendance_date: actualDate,
+        }
+      );
+
+      if (attendanceError) {
+        setError(`Attendance check failed: ${attendanceError.message}`);
+        return;
+      }
+
+      const requirement = data as AttendanceRequirement;
+      if (
+        requirement.required &&
+        !requirement.already_finalized &&
+        requirement.attendance_group_id
+      ) {
+        setPendingAttendance({
+          ...requirement,
+          planner_section_id: selectedSection.section_id,
+          planner_actual_date: actualDate,
+        });
+        return;
+      }
+    } catch (err) {
+      setError('An unexpected error occurred while checking attendance');
+      console.error('Attendance requirement error:', err);
+      return;
+    } finally {
+      setActionLoading(false);
+    }
+
+    await completePlannerDay();
   };
 
   const handleLogout = async () => {
@@ -809,6 +875,11 @@ export default function DashboardPage() {
 
       <main className="dashboard-main">
         {error && <div className="error-message dashboard-error">{error}</div>}
+        {attendanceNotice && (
+          <div className="success-message dashboard-attendance-notice">
+            {attendanceNotice}
+          </div>
+        )}
 
         {sections.length === 0 ? (
           <div className="empty-state">
@@ -1484,7 +1555,39 @@ export default function DashboardPage() {
         )}
       </main>
 
+      {pendingAttendance?.required && pendingAttendance.attendance_group_id && (
+        <AttendanceConfirmationModal
+          attendanceGroupId={pendingAttendance.attendance_group_id}
+          groupName={pendingAttendance.group_name ?? 'Linked class pair'}
+          courseLabels={pendingAttendance.course_labels ?? []}
+          attendanceDate={pendingAttendance.planner_actual_date ?? actualDate}
+          onCancel={() => setPendingAttendance(null)}
+          onComplete={(result) => {
+            setPendingAttendance(null);
+            setAttendanceNotice(
+              result.email_state === 'queued'
+                ? 'Attendance confirmed. The PVHS report is queued for delivery in 30 minutes.'
+                : 'Attendance confirmed for the full linked class pair.'
+            );
+            void completePlannerDay(
+              pendingAttendance.planner_section_id,
+              pendingAttendance.planner_actual_date
+            );
+          }}
+        />
+      )}
+
       <style jsx>{`
+        .dashboard-attendance-notice {
+          max-width: 1200px;
+          margin: 0 auto 16px;
+          padding: 12px 14px;
+          border: 1px solid #2e7d4f;
+          border-radius: 8px;
+          background: #102a1c;
+          color: #b9f6ca;
+        }
+
         .teacher-guide-section {
           margin-top: 8px;
           margin-bottom: 20px;
