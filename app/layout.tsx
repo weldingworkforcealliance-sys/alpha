@@ -19,6 +19,7 @@ import './coaching-positive-theme.css';
 import './readability-font-scale.css';
 import './guide-navigation-readability.css';
 import './resource-focus-highlight.css';
+import './brand-os.css';
 
 export default function RootLayout({
   children,
@@ -31,6 +32,7 @@ export default function RootLayout({
   const isTrainingRoute = pathname.startsWith('/training');
   const isAccountRoute = pathname.startsWith('/accounts');
   const isAttendanceRoute = pathname.startsWith('/attendance');
+  const isResourcesRoute = pathname.startsWith('/resources');
   const isAuthRoute =
     pathname === '/login' ||
     pathname === '/account-setup' ||
@@ -64,7 +66,7 @@ export default function RootLayout({
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Living Teacher Planner</title>
+        <title>LTG | Welding Education Operating System</title>
       </head>
       <body className={bodyClassName || undefined}>
         <div className="app-container">
@@ -73,9 +75,9 @@ export default function RootLayout({
               <div className="ltg-brand">
                 <span className="ltg-brand-mark">LTG</span>
                 <span className="ltg-brand-copy">
-                  Living Teacher
+                  Welding Education
                   <br />
-                  Planner
+                  Operating System
                 </span>
               </div>
               <div className="ltg-nav-section-label">Workspace</div>
@@ -90,6 +92,12 @@ export default function RootLayout({
                 className={`ltg-nav-link ${pathname === '/agenda' ? 'active' : ''}`}
               >
                 Agenda Workspace
+              </Link>
+              <Link
+                href="/resources"
+                className={`ltg-nav-link ${isResourcesRoute ? 'active' : ''}`}
+              >
+                Content &amp; Resources
               </Link>
               <Link
                 href="/attendance"

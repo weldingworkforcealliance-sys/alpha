@@ -1,0 +1,98 @@
+/* LTG — Welding Education Operating System brand layer.
+   Branding only. No curriculum, permissions, attendance, time-clock, grading,
+   planner progression, or reporting behavior is changed here. */
+
+.night-shift-shell .ltg-brand-copy {
+  font-size: 13px !important;
+  line-height: 1.14 !important;
+  letter-spacing: .012em !important;
+}
+
+.night-shift-shell nav[aria-label='Planner workspace navigation'] a[href='/resources']::before {
+  content: '⌁';
+}
+
+/* The login page has its own scoped styles. These selectors replace only the
+   legacy lockup copy while preserving the established Night Shift design. */
+.ltg-auth-route .brand-lockup .brand-name {
+  font-size: 0 !important;
+  line-height: 1 !important;
+}
+
+.ltg-auth-route .brand-lockup .brand-name:first-child::after,
+.ltg-auth-route .brand-lockup .brand-name:last-child::after {
+  display: block;
+  color: #ddd9d3;
+  font-size: 16px;
+  font-weight: 850;
+  line-height: 1.05;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+
+.ltg-auth-route .brand-lockup .brand-name:first-child::after {
+  content: 'Welding Education';
+}
+
+.ltg-auth-route .brand-lockup .brand-name:last-child::after {
+  content: 'Operating System';
+}
+
+.ltg-auth-route .brand-foot {
+  font-size: 0 !important;
+}
+
+.ltg-auth-route .brand-foot::after {
+  content: 'LTG Welding Education Operating System · Welding Workforce Alliance';
+  color: #536168;
+  font-size: 9px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.ltg-auth-route .training-brand .eyebrow,
+.ltg-auth-route .card > .eyebrow {
+  font-size: 0 !important;
+}
+
+.ltg-auth-route .training-brand .eyebrow::after,
+.ltg-auth-route .card > .eyebrow::after {
+  content: 'LTG · Welding Education Operating System';
+  color: #d8844d;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.owner-shell .topbar .eyebrow,
+.school-shell .topbar .eyebrow {
+  font-size: 0 !important;
+}
+
+.owner-shell .topbar .eyebrow::after,
+.school-shell .topbar .eyebrow::after {
+  content: 'LTG · Welding Education Operating System';
+  color: #d8844d;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+/* Public demo and training headers keep their page-specific titles; only the
+   legacy product eyebrow is replaced. */
+.ltg-secondary-route .demo-banner + header > div > .eyebrow,
+.ltg-training-route .banner + header > div > .eyebrow {
+  font-size: 0 !important;
+}
+
+.ltg-secondary-route .demo-banner + header > div > .eyebrow::after,
+.ltg-training-route .banner + header > div > .eyebrow::after {
+  content: 'LTG · Welding Education Operating System';
+  color: #d8844d;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}

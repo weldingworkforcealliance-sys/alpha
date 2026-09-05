@@ -1,51 +1,80 @@
-# Living Teacher Planner Frontend v0.1
+# LTG · Welding Education Operating System
 
-Connected browser-first frontend for the Living Teacher Planner beta.
+LTG is a browser-first operating system for welding education programs. It connects protected curriculum, daily instruction, student assessment, attendance, instructor operations, school administration, and program analytics without requiring a school to abandon the welding resources it already uses.
 
-## Included
-- Supabase browser client
-- Email/password login
-- Authenticated planner dashboard
-- Reads `current_teaching_sections`
-- Displays current planner day
-- Start Today / Complete Day workflow
-- Connected Classroom assessments
-- Training Mode
-- Employee Time Clock at `/time-clock`
-  - Server-generated clock-in / clock-out timestamps
-  - LTG-account self clocking
-  - Manager kiosk clocking with employee PIN
-  - Duplicate-punch protection
-  - Employee-visible attendance history and weekly totals
-  - Manager corrections with retained audit history
-  - School-scoped row-level security
-- Weekly Time Reports at `/time-clock/payroll`
-  - School payroll roles generate or refresh a weekly report from the authoritative punch record
-  - Employee-by-day hours, regular hours, overtime hours, totals, and punch drill-down
-  - Open-shift, adjusted-entry, long-shift, and cross-midnight review support
-  - Open shifts block report finalization
-  - Finalization freezes the exact payroll snapshot used for that week
-  - Cross-midnight hours are split across the correct local calendar days
-  - Clean printable weekly report for manual payroll entry
-  - Optional downloaded report copy for recordkeeping, with download auditing
-  - Platform Owner receives the same finalized report snapshot for archive and future analytics
-- Responsive browser-first UI
-- Rule #1 protected-curriculum reminder
+## Core platform
 
-## Environment
-The browser application uses the Supabase Project URL and publishable browser key. It contains no secret/service-role key.
+### Instruction and protected curriculum
+- Day-by-day Teaching Console and planner progression
+- Protected core curriculum and course outcomes
+- Instructor notes, implementation feedback, and review workflows
+- Connected Classroom assessments and live grading
+- Student display mode and Training Mode
+- Paired-course coordination for linked welding classes
+
+### Program operations
+- Student attendance with shared class-pair rosters
+- End-of-day paired attendance confirmation and instructor notes
+- PVHS reporting architecture with production email delivery readiness-gated until configuration/testing is complete
+- Employee Time Clock with authenticated clock-in/out, kiosk support, corrections, and audit history
+- Weekly payroll-ready time reports for manual payroll entry
+- School and Platform Owner operational views
+
+### Vendor-neutral content and resource integration
+LTG uses the existing planner-day resource model as the common instructional layer. A resource can now be attributed to a provider/source and classified by integration and licensing metadata.
+
+Built-in source categories include:
+- LTG-native and school-created material
+- AWS resources and standards references
+- Miller educational/equipment resources
+- Lincoln Electric educational/equipment resources
+- Textbooks and publisher courseware
+- Video/media resources
+- Welding simulators
+- Other external training providers
+
+Supported integration profiles include:
+- Native LTG resources
+- Authorized URLs and file references
+- Simulator launches
+- LTI 1.3
+- SCORM
+- Common Cartridge
+- QTI
+- Provider APIs
+
+Secure provider integrations are not faked by a dropdown. LTI/API credentials, launch handshakes, licensing, and provider authorization must be configured with the provider before a secure integration becomes launchable.
+
+## Content ownership guardrail
+
+LTG stores authorized links, references, integration metadata, and content a school is permitted to distribute. Referencing AWS, a manufacturer, publisher, textbook, simulator, or other provider does not transfer ownership or create a license. Protected third-party content should remain with the authorized provider unless the school has explicit rights to host or redistribute it.
+
+## Protected-curriculum rule
+
+No instructor note, resource attachment, automated suggestion, school-admin action, or cross-school learning process may silently change approved core curriculum or approved course outcomes. Resource integrations support instruction and implementation around those protected requirements; they do not replace the formal curriculum-review process.
+
+## Technical stack
+- Next.js / React
+- Supabase Auth, Postgres, RLS, RPCs, and Edge Functions
+- Browser-first responsive interface for school-managed devices
+
+The browser application uses the Supabase Project URL and publishable browser key. It contains no service-role or other server secret.
 
 ## Run
+
 ```bash
 npm install
 npm run dev
 ```
-Then open http://localhost:3000.
+
+Then open `http://localhost:3000`.
 
 ## Validation
-GitHub Actions runs `npm ci`, the TypeScript check, and a Next.js production build for main-branch pushes and pull requests.
 
-## Important
-A user only sees teaching sections and school data allowed by Supabase RLS and assignments. Platform Owner access remains governed by database policies. Time-clock punches are written once through authenticated RPCs and server timestamps rather than editable client-side timestamps. Employees read their own punch history, school payroll roles create and finalize weekly time reports, and the Platform Owner reads the same finalized snapshot rather than a duplicate payroll record.
+GitHub Actions runs dependency installation, TypeScript checking, and a Next.js production build for main-branch pushes and pull requests.
 
-The weekly time report is intended to be a clean reference for payroll staff to manually enter employee time into the school's payroll system. LTG does not provide or claim a direct ADP import/export integration.
+## Product definition
+
+**LTG = Welding Education Operating System.**
+
+The product is intentionally broader than a digital teacher guide or welding LMS. The long-term data model connects standards, programs, courses, protected outcomes, planner days, instructional resources, assessments, student competency evidence, attendance, instructor operations, and school/owner analytics in one welding-specific environment.
