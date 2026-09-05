@@ -1,6 +1,10 @@
 -- LTG paired-course student attendance module
 -- Supports standard and PVHS attendance, shared pair rosters, end-of-pair
 -- confirmation, auditability, and delayed PVHS report queueing.
+--
+-- Important: this migration does NOT replace complete_current_planner_day().
+-- A database trigger enforces the attendance completion gate so the existing
+-- planner completion RPC remains authoritative and future-safe.
 
 create table if not exists public.attendance_pairs (
   id uuid primary key default gen_random_uuid(),
@@ -68,8 +72,13 @@ create table if not exists public.attendance_records (
   school_id uuid not null references public.schools(id) on delete cascade,
   session_id uuid not null references public.attendance_sessions(id) on delete cascade,
   student_id uuid not null references public.attendance_students(id) on delete cascade,
-  initial_status text check (initial_status is null or initial_status in ('present','absent','late','excused')),
-  final_status text check (final_status is null or final_status in ('present','absent','late','excused','left_early','partial')),
+  initial_status text check (
+    initial_status is null or initial_status in ('present','absent','late','excused')
+  ),
+  final_status text check (
+    final_status is null or final_status in
+      ('present','absent','late','excused','left_early','partial')
+  ),
   completion_flags text[] not null default '{}'::text[],
   completion_confirmed boolean not null default false,
   notes text,
@@ -77,7 +86,9 @@ create table if not exists public.attendance_records (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (session_id, student_id),
-  check (completion_flags <@ array['unprepared','left_early','disappeared','other']::text[])
+  check (
+    completion_flags <@ array['unprepared','left_early','disappeared','other']::text[]
+  )
 );
 
 create table if not exists public.attendance_report_queue (
@@ -86,7 +97,8 @@ create table if not exists public.attendance_report_queue (
   session_id uuid not null unique references public.attendance_sessions(id) on delete cascade,
   recipient_email text not null,
   run_after timestamptz not null,
-  status text not null default 'pending' check (status in ('pending','processing','sent','failed')),
+  status text not null default 'pending'
+    check (status in ('pending','processing','sent','failed')),
   attempts integer not null default 0,
   last_error text,
   sent_at timestamptz,
@@ -100,10 +112,14 @@ create index if not exists attendance_pairs_completion_section_idx
   on public.attendance_pairs(completion_section_id) where active;
 create index if not exists attendance_pair_enrollments_pair_active_idx
   on public.attendance_pair_enrollments(pair_id, active);
+create index if not exists attendance_pair_enrollments_student_idx
+  on public.attendance_pair_enrollments(student_id);
 create index if not exists attendance_sessions_pair_date_idx
   on public.attendance_sessions(pair_id, attendance_date);
 create index if not exists attendance_records_session_idx
   on public.attendance_records(session_id);
+create index if not exists attendance_records_student_idx
+  on public.attendance_records(student_id);
 create index if not exists attendance_report_queue_due_idx
   on public.attendance_report_queue(status, run_after)
   where status in ('pending','failed');
@@ -143,6 +159,38 @@ create or replace trigger attendance_report_queue_touch_updated_at
 before update on public.attendance_report_queue
 for each row execute function public.attendance_touch_updated_at();
 
+create or replace function public.guard_attendance_pair_section_exclusivity()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  if not new.active then
+    return new;
+  end if;
+
+  if exists (
+    select 1
+    from public.attendance_pairs ap
+    where ap.active
+      and ap.id <> coalesce(new.id, '00000000-0000-0000-0000-000000000000'::uuid)
+      and (
+        ap.primary_section_id in (new.primary_section_id, new.completion_section_id)
+        or ap.completion_section_id in (new.primary_section_id, new.completion_section_id)
+      )
+  ) then
+    raise exception 'A section can belong to only one active attendance pair';
+  end if;
+
+  return new;
+end;
+$$;
+
+create or replace trigger attendance_pairs_section_exclusivity
+before insert or update of primary_section_id, completion_section_id, active
+on public.attendance_pairs
+for each row execute function public.guard_attendance_pair_section_exclusivity();
+
 alter table public.attendance_pairs enable row level security;
 alter table public.attendance_students enable row level security;
 alter table public.attendance_pair_enrollments enable row level security;
@@ -150,41 +198,50 @@ alter table public.attendance_sessions enable row level security;
 alter table public.attendance_records enable row level security;
 alter table public.attendance_report_queue enable row level security;
 
+drop policy if exists attendance_pairs_select_staff on public.attendance_pairs;
 create policy attendance_pairs_select_staff
 on public.attendance_pairs for select to authenticated
 using (public.is_school_instructional_staff(school_id));
 
+drop policy if exists attendance_pairs_manage_school on public.attendance_pairs;
 create policy attendance_pairs_manage_school
 on public.attendance_pairs for all to authenticated
 using (public.can_manage_school(school_id))
 with check (public.can_manage_school(school_id));
 
+drop policy if exists attendance_students_select_staff on public.attendance_students;
 create policy attendance_students_select_staff
 on public.attendance_students for select to authenticated
 using (public.is_school_instructional_staff(school_id));
 
+drop policy if exists attendance_students_manage_school on public.attendance_students;
 create policy attendance_students_manage_school
 on public.attendance_students for all to authenticated
 using (public.can_manage_school(school_id))
 with check (public.can_manage_school(school_id));
 
+drop policy if exists attendance_enrollments_select_staff on public.attendance_pair_enrollments;
 create policy attendance_enrollments_select_staff
 on public.attendance_pair_enrollments for select to authenticated
 using (public.is_school_instructional_staff(school_id));
 
+drop policy if exists attendance_enrollments_manage_school on public.attendance_pair_enrollments;
 create policy attendance_enrollments_manage_school
 on public.attendance_pair_enrollments for all to authenticated
 using (public.can_manage_school(school_id))
 with check (public.can_manage_school(school_id));
 
+drop policy if exists attendance_sessions_select_staff on public.attendance_sessions;
 create policy attendance_sessions_select_staff
 on public.attendance_sessions for select to authenticated
 using (public.is_school_instructional_staff(school_id));
 
+drop policy if exists attendance_records_select_staff on public.attendance_records;
 create policy attendance_records_select_staff
 on public.attendance_records for select to authenticated
 using (public.is_school_instructional_staff(school_id));
 
+drop policy if exists attendance_report_queue_select_management on public.attendance_report_queue;
 create policy attendance_report_queue_select_management
 on public.attendance_report_queue for select to authenticated
 using (public.can_manage_school(school_id));
@@ -244,7 +301,8 @@ begin
     raise exception 'Unsupported attendance mode';
   end if;
 
-  if p_mode = 'pvhs' and nullif(btrim(coalesce(p_report_email,'')), '') is null then
+  if p_mode = 'pvhs'
+     and nullif(btrim(coalesce(p_report_email,'')), '') is null then
     raise exception 'PVHS attendance requires a report recipient email';
   end if;
 
@@ -331,7 +389,8 @@ begin
   end if;
 
   for v_line in
-    select value from regexp_split_to_table(coalesce(p_names,''), E'\\r?\\n') as value
+    select value
+    from regexp_split_to_table(coalesce(p_names,''), E'\\r?\\n') as value
   loop
     v_name := btrim(regexp_replace(v_line, E'^[\\s•*-]+', '', 'g'));
     if v_name = '' then
@@ -357,8 +416,11 @@ begin
       where id = v_student_id;
     end if;
 
-    insert into public.attendance_pair_enrollments (school_id, pair_id, student_id, active)
-    values (v_school_id, p_pair_id, v_student_id, true)
+    insert into public.attendance_pair_enrollments (
+      school_id, pair_id, student_id, active
+    ) values (
+      v_school_id, p_pair_id, v_student_id, true
+    )
     on conflict (pair_id, student_id)
     do update set active = true;
 
@@ -409,7 +471,10 @@ begin
     raise exception 'No attendance pair is configured for this section';
   end if;
 
-  if not public.is_school_instructional_staff(v_pair.school_id) then
+  if not (
+    public.is_platform_owner()
+    or public.is_school_instructional_staff(v_pair.school_id)
+  ) then
     raise exception 'Active instructional staff access required';
   end if;
 
@@ -475,7 +540,10 @@ begin
     raise exception 'Attendance session not found';
   end if;
 
-  if not public.is_school_instructional_staff(v_school_id) then
+  if not (
+    public.is_platform_owner()
+    or public.is_school_instructional_staff(v_school_id)
+  ) then
     raise exception 'Active instructional staff access required';
   end if;
 
@@ -483,15 +551,19 @@ begin
     raise exception 'Finalized attendance cannot be edited from the instructor screen';
   end if;
 
-  if p_initial_status is not null and p_initial_status not in ('present','absent','late','excused') then
+  if p_initial_status is not null
+     and p_initial_status not in ('present','absent','late','excused') then
     raise exception 'Unsupported initial attendance status';
   end if;
 
-  if p_final_status is not null and p_final_status not in ('present','absent','late','excused','left_early','partial') then
+  if p_final_status is not null
+     and p_final_status not in
+       ('present','absent','late','excused','left_early','partial') then
     raise exception 'Unsupported final attendance status';
   end if;
 
-  if not coalesce(p_completion_flags, '{}'::text[]) <@ array['unprepared','left_early','disappeared','other']::text[] then
+  if not coalesce(p_completion_flags, '{}'::text[])
+      <@ array['unprepared','left_early','disappeared','other']::text[] then
     raise exception 'Unsupported completion flag';
   end if;
 
@@ -532,7 +604,10 @@ begin
     raise exception 'Attendance session not found';
   end if;
 
-  if not public.is_school_instructional_staff(v_school_id) then
+  if not (
+    public.is_platform_owner()
+    or public.is_school_instructional_staff(v_school_id)
+  ) then
     raise exception 'Active instructional staff access required';
   end if;
 
@@ -590,7 +665,10 @@ begin
     raise exception 'Attendance is finalized at the end of the configured completion course';
   end if;
 
-  if not public.is_school_instructional_staff(v_session.school_id) then
+  if not (
+    public.is_platform_owner()
+    or public.is_school_instructional_staff(v_session.school_id)
+  ) then
     raise exception 'Active instructional staff access required';
   end if;
 
@@ -696,7 +774,10 @@ begin
     return;
   end if;
 
-  if not public.is_school_instructional_staff(v_pair.school_id) then
+  if not (
+    public.is_platform_owner()
+    or public.is_school_instructional_staff(v_pair.school_id)
+  ) then
     raise exception 'Active instructional staff access required';
   end if;
 
@@ -705,170 +786,90 @@ begin
   where pair_id = v_pair.id
     and attendance_date = p_attendance_date;
 
-  return query select true, v_pair.id, v_session_id, coalesce(v_status = 'finalized', false);
+  return query
+  select true, v_pair.id, v_session_id, coalesce(v_status = 'finalized', false);
 end;
 $$;
 
--- Protect planner completion at the database layer. Only the configured
--- completion section (e.g. WLD 110 or WLD 210) requires finalized pair attendance.
-create or replace function public.complete_current_planner_day(
-  p_section_id uuid,
-  p_actual_date date default current_date,
-  p_actual_minutes integer default null,
-  p_deviation_summary text default null,
-  p_follow_up_needed boolean default false,
-  p_follow_up_notes text default null
-)
-returns table(completed_day integer, new_current_day integer, section_complete boolean, planner_held boolean)
+create or replace function public.guard_planner_completion_attendance()
+returns trigger
 language plpgsql
-security definer
 set search_path = public
 as $$
 declare
-  v_school_id uuid;
-  v_day_number integer;
-  v_max_days integer;
-  v_planner_day_id uuid;
-  v_hold boolean;
-  v_new_day integer;
-  v_complete boolean := false;
-  v_delivery_status text;
-  v_started_at timestamptz;
-  v_started_by uuid;
-  v_completed_at timestamptz;
-  v_actual_minutes integer;
-  v_attendance_required boolean;
-  v_attendance_finalized boolean;
+  v_pair_id uuid;
+  v_date date;
+  v_finalized boolean;
 begin
-  select s.school_id, sp.current_planner_day_number, s.planned_instructional_days,
-         pd.id, sp.manual_hold
-    into v_school_id, v_day_number, v_max_days, v_planner_day_id, v_hold
-  from public.sections s
-  join public.section_progress sp on sp.section_id = s.id
-  join public.planner_days pd
-    on pd.section_id = s.id
-   and pd.planner_day_number = sp.current_planner_day_number
-  where s.id = p_section_id
-  for update of sp;
-
-  if v_school_id is null then
-    raise exception 'Section or current planner day not found';
+  if new.delivery_status <> 'completed'
+     or old.delivery_status = 'completed' then
+    return new;
   end if;
 
-  select pdd.delivery_status, pdd.started_at, pdd.instructor_id
-    into v_delivery_status, v_started_at, v_started_by
-  from public.planner_day_delivery pdd
-  where pdd.planner_day_id = v_planner_day_id
-    and pdd.section_id = p_section_id
-  for update;
+  select ap.id into v_pair_id
+  from public.attendance_pairs ap
+  where ap.active = true
+    and ap.completion_section_id = new.section_id
+  order by ap.created_at
+  limit 1;
 
-  if not found or v_started_at is null then
-    raise exception 'Start Today must be used before completing the day';
+  if v_pair_id is null then
+    return new;
   end if;
 
-  if not (
-    public.is_platform_owner()
-    or public.can_review_instruction(v_school_id)
-    or v_started_by = auth.uid()
-  ) then
-    raise exception 'Only the instructor who started this class or school management can complete it';
-  end if;
+  v_date := coalesce(new.actual_date, current_date);
 
-  if v_delivery_status = 'completed' then
-    raise exception 'This class day is already completed';
-  end if;
+  select exists (
+    select 1
+    from public.attendance_sessions s
+    where s.pair_id = v_pair_id
+      and s.attendance_date = v_date
+      and s.status = 'finalized'
+  ) into v_finalized;
 
-  if v_delivery_status not in ('in_progress','started') then
-    raise exception 'This class day is not currently in progress';
-  end if;
-
-  select r.attendance_required, r.finalized
-    into v_attendance_required, v_attendance_finalized
-  from public.attendance_completion_requirement(p_section_id, p_actual_date) r;
-
-  if coalesce(v_attendance_required,false) and not coalesce(v_attendance_finalized,false) then
+  if not coalesce(v_finalized, false) then
     raise exception 'Attendance confirmation is required before completing this paired class day';
   end if;
 
-  v_completed_at := now();
-  v_actual_minutes := greatest(
-    1,
-    round(extract(epoch from (v_completed_at - v_started_at)) / 60.0)::integer
-  );
-
-  update public.planner_day_delivery
-  set delivery_status = 'completed',
-      actual_date = p_actual_date,
-      completed_at = v_completed_at,
-      actual_minutes = v_actual_minutes,
-      deviation_summary = p_deviation_summary,
-      follow_up_needed = p_follow_up_needed,
-      follow_up_notes = p_follow_up_notes,
-      updated_at = now()
-  where planner_day_id = v_planner_day_id;
-
-  update public.planner_day_coverage
-  set status = 'completed',
-      completed_at = v_completed_at,
-      updated_at = now()
-  where planner_day_id = v_planner_day_id
-    and status = 'active';
-
-  perform public.write_audit_event(
-    v_school_id,
-    'planner_day_completed',
-    'planner_day',
-    v_planner_day_id,
-    jsonb_build_object(
-      'section_id', p_section_id,
-      'planner_day_number', v_day_number,
-      'started_at', v_started_at,
-      'started_by', v_started_by,
-      'completed_by', auth.uid(),
-      'completed_at', v_completed_at,
-      'actual_minutes', v_actual_minutes,
-      'follow_up_needed', p_follow_up_needed
-    )
-  );
-
-  if v_day_number >= v_max_days then
-    update public.section_progress
-    set completed_at = coalesce(completed_at, v_completed_at),
-        updated_at = now()
-    where section_id = p_section_id;
-    v_new_day := v_day_number;
-    v_complete := true;
-  elsif v_hold then
-    update public.section_progress
-    set last_advanced_at = null,
-        updated_at = now()
-    where section_id = p_section_id;
-    v_new_day := v_day_number;
-  else
-    v_new_day := v_day_number + 1;
-    update public.section_progress
-    set current_planner_day_number = v_new_day,
-        last_advanced_at = v_completed_at,
-        updated_at = now()
-    where section_id = p_section_id;
-  end if;
-
-  return query select v_day_number, v_new_day, v_complete, v_hold;
+  return new;
 end;
 $$;
 
-revoke all on function public.save_attendance_pair(uuid,uuid,uuid,text,text,text,integer,boolean) from public, anon;
-revoke all on function public.bulk_upsert_attendance_roster(uuid,text) from public, anon;
-revoke all on function public.open_attendance_session(uuid,date) from public, anon;
-revoke all on function public.set_attendance_record(uuid,uuid,text,text,text[],text) from public, anon;
-revoke all on function public.mark_all_attendance(uuid,text) from public, anon;
-revoke all on function public.finalize_attendance_session(uuid,uuid,text) from public, anon;
-revoke all on function public.attendance_completion_requirement(uuid,date) from public, anon;
+create or replace trigger planner_delivery_attendance_completion_guard
+before update of delivery_status, actual_date
+on public.planner_day_delivery
+for each row execute function public.guard_planner_completion_attendance();
 
-grant execute on function public.save_attendance_pair(uuid,uuid,uuid,text,text,text,integer,boolean) to authenticated;
-grant execute on function public.bulk_upsert_attendance_roster(uuid,text) to authenticated;
-grant execute on function public.open_attendance_session(uuid,date) to authenticated;
-grant execute on function public.set_attendance_record(uuid,uuid,text,text,text[],text) to authenticated;
-grant execute on function public.mark_all_attendance(uuid,text) to authenticated;
-grant execute on function public.finalize_attendance_session(uuid,uuid,text) to authenticated;
-grant execute on function public.attendance_completion_requirement(uuid,date) to authenticated;
+revoke all on function public.save_attendance_pair(uuid,uuid,uuid,text,text,text,integer,boolean)
+  from public, anon;
+revoke all on function public.bulk_upsert_attendance_roster(uuid,text)
+  from public, anon;
+revoke all on function public.open_attendance_session(uuid,date)
+  from public, anon;
+revoke all on function public.set_attendance_record(uuid,uuid,text,text,text[],text)
+  from public, anon;
+revoke all on function public.mark_all_attendance(uuid,text)
+  from public, anon;
+revoke all on function public.finalize_attendance_session(uuid,uuid,text)
+  from public, anon;
+revoke all on function public.attendance_completion_requirement(uuid,date)
+  from public, anon;
+revoke all on function public.guard_planner_completion_attendance()
+  from public, anon, authenticated;
+revoke all on function public.guard_attendance_pair_section_exclusivity()
+  from public, anon, authenticated;
+
+grant execute on function public.save_attendance_pair(uuid,uuid,uuid,text,text,text,integer,boolean)
+  to authenticated;
+grant execute on function public.bulk_upsert_attendance_roster(uuid,text)
+  to authenticated;
+grant execute on function public.open_attendance_session(uuid,date)
+  to authenticated;
+grant execute on function public.set_attendance_record(uuid,uuid,text,text,text[],text)
+  to authenticated;
+grant execute on function public.mark_all_attendance(uuid,text)
+  to authenticated;
+grant execute on function public.finalize_attendance_session(uuid,uuid,text)
+  to authenticated;
+grant execute on function public.attendance_completion_requirement(uuid,date)
+  to authenticated;
