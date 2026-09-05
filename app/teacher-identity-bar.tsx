@@ -29,7 +29,8 @@ export default function TeacherIdentityBar({ pathname }: { pathname: string }) {
   const [visible, setVisible] = useState(false);
   const [supabase] = useState(getSupabase);
 
-  const supportedPage = pathname === '/dashboard' || pathname === '/agenda';
+  const supportedPage =
+    pathname === '/planner' || pathname === '/dashboard' || pathname === '/agenda';
 
   useEffect(() => {
     if (!supportedPage) {
