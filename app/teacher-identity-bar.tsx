@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+import { getSupabase } from '@/lib/supabase-browser';
 
 type SectionRow = {
   section_id: string;
@@ -25,12 +25,7 @@ export default function TeacherIdentityBar({ pathname }: { pathname: string }) {
   const [classLabel, setClassLabel] = useState('');
   const [selectedSectionId, setSelectedSectionId] = useState('');
   const [visible, setVisible] = useState(false);
-  const [supabase] = useState(() =>
-    createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-    )
-  );
+  const [supabase] = useState(getSupabase);
 
   const supportedPage = pathname === '/dashboard' || pathname === '/agenda';
 
