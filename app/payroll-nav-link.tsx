@@ -3,19 +3,13 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
-
-const PAYROLL_ROLES = new Set(['school_admin', 'program_lead', 'lead_instructor']);
+import { getSupabase } from '@/lib/supabase-browser';
+import { PAYROLL_ROLES } from '@/lib/access-roles';
 
 export default function PayrollNavLink() {
   const pathname = usePathname();
   const [visible, setVisible] = useState(false);
-  const [supabase] = useState(() =>
-    createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-    )
-  );
+  const [supabase] = useState(getSupabase);
 
   useEffect(() => {
     let active = true;
