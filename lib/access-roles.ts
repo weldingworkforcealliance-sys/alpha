@@ -6,6 +6,11 @@ export const SCHOOL_MANAGEMENT_ROLES = new Set([
 
 export const PAYROLL_ROLES = SCHOOL_MANAGEMENT_ROLES;
 
+export const REVIEW_QUEUE_ROLES = new Set([
+  'school_admin',
+  'program_lead',
+]);
+
 export const SCHOOL_DASHBOARD_ROLES = new Set([
   'school_admin',
   'program_lead',
