@@ -1,0 +1,24 @@
+/* Make the primary instructor Resources card easier to find without changing its contents. */
+.guide-side-column > .guide-info-card:first-child {
+  position: relative;
+  border-color: rgba(211, 115, 35, 0.9) !important;
+  box-shadow:
+    0 0 0 1px rgba(211, 115, 35, 0.16),
+    0 0 18px rgba(211, 115, 35, 0.24),
+    0 8px 22px rgba(86, 48, 18, 0.10) !important;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.guide-side-column > .guide-info-card:first-child:hover {
+  border-color: rgba(225, 124, 39, 1) !important;
+  box-shadow:
+    0 0 0 1px rgba(225, 124, 39, 0.20),
+    0 0 23px rgba(225, 124, 39, 0.31),
+    0 9px 24px rgba(86, 48, 18, 0.12) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guide-side-column > .guide-info-card:first-child {
+    transition: none;
+  }
+}
