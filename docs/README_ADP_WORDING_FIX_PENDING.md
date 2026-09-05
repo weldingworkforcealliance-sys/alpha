@@ -1,1 +1,0 @@
-Temporary audit note: update the root README payroll description so it states that finalized weekly time reports are used as a clean reference for manual payroll entry. Do not describe the CSV as a direct ADP import/export integration.
