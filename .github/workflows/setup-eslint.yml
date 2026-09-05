@@ -1,0 +1,109 @@
+name: Setup ESLint
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - maintenance/run-eslint-setup
+
+permissions:
+  contents: write
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install lint dependencies
+        run: npm install --save-dev eslint@^9 @typescript-eslint/parser@^8 @typescript-eslint/eslint-plugin@^8
+
+      - name: Write ESLint config
+        run: |
+          cat > eslint.config.mjs <<'EOF'
+          import tsParser from '@typescript-eslint/parser';
+          import tsPlugin from '@typescript-eslint/eslint-plugin';
+
+          export default [
+            {
+              ignores: ['.next/**', 'node_modules/**', 'coverage/**'],
+            },
+            {
+              files: ['**/*.{ts,tsx}'],
+              languageOptions: {
+                parser: tsParser,
+                parserOptions: {
+                  ecmaVersion: 'latest',
+                  sourceType: 'module',
+                  ecmaFeatures: { jsx: true },
+                },
+              },
+              plugins: {
+                '@typescript-eslint': tsPlugin,
+              },
+              rules: {
+                'no-debugger': 'error',
+                'no-console': ['error', { allow: ['warn', 'error'] }],
+                '@typescript-eslint/no-unused-vars': ['warn', {
+                  argsIgnorePattern: '^_',
+                  varsIgnorePattern: '^_',
+                  caughtErrorsIgnorePattern: '^_',
+                }],
+              },
+            },
+          ];
+          EOF
+
+      - name: Update package scripts
+        run: |
+          node <<'EOF'
+          const fs = require('fs');
+          const pkg = JSON.parse(fs.readFileSync('package.json','utf8'));
+          pkg.scripts.typecheck = 'tsc --noEmit';
+          pkg.scripts.lint = 'eslint .';
+          pkg.scripts.check = 'npm run typecheck && npm run lint';
+          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          EOF
+
+      - name: Update CI checks
+        run: |
+          python <<'EOF'
+          from pathlib import Path
+          path = Path('.github/workflows/ci.yml')
+          text = path.read_text()
+          text = text.replace('      - name: TypeScript check\n        run: npm run lint\n', '      - name: TypeScript check\n        run: npm run typecheck\n\n      - name: ESLint\n        run: npm run lint\n')
+          path.write_text(text)
+          EOF
+
+      - name: TypeScript check
+        run: npm run typecheck
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Next.js build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: public-build-placeholder
+        run: npm run build
+
+      - name: Diff check
+        run: git diff --check
+
+      - name: Commit QA tooling
+        run: |
+          git config user.name "weldingworkforcealliance-sys"
+          git config user.email "weldingworkforcealliance@gmail.com"
+          git add package.json package-lock.json eslint.config.mjs .github/workflows/ci.yml
+          git commit -m "Add real ESLint quality checks"
+          git push
