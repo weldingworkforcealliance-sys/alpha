@@ -75,16 +75,6 @@ jobs:
           fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
           EOF
 
-      - name: Update CI checks
-        run: |
-          python <<'EOF'
-          from pathlib import Path
-          path = Path('.github/workflows/ci.yml')
-          text = path.read_text()
-          text = text.replace('      - name: TypeScript check\n        run: npm run lint\n', '      - name: TypeScript check\n        run: npm run typecheck\n\n      - name: ESLint\n        run: npm run lint\n')
-          path.write_text(text)
-          EOF
-
       - name: TypeScript check
         run: npm run typecheck
 
@@ -104,6 +94,6 @@ jobs:
         run: |
           git config user.name "weldingworkforcealliance-sys"
           git config user.email "weldingworkforcealliance@gmail.com"
-          git add package.json package-lock.json eslint.config.mjs .github/workflows/ci.yml
+          git add package.json package-lock.json eslint.config.mjs
           git commit -m "Add real ESLint quality checks"
           git push
