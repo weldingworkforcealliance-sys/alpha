@@ -35,6 +35,7 @@
 
 .header h1 { margin: 4px 0 7px; font-size: clamp(26px, 3vw, 40px); }
 .header p { margin: 0; color: #9bb0ab; line-height: 1.45; max-width: 850px; }
+.headerActions { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .adminLink,
 .backLink,
@@ -99,6 +100,7 @@
 .saveButton:disabled { opacity: .45; cursor: not-allowed; }
 
 .notice { padding: 11px 13px; margin-bottom: 12px; color: #c8dbd7; }
+.notice a, .empty a { color: inherit; font-weight: 800; }
 .notice.warning { border-color: rgba(255,154,56,.5); color: #ffd0a0; background: rgba(255,154,56,.06); }
 .notice.error { border-color: rgba(230,91,91,.55); color: #ffd1d1; background: rgba(230,91,91,.06); }
 .notice.success { border-color: rgba(80,223,146,.5); color: #b9f7d6; background: rgba(80,223,146,.06); }
@@ -125,6 +127,7 @@
 }
 
 .bulkRow { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.inlineHelp { color: #8da29d; align-self: center; font-size: 12px; }
 
 .roster { display: grid; gap: 10px; }
 .studentCard { padding: 12px; }
@@ -178,10 +181,152 @@
 .reportLine { color: #9ab0ab; font-size: 12px; }
 .empty { text-align: center; color: #80958f; padding: 28px; border: 1px dashed #2a403c; border-radius: 10px; }
 
+/* Embedded attendance lives inside the current Planner and follows the launch theme. */
+.embeddedPanel {
+  margin: 12px 14px 14px;
+  border: 1px solid var(--ltg-border, #415668);
+  border-radius: 10px;
+  background: var(--ltg-surface-2, #1d3242);
+  color: var(--ltg-text, #f1f4f6);
+  box-shadow: 0 8px 20px rgba(0,0,0,.08);
+  overflow: hidden;
+}
+
+.embeddedSummary {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  padding: 13px 15px;
+  cursor: pointer;
+  list-style: none;
+  border-bottom: 1px solid transparent;
+  background: var(--ltg-surface-2, #1d3242);
+}
+.embeddedPanel[open] > .embeddedSummary { border-bottom-color: var(--ltg-border-soft, #314657); }
+.embeddedSummary::-webkit-details-marker { display: none; }
+.embeddedSummary::after { content: '⌄'; color: #f0641d; font-size: 18px; font-weight: 900; }
+.embeddedPanel[open] > .embeddedSummary::after { content: '⌃'; }
+.embeddedSummary > span:first-child { display: grid; gap: 2px; }
+.embeddedSummary strong { color: var(--ltg-text, #f1f4f6); font-size: 15px; }
+.embeddedSummary small { color: var(--ltg-muted, #b4bec6); font-size: 11px; }
+.embeddedSummaryStatus {
+  margin-left: auto;
+  color: #f0641d;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.embeddedBody { padding: 14px; background: var(--ltg-surface, #172b3a); }
+.embeddedToolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.embeddedToolbar > div:first-child { display: grid; gap: 3px; }
+.embeddedToolbar strong { color: var(--ltg-text, #f1f4f6); }
+.embeddedToolbar span { color: var(--ltg-muted, #b4bec6); font-size: 12px; }
+.embeddedToolbarActions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.embeddedLoading {
+  margin: 12px 14px;
+  padding: 14px;
+  border: 1px solid var(--ltg-border, #415668);
+  border-radius: 10px;
+  color: var(--ltg-muted, #b4bec6);
+  background: var(--ltg-surface-2, #1d3242);
+}
+
+.embeddedPanel .summary,
+.embeddedPanel .studentCard,
+.embeddedPanel .finalizeCard,
+.embeddedPanel .notice {
+  border-color: var(--ltg-border-soft, #314657);
+  background: var(--ltg-surface-2, #1d3242);
+  color: var(--ltg-text, #f1f4f6);
+}
+.embeddedPanel .summary strong,
+.embeddedPanel .studentName strong,
+.embeddedPanel .finalizeHeader h2 { color: var(--ltg-text, #f1f4f6); }
+.embeddedPanel .summary span,
+.embeddedPanel .studentName span,
+.embeddedPanel .inlineHelp,
+.embeddedPanel .flags,
+.embeddedPanel .reportLine { color: var(--ltg-muted, #b4bec6); }
+.embeddedPanel .field { color: var(--ltg-muted, #b4bec6); }
+.embeddedPanel .field select,
+.embeddedPanel .field input,
+.embeddedPanel .field textarea,
+.embeddedPanel .finalizeCard textarea,
+.embeddedPanel .studentCard textarea,
+.embeddedPanel .studentCard select {
+  border-color: var(--ltg-border, #415668);
+  background: var(--ltg-input, #142736);
+  color: var(--ltg-text, #f1f4f6);
+}
+.embeddedPanel .statusButton,
+.embeddedPanel .saveButton,
+.embeddedPanel .backLink {
+  border-color: var(--ltg-border, #415668);
+  background: var(--ltg-surface-3, #233948);
+  color: var(--ltg-text, #f1f4f6);
+}
+.embeddedPanel .actionButton {
+  border-color: #f0641d;
+  background: #e95d18;
+  color: #fff;
+}
+.embeddedPanel .secondaryButton {
+  border-color: var(--ltg-border, #415668);
+  background: var(--ltg-surface-3, #233948);
+  color: var(--ltg-text, #f1f4f6);
+}
+.embeddedPanel .statusButton.active {
+  border-color: #4fa66c;
+  color: var(--ltg-success-text, #0d5b31);
+  background: var(--ltg-success-bg, #dcebe0);
+}
+.embeddedPanel .statusButton.absent.active {
+  border-color: #cf5868;
+  color: var(--ltg-danger-text, #a92b3b);
+  background: var(--ltg-danger-bg, #f2dfe1);
+}
+.embeddedPanel .statusButton.late.active {
+  border-color: #f0641d;
+  color: #f0641d;
+  background: rgba(240,100,29,.12);
+}
+.embeddedPanel .statusButton.excused.active {
+  border-color: #7c69b8;
+  color: #7c69b8;
+  background: rgba(124,105,184,.12);
+}
+.embeddedPanel .notice.error {
+  border-color: rgba(207,88,104,.55);
+  color: var(--ltg-danger-text, #a92b3b);
+  background: var(--ltg-danger-bg, #f2dfe1);
+}
+.embeddedPanel .notice.success {
+  border-color: rgba(79,166,108,.5);
+  color: var(--ltg-success-text, #0d5b31);
+  background: var(--ltg-success-bg, #dcebe0);
+}
+.embeddedPanel .empty {
+  color: var(--ltg-muted, #b4bec6);
+  border-color: var(--ltg-border-soft, #314657);
+}
+
 @media (max-width: 900px) {
   .toolbar { grid-template-columns: 1fr; }
   .studentTop { grid-template-columns: 1fr; }
   .statusButtons { justify-content: flex-start; }
   .completionGrid { grid-template-columns: 1fr; }
   .header { flex-direction: column; }
+  .embeddedToolbar { align-items: flex-start; flex-direction: column; }
+  .embeddedToolbarActions { justify-content: flex-start; width: 100%; }
+  .embeddedSummary { align-items: flex-start; }
+  .embeddedSummaryStatus { display: none; }
 }
