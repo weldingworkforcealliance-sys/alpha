@@ -584,7 +584,7 @@ export default function AttendanceWorkspace({
 
   if (embedded) {
     return (
-      <details className={styles.embeddedPanel} defaultOpen>
+      <details className={styles.embeddedPanel}>
         <summary className={styles.embeddedSummary}>
           <span>
             <strong>Student Attendance</strong>
