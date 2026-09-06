@@ -34,10 +34,34 @@ type ReportingSettings = {
   readiness_note: string;
 };
 
+type ErrorLike = {
+  message?: unknown;
+  details?: unknown;
+  hint?: unknown;
+  code?: unknown;
+};
+
 function sectionLabel(section: Section, courses: Map<string, Course>) {
   const course = courses.get(section.course_id);
   const courseLabel = course?.course_code || course?.course_name || 'Course';
   return `${courseLabel} · ${section.section_name}${section.section_code ? ` (${section.section_code})` : ''}`;
+}
+
+function formatErrorMessage(err: unknown) {
+  if (err instanceof Error) return err.message;
+  if (typeof err === 'string') return err;
+  if (err && typeof err === 'object') {
+    const candidate = err as ErrorLike;
+    const parts = [candidate.message, candidate.details, candidate.hint]
+      .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+      .map((value) => value.trim());
+    const unique = [...new Set(parts)];
+    if (unique.length) {
+      const code = typeof candidate.code === 'string' && candidate.code.trim() ? ` (${candidate.code})` : '';
+      return `${unique.join(' ')}${code}`;
+    }
+  }
+  return 'An unexpected attendance administration error occurred. Please retry.';
 }
 
 export default function AttendanceAdminPage() {
@@ -192,7 +216,7 @@ export default function AttendanceAdminPage() {
         }
         await loadSchools();
       } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
+        setError(formatErrorMessage(err));
       } finally {
         setLoading(false);
       }
@@ -207,7 +231,7 @@ export default function AttendanceAdminPage() {
       try {
         await loadSchoolData(schoolId);
       } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
+        setError(formatErrorMessage(err));
       } finally {
         setBusy(false);
       }
@@ -261,9 +285,9 @@ export default function AttendanceAdminPage() {
       await loadSchoolData(schoolId);
       const pairId = String(data);
       setSelectedPairId(pairId);
-      setNotice('Attendance pair saved. The shared roster will serve both linked sections.');
+      setNotice('Attendance pair saved. Step 3 is ready: paste the shared student roster below.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(formatErrorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -287,7 +311,7 @@ export default function AttendanceAdminPage() {
         `Roster updated. ${result?.enrolled ?? 0} student row(s) enrolled in the shared class pair.`
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(formatErrorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -305,7 +329,7 @@ export default function AttendanceAdminPage() {
       if (updateError) throw updateError;
       await loadRoster(selectedPairId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(formatErrorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -360,7 +384,7 @@ export default function AttendanceAdminPage() {
       <section className={styles.finalizeCard}>
         <div className={styles.finalizeHeader}>
           <div>
-            <div className={styles.eyebrow}>Class Pair</div>
+            <div className={styles.eyebrow}>Step 1 · Class Pair</div>
             <h2>{selectedPairId ? 'Edit attendance pair' : 'Create attendance pair'}</h2>
           </div>
         </div>
@@ -426,65 +450,86 @@ export default function AttendanceAdminPage() {
           </label>
         </div>
 
-        <button
-          type="button"
-          className={styles.actionButton}
-          onClick={savePair}
-          disabled={
-            busy ||
-            !primarySectionId ||
-            !completionSectionId ||
-            (mode === 'pvhs' && !pvhsReportingEnabled)
-          }
-        >
-          {busy ? 'Saving…' : 'Save Attendance Pair'}
-        </button>
+        <div style={{ display: 'grid', gap: 6 }}>
+          <div className={styles.eyebrow}>Step 2 · Save Pair</div>
+          <button
+            type="button"
+            className={styles.actionButton}
+            onClick={savePair}
+            disabled={
+              busy ||
+              !primarySectionId ||
+              !completionSectionId ||
+              (mode === 'pvhs' && !pvhsReportingEnabled)
+            }
+          >
+            {busy ? 'Saving…' : selectedPairId ? 'Save Attendance Pair Changes' : 'Save Attendance Pair'}
+          </button>
+        </div>
       </section>
 
-      {selectedPairId && (
-        <section className={styles.finalizeCard}>
-          <div className={styles.finalizeHeader}>
-            <div>
-              <div className={styles.eyebrow}>Shared Student Roster</div>
-              <h2>Paste students in one batch</h2>
-            </div>
-            <span className={styles.modePill}>{roster.length} active students</span>
+      <section className={styles.finalizeCard}>
+        <div className={styles.finalizeHeader}>
+          <div>
+            <div className={styles.eyebrow}>Step 3 · Shared Student Roster</div>
+            <h2>Paste students in one batch</h2>
           </div>
+          <span className={styles.modePill}>
+            {selectedPairId ? `${roster.length} active students` : 'Save pair first'}
+          </span>
+        </div>
+
+        {!selectedPairId ? (
+          <div className={`${styles.notice} ${styles.warning}`} style={{ marginBottom: 0 }}>
+            <strong>Roster is ready, but locked.</strong> Complete Steps 1 and 2 above. After the attendance pair is saved, paste one student name per line here. The same roster will automatically serve both linked courses.
+          </div>
+        ) : (
           <p style={{ margin: 0, color: '#9eb1ad', lineHeight: 1.45 }}>
             Paste one student name per line. The roster belongs to the pair, so the same students appear automatically in both linked courses.
           </p>
-          <textarea
-            rows={8}
-            value={bulkNames}
-            onChange={(event) => setBulkNames(event.target.value)}
-            placeholder={'Student One\nStudent Two\nStudent Three'}
-          />
-          <button type="button" className={styles.actionButton} onClick={importRoster} disabled={busy || !bulkNames.trim()}>
-            Add / Reactivate Students
-          </button>
+        )}
 
-          {roster.length > 0 && (
-            <div style={{ display: 'grid', gap: 6, marginTop: 4 }}>
-              {roster.map((student) => (
-                <div
-                  key={student.id}
-                  style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', border: '1px solid #253b37', background: '#081310', borderRadius: 8, padding: '9px 11px' }}
+        <textarea
+          rows={8}
+          value={bulkNames}
+          onChange={(event) => setBulkNames(event.target.value)}
+          placeholder={selectedPairId ? 'Student One\nStudent Two\nStudent Three' : 'Save the attendance pair above to unlock roster entry.'}
+          disabled={!selectedPairId || busy}
+        />
+        <button
+          type="button"
+          className={styles.actionButton}
+          onClick={importRoster}
+          disabled={!selectedPairId || busy || !bulkNames.trim()}
+        >
+          Add / Reactivate Students
+        </button>
+
+        {selectedPairId && roster.length === 0 && (
+          <div className={styles.empty}>No active students are enrolled in this pair yet.</div>
+        )}
+
+        {selectedPairId && roster.length > 0 && (
+          <div style={{ display: 'grid', gap: 6, marginTop: 4 }}>
+            {roster.map((student) => (
+              <div
+                key={student.id}
+                style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', border: '1px solid #253b37', background: '#081310', borderRadius: 8, padding: '9px 11px' }}
+              >
+                <span>{student.display_name}</span>
+                <button
+                  type="button"
+                  className={styles.saveButton}
+                  onClick={() => removeStudent(student.id)}
+                  disabled={busy}
                 >
-                  <span>{student.display_name}</span>
-                  <button
-                    type="button"
-                    className={styles.saveButton}
-                    onClick={() => removeStudent(student.id)}
-                    disabled={busy}
-                  >
-                    Remove from Pair
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
+                  Remove from Pair
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
     </main>
   );
 }
