@@ -172,8 +172,9 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
       aria-label="Class workspace selector"
       style={{
         padding: '14px 16px',
-        borderBottom: '1px solid #242424',
-        background: '#0a0d0c',
+        borderBottom: '1px solid var(--ltg-border-soft)',
+        background: 'var(--ltg-surface-2)',
+        color: 'var(--ltg-text)',
       }}
     >
       <div
@@ -186,7 +187,7 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
       >
         <div
           style={{
-            color: '#8f9b95',
+            color: 'var(--ltg-muted)',
             fontSize: '11px',
             fontWeight: 900,
             letterSpacing: '.1em',
@@ -208,9 +209,13 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
                   minWidth: '135px',
                   padding: '11px 16px',
                   borderRadius: '8px',
-                  border: active ? '1px solid #00ff88' : '1px solid #343a37',
-                  background: active ? 'rgba(0,255,136,.09)' : '#111513',
-                  color: active ? '#00ff88' : '#d7ddd9',
+                  border: active
+                    ? '1px solid var(--ltg-accent)'
+                    : '1px solid var(--ltg-border)',
+                  background: active
+                    ? 'var(--ltg-accent-soft)'
+                    : 'var(--ltg-surface-3)',
+                  color: active ? 'var(--ltg-accent-text)' : 'var(--ltg-text)',
                   fontWeight: 900,
                   cursor: 'pointer',
                 }}
@@ -241,10 +246,12 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
                     padding: '8px 13px',
                     borderRadius: '7px',
                     border: active
-                      ? '1px solid rgba(0,255,136,.75)'
-                      : '1px solid #303633',
-                    background: active ? '#13251c' : '#0d100f',
-                    color: active ? '#b8ffd8' : '#aeb6b1',
+                      ? '1px solid var(--ltg-accent)'
+                      : '1px solid var(--ltg-border)',
+                    background: active
+                      ? 'var(--ltg-accent-soft)'
+                      : 'var(--ltg-surface)',
+                    color: active ? 'var(--ltg-accent-text)' : 'var(--ltg-muted)',
                     fontSize: '12px',
                     fontWeight: 850,
                     cursor: 'pointer',
