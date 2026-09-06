@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import AttendanceWorkspace from './attendance/attendance-workspace';
+import { getSupabase } from '@/lib/supabase-browser';
 import {
   readSelectedSectionId,
   subscribeSelectedSection,
@@ -15,19 +16,43 @@ function localDate() {
 }
 
 export default function PlannerAttendancePanel({ pathname }: { pathname: string }) {
+  const [supabase] = useState(getSupabase);
   const [sectionId, setSectionId] = useState<string | null>(() => readSelectedSectionId());
   const [attendanceDate, setAttendanceDate] = useState(localDate);
 
   useEffect(() => {
     if (pathname !== '/dashboard') return;
+    let cancelled = false;
 
-    setSectionId(readSelectedSectionId());
-    setAttendanceDate(localDate());
-    return subscribeSelectedSection((nextSectionId) => {
+    const selectSection = async (nextSectionId: string | null) => {
+      if (cancelled) return;
       setSectionId(nextSectionId);
-      setAttendanceDate(localDate());
+      if (!nextSectionId) {
+        setAttendanceDate(localDate());
+        return;
+      }
+
+      const { data } = await supabase
+        .from('current_teaching_sections')
+        .select('scheduled_date')
+        .eq('section_id', nextSectionId)
+        .maybeSingle();
+
+      if (!cancelled) {
+        setAttendanceDate(data?.scheduled_date || localDate());
+      }
+    };
+
+    void selectSection(readSelectedSectionId());
+    const unsubscribe = subscribeSelectedSection((nextSectionId) => {
+      void selectSection(nextSectionId);
     });
-  }, [pathname]);
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [pathname, supabase]);
 
   if (pathname !== '/dashboard' || !sectionId) return null;
 
