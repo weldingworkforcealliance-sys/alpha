@@ -54,12 +54,7 @@ export default function ReviewQueueLink() {
   return (
     <Link
       href="/review-queue"
-      style={{
-        color: pathname === '/review-queue' ? '#00ff88' : '#c8c8c8',
-        textDecoration: 'none',
-        fontWeight: 800,
-        fontSize: '13px',
-      }}
+      className={`ltg-nav-link ${pathname === '/review-queue' ? 'active' : ''}`}
     >
       Review Queue
     </Link>

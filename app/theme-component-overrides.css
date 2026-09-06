@@ -1,0 +1,104 @@
+/* Final component-level theme overrides for legacy inline styles.
+   Keep this narrow and structural. Page behavior is intentionally untouched. */
+
+/* Planner and Training Mode action panels are rendered into the shared console
+   with inline legacy dark surfaces. Normalize those surfaces without changing
+   Start/Complete Day behavior. */
+html[data-theme] body.night-shift-shell [class*='PlannerTeachingConsole_actionSlot'] > section {
+  background: var(--ltg-surface) !important;
+  color: var(--ltg-text) !important;
+  border-color: var(--ltg-border-soft) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,.06) !important;
+}
+
+html[data-theme] body.night-shift-shell [class*='PlannerTeachingConsole_actionSlot'] > section > div,
+html[data-theme] body.night-shift-shell [class*='PlannerTeachingConsole_actionSlot'] label,
+html[data-theme] body.night-shift-shell [class*='PlannerTeachingConsole_actionSlot'] span {
+  color: var(--ltg-muted);
+}
+
+html[data-theme] body.night-shift-shell [class*='PlannerTeachingConsole_actionSlot'] strong,
+html[data-theme] body.night-shift-shell [class*='PlannerTeachingConsole_actionSlot'] h1,
+html[data-theme] body.night-shift-shell [class*='PlannerTeachingConsole_actionSlot'] h2,
+html[data-theme] body.night-shift-shell [class*='PlannerTeachingConsole_actionSlot'] h3 {
+  color: var(--ltg-text) !important;
+}
+
+html[data-theme] body.night-shift-shell [class*='PlannerTeachingConsole_actionSlot'] input,
+html[data-theme] body.night-shift-shell [class*='PlannerTeachingConsole_actionSlot'] textarea,
+html[data-theme] body.night-shift-shell [class*='PlannerTeachingConsole_actionSlot'] select {
+  background: var(--ltg-input) !important;
+  color: var(--ltg-text) !important;
+  border-color: var(--ltg-border) !important;
+}
+
+/* Normalized informational accents inside the shared console action area. */
+html[data-theme] body.night-shift-shell [class*='PlannerTeachingConsole_actionSlot'] a {
+  color: var(--ltg-info-text);
+}
+
+/* Common legacy route tables and list rows. */
+html[data-theme] body.night-shift-shell.ltg-secondary-route :where(table, thead, tbody, tr, th, td),
+html[data-theme] body.night-shift-shell.ltg-training-route :where(table, thead, tbody, tr, th, td) {
+  border-color: var(--ltg-border-soft) !important;
+}
+
+html[data-theme] body.night-shift-shell.ltg-secondary-route :where(th, .table-head, .results-head),
+html[data-theme] body.night-shift-shell.ltg-training-route :where(th, .table-head, .results-head) {
+  background: var(--ltg-surface-2) !important;
+  color: var(--ltg-muted) !important;
+}
+
+html[data-theme='light'] body.night-shift-shell.ltg-secondary-route :where(td, .list-row, .person-row, .activity-row),
+html[data-theme='light'] body.night-shift-shell.ltg-training-route :where(td, .list-row, .person-row, .activity-row) {
+  background: var(--ltg-surface) !important;
+  color: var(--ltg-text) !important;
+}
+
+/* Auth routes use the account theme as well, even though the sidebar is hidden. */
+html[data-theme] body.night-shift-shell.ltg-auth-route :where(.auth-shell, .login-shell, .shell, .card, .auth-card, .form-card) {
+  background: var(--ltg-surface) !important;
+  color: var(--ltg-text) !important;
+  border-color: var(--ltg-border-soft) !important;
+}
+
+html[data-theme] body.night-shift-shell.ltg-auth-route :where(h1, h2, h3, strong) {
+  color: var(--ltg-text) !important;
+}
+
+html[data-theme] body.night-shift-shell.ltg-auth-route :where(p, .sub, .helper, .hint, label) {
+  color: var(--ltg-muted) !important;
+}
+
+/* Keep destructive/success status semantics stable in both modes. */
+html[data-theme] body.night-shift-shell :where(.danger-zone, .delete, .destructive) {
+  border-color: var(--ltg-danger) !important;
+}
+
+html[data-theme] body.night-shift-shell :where(.warning, .warning-box, .warning-card) {
+  border-color: var(--ltg-accent) !important;
+  background: var(--ltg-warning-bg) !important;
+  color: var(--ltg-warning-text) !important;
+}
+
+/* Never let screen theme normalization damage printable training/report output. */
+@media print {
+  html,
+  body,
+  body.night-shift-shell,
+  body.night-shift-shell .ltg-main-content,
+  body.night-shift-shell .ltg-public-content,
+  body.night-shift-shell :where(.shell, .review-shell, .workspace-shell, .panel, .card, .report, .table-card) {
+    background: #fff !important;
+    color: #111 !important;
+    box-shadow: none !important;
+  }
+
+  body.night-shift-shell :where(h1, h2, h3, h4, p, span, strong, td, th) {
+    color: #111 !important;
+  }
+
+  body.night-shift-shell :where(.ltg-sidebar, .ltg-mobile-menu-button, .ltg-theme-toggle, .ltg-sidebar-footer) {
+    display: none !important;
+  }
+}

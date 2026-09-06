@@ -172,33 +172,40 @@ export default function StudentDisplayPage() {
     [segments, mathSegments]
   );
 
+  const shellStyle = {
+    minHeight: '100vh',
+    background: 'var(--ltg-canvas)',
+    color: 'var(--ltg-text)',
+    padding: 30,
+  } as const;
+
   if (loading) {
-    return <main style={{ minHeight: '100vh', background: '#06100f', color: '#dce9e6', padding: 30 }}>Loading student display…</main>;
+    return <main style={shellStyle}>Loading student display…</main>;
   }
 
   if (error || !day) {
-    return <main style={{ minHeight: '100vh', background: '#06100f', color: '#ffd1d1', padding: 30 }}>{error || 'Student display unavailable.'}</main>;
+    return <main style={{ ...shellStyle, color: 'var(--ltg-danger-text)' }}>{error || 'Student display unavailable.'}</main>;
   }
 
   return (
     <main
       style={{
         minHeight: '100vh',
-        background: 'radial-gradient(circle at 80% 0%, rgba(32,107,111,.16), transparent 35%), #06100f',
-        color: '#edf6f4',
+        background: 'var(--ltg-canvas)',
+        color: 'var(--ltg-text)',
         padding: 'clamp(22px,4vw,64px)',
         fontFamily: 'Arial, Helvetica, sans-serif',
       }}
     >
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-        <header style={{ borderBottom: '1px solid #29423e', paddingBottom: 18, marginBottom: 24 }}>
-          <div style={{ color: '#45d6e8', textTransform: 'uppercase', letterSpacing: '.12em', fontWeight: 900, fontSize: 15 }}>
+        <header style={{ borderBottom: '1px solid var(--ltg-border)', paddingBottom: 18, marginBottom: 24 }}>
+          <div style={{ color: 'var(--ltg-accent)', textTransform: 'uppercase', letterSpacing: '.12em', fontWeight: 900, fontSize: 15 }}>
             {courseLabel} · Day {day.planner_day_number}
           </div>
-          <h1 style={{ margin: '8px 0 10px', fontSize: 'clamp(34px,5vw,64px)', lineHeight: 1.06 }}>
+          <h1 style={{ margin: '8px 0 10px', color: 'var(--ltg-text)', fontSize: 'clamp(34px,5vw,64px)', lineHeight: 1.06 }}>
             {day.title || `Planner Day ${day.planner_day_number}`}
           </h1>
-          <p style={{ margin: 0, maxWidth: 1100, color: '#c8dcd8', fontSize: 'clamp(20px,2.2vw,30px)', lineHeight: 1.38 }}>
+          <p style={{ margin: 0, maxWidth: 1100, color: 'var(--ltg-muted)', fontSize: 'clamp(20px,2.2vw,30px)', lineHeight: 1.38 }}>
             {day.objective || 'Follow the instructor plan and complete the assigned work.'}
           </p>
         </header>
@@ -212,27 +219,32 @@ export default function StudentDisplayPage() {
                 gridTemplateColumns: '120px minmax(0,1fr)',
                 gap: 18,
                 alignItems: 'start',
-                border: row.math ? '1px solid rgba(255,154,56,.42)' : '1px solid #28423d',
-                background: row.math ? 'rgba(255,154,56,.055)' : '#0a1815',
+                border: row.math
+                  ? '1px solid var(--ltg-accent)'
+                  : '1px solid var(--ltg-border)',
+                background: row.math
+                  ? 'var(--ltg-accent-soft)'
+                  : 'var(--ltg-surface)',
+                color: 'var(--ltg-text)',
                 borderRadius: 12,
                 padding: '16px 18px',
               }}
             >
-              <div style={{ color: row.math ? '#ffbd79' : '#6ce7f4', fontWeight: 900, fontSize: 18 }}>{row.time}</div>
+              <div style={{ color: row.math ? 'var(--ltg-accent-text)' : 'var(--ltg-info-text)', fontWeight: 900, fontSize: 18 }}>{row.time}</div>
               <div style={{ fontSize: 'clamp(20px,2vw,29px)', lineHeight: 1.42 }}>{row.text}</div>
             </div>
           ))}
         </section>
 
         {mathLesson && (
-          <section style={{ marginTop: 24, border: '1px solid rgba(255,154,56,.35)', background: 'rgba(255,154,56,.045)', borderRadius: 12, padding: 18 }}>
-            <div style={{ color: '#ffbd79', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.1em' }}>
+          <section style={{ marginTop: 24, border: '1px solid var(--ltg-accent)', background: 'var(--ltg-accent-soft)', borderRadius: 12, padding: 18 }}>
+            <div style={{ color: 'var(--ltg-accent-text)', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.1em' }}>
               Welding Math · Day {mathLesson.math_day_number}
             </div>
-            <h2 style={{ margin: '6px 0' }}>{mathLesson.title}</h2>
-            {mathLesson.goal && <p style={{ color: '#d8e6e3', fontSize: 20 }}>{mathLesson.goal}</p>}
+            <h2 style={{ margin: '6px 0', color: 'var(--ltg-text)' }}>{mathLesson.title}</h2>
+            {mathLesson.goal && <p style={{ color: 'var(--ltg-text)', fontSize: 20 }}>{mathLesson.goal}</p>}
             {mathLesson.book_connection && (
-              <p style={{ color: '#aebfbc', fontSize: 17 }}>
+              <p style={{ color: 'var(--ltg-muted)', fontSize: 17 }}>
                 <strong>Book / page reference:</strong> {mathLesson.book_connection}
               </p>
             )}
@@ -241,7 +253,7 @@ export default function StudentDisplayPage() {
 
         {resources.length > 0 && (
           <section style={{ marginTop: 24 }}>
-            <h2 style={{ color: '#45d6e8' }}>Student Resources</h2>
+            <h2 style={{ color: 'var(--ltg-accent)' }}>Student Resources</h2>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
               {resources.map((resource) =>
                 resource.resource_url ? (
@@ -251,9 +263,9 @@ export default function StudentDisplayPage() {
                     target="_blank"
                     rel="noreferrer"
                     style={{
-                      border: '1px solid #3b625a',
-                      background: '#0c1d19',
-                      color: '#d8f1ec',
+                      border: '1px solid var(--ltg-info)',
+                      background: 'var(--ltg-info-soft)',
+                      color: 'var(--ltg-info-text)',
                       borderRadius: 9,
                       padding: '11px 14px',
                       textDecoration: 'none',
@@ -265,7 +277,7 @@ export default function StudentDisplayPage() {
                 ) : (
                   <span
                     key={resource.id}
-                    style={{ border: '1px solid #2a423e', color: '#9db2ae', borderRadius: 9, padding: '11px 14px' }}
+                    style={{ border: '1px solid var(--ltg-border)', color: 'var(--ltg-muted)', background: 'var(--ltg-surface-2)', borderRadius: 9, padding: '11px 14px' }}
                   >
                     {resource.resource_title}
                   </span>
