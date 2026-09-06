@@ -1,0 +1,84 @@
+/* Interaction feedback layer.
+   Keeps navigation and class selection visually responsive without changing routing or state. */
+
+/* Selected class must remain obvious after the click. launch-theme.css intentionally
+   normalizes class buttons, so this later layer restores the semantic selected state. */
+.night-shift-shell section[aria-label='Class workspace selector'] .ltg-class-choice[aria-pressed='true'] {
+  border-color: #f0641d !important;
+  background: linear-gradient(90deg, #e95d18, #f47628) !important;
+  color: #fff !important;
+  box-shadow:
+    0 0 0 2px rgba(240, 100, 29, .14),
+    0 8px 18px rgba(154, 61, 17, .22) !important;
+}
+
+.night-shift-shell section[aria-label='Class workspace selector'] .ltg-class-choice[aria-pressed='true']:hover {
+  border-color: #ff7a36 !important;
+  color: #fff !important;
+  filter: brightness(1.04);
+}
+
+/* Give interactive controls visible response instead of silently navigating. */
+.night-shift-shell button:not(:disabled),
+.night-shift-shell .ltg-nav-link,
+.night-shift-shell a.button,
+.night-shift-shell .action-button,
+.night-shift-shell .primary-button,
+.night-shift-shell .secondary-button {
+  transition:
+    transform .08s ease,
+    filter .08s ease,
+    background-color .12s ease,
+    border-color .12s ease,
+    color .12s ease,
+    box-shadow .12s ease;
+}
+
+.night-shift-shell button:not(:disabled):active,
+.night-shift-shell .ltg-nav-link:active,
+.night-shift-shell a.button:active,
+.night-shift-shell .action-button:active,
+.night-shift-shell .primary-button:active,
+.night-shift-shell .secondary-button:active {
+  transform: translateY(1px) scale(.985) !important;
+  filter: brightness(.92);
+}
+
+/* Keyboard users should receive the same unmistakable feedback as mouse/touch users. */
+.night-shift-shell button:focus-visible,
+.night-shift-shell .ltg-nav-link:focus-visible,
+.night-shift-shell a.button:focus-visible,
+.night-shift-shell input:focus-visible,
+.night-shift-shell select:focus-visible,
+.night-shift-shell textarea:focus-visible {
+  outline: 3px solid rgba(240, 100, 29, .42) !important;
+  outline-offset: 2px !important;
+}
+
+/* Current sidebar destination stays visually selected. */
+.night-shift-shell .ltg-sidebar .ltg-nav-link.active {
+  border-color: rgba(240, 100, 29, .78) !important;
+  background: linear-gradient(90deg, #e95d18, #f47628) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 20px rgba(154, 61, 17, .23) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .night-shift-shell button,
+  .night-shift-shell .ltg-nav-link,
+  .night-shift-shell a.button,
+  .night-shift-shell .action-button,
+  .night-shift-shell .primary-button,
+  .night-shift-shell .secondary-button {
+    transition: none !important;
+  }
+
+  .night-shift-shell button:not(:disabled):active,
+  .night-shift-shell .ltg-nav-link:active,
+  .night-shift-shell a.button:active,
+  .night-shift-shell .action-button:active,
+  .night-shift-shell .primary-button:active,
+  .night-shift-shell .secondary-button:active {
+    transform: none !important;
+  }
+}
