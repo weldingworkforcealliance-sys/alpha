@@ -55,7 +55,7 @@ function formatErrorMessage(err: unknown) {
     const parts = [candidate.message, candidate.details, candidate.hint]
       .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
       .map((value) => value.trim());
-    const unique = [...new Set(parts)];
+    const unique = Array.from(new Set(parts));
     if (unique.length) {
       const code = typeof candidate.code === 'string' && candidate.code.trim() ? ` (${candidate.code})` : '';
       return `${unique.join(' ')}${code}`;
