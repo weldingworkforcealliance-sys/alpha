@@ -149,19 +149,19 @@ export default function TeacherIdentityBar({ pathname }: { pathname: string }) {
         gap: '14px',
         flexWrap: 'wrap',
         padding: '10px 16px',
-        borderBottom: '1px solid rgba(0,255,136,.25)',
-        background: 'rgba(0,255,136,.055)',
-        color: '#d8d8d8',
+        borderBottom: '1px solid var(--ltg-border-soft)',
+        background: 'var(--ltg-surface)',
+        color: 'var(--ltg-text)',
         fontSize: '13px',
       }}
     >
       <div>
-        <span style={{ color: '#8a8a8a', fontWeight: 700 }}>{instructorLabel}: </span>
-        <strong style={{ color: '#00ff88' }}>{instructorText}</strong>
+        <span style={{ color: 'var(--ltg-muted)', fontWeight: 700 }}>{instructorLabel}: </span>
+        <strong style={{ color: 'var(--ltg-accent)' }}>{instructorText}</strong>
       </div>
-      <div style={{ color: '#aaa', textAlign: 'right' }}>
+      <div style={{ color: 'var(--ltg-muted)', textAlign: 'right' }}>
         <span style={{ fontWeight: 700 }}>Selected Class: </span>
-        {classLabel}
+        <span style={{ color: 'var(--ltg-text)' }}>{classLabel}</span>
       </div>
     </div>
   );
