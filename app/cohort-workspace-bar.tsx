@@ -204,6 +204,8 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
               <button
                 key={group.id}
                 type="button"
+                className="ltg-class-choice ltg-class-workspace-choice"
+                aria-pressed={active}
                 onClick={() => selectWorkspace(group)}
                 style={{
                   minWidth: '135px',
@@ -241,6 +243,8 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
                 <button
                   key={row.section_id}
                   type="button"
+                  className="ltg-class-choice ltg-class-course-choice"
+                  aria-pressed={active}
                   onClick={() => activateSection(row)}
                   style={{
                     padding: '8px 13px',
