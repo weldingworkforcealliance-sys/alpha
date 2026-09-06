@@ -1,0 +1,272 @@
+/* LTG theme normalization layer.
+   Loaded last so legacy page-level colors cannot create a third visual system.
+   This file changes appearance only. It does not alter curriculum, permissions,
+   attendance, grading, planner state, classroom sessions, or time-clock behavior. */
+
+html[data-theme='light'] {
+  --ltg-canvas: #dce3e7;
+  --ltg-surface: #f7f9fa;
+  --ltg-surface-2: #eef2f4;
+  --ltg-surface-3: #e3e9ed;
+  --ltg-input: #ffffff;
+  --ltg-text: #142534;
+  --ltg-muted: #52616c;
+  --ltg-faint: #71808a;
+  --ltg-border: #94a3ad;
+  --ltg-border-soft: #c4cdd3;
+  --ltg-shadow: 0 12px 28px rgba(14, 26, 36, .14);
+  --ltg-accent: #c14f18;
+  --ltg-accent-strong: #e95d18;
+  --ltg-accent-soft: rgba(193, 79, 24, .10);
+  --ltg-accent-text: #8f3510;
+  --ltg-info: #386a7f;
+  --ltg-info-soft: rgba(56, 106, 127, .10);
+  --ltg-info-text: #28586c;
+  --ltg-success: #247a46;
+  --ltg-success-bg: #dcebe0;
+  --ltg-success-text: #0d5b31;
+  --ltg-danger: #b84250;
+  --ltg-danger-bg: #f2dfe1;
+  --ltg-danger-text: #932333;
+  --ltg-warning-bg: #f6e7d8;
+  --ltg-warning-text: #8a4818;
+  --ltg-overlay: rgba(18, 31, 42, .55);
+}
+
+html[data-theme='dark'] {
+  --ltg-canvas: #10202d;
+  --ltg-surface: #172b3a;
+  --ltg-surface-2: #1d3242;
+  --ltg-surface-3: #233948;
+  --ltg-input: #142736;
+  --ltg-text: #f1f4f6;
+  --ltg-muted: #b4bec6;
+  --ltg-faint: #83939e;
+  --ltg-border: #415668;
+  --ltg-border-soft: #314657;
+  --ltg-shadow: 0 14px 34px rgba(0, 0, 0, .26);
+  --ltg-accent: #f0641d;
+  --ltg-accent-strong: #e95d18;
+  --ltg-accent-soft: rgba(240, 100, 29, .13);
+  --ltg-accent-text: #ffb184;
+  --ltg-info: #6a9aae;
+  --ltg-info-soft: rgba(106, 154, 174, .13);
+  --ltg-info-text: #b9e2f1;
+  --ltg-success: #4fa66c;
+  --ltg-success-bg: #123c2a;
+  --ltg-success-text: #74eba0;
+  --ltg-danger: #cf5868;
+  --ltg-danger-bg: #4c2530;
+  --ltg-danger-text: #ff8795;
+  --ltg-warning-bg: #4b3521;
+  --ltg-warning-text: #ffc184;
+  --ltg-overlay: rgba(0, 7, 12, .76);
+}
+
+/* Shared application canvas and controls. */
+html[data-theme] body.night-shift-shell,
+html[data-theme] body.night-shift-shell .ltg-main-content,
+html[data-theme] body.night-shift-shell .ltg-public-content {
+  background: var(--ltg-canvas) !important;
+  color: var(--ltg-text) !important;
+}
+
+html[data-theme] body.night-shift-shell input,
+html[data-theme] body.night-shift-shell select,
+html[data-theme] body.night-shift-shell textarea {
+  background: var(--ltg-input) !important;
+  color: var(--ltg-text) !important;
+  border-color: var(--ltg-border) !important;
+}
+
+html[data-theme] body.night-shift-shell input::placeholder,
+html[data-theme] body.night-shift-shell textarea::placeholder {
+  color: var(--ltg-faint) !important;
+  opacity: 1;
+}
+
+html[data-theme] body.night-shift-shell input:focus,
+html[data-theme] body.night-shift-shell select:focus,
+html[data-theme] body.night-shift-shell textarea:focus {
+  outline: none !important;
+  border-color: var(--ltg-accent) !important;
+  box-shadow: 0 0 0 3px var(--ltg-accent-soft) !important;
+}
+
+/* Retire the legacy neon-green accent from normal LTG chrome. */
+html[data-theme] body.night-shift-shell :where(.eyebrow, .section-eyebrow, .label, .status-label) {
+  color: var(--ltg-accent) !important;
+}
+
+html[data-theme] body.night-shift-shell :where(.progress-fill, .live) {
+  background-color: var(--ltg-success) !important;
+}
+
+/* Legacy page shells. These classes are used by Accounts, Owner, School,
+   Review Queue, Training, Classroom, and related operational pages. */
+html[data-theme] body.night-shift-shell :where(
+  .shell,
+  .review-shell,
+  .workspace-shell,
+  .locked-shell,
+  .locked-loading,
+  .loading,
+  .centered
+) {
+  background: var(--ltg-canvas) !important;
+  color: var(--ltg-text) !important;
+}
+
+html[data-theme] body.night-shift-shell :where(
+  .panel,
+  .card,
+  .metric,
+  .session,
+  .table-card,
+  .queue-card,
+  .summary-card,
+  .setup-card,
+  .control-card,
+  .results-card,
+  .report-card,
+  .action-card,
+  .danger-zone
+) {
+  background: var(--ltg-surface) !important;
+  color: var(--ltg-text) !important;
+  border-color: var(--ltg-border-soft) !important;
+  box-shadow: var(--ltg-shadow) !important;
+}
+
+html[data-theme] body.night-shift-shell :where(
+  .panel,
+  .card,
+  .metric,
+  .session,
+  .table-card,
+  .queue-card,
+  .summary-card,
+  .setup-card,
+  .control-card,
+  .results-card,
+  .report-card,
+  .action-card
+) :where(h1, h2, h3, h4, strong) {
+  color: var(--ltg-text) !important;
+}
+
+html[data-theme] body.night-shift-shell :where(
+  .panel,
+  .card,
+  .metric,
+  .session,
+  .table-card,
+  .queue-card,
+  .summary-card,
+  .setup-card,
+  .control-card,
+  .results-card,
+  .report-card,
+  .action-card
+) :where(p, small, .muted, .sub, .helper, .hint) {
+  color: var(--ltg-muted) !important;
+}
+
+html[data-theme] body.night-shift-shell.ltg-secondary-route header,
+html[data-theme] body.night-shift-shell.ltg-training-route header,
+html[data-theme] body.night-shift-shell.ltg-auth-route header {
+  background: var(--ltg-surface-2) !important;
+  color: var(--ltg-text) !important;
+  border-color: var(--ltg-border-soft) !important;
+}
+
+/* Buttons keep semantic meaning: orange = primary LTG action, green = success,
+   red = destructive, slate = secondary. */
+html[data-theme] body.night-shift-shell :where(button.primary, a.primary, .primary-button, .action-button) {
+  border-color: var(--ltg-accent) !important;
+  background: var(--ltg-accent-strong) !important;
+  color: #fff !important;
+}
+
+html[data-theme] body.night-shift-shell :where(button.secondary, a.secondary, .secondary-button) {
+  border-color: var(--ltg-border) !important;
+  background: var(--ltg-surface-3) !important;
+  color: var(--ltg-text) !important;
+}
+
+html[data-theme] body.night-shift-shell :where(button.danger, a.danger, .danger-button) {
+  border-color: var(--ltg-danger) !important;
+  background: var(--ltg-danger-bg) !important;
+  color: var(--ltg-danger-text) !important;
+}
+
+html[data-theme] body.night-shift-shell :where(.success, .success-box, .success-card) {
+  border-color: var(--ltg-success) !important;
+  background: var(--ltg-success-bg) !important;
+  color: var(--ltg-success-text) !important;
+}
+
+html[data-theme] body.night-shift-shell :where(.error, .error-box, .danger-box) {
+  border-color: var(--ltg-danger) !important;
+  background: var(--ltg-danger-bg) !important;
+  color: var(--ltg-danger-text) !important;
+}
+
+/* Training keeps its sandbox banner visually distinct but no longer forces the
+   rest of the page into a separate black theme. */
+html[data-theme] body.night-shift-shell.ltg-training-route :where(.banner, .training-banner, .demo-banner) {
+  background: var(--ltg-accent-strong) !important;
+  color: #fff !important;
+  border-color: var(--ltg-accent) !important;
+}
+
+/* Standalone Attendance pages use the same surfaces as embedded Attendance. */
+html[data-theme] body.night-shift-shell.ltg-secondary-route [class*='attendance_page'],
+html[data-theme] body.night-shift-shell.ltg-secondary-route [class*='attendance_header'],
+html[data-theme] body.night-shift-shell.ltg-secondary-route [class*='attendance_toolbar'],
+html[data-theme] body.night-shift-shell.ltg-secondary-route [class*='attendance_summary'],
+html[data-theme] body.night-shift-shell.ltg-secondary-route [class*='attendance_studentCard'],
+html[data-theme] body.night-shift-shell.ltg-secondary-route [class*='attendance_finalizeCard'] {
+  color: var(--ltg-text) !important;
+}
+
+/* Student projection follows the selected theme while remaining projector-safe.
+   No instructor-only information is introduced by these rules. */
+html[data-theme] body.night-shift-shell.ltg-student-display-route main {
+  background: var(--ltg-canvas) !important;
+  color: var(--ltg-text) !important;
+}
+
+html[data-theme='light'] body.night-shift-shell.ltg-student-display-route main > div > header {
+  border-color: var(--ltg-border) !important;
+}
+
+html[data-theme='light'] body.night-shift-shell.ltg-student-display-route main section > div {
+  background: var(--ltg-surface) !important;
+  border-color: var(--ltg-border) !important;
+  color: var(--ltg-text) !important;
+}
+
+html[data-theme='light'] body.night-shift-shell.ltg-student-display-route main :where(h1, h2, p, strong) {
+  color: var(--ltg-text) !important;
+}
+
+/* Light mode keeps the branded dark sidebar, but the application canvas is
+   decisively light instead of a dark slate surrounding white cards. */
+html[data-theme='light'] body.night-shift-shell nav.ltg-sidebar[aria-label='Planner workspace navigation'] {
+  background: linear-gradient(180deg, #233744, #1d303d 58%, #182b38) !important;
+  border-right-color: #536572 !important;
+}
+
+/* Theme toggle remains readable regardless of the selected page theme. */
+html[data-theme] body.night-shift-shell .ltg-theme-toggle button {
+  border-color: #536675 !important;
+  background: #213745 !important;
+  color: #dce4e8 !important;
+}
+
+html[data-theme] body.night-shift-shell .ltg-theme-toggle button.active {
+  border-color: var(--ltg-accent) !important;
+  background: rgba(240, 100, 29, .16) !important;
+  color: #ffb184 !important;
+}
