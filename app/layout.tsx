@@ -15,6 +15,7 @@ import ThemeToggle from './theme-toggle';
 import SidebarSignOut from './sidebar-sign-out';
 import DashboardHero from './dashboard-hero';
 import DashboardPunchClock from './dashboard-punch-clock';
+import PlannerAttendancePanel from './planner-attendance-panel';
 import './styles.css';
 import './agenda/agenda.css';
 import './desktop-layout-fix.css';
@@ -198,6 +199,7 @@ export default function RootLayout({
               <DashboardPunchClock pathname={pathname} />
               {!isStudentDisplay && <CohortWorkspaceBar pathname={pathname} />}
               {!isStudentDisplay && <TeacherIdentityBar pathname={pathname} />}
+              <PlannerAttendancePanel pathname={pathname} />
               {!isStudentDisplay && <AgendaNotePolicyBanner pathname={pathname} />}
               {children}
             </div>
