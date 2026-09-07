@@ -89,6 +89,7 @@ const RESOURCE_TYPE_OPTIONS = [
   ['video', 'Video'],
   ['handout', 'Handout'],
   ['assessment', 'Assessment'],
+  ['job_card', 'Live Job Card'],
   ['print', 'Print / drawing'],
   ['wps_swps', 'WPS / SWPS'],
   ['instructor_report', 'Instructor report'],
