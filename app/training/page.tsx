@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
+import { guardedSignOut } from '@/lib/guarded-signout';
 
 interface School { id:string; name:string; }
 interface Membership { id:string; school_id:string; user_id:string; role:string; status:string; }
@@ -105,8 +106,7 @@ export default function TrainingHubPage() {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    router.push('/training/login');
+    await guardedSignOut('/training/login');
   };
 
   if (loading) return <main className="loading">Loading Training Center…</main>;

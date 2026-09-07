@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { getSupabase } from '@/lib/supabase-browser';
+import { guardedSignOut } from '@/lib/guarded-signout';
 import PlannerTeachingConsole, {
   type PlannerDayOption,
   type PlannerLaunchResource,
@@ -186,12 +187,7 @@ export default function TrainingTeacherPage() {
   const params = useParams<{ id: string }>();
   const sessionId = params.id;
   const router = useRouter();
-  const [supabase] = useState(() =>
-    createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-    )
-  );
+  const [supabase] = useState(getSupabase);
 
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -597,8 +593,8 @@ export default function TrainingTeacherPage() {
     try {
       await supabase.rpc('leave_training_session', { p_training_session_id: sessionId });
     } finally {
-      await supabase.auth.signOut();
-      router.push('/training/login');
+      const signedOut = await guardedSignOut('/training/login');
+      if (!signedOut) setBusy(false);
     }
   };
 
