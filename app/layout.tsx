@@ -42,11 +42,13 @@ export default function RootLayout({
   const pathname = usePathname();
   const [navOpen, setNavOpen] = useState(false);
   const isStudentJoin = pathname.startsWith('/join/');
+  const isStudentJobCard = pathname.startsWith('/job/');
   const isStudentDisplay = pathname.startsWith('/student-display/');
   const isTrainingRoute = pathname.startsWith('/training');
   const isAccountRoute = pathname.startsWith('/accounts');
   const isAttendanceRoute = pathname.startsWith('/attendance');
   const isResourcesRoute = pathname.startsWith('/resources');
+  const isHelpRoute = pathname.startsWith('/help');
   const isAuthRoute =
     pathname === '/login' ||
     pathname === '/account-setup' ||
@@ -56,8 +58,9 @@ export default function RootLayout({
   const isPrimaryPlannerRoute =
     pathname === '/planner' || pathname === '/dashboard' || pathname === '/agenda';
 
-  const hideWorkspaceNav = isAuthRoute || isStudentJoin || isStudentDisplay;
-  const useNightShift = !isStudentJoin;
+  const hideWorkspaceNav =
+    isAuthRoute || isStudentJoin || isStudentJobCard || isStudentDisplay;
+  const useNightShift = !isStudentJoin && !isStudentJobCard;
   const isSecondaryRoute =
     useNightShift &&
     !isAuthRoute &&
@@ -141,9 +144,15 @@ export default function RootLayout({
                   </Link>
                   <Link
                     href="/classroom"
-                    className={`ltg-nav-link ${pathname.startsWith('/classroom') ? 'active' : ''}`}
+                    className={`ltg-nav-link ${pathname === '/classroom' || pathname.startsWith('/classroom/planner') ? 'active' : ''}`}
                   >
                     Live Classroom
+                  </Link>
+                  <Link
+                    href="/classroom/job-card"
+                    className={`ltg-nav-link ${pathname.startsWith('/classroom/job-card') ? 'active' : ''}`}
+                  >
+                    Live Job Card
                   </Link>
 
                   <div className="ltg-nav-section-label">Classroom Tools</div>
@@ -168,6 +177,14 @@ export default function RootLayout({
 
                   <div className="ltg-nav-section-label">Admin</div>
                   <PlannerUtilityNavLinks />
+
+                  <div className="ltg-nav-section-label">Help</div>
+                  <Link
+                    href="/help"
+                    className={`ltg-nav-link ${isHelpRoute ? 'active' : ''}`}
+                  >
+                    Help &amp; Q/A
+                  </Link>
 
                   {isAccountRoute && (
                     <>
@@ -199,11 +216,11 @@ export default function RootLayout({
 
             <div className={hideWorkspaceNav ? 'ltg-public-content' : 'ltg-main-content'}>
               {pathname === '/dashboard' && <DashboardHero />}
-              <DashboardPunchClock pathname={pathname} />
-              {!isStudentDisplay && <CohortWorkspaceBar pathname={pathname} />}
-              {!isStudentDisplay && <TeacherIdentityBar pathname={pathname} />}
-              <PlannerAttendancePanel pathname={pathname} />
-              {!isStudentDisplay && <AgendaNotePolicyBanner pathname={pathname} />}
+              {!isStudentJobCard && <DashboardPunchClock pathname={pathname} />}
+              {!isStudentDisplay && !isStudentJobCard && <CohortWorkspaceBar pathname={pathname} />}
+              {!isStudentDisplay && !isStudentJobCard && <TeacherIdentityBar pathname={pathname} />}
+              {!isStudentJobCard && <PlannerAttendancePanel pathname={pathname} />}
+              {!isStudentDisplay && !isStudentJobCard && <AgendaNotePolicyBanner pathname={pathname} />}
               {children}
             </div>
           </div>
