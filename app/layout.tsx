@@ -16,6 +16,7 @@ import SidebarSignOut from './sidebar-sign-out';
 import DashboardHero from './dashboard-hero';
 import DashboardPunchClock from './dashboard-punch-clock';
 import PlannerAttendancePanel from './planner-attendance-panel';
+import SchoolActiveTodayEmployees from './school-active-today-employees';
 import './styles.css';
 import './agenda/agenda.css';
 import './desktop-layout-fix.css';
@@ -31,6 +32,7 @@ import './launch-theme.css';
 import './theme-consistency.css';
 import './theme-component-overrides.css';
 import './interaction-feedback.css';
+import './bundle-pending.css';
 
 const THEME_BOOTSTRAP = `(function(){try{var t=localStorage.getItem('ltg_theme');if(t!=='light'&&t!=='dark')t='dark';document.documentElement.dataset.theme=t;document.documentElement.style.colorScheme=t;}catch(e){document.documentElement.dataset.theme='dark';document.documentElement.style.colorScheme='dark';}})();`;
 
@@ -200,6 +202,7 @@ export default function RootLayout({
             <div className={hideWorkspaceNav ? 'ltg-public-content' : 'ltg-main-content'}>
               {pathname === '/dashboard' && <DashboardHero />}
               <DashboardPunchClock pathname={pathname} />
+              <SchoolActiveTodayEmployees pathname={pathname} />
               {!isStudentDisplay && <CohortWorkspaceBar pathname={pathname} />}
               {!isStudentDisplay && <TeacherIdentityBar pathname={pathname} />}
               <PlannerAttendancePanel pathname={pathname} />
