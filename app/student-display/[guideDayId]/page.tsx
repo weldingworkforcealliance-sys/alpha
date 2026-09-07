@@ -41,6 +41,7 @@ type Resource = {
   resource_type: string;
   resource_title: string;
   resource_url: string | null;
+  student_safe: boolean;
 };
 
 type MathLesson = {
@@ -102,7 +103,7 @@ export default function StudentDisplayPage() {
             .order('sequence_number'),
           supabase
             .from('course_guide_day_resources')
-            .select('id,sequence_number,resource_type,resource_title,resource_url')
+            .select('id,sequence_number,resource_type,resource_title,resource_url,student_safe')
             .eq('guide_day_id', guideDayId)
             .order('sequence_number'),
           supabase
@@ -121,7 +122,7 @@ export default function StudentDisplayPage() {
         setSegments((segmentResult.data ?? []) as Segment[]);
         setResources(
           ((resourceResult.data ?? []) as Resource[]).filter((resource) =>
-            SAFE_RESOURCE_TYPES.has(resource.resource_type)
+            resource.student_safe && SAFE_RESOURCE_TYPES.has(resource.resource_type)
           )
         );
 

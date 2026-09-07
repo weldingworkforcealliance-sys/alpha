@@ -1,5 +1,17 @@
 -- Launch-stage data link for the approved school-sized Level II Live Job Card.
 -- Adds the native launcher to Day 1 of WLD 205 and WLD 210 without changing curriculum/outcomes.
+-- Keep the launcher instructor-only; students join through the session QR/code URL.
+
+alter table public.course_guide_day_resources
+  drop constraint if exists guide_day_resource_type_check;
+
+alter table public.course_guide_day_resources
+  add constraint guide_day_resource_type_check
+  check (resource_type in (
+    'video','playlist','website','document','handout','worksheet','presentation','image','reference','other',
+    'student_resource','resource','book_reference','aws_reference','assessment','print','wps_swps',
+    'instructor_report','instructor_only','secure_exam','job_card'
+  ));
 
 insert into public.course_guide_day_resources(
   school_id,
@@ -27,7 +39,7 @@ select
   false,
   'native',
   'school_owned',
-  true
+  false
 from public.courses c
 join public.course_guide_days d on d.course_id = c.id
 where c.course_code in ('WLD 205','WLD 210')

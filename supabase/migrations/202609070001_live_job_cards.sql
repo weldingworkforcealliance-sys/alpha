@@ -75,6 +75,8 @@ create index if not exists job_card_sessions_school_id_idx on public.job_card_se
 create index if not exists job_card_sessions_section_id_idx on public.job_card_sessions(section_id);
 create index if not exists job_card_sessions_instructor_id_idx on public.job_card_sessions(instructor_id);
 create index if not exists job_card_sessions_status_expires_idx on public.job_card_sessions(status,expires_at);
+create unique index if not exists job_card_sessions_one_active_per_section_uq
+  on public.job_card_sessions(section_id) where status = 'active';
 create index if not exists job_card_submissions_session_idx on public.job_card_submissions(job_card_session_id);
 create index if not exists job_card_submissions_reviewed_idx on public.job_card_submissions(job_card_session_id,reviewed_at);
 
@@ -140,7 +142,7 @@ declare affected integer;
 begin
   if auth.uid() is null then raise exception 'Instructor login required'; end if;
   update public.job_card_sessions s set status='ended', ended_at=coalesce(s.ended_at,now())
-  where s.status='active' and s.expires_at<=now() and (s.instructor_id=auth.uid() or public.is_platform_owner());
+  where s.status='active' and s.expires_at<=now();
   get diagnostics affected = row_count;
   return affected;
 end
@@ -149,7 +151,7 @@ $$;
 create or replace function public.start_job_card_session(
   p_section_id uuid,p_template_slug text,p_job_header jsonb,p_requirements jsonb,p_expected_students integer default 17,p_guide_day_id uuid default null
 ) returns uuid language plpgsql security definer set search_path = '' as $$
-declare result_id uuid; target_school uuid; template_row public.job_card_templates; requirement_row jsonb;
+declare result_id uuid; target_school uuid; template_row public.job_card_templates; requirement_row jsonb; requirement_keys text[] := '{}';
 begin
   if auth.uid() is null then raise exception 'Instructor login required'; end if;
   if p_expected_students < 1 or p_expected_students > 17 then raise exception 'Expected students must be between 1 and 17'; end if;
@@ -159,6 +161,8 @@ begin
     if length(trim(coalesce(requirement_row->>'key',''))) < 1 then raise exception 'Every critical requirement needs a stable key'; end if;
     if length(trim(coalesce(requirement_row->>'label',''))) < 2 then raise exception 'Every critical requirement needs a label'; end if;
     if length(trim(coalesce(requirement_row->>'required',''))) < 1 then raise exception 'Every critical requirement needs a required value or N/A'; end if;
+    if trim(requirement_row->>'key') = any(requirement_keys) then raise exception 'Critical requirement keys must be unique'; end if;
+    requirement_keys := array_append(requirement_keys, trim(requirement_row->>'key'));
   end loop;
   select s.school_id into target_school from public.sections s where s.id=p_section_id;
   if target_school is null then raise exception 'Class not found'; end if;
@@ -168,7 +172,11 @@ begin
   if p_guide_day_id is not null and not exists(
     select 1 from public.course_guide_days d join public.sections sec on sec.course_id=d.course_id where d.id=p_guide_day_id and sec.id=p_section_id
   ) then raise exception 'Planner day does not belong to the selected class course'; end if;
-  update public.job_card_sessions s set status='ended',ended_at=now() where s.instructor_id=auth.uid() and s.section_id=p_section_id and s.status='active';
+  perform pg_advisory_xact_lock(hashtextextended(p_section_id::text,0));
+  perform public.expire_job_card_sessions();
+  if exists(select 1 from public.job_card_sessions s where s.section_id=p_section_id and s.status='active') then
+    raise exception 'This class already has an active Live Job Card session';
+  end if;
   insert into public.job_card_sessions(school_id,section_id,instructor_id,template_slug,guide_day_id,join_code,expected_students,job_header,requirements,start_checks,quality_checks)
   values(target_school,p_section_id,auth.uid(),template_row.slug,p_guide_day_id,public.make_job_card_join_code(),p_expected_students,p_job_header,p_requirements,template_row.start_checks,template_row.quality_checks)
   returning id into result_id;
@@ -200,13 +208,17 @@ $$;
 create or replace function public.submit_live_job_card(
   p_join_code text,p_student_name text,p_student_id text,p_actual_values jsonb,p_requirement_checks jsonb,p_start_check_confirmations jsonb,p_quality_check_confirmations jsonb,p_issue_found text default null,p_correction text default null,p_recheck_status text default null,p_evidence_types jsonb default '[]'::jsonb,p_evidence_note text default null
 ) returns uuid language plpgsql security definer set search_path = '' as $$
-declare s public.job_card_sessions; result_id uuid; req jsonb; req_key text; check_value text; check_label text; correction_required boolean:=false; evidence_value text;
+declare s public.job_card_sessions; result_id uuid; req jsonb; req_key text; check_value text; check_label text; correction_required boolean:=false; evidence_value text; submission_count integer;
 begin
   if length(trim(coalesce(p_student_name,''))) < 2 or length(trim(coalesce(p_student_id,''))) < 1 then raise exception 'Student name and ID are required'; end if;
   if jsonb_typeof(p_actual_values)<>'object' or jsonb_typeof(p_requirement_checks)<>'object' or jsonb_typeof(p_start_check_confirmations)<>'object' or jsonb_typeof(p_quality_check_confirmations)<>'object' or jsonb_typeof(p_evidence_types)<>'array' then raise exception 'Job card submission format is invalid'; end if;
   select * into s from public.job_card_sessions jcs where jcs.join_code=upper(trim(p_join_code)) and jcs.status='active' and jcs.expires_at>now() for update;
   if s.id is null then raise exception 'This job card session has ended'; end if;
-  if exists(select 1 from public.job_card_submissions sub where sub.job_card_session_id=s.id and sub.student_id=trim(p_student_id)) then raise exception 'This Student ID has already submitted this job card'; end if;
+  if exists(select 1 from public.job_card_submissions sub where sub.job_card_session_id=s.id and lower(trim(sub.student_id))=lower(trim(p_student_id))) then raise exception 'This Student ID has already submitted this job card'; end if;
+  select count(*) into submission_count from public.job_card_submissions sub where sub.job_card_session_id=s.id;
+  if submission_count >= s.expected_students or submission_count >= 17 then
+    raise exception 'This Live Job Card has reached its student capacity';
+  end if;
   for req in select value from jsonb_array_elements(s.requirements) loop
     req_key:=req->>'key';
     if length(coalesce(req_key,''))<1 then raise exception 'Job card requirement configuration is invalid'; end if;
