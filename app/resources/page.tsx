@@ -89,6 +89,7 @@ const RESOURCE_TYPE_OPTIONS = [
   ['video', 'Video'],
   ['handout', 'Handout'],
   ['assessment', 'Assessment'],
+  ['live_job_card', 'Live Job Card'],
   ['print', 'Print / drawing'],
   ['wps_swps', 'WPS / SWPS'],
   ['instructor_report', 'Instructor report'],
@@ -106,6 +107,7 @@ const INSTRUCTOR_ONLY_TYPES = new Set([
   'instructor_report',
   'instructor_only',
   'secure_exam',
+  'live_job_card',
 ]);
 
 function humanize(value: string) {
@@ -159,6 +161,7 @@ export default function ResourcesPage() {
     () => days.find((day) => day.id === guideDayId) ?? null,
     [days, guideDayId]
   );
+  const isLiveJobCard = resourceType === 'live_job_card';
 
   const loadSchools = async () => {
     const { data: owner, error: ownerError } = await supabase.rpc('is_platform_owner');
@@ -365,17 +368,29 @@ export default function ResourcesPage() {
     }
   };
 
+  const selectResourceType = (value: string) => {
+    setResourceType(value);
+    if (value === 'live_job_card') {
+      setResourceTitle((current) => current || 'Level II Live Job Card');
+      setIntegrationMode('native');
+      setRightsBasis('school_owned');
+      setResourceUrl('/classroom/job-card');
+    }
+  };
+
   const addResource = async () => {
     if (!schoolId || !courseId || !guideDayId || !resourceTitle.trim()) return;
     setBusy(true);
     setError('');
     setNotice('');
     try {
-      const directLaunch = DIRECT_LAUNCH_MODES.has(integrationMode);
+      const liveJobCard = resourceType === 'live_job_card';
+      const resolvedIntegrationMode = liveJobCard ? 'native' : integrationMode;
+      const directLaunch = DIRECT_LAUNCH_MODES.has(resolvedIntegrationMode);
       const studentSafe = !INSTRUCTOR_ONLY_TYPES.has(resourceType);
       const pendingLaunchNote = directLaunch
         ? ''
-        : `${humanize(integrationMode)} integration profile recorded. Secure provider launch configuration is still required before this resource can be launched from LTG.`;
+        : `${humanize(resolvedIntegrationMode)} integration profile recorded. Secure provider launch configuration is still required before this resource can be launched from LTG.`;
       const combinedNotes = [resourceNotes.trim(), pendingLaunchNote].filter(Boolean).join(' ');
       const nextSequence =
         resources.reduce((highest, resource) => Math.max(highest, resource.sequence_number), 0) + 1;
@@ -389,12 +404,12 @@ export default function ResourcesPage() {
           sequence_number: nextSequence,
           resource_type: resourceType,
           resource_title: resourceTitle.trim(),
-          resource_url: directLaunch ? resourceUrl.trim() || null : null,
+          resource_url: liveJobCard ? '/classroom/job-card' : directLaunch ? resourceUrl.trim() || null : null,
           resource_notes: combinedNotes || null,
           required,
           source_id: sourceId || null,
-          integration_mode: integrationMode,
-          rights_basis: rightsBasis,
+          integration_mode: resolvedIntegrationMode,
+          rights_basis: liveJobCard ? 'school_owned' : rightsBasis,
           external_resource_id: externalResourceId.trim() || null,
           outcome_id: outcomeId || null,
           student_safe: studentSafe,
@@ -569,7 +584,7 @@ export default function ResourcesPage() {
             </label>
             <label>
               Resource role
-              <select value={resourceType} onChange={(event) => setResourceType(event.target.value)}>
+              <select value={resourceType} onChange={(event) => selectResourceType(event.target.value)}>
                 {RESOURCE_TYPE_OPTIONS.map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>
                 ))}
@@ -577,7 +592,7 @@ export default function ResourcesPage() {
             </label>
             <label>
               Integration mode
-              <select value={integrationMode} onChange={(event) => setIntegrationMode(event.target.value)}>
+              <select value={integrationMode} onChange={(event) => setIntegrationMode(event.target.value)} disabled={isLiveJobCard}>
                 {INTEGRATION_OPTIONS.map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>
                 ))}
@@ -585,7 +600,7 @@ export default function ResourcesPage() {
             </label>
             <label>
               Rights / permission basis
-              <select value={rightsBasis} onChange={(event) => setRightsBasis(event.target.value)}>
+              <select value={rightsBasis} onChange={(event) => setRightsBasis(event.target.value)} disabled={isLiveJobCard}>
                 {RIGHTS_OPTIONS.map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>
                 ))}
@@ -597,9 +612,11 @@ export default function ResourcesPage() {
                 value={resourceUrl}
                 onChange={(event) => setResourceUrl(event.target.value)}
                 placeholder="https://provider.example/resource or /classroom?..."
-                disabled={!DIRECT_LAUNCH_MODES.has(integrationMode)}
+                disabled={isLiveJobCard || !DIRECT_LAUNCH_MODES.has(integrationMode)}
               />
-              {!DIRECT_LAUNCH_MODES.has(integrationMode) && (
+              {isLiveJobCard ? (
+                <small>LTG uses the built-in /classroom/job-card launch path and automatically carries the selected class into the Teaching Console launch.</small>
+              ) : !DIRECT_LAUNCH_MODES.has(integrationMode) && (
                 <small>Secure {humanize(integrationMode)} launch setup is recorded as metadata first; credentials are not stored here.</small>
               )}
             </label>
