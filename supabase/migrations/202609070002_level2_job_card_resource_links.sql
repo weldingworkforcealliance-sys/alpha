@@ -1,6 +1,19 @@
 -- Launch-stage data link for the approved school-sized Level II Live Job Card.
 -- Prepared only. Do not apply until the coordinated push.
 -- Adds the native launcher to Day 1 of WLD 205 and WLD 210 without changing curriculum/outcomes.
+-- Also repairs the resource_type constraint so the existing Resources UI and the new job_card type
+-- are accepted without invalidating any legacy resource types already in use.
+
+alter table public.course_guide_day_resources
+  drop constraint if exists guide_day_resource_type_check;
+
+alter table public.course_guide_day_resources
+  add constraint guide_day_resource_type_check
+  check (resource_type in (
+    'video','playlist','website','document','handout','worksheet','presentation','image','reference','other',
+    'student_resource','resource','book_reference','aws_reference','assessment','print','wps_swps',
+    'instructor_report','instructor_only','secure_exam','job_card'
+  ));
 
 insert into public.course_guide_day_resources(
   school_id,
