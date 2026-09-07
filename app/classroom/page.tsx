@@ -149,7 +149,7 @@ export default function ClassroomPage() {
 
   if(loading)return <main className="loading">Opening Connected Classroom…</main>;
   return <div className="shell">
-    <header><div><div className="eyebrow">Living Teacher Guide</div><h1>Connected Classroom Testing</h1></div><button onClick={()=>router.push('/dashboard')}>Back to Planner</button></header>
+    <header><div><div className="eyebrow">Living Teacher Guide</div><h1>Connected Classroom Testing</h1></div><div style={{display:'flex',gap:8}}><button onClick={()=>router.push('/classroom/job-card')}>Live Job Card</button><button onClick={()=>router.push('/dashboard')}>Back to Planner</button></div></header>
     <main>
       {error&&<div className="error">{error}</div>}
       {!session?<section className="panel start">
