@@ -107,6 +107,7 @@ const INSTRUCTOR_ONLY_TYPES = new Set([
   'instructor_report',
   'instructor_only',
   'secure_exam',
+  'job_card',
 ]);
 
 function humanize(value: string) {
