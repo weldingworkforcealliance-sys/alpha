@@ -5,16 +5,11 @@ import Link from 'next/link';
 import {
   HELP_ITEMS,
   type HelpCategory,
-  type HelpItem,
   searchHelpItems,
 } from '@/lib/help-content';
 import styles from './help.module.css';
 
 const ALL_CATEGORIES = 'All Topics';
-
-function itemTitle(item: HelpItem) {
-  return item.kind === 'guide' ? item.title : item.question;
-}
 
 export default function HelpCenterPage() {
   const [query, setQuery] = useState('');
