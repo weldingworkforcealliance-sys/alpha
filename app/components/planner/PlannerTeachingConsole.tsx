@@ -75,9 +75,11 @@ const INSTRUCTOR_ONLY_TYPES = new Set([
   'instructor_report',
   'instructor_only',
   'secure_exam',
+  'live_job_card',
 ]);
 
 function resourceButtonLabel(type: string) {
+  if (type === 'live_job_card') return 'Launch Live Job Card';
   if (type === 'assessment') return 'Launch Assessment';
   if (type === 'book_reference') return 'Open Book Reference';
   if (type === 'aws_reference') return 'Open AWS Reference';

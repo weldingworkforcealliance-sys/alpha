@@ -1,0 +1,216 @@
+/* Pending LTG bundle. Kept off main until the grouped release is approved. */
+
+/* Change #1: make the embedded Student Attendance control easier to find. */
+.ltg-planner-attendance-slot > details {
+  border-color: var(--ltg-success, #4fa66c) !important;
+  box-shadow:
+    0 0 8px rgba(53, 214, 111, 0.50),
+    0 0 18px rgba(53, 214, 111, 0.20),
+    0 8px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Change #2: School Dashboard live daily employee punch status. */
+.ltg-school-live-punch-panel {
+  width: min(1180px, calc(100% - 32px));
+  margin: 16px auto 0;
+  border: 1px solid var(--ltg-border, #415668);
+  border-radius: 14px;
+  background: var(--ltg-surface, #172b3a);
+  color: var(--ltg-text, #f1f4f6);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
+  overflow: hidden;
+}
+
+.ltg-school-live-punch-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--ltg-border-soft, #314657);
+  background: var(--ltg-surface-2, #1d3242);
+}
+
+.ltg-school-live-punch-header h2 {
+  margin: 4px 0 5px;
+  color: var(--ltg-text, #f1f4f6);
+  font-size: 22px;
+}
+
+.ltg-school-live-punch-header p {
+  margin: 0;
+  color: var(--ltg-muted, #b4bec6);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.ltg-school-live-punch-eyebrow {
+  color: var(--ltg-success, #4fa66c);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.ltg-school-live-punch-count {
+  min-width: 104px;
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  padding: 9px 12px;
+  border: 1px solid rgba(53, 214, 111, .45);
+  border-radius: 10px;
+  background: rgba(53, 214, 111, .08);
+  color: var(--ltg-success-text, #74eba0);
+}
+
+.ltg-school-live-punch-count strong {
+  font-size: 25px;
+  line-height: 1;
+}
+
+.ltg-school-live-punch-count span {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.ltg-school-live-punch-list {
+  display: grid;
+}
+
+.ltg-school-live-punch-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(310px, 1.25fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--ltg-border-soft, #314657);
+}
+
+.ltg-school-live-punch-row:last-child {
+  border-bottom: 0;
+}
+
+.ltg-school-live-punch-person {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+
+.ltg-school-live-punch-person > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ltg-school-live-punch-person strong {
+  color: var(--ltg-text, #f1f4f6);
+  font-size: 14px;
+}
+
+.ltg-school-live-punch-person small {
+  color: var(--ltg-muted, #b4bec6);
+  font-size: 10px;
+}
+
+.ltg-school-live-punch-dot {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+}
+
+.ltg-school-live-punch-dot.active {
+  background: #35d66f;
+  box-shadow: 0 0 8px rgba(53, 214, 111, .75);
+}
+
+.ltg-school-live-punch-dot.complete {
+  background: var(--ltg-faint, #83939e);
+}
+
+.ltg-school-live-punch-times {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ltg-school-live-punch-times > span {
+  display: grid;
+  gap: 2px;
+}
+
+.ltg-school-live-punch-times small {
+  color: var(--ltg-muted, #b4bec6);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.ltg-school-live-punch-times strong {
+  color: var(--ltg-text, #f1f4f6);
+  font-size: 13px;
+}
+
+.ltg-school-live-punch-status {
+  justify-self: end;
+  border-radius: 999px;
+  padding: 6px 9px;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .07em;
+  white-space: nowrap;
+}
+
+.ltg-school-live-punch-status.active {
+  border: 1px solid rgba(53, 214, 111, .50);
+  background: rgba(53, 214, 111, .10);
+  color: var(--ltg-success-text, #74eba0);
+}
+
+.ltg-school-live-punch-status.complete {
+  border: 1px solid var(--ltg-border, #415668);
+  background: var(--ltg-surface-3, #233948);
+  color: var(--ltg-muted, #b4bec6);
+}
+
+.ltg-school-live-punch-empty,
+.ltg-school-live-punch-error {
+  padding: 18px;
+  color: var(--ltg-muted, #b4bec6);
+  text-align: center;
+}
+
+.ltg-school-live-punch-error {
+  color: var(--ltg-danger-text, #ff8795);
+}
+
+@media (max-width: 860px) {
+  .ltg-school-live-punch-panel {
+    width: min(100% - 20px, 1180px);
+  }
+
+  .ltg-school-live-punch-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .ltg-school-live-punch-status {
+    justify-self: start;
+  }
+}
+
+@media (max-width: 560px) {
+  .ltg-school-live-punch-header {
+    flex-direction: column;
+  }
+
+  .ltg-school-live-punch-times {
+    gap: 13px;
+  }
+}
