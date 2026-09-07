@@ -356,7 +356,7 @@ export default function DashboardPage() {
 
     const outcomeIds = (outcomesResult.data ?? [])
       .map((row: { outcome_id: string | null }) => row.outcome_id)
-      .filter((id): id is string => Boolean(id));
+      .filter((id: string | null): id is string => Boolean(id));
 
     if (outcomeIds.length > 0) {
       const { data: outcomeData, error: outcomeError } = await supabase

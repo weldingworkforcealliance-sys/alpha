@@ -14,7 +14,7 @@ export default function TrainingLoginPage() {
   const [supabase] = useState(getSupabase);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(({ data }: { data: { session: unknown | null } }) => {
       if (data.session) router.replace('/training');
     });
   }, [router, supabase]);

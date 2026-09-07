@@ -313,7 +313,7 @@ export default function AttendanceWorkspace({
     if (!selectedSection) return;
     supabase
       .rpc('can_manage_school', { check_school_id: selectedSection.school_id })
-      .then(({ data }) => setCanManage(Boolean(data)));
+      .then(({ data }: { data: boolean | null }) => setCanManage(Boolean(data)));
   }, [selectedSection, supabase]);
 
   const saveRecord = async (studentId: string, next?: EditableRecord) => {

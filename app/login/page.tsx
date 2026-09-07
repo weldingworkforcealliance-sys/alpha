@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
+import { safePostLoginRoute } from '@/lib/auth-routes';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,7 +35,9 @@ export default function LoginPage() {
       }
 
       await supabase.rpc('activate_my_invited_memberships');
-      router.push('/dashboard');
+      const requestedRoute = new URLSearchParams(window.location.search).get('next');
+      router.replace(safePostLoginRoute(requestedRoute));
+      router.refresh();
     } catch (err) {
       console.error(err);
       setError('An unexpected error occurred');
