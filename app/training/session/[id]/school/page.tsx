@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
+import { guardedSignOut } from '@/lib/guarded-signout';
 
 interface TrainingSession { id:string; school_id:string; session_name:string; status:string; started_at:string; expires_at:string; }
 interface StateRow { id:string; source_section_id:string; simulated_current_day:number; manual_hold:boolean; hold_reason:string|null; active_timer_started_at:string|null; }
@@ -67,7 +68,7 @@ export default function TrainingSchoolPage(){
     catch(err){setError(err instanceof Error?err.message:String(err));setBusy(false);}
   };
 
-  const leaveAndLogout=async()=>{setBusy(true);try{await supabase.rpc('leave_training_session',{p_training_session_id:sessionId});}finally{await supabase.auth.signOut();router.push('/training/login');}};
+  const leaveAndLogout=async()=>{setBusy(true);try{await supabase.rpc('leave_training_session',{p_training_session_id:sessionId});}finally{const signedOut=await guardedSignOut('/training/login');if(!signedOut)setBusy(false);}};
 
   if(loading)return <main className="loading">Opening Training School Dashboard…</main>;
 
