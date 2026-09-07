@@ -41,7 +41,7 @@ select
   false,
   'native',
   'school_owned',
-  true
+  false
 from public.courses c
 join public.course_guide_days d on d.course_id = c.id
 where c.course_code in ('WLD 205','WLD 210')
