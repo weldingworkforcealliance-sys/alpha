@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1300" viewBox="0 0 1200 1300">
+<rect width="1200" height="1300" fill="white"/>
+<rect x="20" y="20" width="1160" height="1260" fill="none" stroke="#222" stroke-width="2"/>
+<text x="55" y="70" font-family="Arial" font-size="34" font-weight="700">WLD 205 DAY 6 — METALLURGY READINESS I</text>
+<text x="55" y="108" font-family="Arial" font-size="21">Metal Properties + Material Behavior Vocabulary</text>
+<rect x="50" y="150" width="1100" height="360" rx="10" fill="#f7f7f7" stroke="#555"/><text x="72" y="188" font-family="Arial" font-size="24" font-weight="700">Property Vocabulary</text><text x="85" y="225" font-family="Arial" font-size="22">Hardness</text>
+<text x="85" y="267" font-family="Arial" font-size="22">Strength</text>
+<text x="85" y="309" font-family="Arial" font-size="22">Toughness</text>
+<text x="85" y="351" font-family="Arial" font-size="22">Ductility</text>
+<text x="85" y="393" font-family="Arial" font-size="22">Brittleness</text>
+<text x="85" y="435" font-family="Arial" font-size="22">Thermal conductivity</text>
+<text x="85" y="477" font-family="Arial" font-size="22">Sort first. Then connect each term to a fabrication/welding consequence.</text><rect x="50" y="535" width="1100" height="340" rx="10" fill="#f7f7f7" stroke="#555"/><text x="72" y="573" font-family="Arial" font-size="24" font-weight="700">Material Comparison Matrix</text><text x="85" y="615" font-family="Arial" font-size="20">CARBON STEEL — composition/condition and exact grade matter.</text>
+<text x="85" y="663" font-family="Arial" font-size="20">STAINLESS STEEL — family/alloy dependent; chromium/corrosion resistance; contamination control.</text>
+<text x="85" y="711" font-family="Arial" font-size="20">ALUMINUM — low density; high thermal conductivity; oxide layer; exact alloy/temper controls.</text><rect x="50" y="900" width="1100" height="330" rx="10" fill="#f7f7f7" stroke="#555"/><text x="72" y="938" font-family="Arial" font-size="24" font-weight="700">Behavior Scenarios</text><text x="85" y="980" font-family="Arial" font-size="21">1) Must bend before breaking. Which property?</text>
+<text x="85" y="1026" font-family="Arial" font-size="21">2) Must absorb impact energy. Which property?</text>
+<text x="85" y="1072" font-family="Arial" font-size="21">3) Rapidly carries heat away. Which property?</text>
+<text x="85" y="1118" font-family="Arial" font-size="21">4) Surface resists indentation. Which property?</text>
+<text x="85" y="1164" font-family="Arial" font-size="21">Exact grade comes from source documentation, not visual guessing.</text>
+</svg>
