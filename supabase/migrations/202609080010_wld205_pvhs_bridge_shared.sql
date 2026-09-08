@@ -1,5 +1,4 @@
 -- WLD-205 PVHS BRIDGE DAYS 2-9 — ONE-PUSH LIVE CLASSROOM BUNDLE
--- STAGED FOR REVIEW. Intended to supersede the earlier separate Day 3/5/7/9 staging packages.
 -- Source basis: WLD205_Level_II_55_Day_23_DAY_CORE_PVHS_PROJECT_EXTENSION_FINAL_v12.
 -- No secure AWS assessment content is reproduced here.
 
@@ -83,8 +82,8 @@ declare
   target_guide uuid;
   day_count integer;
 begin
-  select count(distinct d.guide_id), min(d.guide_id)
-    into target_count, target_guide
+  select count(distinct d.guide_id)
+    into target_count
   from public.course_guide_days d
   join public.courses c on c.id=d.course_id
   where c.course_code='WLD 205'
@@ -94,6 +93,15 @@ begin
   if target_count <> 1 then
     raise exception 'Expected exactly one current PVHS WLD-205 bridge guide; found %', target_count;
   end if;
+
+  select d.guide_id
+    into target_guide
+  from public.course_guide_days d
+  join public.courses c on c.id=d.course_id
+  where c.course_code='WLD 205'
+    and d.planner_day_number=2
+    and d.title='PVHS Bridge - Math Recovery I: Measurement, Fractions + Mixed Numbers'
+  limit 1;
 
   select count(*) into day_count
   from public.course_guide_days d
