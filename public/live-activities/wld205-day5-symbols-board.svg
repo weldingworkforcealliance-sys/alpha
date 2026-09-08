@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1230" viewBox="0 0 1200 1230">
+<rect width="1200" height="1230" fill="white"/>
+<rect x="20" y="20" width="1160" height="1190" fill="none" stroke="#222" stroke-width="2"/>
+<text x="55" y="70" font-family="Arial" font-size="34" font-weight="700">WLD 205 DAY 5 — BLUEPRINT RECOVERY II</text>
+<text x="55" y="108" font-family="Arial" font-size="21">Weld Symbols + Joint Information</text>
+<rect x="50" y="150" width="1100" height="330" rx="10" fill="#f7f7f7" stroke="#555"/><text x="72" y="188" font-family="Arial" font-size="24" font-weight="700">Joint-Type Retrieval</text><text x="85" y="225" font-family="Arial" font-size="21">1: same plane, edge-to-edge</text>
+<text x="85" y="270" font-family="Arial" font-size="21">2: one member overlaps another</text>
+<text x="85" y="315" font-family="Arial" font-size="21">3: one member meets the face of another at about 90°</text>
+<text x="85" y="360" font-family="Arial" font-size="21">4: edges meet to form an L</text>
+<text x="85" y="405" font-family="Arial" font-size="21">5: parallel members joined at adjacent edges</text><rect x="50" y="505" width="1100" height="330" rx="10" fill="#f7f7f7" stroke="#555"/><text x="72" y="543" font-family="Arial" font-size="24" font-weight="700">Authorized Symbol Source</text><text x="85" y="585" font-family="Arial" font-size="21">Keep the authorized PCCC/AWS symbol reference visible.</text>
+<text x="85" y="632" font-family="Arial" font-size="21">Identify: reference line • arrow • tail • side/location • size/length when shown.</text>
+<text x="85" y="679" font-family="Arial" font-size="21">Practice prompts: basic fillet below line; basic fillet above line; size shown left of fillet symbol.</text>
+<text x="85" y="726" font-family="Arial" font-size="21">Exact convention/meaning is controlled by the authorized reference.</text><rect x="50" y="860" width="1100" height="300" rx="10" fill="#f7f7f7" stroke="#555"/><text x="72" y="898" font-family="Arial" font-size="24" font-weight="700">Bridge Print B — BRACKET-B</text><text x="85" y="940" font-family="Arial" font-size="22">T-joint: vertical plate / base plate intersection</text>
+<text x="85" y="992" font-family="Arial" font-size="22">NOTE: WELD PER APPROVED WPS/SWPS</text>
+<text x="85" y="1044" font-family="Arial" font-size="22">Question: what comes from the print, and what must come from the procedure?</text>
+</svg>
