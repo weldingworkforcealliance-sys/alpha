@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1700" viewBox="0 0 1200 1700">
+<rect width="1200" height="1700" fill="white"/>
+<rect x="25" y="25" width="1150" height="1650" fill="none" stroke="#222" stroke-width="2"/>
+<text x="55" y="72" font-family="Arial" font-size="32" font-weight="700">WLD 205 DAY 3 — PRINT-TO-PART + BRIDGE PRINT A WORKSHEET</text>
+<text x="55" y="110" font-family="Arial" font-size="20">Use Training Plate A first, then Bridge Print A — FRAME-A.</text>
+
+<rect x="55" y="150" width="1090" height="510" rx="10" fill="#f8f8f8" stroke="#555"/>
+<text x="78" y="192" font-family="Arial" font-size="24" font-weight="700">A. TRAINING PLATE A — MAKE THE PRINT PHYSICAL</text>
+<text x="82" y="238" font-family="Arial" font-size="20">1. Part title: ______________________________</text>
+<text x="82" y="280" font-family="Arial" font-size="20">2. Material / thickness: ____________________</text>
+<text x="82" y="322" font-family="Arial" font-size="20">3. Identify one visible/object line: ______________________________</text>
+<text x="82" y="364" font-family="Arial" font-size="20">4. Identify one hidden line: _____________________________________</text>
+<text x="82" y="406" font-family="Arial" font-size="20">5. Identify one centerline: ______________________________________</text>
+<text x="82" y="448" font-family="Arial" font-size="20">6. Overall measured length: ______ in   Height: ______ in</text>
+<text x="82" y="490" font-family="Arial" font-size="20">7. Hole-center location verified: _________________________________</text>
+<text x="82" y="540" font-family="Arial" font-size="18">Instructor: rotate the matching model and connect each physical feature to the drawing view.</text>
+<text x="82" y="585" font-family="Arial" font-size="18" font-weight="700">PRINT → PART: READ → FIND → MEASURE → VERIFY</text>
+
+<rect x="55" y="690" width="1090" height="600" rx="10" fill="#f8f8f8" stroke="#555"/>
+<text x="78" y="732" font-family="Arial" font-size="24" font-weight="700">B. BRIDGE PRINT A — FRAME-A</text>
+<text x="82" y="778" font-family="Arial" font-size="20">1. Overall width: __________ in</text>
+<text x="82" y="820" font-family="Arial" font-size="20">2. Overall height: __________ in</text>
+<text x="82" y="862" font-family="Arial" font-size="20">3. Bottom-to-middle-member distance: __________ in</text>
+<text x="82" y="904" font-family="Arial" font-size="20">4. Which note controls units? ____________________________________</text>
+<text x="82" y="946" font-family="Arial" font-size="20">5. Material: ____________________________________________________</text>
+<text x="82" y="988" font-family="Arial" font-size="20">6. Where do welding procedure conditions come from? ______________</text>
+<text x="82" y="1030" font-family="Arial" font-size="20">7. Outer-frame stock before allowance/kerf:</text>
+<text x="120" y="1072" font-family="Arial" font-size="20">2 × 12 + 2 × 8 = __________________ in</text>
+<text x="82" y="1118" font-family="Arial" font-size="20">8. If print information conflicts with verbal instruction, what should happen?</text>
+<line x1="82" y1="1155" x2="1110" y2="1155" stroke="#777"/>
+<text x="82" y="1210" font-family="Arial" font-size="18" font-weight="700">Reading order: TITLE / VIEW → NOTES → DIMENSIONS → SYMBOLS → QUESTIONS</text>
+
+<rect x="55" y="1320" width="1090" height="270" rx="10" fill="#f8f8f8" stroke="#555"/>
+<text x="78" y="1362" font-family="Arial" font-size="24" font-weight="700">C. EXIT CHECK</text>
+<text x="82" y="1408" font-family="Arial" font-size="20">Where do you look first for units when a general note is present?</text>
+<line x1="82" y1="1440" x2="1110" y2="1440" stroke="#777"/>
+<text x="82" y="1490" font-family="Arial" font-size="20">Does a dimension line provide welding parameters?</text>
+<line x1="82" y1="1522" x2="1110" y2="1522" stroke="#777"/>
+<text x="82" y="1572" font-family="Arial" font-size="20">What is the correct response to conflicting source information?</text>
+<line x1="82" y1="1604" x2="1110" y2="1604" stroke="#777"/>
+</svg>
