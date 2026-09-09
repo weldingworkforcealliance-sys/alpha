@@ -23,7 +23,7 @@ export default function ProgramDemoSelectorPage() {
 
         <section className="programs">
           <article className="card welding">
-            <div className="tag">LIVE IMPLEMENTATION MODEL</div>
+            <div className="tag">WELDING IMPLEMENTATION DEMO</div>
             <h2>Welding Technology</h2>
             <p>Shop-based technical instruction with daily planners, resources, attendance, performance evidence, instructor notes, timekeeping, and school reporting.</p>
             <div className="chips">
