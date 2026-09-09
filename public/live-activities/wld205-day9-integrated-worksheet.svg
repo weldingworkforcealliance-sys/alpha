@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1550" viewBox="0 0 1200 1550">
+<rect width="1200" height="1550" fill="white"/>
+<rect x="25" y="25" width="1150" height="1500" fill="none" stroke="#222" stroke-width="2"/>
+<text x="55" y="72" font-family="Arial" font-size="32" font-weight="700">WLD 205 DAY 9 — INTEGRATED READINESS WORKSHEET</text>
+<text x="55" y="110" font-family="Arial" font-size="20">Use with Bridge Print C — BASE-C and authorized source documentation.</text>
+
+<rect x="55" y="150" width="1090" height="300" rx="10" fill="#f8f8f8" stroke="#555"/>
+<text x="78" y="190" font-family="Arial" font-size="24" font-weight="700">1. PRINT / SOURCE</text>
+<text x="82" y="235" font-family="Arial" font-size="20">Drawing units: __________________________</text>
+<text x="82" y="278" font-family="Arial" font-size="20">Overall plate size: _____________________</text>
+<text x="82" y="321" font-family="Arial" font-size="20">Material note: __________________________</text>
+<text x="82" y="364" font-family="Arial" font-size="20">Procedure source: _______________________</text>
+<text x="82" y="407" font-family="Arial" font-size="20">If a value/symbol is unclear, action: ______________________________</text>
+
+<rect x="55" y="475" width="1090" height="370" rx="10" fill="#f8f8f8" stroke="#555"/>
+<text x="78" y="515" font-family="Arial" font-size="24" font-weight="700">2. MATH / TOLERANCE</text>
+<text x="82" y="560" font-family="Arial" font-size="20">Nominal tab center: __________________ in</text>
+<text x="82" y="603" font-family="Arial" font-size="20">Tolerance: ± __________________ in</text>
+<text x="82" y="646" font-family="Arial" font-size="20">Lower limit: __________________ in</text>
+<text x="82" y="689" font-family="Arial" font-size="20">Upper limit: __________________ in</text>
+<text x="82" y="732" font-family="Arial" font-size="20">Actual center measurement: 5.024 in</text>
+<text x="82" y="775" font-family="Arial" font-size="20">Decision: ACCEPT / REJECT   Why: __________________________________</text>
+<text x="82" y="818" font-family="Arial" font-size="18">Use NOMINAL → LIMITS → ACTUAL → DECISION. Include units.</text>
+
+<rect x="55" y="870" width="1090" height="360" rx="10" fill="#f8f8f8" stroke="#555"/>
+<text x="78" y="910" font-family="Arial" font-size="24" font-weight="700">3. MATERIAL BEHAVIOR / SOURCE CONTROL</text>
+<text x="82" y="955" font-family="Arial" font-size="20">What does “carbon steel” tell you? _________________________________</text>
+<text x="82" y="998" font-family="Arial" font-size="20">What does it NOT tell you exactly? _________________________________</text>
+<text x="82" y="1041" font-family="Arial" font-size="20">What source identifies exact grade/composition? ____________________</text>
+<text x="82" y="1084" font-family="Arial" font-size="20">Zone beside weld that may have changed properties: ________________</text>
+<text x="82" y="1127" font-family="Arial" font-size="20">One supported conclusion: _________________________________________</text>
+<text x="82" y="1170" font-family="Arial" font-size="20">One conclusion you cannot make from appearance alone: _____________</text>
+
+<rect x="55" y="1260" width="1090" height="210" rx="10" fill="#f8f8f8" stroke="#555"/>
+<text x="78" y="1300" font-family="Arial" font-size="24" font-weight="700">4. INTEGRATED CHECK</text>
+<text x="82" y="1345" font-family="Arial" font-size="20">Before fabrication, what must be verified? _________________________</text>
+<text x="82" y="1388" font-family="Arial" font-size="20">What evidence supports your accept/reject decision? ________________</text>
+<text x="82" y="1432" font-family="Arial" font-size="18" font-weight="700">READ → CALCULATE → CHECK SOURCE → DECIDE → DOCUMENT</text>
+</svg>
