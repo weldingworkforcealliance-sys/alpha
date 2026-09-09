@@ -107,6 +107,7 @@ export default function DemoPage() {
           <h1>Public Try Demo</h1>
         </div>
         <div className="actions">
+          <button onClick={() => router.push('/demo/programs')}>Program Demos</button>
           <button onClick={resetDemo}>Reset Demo</button>
           <button onClick={() => router.push('/training/login')}>Training Mode</button>
           <button onClick={() => router.push('/login')}>Live Login</button>
