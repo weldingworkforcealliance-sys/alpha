@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">
+<rect width="1200" height="1600" fill="white"/>
+<rect x="30" y="30" width="1140" height="1540" fill="none" stroke="#222" stroke-width="3"/>
+<g font-family="Arial" fill="#111">
+<text x="60" y="80" font-size="34" font-weight="700">TRAINING PLATE A</text>
+<text x="60" y="118" font-size="20">WLD 105 Day 3 • From Print to Part • Units: inches • Scale: NTS</text>
+</g>
+<!-- Front view -->
+<g transform="translate(90,220)" font-family="Arial">
+<text x="0" y="0" font-size="22" font-weight="700">FRONT VIEW</text>
+<path d="M80 80 H500 V180 H430 V360 H80 Z" fill="#f1f1f1" stroke="#111" stroke-width="4"/>
+<circle cx="220" cy="220" r="45" fill="white" stroke="#111" stroke-width="4"/>
+<line x1="150" y1="220" x2="290" y2="220" stroke="#555" stroke-width="2" stroke-dasharray="30 8 7 8"/>
+<line x1="220" y1="150" x2="220" y2="290" stroke="#555" stroke-width="2" stroke-dasharray="30 8 7 8"/>
+<line x1="80" y1="400" x2="500" y2="400" stroke="#111"/><line x1="80" y1="390" x2="80" y2="415" stroke="#111"/><line x1="500" y1="390" x2="500" y2="415" stroke="#111"/><text x="280" y="392" font-size="18">6</text>
+<line x1="550" y1="80" x2="550" y2="360" stroke="#111"/><line x1="540" y1="80" x2="565" y2="80" stroke="#111"/><line x1="540" y1="360" x2="565" y2="360" stroke="#111"/><text x="565" y="225" font-size="18">4</text>
+<line x1="430" y1="45" x2="500" y2="45" stroke="#111"/><line x1="430" y1="35" x2="430" y2="60" stroke="#111"/><line x1="500" y1="35" x2="500" y2="60" stroke="#111"/><text x="458" y="38" font-size="18">1</text>
+<line x1="525" y1="80" x2="525" y2="180" stroke="#111"/><line x1="515" y1="80" x2="540" y2="80" stroke="#111"/><line x1="515" y1="180" x2="540" y2="180" stroke="#111"/><text x="540" y="135" font-size="18">1</text>
+<text x="180" y="125" font-size="18">Ø 1.00 THRU</text>
+<line x1="80" y1="460" x2="220" y2="460" stroke="#111"/><line x1="80" y1="450" x2="80" y2="475" stroke="#111"/><line x1="220" y1="450" x2="220" y2="475" stroke="#111"/><text x="142" y="453" font-size="18">2</text>
+<line x1="35" y1="220" x2="35" y2="360" stroke="#111"/><line x1="25" y1="220" x2="50" y2="220" stroke="#111"/><line x1="25" y1="360" x2="50" y2="360" stroke="#111"/><text x="5" y="295" font-size="18">2</text>
+</g>
+<!-- Top view -->
+<g transform="translate(760,220)" font-family="Arial">
+<text x="0" y="0" font-size="22" font-weight="700">TOP VIEW</text>
+<rect x="50" y="120" width="300" height="45" fill="#f1f1f1" stroke="#111" stroke-width="4"/>
+<line x1="130" y1="120" x2="130" y2="165" stroke="#555" stroke-width="2" stroke-dasharray="12 7"/>
+<line x1="170" y1="120" x2="170" y2="165" stroke="#555" stroke-width="2" stroke-dasharray="12 7"/>
+<text x="95" y="205" font-size="18">Hidden lines show through-hole.</text>
+<text x="100" y="245" font-size="18">Thickness = 1/4</text>
+</g>
+<!-- Right view -->
+<g transform="translate(760,520)" font-family="Arial">
+<text x="0" y="0" font-size="22" font-weight="700">RIGHT-SIDE VIEW</text>
+<rect x="80" y="90" width="45" height="260" fill="#f1f1f1" stroke="#111" stroke-width="4"/>
+<line x1="80" y1="205" x2="125" y2="205" stroke="#555" stroke-width="2" stroke-dasharray="12 7"/>
+<line x1="80" y1="235" x2="125" y2="235" stroke="#555" stroke-width="2" stroke-dasharray="12 7"/>
+<text x="155" y="230" font-size="18">Hidden feature location</text>
+</g>
+<!-- title block -->
+<rect x="70" y="900" width="1060" height="300" fill="#fafafa" stroke="#333" stroke-width="2"/>
+<g font-family="Arial" fill="#111">
+<text x="95" y="945" font-size="24" font-weight="700">TITLE BLOCK</text>
+<text x="95" y="995" font-size="20">Part: TRAINING PLATE A</text>
+<text x="95" y="1035" font-size="20">Material: Mild Steel</text>
+<text x="95" y="1075" font-size="20">Thickness: 1/4 in</text>
+<text x="95" y="1115" font-size="20">Units: Inches</text>
+<text x="95" y="1155" font-size="20">Scale: NTS</text>
+<text x="650" y="995" font-size="20">Overall: 6 × 4</text>
+<text x="650" y="1035" font-size="20">Hole: Ø 1.00 THRU</text>
+<text x="650" y="1075" font-size="20">Hole center: 2 from left, 2 from bottom</text>
+<text x="650" y="1115" font-size="20">Notch: 1 × 1 upper-right corner</text>
+</g>
+<rect x="70" y="1245" width="1060" height="250" rx="10" fill="#f7f7f7" stroke="#555"/>
+<g font-family="Arial" fill="#111">
+<text x="95" y="1290" font-size="24" font-weight="700">INSTRUCTOR USE</text>
+<text x="95" y="1335" font-size="20">Match this print to an actual plate or cardboard/foam-board model.</text>
+<text x="95" y="1375" font-size="20">Students identify title, material, thickness, one visible line, one hidden line, one centerline, and one dimension.</text>
+<text x="95" y="1415" font-size="20">Verify 6 in length, 4 in height, and 2 in hole-center locations with a ruler/tape.</text>
+<text x="95" y="1460" font-size="18">Original PCCC/LTG training print. Not a production fabrication drawing.</text>
+</g>
+</svg>

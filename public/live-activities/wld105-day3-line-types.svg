@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500">
+<rect width="1200" height="1500" fill="white"/>
+<g font-family="Arial" fill="#111">
+<text x="60" y="75" font-size="34" font-weight="700">WLD 105 DAY 3 — ENLARGED LINE-TYPE REFERENCE</text>
+<text x="60" y="115" font-size="20">Use with Training Plate A and the matching physical part/model.</text>
+</g>
+<g font-family="Arial">
+<rect x="70" y="170" width="1060" height="210" rx="12" fill="#fafafa" stroke="#444"/>
+<text x="95" y="215" font-size="24" font-weight="700">OBJECT / VISIBLE LINE</text><line x1="95" y1="285" x2="640" y2="285" stroke="#111" stroke-width="6"/><text x="690" y="292" font-size="20">Visible edge or feature</text><text x="95" y="340" font-size="19">Instructor phrase: “Solid line = visible edge.”</text>
+<rect x="70" y="410" width="1060" height="210" rx="12" fill="#fafafa" stroke="#444"/>
+<text x="95" y="455" font-size="24" font-weight="700">HIDDEN LINE</text><line x1="95" y1="525" x2="640" y2="525" stroke="#111" stroke-width="4" stroke-dasharray="24 16"/><text x="690" y="532" font-size="20">Feature exists but is not visible in this view</text><text x="95" y="580" font-size="19">Instructor phrase: “Something is there, but this view cannot see it directly.”</text>
+<rect x="70" y="650" width="1060" height="210" rx="12" fill="#fafafa" stroke="#444"/>
+<text x="95" y="695" font-size="24" font-weight="700">CENTERLINE</text><line x1="95" y1="765" x2="640" y2="765" stroke="#111" stroke-width="3" stroke-dasharray="46 12 10 12"/><text x="690" y="772" font-size="20">Center of a hole, round feature, or symmetry</text><text x="95" y="820" font-size="19">Instructor phrase: “Centerline tells us where the center lives.”</text>
+<rect x="70" y="890" width="1060" height="210" rx="12" fill="#fafafa" stroke="#444"/>
+<text x="95" y="935" font-size="24" font-weight="700">DIMENSION LINE</text><line x1="145" y1="1010" x2="590" y2="1010" stroke="#111" stroke-width="3"/><polygon points="145,1010 165,1000 165,1020" fill="#111"/><polygon points="590,1010 570,1000 570,1020" fill="#111"/><text x="330" y="995" font-size="20">6 in</text><text x="690" y="1017" font-size="20">Shows size or distance</text><text x="95" y="1060" font-size="19">Read the number and identify exactly what it controls.</text>
+<rect x="70" y="1130" width="1060" height="250" rx="12" fill="#fafafa" stroke="#444"/>
+<text x="95" y="1175" font-size="24" font-weight="700">EXTENSION LINE</text><line x1="170" y1="1230" x2="170" y2="1325" stroke="#111" stroke-width="2"/><line x1="520" y1="1230" x2="520" y2="1325" stroke="#111" stroke-width="2"/><line x1="170" y1="1255" x2="520" y2="1255" stroke="#111" stroke-width="2"/><polygon points="170,1255 190,1245 190,1265" fill="#111"/><polygon points="520,1255 500,1245 500,1265" fill="#111"/><text x="330" y="1242" font-size="20">6 in</text><rect x="170" y="1325" width="350" height="20" fill="#ddd" stroke="#111"/><text x="690" y="1265" font-size="20">Shows what points the dimension applies to</text><text x="95" y="1360" font-size="18">Original PCCC/LTG classroom reference.</text>
+</g>
+</svg>

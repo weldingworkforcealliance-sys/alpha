@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500">
+<rect width="1200" height="1500" fill="white"/>
+<g font-family="Arial" fill="#111">
+<text x="60" y="75" font-size="34" font-weight="700">WLD 105 DAY 3 — PRINT-TO-PART WORKSHEET</text>
+<text x="60" y="115" font-size="20">Use Training Plate A and the matching physical part/model.</text>
+</g>
+<rect x="60" y="165" width="1080" height="720" rx="12" fill="#fafafa" stroke="#444"/>
+<g font-family="Arial" fill="#111">
+<text x="85" y="210" font-size="24" font-weight="700">IDENTIFY FROM THE PRINT</text>
+<text x="85" y="260" font-size="20">1. Part title: ____________________________________________________________</text>
+<text x="85" y="310" font-size="20">2. Material: _____________________________________________________________</text>
+<text x="85" y="360" font-size="20">3. Thickness: ____________________________________________________________</text>
+<text x="85" y="410" font-size="20">4. One visible/object line: ________________________________________________</text>
+<text x="85" y="460" font-size="20">5. One hidden line: _______________________________________________________</text>
+<text x="85" y="510" font-size="20">6. One centerline: ________________________________________________________</text>
+<text x="85" y="560" font-size="20">7. One dimension: ________________________________________________________</text>
+<text x="85" y="610" font-size="20">8. Match one print feature to the physical part: _______________________________</text>
+<text x="85" y="680" font-size="22" font-weight="700">MEASURE / VERIFY</text>
+<text x="85" y="730" font-size="20">Overall length measured: __________ in</text>
+<text x="85" y="775" font-size="20">Overall height measured: __________ in</text>
+<text x="85" y="820" font-size="20">Hole-center location checked: _____________________________________________</text>
+</g>
+<rect x="60" y="925" width="1080" height="430" rx="12" fill="#f7f7f7" stroke="#555"/>
+<g font-family="Arial" fill="#111">
+<text x="85" y="970" font-size="24" font-weight="700">EXIT CHECK</text>
+<text x="85" y="1020" font-size="20">1. What does a hidden line represent?</text>
+<line x1="85" y1="1055" x2="1110" y2="1055" stroke="#777"/>
+<text x="85" y="1110" font-size="20">2. Why are multiple views needed?</text>
+<line x1="85" y1="1145" x2="1110" y2="1145" stroke="#777"/>
+<text x="85" y="1200" font-size="20">3. What should happen before layout or fabrication begins?</text>
+<line x1="85" y1="1235" x2="1110" y2="1235" stroke="#777"/>
+<text x="85" y="1300" font-size="21" font-weight="700">PRINT → PART: READ → FIND → MEASURE → VERIFY → BUILD</text>
+</g>
+<text x="60" y="1415" font-family="Arial" font-size="18" fill="#333">Original PCCC/LTG classroom worksheet.</text>
+</svg>
