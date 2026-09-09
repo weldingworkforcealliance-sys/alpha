@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">
+<rect width="1200" height="1600" fill="white"/>
+<rect x="30" y="30" width="1140" height="1540" fill="none" stroke="#222" stroke-width="3"/>
+<g font-family="Arial" fill="#111">
+<text x="60" y="82" font-size="34" font-weight="700">WLD 205 DAY 7 — MOCK MEASUREMENT RECORD</text>
+<text x="60" y="120" font-size="20">Practice documentation only. Preserve the original measurement and write a factual correction/recheck note.</text>
+</g>
+<g font-family="Arial" fill="#111" font-size="19">
+<text x="75" y="190" font-size="20" font-weight="700">ID</text><text x="155" y="190" font-size="20" font-weight="700">Requirement</text><text x="455" y="190" font-size="20" font-weight="700">Actual</text><text x="620" y="190" font-size="20" font-weight="700">Limits</text><text x="860" y="190" font-size="20" font-weight="700">Decision</text>
+</g>
+<g stroke="#555" fill="none">
+<rect x="60" y="210" width="1080" height="450"/>
+<line x1="135" y1="210" x2="135" y2="660"/><line x1="435" y1="210" x2="435" y2="660"/><line x1="600" y1="210" x2="600" y2="660"/><line x1="835" y1="210" x2="835" y2="660"/>
+<line x1="60" y1="360" x2="1140" y2="360"/><line x1="60" y1="510" x2="1140" y2="510"/>
+</g>
+<g font-family="Arial" fill="#111" font-size="22">
+<text x="88" y="295">A</text><text x="165" y="285">4.000 ± 0.010 in</text><text x="465" y="285">4.002 in</text><text x="625" y="285">________ to ________</text><text x="875" y="285">____________</text>
+<text x="88" y="445">B</text><text x="165" y="435">8.000 ± 0.010 in</text><text x="465" y="435">7.984 in</text><text x="625" y="435">________ to ________</text><text x="875" y="435">____________</text>
+<text x="88" y="595">C</text><text x="165" y="585">2.500 ± 0.008 in</text><text x="465" y="585">2.496 in</text><text x="625" y="585">________ to ________</text><text x="875" y="585">____________</text>
+</g>
+<rect x="60" y="720" width="1080" height="720" rx="14" fill="#fafafa" stroke="#444"/>
+<g font-family="Arial" fill="#111">
+<text x="90" y="770" font-size="25" font-weight="700">Corrective / Recheck Note</text>
+<text x="90" y="820" font-size="21">Circle the out-of-tolerance record above, then write a factual note using this frame:</text>
+<text x="110" y="885" font-size="22" font-weight="700">Dimension ____ measured __________ in.</text>
+<text x="110" y="940" font-size="22" font-weight="700">Required limits: __________ to __________ in.</text>
+<text x="110" y="995" font-size="22" font-weight="700">Actual is __________ the lower / upper limit.</text>
+<text x="110" y="1050" font-size="22" font-weight="700">Action: HOLD for correction/recheck per instructor/project procedure.</text>
+<text x="90" y="1130" font-size="20">Do not:</text>
+<text x="115" y="1175" font-size="20">• erase or replace the original measurement</text>
+<text x="115" y="1215" font-size="20">• change the print or tolerance to match the part</text>
+<text x="115" y="1255" font-size="20">• write “close enough” instead of the actual condition</text>
+<text x="115" y="1295" font-size="20">• perform a physical correction unless released under the applicable WLD 210/instructor controls</text>
+<text x="90" y="1370" font-size="18">Real acceptance and correction actions follow the approved print, project requirements, and instructor/shop procedure.</text>
+</g>
+</svg>
