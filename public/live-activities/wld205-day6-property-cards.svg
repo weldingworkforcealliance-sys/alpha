@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1700" viewBox="0 0 1200 1700">
+<rect width="1200" height="1700" fill="white"/>
+<text x="55" y="75" font-family="Arial" font-size="34" font-weight="700">WLD 205 DAY 6 — PROPERTY CARDS</text>
+<text x="55" y="112" font-family="Arial" font-size="20">Metallurgy Readiness I • Student sort/retrieval set • Definitions match the Day 6 live activity.</text>
+<g font-family="Arial" fill="#111" stroke="#444" stroke-width="2">
+<rect x="55" y="155" width="525" height="400" rx="12" fill="#fafafa"/><rect x="620" y="155" width="525" height="400" rx="12" fill="#fafafa"/>
+<rect x="55" y="595" width="525" height="400" rx="12" fill="#fafafa"/><rect x="620" y="595" width="525" height="400" rx="12" fill="#fafafa"/>
+<rect x="55" y="1035" width="525" height="400" rx="12" fill="#fafafa"/><rect x="620" y="1035" width="525" height="400" rx="12" fill="#fafafa"/>
+</g>
+<g font-family="Arial" fill="#111">
+<text x="85" y="205" font-size="27" font-weight="700">HARDNESS</text><text x="650" y="205" font-size="27" font-weight="700">STRENGTH</text>
+<text x="85" y="645" font-size="27" font-weight="700">TOUGHNESS</text><text x="650" y="645" font-size="27" font-weight="700">DUCTILITY</text>
+<text x="85" y="1085" font-size="27" font-weight="700">BRITTLENESS</text><text x="650" y="1085" font-size="27" font-weight="700">THERMAL CONDUCTIVITY</text>
+<text x="85" y="260" font-size="20">Resistance to indentation / wear.</text><text x="85" y="305" font-size="18">Do not treat hardness as toughness.</text><text x="85" y="365" font-size="18" font-weight="700">Retrieval cue:</text><text x="85" y="400" font-size="18">A surface resists indentation. Which term?</text>
+<text x="650" y="260" font-size="19">Ability to resist applied load / stress before</text><text x="650" y="292" font-size="19">failure or deformation, depending on the</text><text x="650" y="324" font-size="19">property being discussed.</text><text x="650" y="385" font-size="18" font-weight="700">Instructor cue:</text><text x="650" y="420" font-size="18">Keep the definition broad. Exact material data</text><text x="650" y="450" font-size="18">comes from the controlling source.</text>
+<text x="85" y="700" font-size="20">Ability to absorb energy before fracturing.</text><text x="85" y="760" font-size="18" font-weight="700">Retrieval cue:</text><text x="85" y="795" font-size="18">A part must absorb impact energy. Which term?</text>
+<text x="650" y="700" font-size="20">Ability to plastically deform / elongate</text><text x="650" y="732" font-size="20">before fracture.</text><text x="650" y="790" font-size="18" font-weight="700">Retrieval cue:</text><text x="650" y="825" font-size="18">A component must bend before breaking.</text><text x="650" y="855" font-size="18">Which term?</text>
+<text x="85" y="1140" font-size="20">Tendency to fracture with little plastic</text><text x="85" y="1172" font-size="20">deformation.</text><text x="85" y="1235" font-size="18" font-weight="700">Contrast cue:</text><text x="85" y="1270" font-size="18">How is this different from ductility?</text>
+<text x="650" y="1140" font-size="20">Ability to conduct heat.</text><text x="650" y="1200" font-size="18" font-weight="700">Retrieval cue:</text><text x="650" y="1235" font-size="18">Heat rapidly moves away from a weld zone.</text><text x="650" y="1265" font-size="18">Which property is being described?</text>
+<text x="55" y="1515" font-size="20" font-weight="700">INSTRUCTOR RULE</text>
+<text x="55" y="1555" font-size="19">Students should identify the property word first, then explain only what the evidence supports.</text>
+<text x="55" y="1590" font-size="19">Exact grade, alloy, temper, and procedure conditions come from authorized source documentation, not visual guessing.</text>
+</g>
+</svg>
