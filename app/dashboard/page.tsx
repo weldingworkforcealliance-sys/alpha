@@ -50,6 +50,12 @@ interface DayDelivery {
   actual_date: string | null;
   started_at: string | null;
   completed_at: string | null;
+  instructor_id: string | null;
+  actual_minutes: number | null;
+  deviation_summary: string | null;
+  follow_up_needed: boolean;
+  follow_up_notes: string | null;
+  updated_at: string | null;
 }
 
 interface GuideDay {
@@ -257,7 +263,9 @@ export default function DashboardPage() {
         .order('exception_date'),
       supabase
         .from('planner_day_delivery')
-        .select('planner_day_id, delivery_status, actual_date, started_at, completed_at')
+        .select(
+          'planner_day_id, delivery_status, actual_date, started_at, completed_at, instructor_id, actual_minutes, deviation_summary, follow_up_needed, follow_up_notes, updated_at'
+        )
         .eq('section_id', sectionId),
     ]);
 
@@ -679,6 +687,14 @@ export default function DashboardPage() {
     selectedSection?.guide_day_id && guideDay?.id === selectedSection.guide_day_id
   );
 
+  const viewedPlannerDay =
+    viewedDayNumber !== null
+      ? plannerDays.find((day) => day.planner_day_number === viewedDayNumber)
+      : undefined;
+  const viewedDelivery = viewedPlannerDay
+    ? deliveryByPlannerDay.get(viewedPlannerDay.id)
+    : undefined;
+
   const currentDelivery = selectedSection?.planner_day_id
     ? deliveryByPlannerDay.get(selectedSection.planner_day_id)
     : undefined;
@@ -963,6 +979,53 @@ export default function DashboardPage() {
                         </div>
                       </div>
 
+                      {viewedDelivery &&
+                        (viewedDelivery.completed_at ||
+                          viewedDelivery.deviation_summary ||
+                          viewedDelivery.follow_up_needed ||
+                          viewedDelivery.follow_up_notes) && (
+                          <div className="saved-day-record">
+                            <div className="saved-day-record-heading">
+                              <div>
+                                <span className="guide-label">Instructor Day Record</span>
+                                <strong>
+                                  {viewedDelivery.delivery_status === 'completed'
+                                    ? 'Completed day notes'
+                                    : 'Saved day notes'}
+                                </strong>
+                              </div>
+                              <span className="saved-day-record-date">
+                                {viewedDelivery.actual_date
+                                  ? parseDate(viewedDelivery.actual_date).toLocaleDateString(
+                                      'en-US',
+                                      { month: 'short', day: 'numeric', year: 'numeric' }
+                                    )
+                                  : 'Saved'}
+                              </span>
+                            </div>
+
+                            {viewedDelivery.deviation_summary && (
+                              <div className="saved-day-record-section">
+                                <strong>Daily Comments / Deviation Summary</strong>
+                                <p>{viewedDelivery.deviation_summary}</p>
+                              </div>
+                            )}
+
+                            {viewedDelivery.follow_up_needed && (
+                              <div className="saved-day-follow-up-badge">
+                                Follow-up was marked as needed
+                              </div>
+                            )}
+
+                            {viewedDelivery.follow_up_notes && (
+                              <div className="saved-day-record-section">
+                                <strong>Follow-up Notes</strong>
+                                <p>{viewedDelivery.follow_up_notes}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
                       <div className="guide-summary-row">
                         <div className="guide-objective">
                           <span className="guide-label">Daily Objective</span>
@@ -1196,7 +1259,6 @@ export default function DashboardPage() {
                     </div>
                   )}
                 </section>
-
                 <div className="actions-section">
                   {!isViewingCurrentDay && guideDay && (
                     <div className="preview-actions-lock">
@@ -1634,6 +1696,71 @@ export default function DashboardPage() {
           color: #d7d7d7;
           font-size: 12px;
           font-weight: 600;
+        }
+
+        .saved-day-record {
+          margin: 14px 14px 0;
+          border: 1px solid rgba(0, 180, 255, 0.42);
+          border-radius: 8px;
+          background: rgba(0, 180, 255, 0.07);
+          overflow: hidden;
+        }
+
+        .saved-day-record-heading {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 14px;
+          border-bottom: 1px solid rgba(0, 180, 255, 0.22);
+          background: rgba(0, 180, 255, 0.055);
+        }
+
+        .saved-day-record-heading strong {
+          display: block;
+          margin-top: 3px;
+          color: #f2f8fb;
+          font-size: 14px;
+        }
+
+        .saved-day-record-date {
+          flex: 0 0 auto;
+          color: #94cce8;
+          font-size: 12px;
+          font-weight: 700;
+        }
+
+        .saved-day-record-section {
+          padding: 12px 14px;
+        }
+
+        .saved-day-record-section + .saved-day-record-section {
+          border-top: 1px solid rgba(0, 180, 255, 0.16);
+        }
+
+        .saved-day-record-section strong {
+          color: #dfeff7;
+          font-size: 12px;
+        }
+
+        .saved-day-record-section p {
+          margin: 7px 0 0;
+          color: #d8e3e8;
+          font-size: 13px;
+          line-height: 1.55;
+          white-space: pre-wrap;
+        }
+
+        .saved-day-follow-up-badge {
+          display: inline-block;
+          margin: 0 14px 12px;
+          padding: 6px 9px;
+          border: 1px solid rgba(255, 187, 71, 0.38);
+          border-radius: 999px;
+          background: rgba(255, 187, 71, 0.08);
+          color: #e7c27c;
+          font-size: 11px;
+          font-weight: 700;
         }
 
         .guide-summary-row {
@@ -2246,6 +2373,11 @@ export default function DashboardPage() {
 
           .guide-format-badge {
             width: 100%;
+          }
+
+          .saved-day-record-heading {
+            align-items: flex-start;
+            flex-direction: column;
           }
 
           .coaching-grid {
