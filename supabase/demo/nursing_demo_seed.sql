@@ -24,27 +24,33 @@ begin
     returning id into v_school;
   end if;
 
-  if not exists (select 1 from school_branding where school_id = v_school) then
-    insert into school_branding(
-      school_id,
-      display_name,
-      short_name,
-      primary_color,
-      secondary_color,
-      accent_color,
-      header_text,
-      footer_text
-    ) values (
-      v_school,
-      'LTG Demonstration Institute',
-      'LTG Demo',
-      '#0f2530',
-      '#173b4b',
-      '#61d5ff',
-      'Health Sciences Demonstration',
-      'Synthetic training data only'
-    );
-  end if;
+  insert into school_branding(
+    school_id,
+    display_name,
+    short_name,
+    primary_color,
+    secondary_color,
+    accent_color,
+    header_text,
+    footer_text
+  ) values (
+    v_school,
+    'LTG Demonstration Institute',
+    'LTG Demo',
+    '#0e6c88',
+    '#f4f8fa',
+    '#16865f',
+    'Health Sciences Demonstration',
+    'Synthetic training data only'
+  )
+  on conflict (school_id) do update set
+    display_name = excluded.display_name,
+    short_name = excluded.short_name,
+    primary_color = excluded.primary_color,
+    secondary_color = excluded.secondary_color,
+    accent_color = excluded.accent_color,
+    header_text = excluded.header_text,
+    footer_text = excluded.footer_text;
 
   select id into v_program
   from programs
