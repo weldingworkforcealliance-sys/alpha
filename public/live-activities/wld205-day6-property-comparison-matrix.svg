@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1550" viewBox="0 0 1200 1550">
+<rect width="1200" height="1550" fill="white"/>
+<text x="55" y="75" font-family="Arial" font-size="34" font-weight="700">WLD 205 DAY 6 — PROPERTY COMPARISON MATRIX</text>
+<text x="55" y="112" font-family="Arial" font-size="20">Use authorized material/source references. These are baseline statements from the Day 6 bridge, not grade-identification rules.</text>
+<g font-family="Arial" fill="#111" stroke="#444" stroke-width="2">
+<rect x="55" y="160" width="1090" height="315" rx="12" fill="#fafafa"/>
+<rect x="55" y="510" width="1090" height="315" rx="12" fill="#fafafa"/>
+<rect x="55" y="860" width="1090" height="315" rx="12" fill="#fafafa"/>
+</g>
+<g font-family="Arial" fill="#111">
+<text x="85" y="210" font-size="27" font-weight="700">CARBON STEEL — BASELINE</text>
+<text x="85" y="255" font-size="20">• Typically magnetic.</text>
+<text x="85" y="292" font-size="20">• Property and weldability change with composition and condition.</text>
+<text x="85" y="329" font-size="20">• Exact grade controls.</text>
+<text x="85" y="382" font-size="18" font-weight="700">Student source check:</text>
+<text x="85" y="417" font-size="18">What documentation identifies the actual material? What can you state without guessing?</text>
+
+<text x="85" y="560" font-size="27" font-weight="700">STAINLESS STEEL — BASELINE</text>
+<text x="85" y="605" font-size="20">• Family / alloy dependent.</text>
+<text x="85" y="642" font-size="20">• Corrosion resistance is associated with chromium.</text>
+<text x="85" y="679" font-size="20">• Contamination control matters.</text>
+<text x="85" y="732" font-size="18" font-weight="700">Student source check:</text>
+<text x="85" y="767" font-size="18">Do not treat all stainless grades as identical or identify exact grade by appearance.</text>
+
+<text x="85" y="910" font-size="27" font-weight="700">ALUMINUM — BASELINE</text>
+<text x="85" y="955" font-size="20">• Low density.</text>
+<text x="85" y="992" font-size="20">• High thermal conductivity.</text>
+<text x="85" y="1029" font-size="20">• Oxide layer requires attention.</text>
+<text x="85" y="1066" font-size="20">• Exact alloy / temper controls.</text>
+<text x="85" y="1115" font-size="18" font-weight="700">Student source check:</text>
+<text x="85" y="1150" font-size="18">Do not guess the exact alloy or temper from appearance.</text>
+
+<rect x="55" y="1225" width="1090" height="230" rx="12" fill="#f7f7f7" stroke="#555"/>
+<text x="85" y="1275" font-size="24" font-weight="700">MATRIX RULE</text>
+<text x="85" y="1320" font-size="20">OBSERVE → CHECK THE AUTHORIZED SOURCE → STATE ONLY WHAT THE SOURCE SUPPORTS.</text>
+<text x="85" y="1365" font-size="19">Samples/photos may support observation and comparison. They do not establish exact grade, alloy, temper, or welding procedure.</text>
+<text x="85" y="1405" font-size="19">If the source does not support a claim, write: “Cannot determine from the information provided.”</text>
+</g>
+</svg>
