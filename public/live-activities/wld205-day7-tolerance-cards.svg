@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500">
+<rect width="1200" height="1500" fill="white"/>
+<rect x="30" y="30" width="1140" height="1440" fill="none" stroke="#222" stroke-width="3"/>
+<g font-family="Arial" fill="#111">
+<text x="60" y="82" font-size="34" font-weight="700">WLD 205 DAY 7 — TOLERANCE CARDS</text>
+<text x="60" y="120" font-size="20">Read nominal first. Calculate lower and upper limits before making any decision.</text>
+</g>
+<g font-family="Arial" fill="#111">
+<rect x="70" y="180" width="1060" height="330" rx="16" fill="#fafafa" stroke="#444" stroke-width="2"/>
+<text x="100" y="230" font-size="25" font-weight="700">CARD A</text>
+<text x="100" y="310" font-size="44" font-weight="700">2.000 ± 0.030 in</text>
+<text x="100" y="380" font-size="22">Nominal: __________   Lower limit: __________   Upper limit: __________</text>
+<text x="100" y="440" font-size="20">Live Question 1 checks the limits.</text>
+
+<rect x="70" y="555" width="1060" height="330" rx="16" fill="#fafafa" stroke="#444" stroke-width="2"/>
+<text x="100" y="605" font-size="25" font-weight="700">CARD B</text>
+<text x="100" y="685" font-size="44" font-weight="700">6.500 ± 0.015 in</text>
+<text x="100" y="755" font-size="22">Nominal: __________   Lower limit: __________   Upper limit: __________</text>
+<text x="100" y="815" font-size="20">Live Question 2 checks the limits.</text>
+
+<rect x="70" y="930" width="1060" height="330" rx="16" fill="#fafafa" stroke="#444" stroke-width="2"/>
+<text x="100" y="980" font-size="25" font-weight="700">CARD C</text>
+<text x="100" y="1060" font-size="44" font-weight="700">1 1/2 ± 1/32 in</text>
+<text x="100" y="1130" font-size="22">Rewrite 1 1/2 in thirty-seconds, then calculate both limits.</text>
+<text x="100" y="1190" font-size="22">Lower limit: __________   Upper limit: __________</text>
+<text x="100" y="1250" font-size="20">Live Question 3 checks the limits.</text>
+
+<rect x="70" y="1320" width="1060" height="100" rx="12" fill="#f7f7f7" stroke="#555"/>
+<text x="100" y="1370" font-size="23" font-weight="700">Standing chain: NOMINAL → LIMITS → ACTUAL → DECISION</text>
+<text x="100" y="1405" font-size="18">Keep units with every value. Real job tolerances come from the approved print/tolerance source.</text>
+</g>
+</svg>
