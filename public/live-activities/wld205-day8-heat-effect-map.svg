@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="980" viewBox="0 0 1200 980">
+  <rect width="1200" height="980" fill="white"/>
+  <rect x="25" y="25" width="1150" height="930" fill="none" stroke="#222" stroke-width="2"/>
+  <text x="55" y="75" font-family="Arial" font-size="34" font-weight="700">WLD 205 DAY 8 — HEAT-EFFECT CAUSE / CONSEQUENCE MAP</text>
+  <text x="55" y="115" font-family="Arial" font-size="20">Complete the supported connection, then identify what still requires an authorized source.</text>
+
+  <rect x="55" y="155" width="1090" height="90" fill="#efefef" stroke="#555"/>
+  <text x="75" y="195" font-family="Arial" font-size="19" font-weight="700">CONDITION / INPUT</text>
+  <text x="365" y="195" font-family="Arial" font-size="19" font-weight="700">SUPPORTED CONCERN / EFFECT</text>
+  <text x="790" y="195" font-family="Arial" font-size="19" font-weight="700">WHAT MUST BE CHECKED</text>
+
+  <rect x="55" y="245" width="1090" height="165" fill="#fafafa" stroke="#777"/>
+  <text x="75" y="290" font-family="Arial" font-size="22" font-weight="700">Higher restraint</text>
+  <text x="365" y="290" font-family="Arial" font-size="20">Possible residual-stress, distortion,</text>
+  <text x="365" y="322" font-family="Arial" font-size="20">and cracking concerns</text>
+  <text x="790" y="290" font-family="Arial" font-size="20">Material / joint / thickness /</text>
+  <text x="790" y="322" font-family="Arial" font-size="20">approved WPS / project requirements</text>
+  <text x="75" y="375" font-family="Arial" font-size="18">Do not claim an exact cause from appearance alone.</text>
+
+  <rect x="55" y="410" width="1090" height="165" fill="#fafafa" stroke="#777"/>
+  <text x="75" y="455" font-family="Arial" font-size="22" font-weight="700">Higher thermal conductivity</text>
+  <text x="365" y="455" font-family="Arial" font-size="20">Heat can be carried away more rapidly</text>
+  <text x="790" y="455" font-family="Arial" font-size="20">Material-specific procedure implications</text>
+  <text x="790" y="487" font-family="Arial" font-size="20">from authorized source / WPS</text>
+  <text x="75" y="540" font-family="Arial" font-size="18">Do not conclude “easy/hard to weld” from conductivity alone.</text>
+
+  <rect x="55" y="575" width="1090" height="185" fill="#fafafa" stroke="#777"/>
+  <text x="75" y="620" font-family="Arial" font-size="22" font-weight="700">Uncontrolled heat input / sequence</text>
+  <text x="365" y="620" font-family="Arial" font-size="20">Possible distortion and HAZ/property</text>
+  <text x="365" y="652" font-family="Arial" font-size="20">concerns</text>
+  <text x="790" y="620" font-family="Arial" font-size="20">Approved procedure, sequence, joint,</text>
+  <text x="790" y="652" font-family="Arial" font-size="20">restraint, material, governing requirements</text>
+  <text x="75" y="720" font-family="Arial" font-size="18">Do not invent heat-input limits or distortion-control values.</text>
+
+  <rect x="55" y="800" width="1090" height="105" rx="8" fill="#f7f7f7" stroke="#555"/>
+  <text x="80" y="842" font-family="Arial" font-size="22" font-weight="700">Student response frame:</text>
+  <text x="80" y="882" font-family="Arial" font-size="21">CONDITION → POSSIBLE CONCERN → CONTROLLING SOURCE → WHAT I CANNOT CLAIM</text>
+</svg>
