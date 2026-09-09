@@ -36,6 +36,11 @@ type Student = {
   external_student_id: string | null;
 };
 
+type WorkerConfig = {
+  resend_api_key: string | null;
+  attendance_from_email: string | null;
+};
+
 function escapeHtml(value: unknown) {
   return String(value ?? '')
     .replaceAll('&', '&amp;')
@@ -56,6 +61,28 @@ function labelStatus(value: string | null) {
 function labelFlag(value: string) {
   if (value === 'disappeared') return 'Student disappeared';
   return labelStatus(value);
+}
+
+function parseRecipients(value: string) {
+  const recipients = Array.from(
+    new Set(
+      value
+        .split(/[;,]/)
+        .map((email) => email.trim())
+        .filter(Boolean)
+    )
+  );
+
+  if (!recipients.length) {
+    throw new Error('Attendance report has no recipient email');
+  }
+
+  const invalid = recipients.find((email) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+  if (invalid) {
+    throw new Error(`Invalid attendance report recipient: ${invalid}`);
+  }
+
+  return recipients;
 }
 
 function buildEmailHtml(args: {
@@ -118,19 +145,21 @@ function buildEmailHtml(args: {
 async function sendResendEmail(args: {
   apiKey: string;
   from: string;
-  to: string;
+  to: string[];
   subject: string;
   html: string;
+  idempotencyKey: string;
 }) {
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${args.apiKey}`,
       'Content-Type': 'application/json',
+      'Idempotency-Key': args.idempotencyKey,
     },
     body: JSON.stringify({
       from: args.from,
-      to: [args.to],
+      to: args.to,
       subject: args.subject,
       html: args.html,
     }),
@@ -148,20 +177,12 @@ Deno.serve(async (req) => {
     return new Response('Method Not Allowed', { status: 405 });
   }
 
-  const expectedSecret = Deno.env.get('ATTENDANCE_CRON_SECRET') ?? '';
-  const suppliedSecret = req.headers.get('x-attendance-cron-secret') ?? '';
-  if (!expectedSecret || suppliedSecret !== expectedSecret) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  const resendApiKey = Deno.env.get('RESEND_API_KEY');
-  const attendanceFromEmail = Deno.env.get('ATTENDANCE_FROM_EMAIL');
 
-  if (!supabaseUrl || !serviceRoleKey || !resendApiKey || !attendanceFromEmail) {
+  if (!supabaseUrl || !serviceRoleKey) {
     return Response.json(
-      { error: 'Attendance report worker is missing required server-side configuration.' },
+      { error: 'Attendance report worker is missing required Supabase server configuration.' },
       { status: 500 }
     );
   }
@@ -169,6 +190,36 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+
+  const suppliedSecret = req.headers.get('x-attendance-cron-secret') ?? '';
+  if (!suppliedSecret) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  const { data: secretValid, error: secretError } = await supabase.rpc(
+    'verify_attendance_worker_secret',
+    { p_secret: suppliedSecret }
+  );
+  if (secretError || !secretValid) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  const { data: configData, error: configError } = await supabase.rpc(
+    'get_attendance_worker_config'
+  );
+  if (configError) {
+    return Response.json({ error: configError.message }, { status: 500 });
+  }
+
+  const config = (Array.isArray(configData) ? configData[0] : configData) as WorkerConfig | null;
+  const resendApiKey = config?.resend_api_key ?? '';
+  const attendanceFromEmail = config?.attendance_from_email ?? '';
+  if (!resendApiKey || !attendanceFromEmail) {
+    return Response.json(
+      { error: 'Attendance report worker is missing sender configuration.' },
+      { status: 500 }
+    );
+  }
 
   const { data: claimed, error: claimError } = await supabase.rpc(
     'claim_due_attendance_reports',
@@ -229,9 +280,10 @@ Deno.serve(async (req) => {
       await sendResendEmail({
         apiKey: resendApiKey,
         from: attendanceFromEmail,
-        to: queue.recipient_email,
+        to: parseRecipients(queue.recipient_email),
         subject: `PVHS Attendance Report · ${pair.pair_name} · ${session.attendance_date}`,
         html,
+        idempotencyKey: `attendance-report/${queue.queue_id}`,
       });
 
       const { error: sentError } = await supabase
