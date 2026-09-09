@@ -37,6 +37,7 @@ export default function StudentAssessmentPage(){
   const [teamMembers,setTeamMembers]=useState('');
   const [answers,setAnswers]=useState<Record<string,string>>({});
   const [started,setStarted]=useState(false);
+  const [referenceOpen,setReferenceOpen]=useState(false);
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState('');
   const [result,setResult]=useState<{score:number;possible_score:number;percent:number}|null>(null);
@@ -86,10 +87,29 @@ export default function StudentAssessmentPage(){
     }
   };
 
-  const ReferencePanel=()=>(
-    (info?.reference_title||info?.reference_image_url||info?.reference_body)
-      ? <section className="card reference-card">
-          {info.reference_title&&<div className="reference-title">{info.reference_title}</div>}
+  const ReferencePanel=()=>{
+    if(!(info?.reference_title||info?.reference_image_url||info?.reference_body))return null;
+    const isWhiteboard=Boolean(info.reference_image_url);
+    const openLabel=isWhiteboard?'Open Class Whiteboard':'Open Class Reference';
+    const closeLabel=isWhiteboard?'Close Whiteboard':'Close Reference';
+
+    return <section className="card reference-card">
+      <div className="reference-head">
+        <div>
+          <div className="reference-kicker">Class Reference</div>
+          <div className="reference-title">{info.reference_title??'Live class reference'}</div>
+        </div>
+        <button
+          type="button"
+          className="reference-toggle"
+          aria-expanded={referenceOpen}
+          onClick={()=>setReferenceOpen(open=>!open)}
+        >
+          {referenceOpen?closeLabel:openLabel}
+        </button>
+      </div>
+      {referenceOpen&&
+        <div className="reference-content">
           {info.reference_image_url&&
             <img
               className="reference-image"
@@ -98,9 +118,10 @@ export default function StudentAssessmentPage(){
             />
           }
           {info.reference_body&&<div className="reference-body">{info.reference_body}</div>}
-        </section>
-      : null
-  );
+        </div>
+      }
+    </section>;
+  };
 
   if(error&&!info)return <main className="center"><div><h1>Unable to Join</h1><p>{error}</p></div><style jsx>{styles}</style></main>;
   if(!info)return <main className="center">Opening assessment…<style jsx>{styles}</style></main>;
@@ -137,7 +158,7 @@ export default function StudentAssessmentPage(){
             <input value={teamMembers} onChange={e=>setTeamMembers(e.target.value)} placeholder="Names of students working with you"/>
           </label>
         }
-        <button disabled={!name.trim()||!studentId.trim()} onClick={()=>setStarted(true)}>Begin Live Activity</button>
+        <button disabled={!name.trim()||!studentId.trim()} onClick={()=>{setReferenceOpen(false);setStarted(true);}}>Begin Live Activity</button>
         <p className="draft-note">Your answers are saved on this device until you submit.</p>
       </div>
       <ReferencePanel/>
@@ -210,9 +231,12 @@ button:disabled{opacity:.4}
 .score{margin:15px;color:white;font-size:54px;font-weight:900}
 .result>strong{color:#9adf4b;font-size:25px}
 .reference-card{border-color:#566b46;background:#10140d}
-.reference-title{margin-bottom:10px;color:#caff77;font-weight:900}
-.reference-image{display:block;width:100%;height:auto;border:1px solid #333;border-radius:7px;background:#fff}
+.reference-head{display:flex;gap:14px;align-items:center;justify-content:space-between}
+.reference-kicker{color:#82966f;font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+.reference-title{margin-top:4px;color:#caff77;font-weight:900}
+button.reference-toggle{width:auto;flex:0 0 auto;margin:0;padding:9px 12px;font-size:12px}
+.reference-content{margin-top:14px;max-height:70vh;overflow:auto;padding-right:2px}
+.reference-image{display:block;width:auto;max-width:100%;height:auto;max-height:56vh;margin:0 auto;border:1px solid #333;border-radius:7px;background:#fff;object-fit:contain}
 .reference-body{margin-top:10px;color:#bbb;white-space:pre-line;line-height:1.5;font-size:13px}
-@media(min-width:850px){main:not(.center) .reference-card{position:sticky;top:8px;z-index:5}}
-@media(max-width:600px){main{padding:14px}.card{padding:16px}.top{align-items:flex-start}.top h1{font-size:20px}}
+@media(max-width:600px){main{padding:14px}.card{padding:16px}.top{align-items:flex-start}.top h1{font-size:20px}.reference-head{align-items:flex-start;flex-direction:column}button.reference-toggle{width:100%}.reference-content{max-height:64vh}.reference-image{max-height:50vh}}
 `;
