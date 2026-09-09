@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1700" viewBox="0 0 1200 1700">
+<rect width="1200" height="1700" fill="white"/>
+<g font-family="Arial" fill="#111">
+<text x="60" y="75" font-size="34" font-weight="700">WLD 205 DAY 5 — INSTRUCTOR KEY / DELIVERY GUIDE</text>
+<text x="60" y="115" font-size="20">Blueprint Recovery II: Weld Symbols + Joint Information</text>
+</g>
+<rect x="60" y="160" width="1080" height="240" rx="12" fill="#fafafa" stroke="#444"/>
+<g font-family="Arial" fill="#111">
+<text x="85" y="205" font-size="24" font-weight="700">0–8 MIN — JOINT-TYPE RETRIEVAL</text>
+<text x="85" y="250" font-size="20">Use the five Joint-Type Cards. Students name the member relationship and sketch it.</text>
+<text x="85" y="290" font-size="19">Key: 1 Butt • 2 Lap • 3 T-joint • 4 Corner • 5 Edge</text>
+<text x="85" y="330" font-size="19">Correction cue: “Name the joint first. Do not name a weld that the print has not specified.”</text>
+<text x="85" y="370" font-size="19">Move on once the student can identify the relationship without prompting.</text>
+</g>
+<rect x="60" y="430" width="1080" height="300" rx="12" fill="#fafafa" stroke="#444"/>
+<g font-family="Arial" fill="#111">
+<text x="85" y="475" font-size="24" font-weight="700">8–20 MIN — AUTHORIZED SYMBOL-SOURCE MODEL</text>
+<text x="85" y="520" font-size="20">Keep the authorized PCCC/AWS classroom reference visible.</text>
+<text x="85" y="565" font-size="19">Model the reading order: arrow → reference line → basic symbol → side/location → size/length → tail/notes.</text>
+<text x="85" y="610" font-size="19">Use one arrow-side example, one other-side example, and one size-information example.</text>
+<text x="85" y="655" font-size="19">Do not turn the bridge into memorization. The source controls the exact convention.</text>
+<text x="85" y="695" font-size="19">Whiteboard rule: UNCLEAR OR MISSING = STOP AND CHECK. NEVER INVENT IT.</text>
+</g>
+<rect x="60" y="760" width="1080" height="300" rx="12" fill="#fafafa" stroke="#444"/>
+<g font-family="Arial" fill="#111">
+<text x="85" y="805" font-size="24" font-weight="700">20–40 MIN — SIX SYMBOL-TO-JOINT CARDS</text>
+<text x="85" y="850" font-size="19">Card 1: T-joint; student identifies the intersection and states more information is needed before welding.</text>
+<text x="85" y="890" font-size="19">Card 2: Use authorized reference to identify the below-line classroom example.</text>
+<text x="85" y="930" font-size="19">Card 3: Use authorized reference to identify the above-line classroom example.</text>
+<text x="85" y="970" font-size="19">Card 4: The number shown left of the basic symbol is weld-size information.</text>
+<text x="85" y="1010" font-size="19">Card 5: Tail directs the student to the cited approved source. Card 6: Missing size = STOP / CHECK.</text>
+</g>
+<rect x="60" y="1090" width="1080" height="300" rx="12" fill="#fafafa" stroke="#444"/>
+<g font-family="Arial" fill="#111">
+<text x="85" y="1135" font-size="24" font-weight="700">40–54 MIN — BRIDGE PRINT B</text>
+<text x="85" y="1180" font-size="19">Students locate BRACKET-B, the vertical/base-plate T-joint, dimensions, and the note WELD PER APPROVED WPS/SWPS.</text>
+<text x="85" y="1220" font-size="19">Use the Print vs. WPS/SWPS worksheet to separate source roles.</text>
+<text x="85" y="1260" font-size="19">Print: geometry, location, dimensions, symbol/notes actually shown.</text>
+<text x="85" y="1300" font-size="19">Approved procedure: assigned procedure conditions actually stated in the approved source.</text>
+<text x="85" y="1340" font-size="19">Never add universal settings or acceptance values to this bridge exercise.</text>
+</g>
+<rect x="60" y="1420" width="1080" height="220" rx="12" fill="#f7f7f7" stroke="#555"/>
+<g font-family="Arial" fill="#111">
+<text x="85" y="1465" font-size="24" font-weight="700">54–60 MIN — SYMBOL EXIT</text>
+<text x="85" y="1510" font-size="19">No coaching during the exit check. Review results by domain: Joint Type • Symbol Navigation • Source Control • Print vs. Procedure.</text>
+<text x="85" y="1550" font-size="19">Remediate only the failed domain using one parallel example, then require an independent recheck.</text>
+<text x="85" y="1600" font-size="18">Do not use bridge work as credential or qualification evidence. WLD 210 controls the paired physical application.</text>
+</g>
+</svg>

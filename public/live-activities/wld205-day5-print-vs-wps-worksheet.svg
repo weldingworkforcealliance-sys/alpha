@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">
+<rect width="1200" height="1600" fill="white"/>
+<g font-family="Arial" fill="#111">
+<text x="60" y="75" font-size="34" font-weight="700">WLD 205 DAY 5 — PRINT vs. WPS/SWPS WORKSHEET</text>
+<text x="60" y="115" font-size="20">Use Bridge Print B and the instructor-provided approved procedure example.</text>
+<text x="60" y="150" font-size="18">Rule: write only what the controlling source actually states. If it is missing or unclear, mark STOP / CHECK.</text>
+</g>
+<rect x="60" y="205" width="1080" height="210" rx="12" fill="#fafafa" stroke="#444" stroke-width="2"/>
+<g font-family="Arial" fill="#111">
+<text x="85" y="250" font-size="24" font-weight="700">PART A — BRIDGE PRINT B</text>
+<text x="85" y="295" font-size="20">1. Assembly / part name: ________________________________________________</text>
+<text x="85" y="335" font-size="20">2. Joint type at vertical plate / base plate intersection: _________________________</text>
+<text x="85" y="375" font-size="20">3. Drawing note that sends you to another source: ________________________________</text>
+</g>
+<rect x="60" y="450" width="1080" height="400" rx="12" fill="#fafafa" stroke="#444" stroke-width="2"/>
+<g font-family="Arial" fill="#111">
+<text x="85" y="495" font-size="24" font-weight="700">PART B — WHICH SOURCE CONTROLS?</text>
+<text x="85" y="545" font-size="19">For each item, mark PRINT, APPROVED WPS/SWPS, or STOP / CHECK.</text>
+<text x="85" y="600" font-size="19">Member dimensions __________________________</text>
+<text x="85" y="645" font-size="19">Joint / weld location shown __________________</text>
+<text x="85" y="690" font-size="19">Assigned process / procedure variables ________</text>
+<text x="85" y="735" font-size="19">A weld size that is not shown anywhere ________</text>
+<text x="85" y="780" font-size="19">An unclear symbol ___________________________</text>
+<text x="85" y="825" font-size="19">Drawing note / project instruction _____________</text>
+</g>
+<rect x="60" y="885" width="1080" height="330" rx="12" fill="#fafafa" stroke="#444" stroke-width="2"/>
+<g font-family="Arial" fill="#111">
+<text x="85" y="930" font-size="24" font-weight="700">PART C — SOURCE TRACE</text>
+<text x="85" y="980" font-size="19">Write one requirement from the print:</text>
+<line x1="85" y1="1015" x2="1110" y2="1015" stroke="#777"/>
+<text x="85" y="1065" font-size="19">Write one requirement from the approved procedure example:</text>
+<line x1="85" y1="1100" x2="1110" y2="1100" stroke="#777"/>
+<text x="85" y="1150" font-size="19">What would make you stop and ask the instructor before welding?</text>
+<line x1="85" y1="1185" x2="1110" y2="1185" stroke="#777"/>
+</g>
+<rect x="60" y="1255" width="1080" height="250" rx="12" fill="#f7f7f7" stroke="#555"/>
+<g font-family="Arial" fill="#111">
+<text x="85" y="1300" font-size="24" font-weight="700">EXIT RULE</text>
+<text x="85" y="1350" font-size="22" font-weight="700">IDENTIFY → FIND THE SOURCE → READ WHAT IS SPECIFIED → STOP IF INFORMATION IS MISSING</text>
+<text x="85" y="1410" font-size="19">Do not invent weld size, machine settings, preheat/interpass, acceptance criteria, or symbol meaning.</text>
+<text x="85" y="1460" font-size="18">Original PCCC/LTG bridge worksheet. Authorized classroom references and approved procedures remain controlling.</text>
+</g>
+</svg>

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">
+<rect width="1200" height="1600" fill="white"/>
+<text x="60" y="70" font-family="Arial" font-size="34" font-weight="700">WLD 205 DAY 5 — JOINT-TYPE CARDS</text>
+<text x="60" y="108" font-family="Arial" font-size="20">Student retrieval set • Name the relationship between the members, not the weld.</text>
+<g font-family="Arial" fill="none" stroke="#222" stroke-width="3">
+<rect x="55" y="145" width="520" height="250" rx="14"/><rect x="625" y="145" width="520" height="250" rx="14"/>
+<rect x="55" y="430" width="520" height="250" rx="14"/><rect x="625" y="430" width="520" height="250" rx="14"/>
+<rect x="340" y="715" width="520" height="250" rx="14"/>
+</g>
+<g font-family="Arial" fill="#111">
+<text x="80" y="185" font-size="22" font-weight="700">CARD 1</text><text x="650" y="185" font-size="22" font-weight="700">CARD 2</text>
+<text x="80" y="470" font-size="22" font-weight="700">CARD 3</text><text x="650" y="470" font-size="22" font-weight="700">CARD 4</text>
+<text x="365" y="755" font-size="22" font-weight="700">CARD 5</text>
+</g>
+<!-- butt -->
+<rect x="120" y="245" width="170" height="55" fill="#ddd" stroke="#111" stroke-width="3"/><rect x="300" y="245" width="170" height="55" fill="#ddd" stroke="#111" stroke-width="3"/>
+<!-- lap -->
+<rect x="700" y="255" width="250" height="55" fill="#ddd" stroke="#111" stroke-width="3"/><rect x="790" y="220" width="250" height="55" fill="#eee" stroke="#111" stroke-width="3"/>
+<!-- T -->
+<rect x="130" y="570" width="350" height="45" fill="#ddd" stroke="#111" stroke-width="3"/><rect x="285" y="490" width="45" height="125" fill="#eee" stroke="#111" stroke-width="3"/>
+<!-- corner -->
+<rect x="710" y="560" width="260" height="45" fill="#ddd" stroke="#111" stroke-width="3"/><rect x="925" y="475" width="45" height="130" fill="#eee" stroke="#111" stroke-width="3"/>
+<!-- edge -->
+<rect x="425" y="820" width="45" height="100" fill="#ddd" stroke="#111" stroke-width="3"/><rect x="480" y="820" width="45" height="100" fill="#eee" stroke="#111" stroke-width="3"/>
+<g font-family="Arial" fill="#333" font-size="18">
+<text x="80" y="350">Two members in the same plane, edge-to-edge.</text>
+<text x="650" y="350">One member overlaps another.</text>
+<text x="80" y="635">One member meets the face of another at about 90°.</text>
+<text x="650" y="635">Two members meet at their edges to form an L.</text>
+<text x="365" y="930">Parallel members joined at adjacent edges.</text>
+</g>
+<rect x="55" y="1015" width="1090" height="500" rx="14" fill="#f7f7f7" stroke="#555"/>
+<g font-family="Arial" fill="#111">
+<text x="85" y="1060" font-size="25" font-weight="700">STUDENT PROMPT</text>
+<text x="85" y="1110" font-size="21">For each card:</text>
+<text x="110" y="1155" font-size="20">1. Name the joint type.</text>
+<text x="110" y="1195" font-size="20">2. Sketch the member relationship in your notes.</text>
+<text x="110" y="1235" font-size="20">3. Do not name a weld unless the print/symbol actually specifies one.</text>
+<text x="85" y="1305" font-size="22" font-weight="700">Instructor key</text>
+<text x="110" y="1345" font-size="20">1 Butt • 2 Lap • 3 T-joint • 4 Corner • 5 Edge</text>
+<text x="85" y="1415" font-size="19">Original PCCC/LTG training graphic. This sheet does not replace an authorized welding-symbol standard.</text>
+</g>
+</svg>
