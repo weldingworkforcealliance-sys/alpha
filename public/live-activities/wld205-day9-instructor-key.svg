@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1800" viewBox="0 0 1200 1800">
+<rect width="1200" height="1800" fill="white"/>
+<rect x="25" y="25" width="1150" height="1750" fill="none" stroke="#222" stroke-width="2"/>
+<text x="55" y="72" font-family="Arial" font-size="32" font-weight="700">WLD 205 DAY 9 — INSTRUCTOR KEY / DELIVERY GUIDE</text>
+<text x="55" y="110" font-family="Arial" font-size="20">Integrated Readiness: Blueprint + Math + Material Behavior</text>
+
+<rect x="55" y="150" width="1090" height="300" rx="10" fill="#f8f8f8" stroke="#555"/>
+<text x="78" y="190" font-family="Arial" font-size="24" font-weight="700">0–10 MIN — QUICK CHECK (Q1–9)</text>
+<text x="82" y="235" font-family="Arial" font-size="20">Blueprint Q1–3: units/source, WPS/SWPS source, unclear-symbol STOP/CHECK.</text>
+<text x="82" y="278" font-family="Arial" font-size="20">Math Q4–6: 4 3/8 in; 0.625 = 5/8; 5.000 ± 0.020 actual 4.978 = REJECT.</text>
+<text x="82" y="321" font-family="Arial" font-size="20">Material Q7–9: ductility; HAZ; exact alloy from documentation/marking/MTR/spec.</text>
+<text x="82" y="370" font-family="Arial" font-size="18">Use results to assign ONE mini-station. Do not rank students or repeat strong domains.</text>
+
+<rect x="55" y="475" width="1090" height="310" rx="10" fill="#f8f8f8" stroke="#555"/>
+<text x="78" y="515" font-family="Arial" font-size="24" font-weight="700">10–25 MIN — TARGETED REPAIR MINI-STATION</text>
+<text x="82" y="560" font-family="Arial" font-size="20">Blueprint Locate: use Bridge Print C; units, material note, two layout dimensions, procedure source.</text>
+<text x="82" y="605" font-family="Arial" font-size="20">Math Measure: 7/16 = 0.4375; 2.000 ± 0.015 gives 1.985–2.015; actual 1.986 = ACCEPT.</text>
+<text x="82" y="650" font-family="Arial" font-size="20">Material Behavior: hardness ≠ toughness; HAZ = heated/unmelted base metal; exact grade is source-controlled.</text>
+<text x="82" y="700" font-family="Arial" font-size="18">Model one clean correction only. Then reduce prompting and require independent evidence.</text>
+
+<rect x="55" y="810" width="1090" height="390" rx="10" fill="#f8f8f8" stroke="#555"/>
+<text x="78" y="850" font-family="Arial" font-size="24" font-weight="700">25–48 MIN — BRIDGE PRINT C / BASE-C (Q10–14)</text>
+<text x="82" y="895" font-family="Arial" font-size="20">Q10: overall plate = 10.000 × 6.000 in.</text>
+<text x="82" y="938" font-family="Arial" font-size="20">Q11: centered on 10.000-in length = nominal center 5.000 in.</text>
+<text x="82" y="981" font-family="Arial" font-size="20">Q12: 5.000 ± 0.030 gives 4.970–5.030; actual 5.024 = ACCEPT.</text>
+<text x="82" y="1024" font-family="Arial" font-size="20">Q13: “carbon steel” does not establish exact carbon content/grade; use source documentation.</text>
+<text x="82" y="1067" font-family="Arial" font-size="20">Q14: HAZ is the zone beside the weld that may have changed properties.</text>
+<text x="82" y="1120" font-family="Arial" font-size="18">Require the worksheet chain: READ → CALCULATE → CHECK SOURCE → DECIDE → DOCUMENT.</text>
+
+<rect x="55" y="1225" width="1090" height="300" rx="10" fill="#f8f8f8" stroke="#555"/>
+<text x="78" y="1265" font-family="Arial" font-size="24" font-weight="700">48–56 MIN — PARALLEL RECHECK</text>
+<text x="82" y="1310" font-family="Arial" font-size="20">Select one NEW item only in the weakest remaining domain.</text>
+<text x="82" y="1353" font-family="Arial" font-size="20">Blueprint: B1–B3. Math/Tolerance: M1–M3. Material Behavior: R1–R3.</text>
+<text x="82" y="1396" font-family="Arial" font-size="20">A clean independent response closes the gap for today. Do not drill a secure domain.</text>
+<text x="82" y="1440" font-family="Arial" font-size="18">If still weak, record the specific support item and carry only that gap forward.</text>
+
+<rect x="55" y="1550" width="1090" height="170" rx="10" fill="#f8f8f8" stroke="#555"/>
+<text x="78" y="1590" font-family="Arial" font-size="24" font-weight="700">56–60 MIN — READINESS CLOSE</text>
+<text x="82" y="1635" font-family="Arial" font-size="20">Record one demonstrated Level I strength, one remaining support item, and the evidence.</text>
+<text x="82" y="1678" font-family="Arial" font-size="18">Day 10 = WLD-210 overlap. Day 11 begins common WLD-205 sequence. This is readiness evidence, not credential evidence.</text>
+
+<text x="55" y="1750" font-family="Arial" font-size="18" font-weight="700">Instructor rule: CHECK → IDENTIFY GAP → REPAIR ONE DOMAIN → INTEGRATE → RECHECK → RECORD</text>
+</svg>
