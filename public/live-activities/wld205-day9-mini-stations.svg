@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500">
+<rect width="1200" height="1500" fill="white"/>
+<rect x="20" y="20" width="1160" height="1460" fill="none" stroke="#222" stroke-width="2"/>
+<text x="55" y="72" font-family="Arial" font-size="34" font-weight="700">WLD 205 DAY 9 — TARGETED REPAIR MINI-STATIONS</text>
+<text x="55" y="112" font-family="Arial" font-size="21">Assign ONE station only from the Quick Check evidence.</text>
+
+<rect x="55" y="155" width="1090" height="380" rx="10" fill="#f7f7f7" stroke="#555"/>
+<text x="78" y="198" font-family="Arial" font-size="26" font-weight="700">STATION A — Blueprint Locate</text>
+<text x="82" y="244" font-family="Arial" font-size="22">Use Bridge Print C — BASE-C.</text>
+<text x="82" y="288" font-family="Arial" font-size="22">1. Circle where drawing units are stated.</text>
+<text x="82" y="332" font-family="Arial" font-size="22">2. Box the material note.</text>
+<text x="82" y="376" font-family="Arial" font-size="22">3. Underline two dimensions that control layout.</text>
+<text x="82" y="420" font-family="Arial" font-size="22">4. State where welding procedure conditions come from.</text>
+<text x="82" y="468" font-family="Arial" font-size="20">STOP/CHECK rule: unclear symbol or missing value = use authorized source/instructor.</text>
+
+<rect x="55" y="560" width="1090" height="380" rx="10" fill="#f7f7f7" stroke="#555"/>
+<text x="78" y="603" font-family="Arial" font-size="26" font-weight="700">STATION B — Math Measure</text>
+<text x="82" y="650" font-family="Arial" font-size="22">1. Convert 7/16 in to decimal.</text>
+<text x="82" y="696" font-family="Arial" font-size="22">2. Calculate limits for 2.000 ± 0.015 in.</text>
+<text x="82" y="742" font-family="Arial" font-size="22">3. Actual measurement = 1.986 in. Accept or reject?</text>
+<text x="82" y="788" font-family="Arial" font-size="22">4. Write: NOMINAL → LIMITS → ACTUAL → DECISION.</text>
+<text x="82" y="838" font-family="Arial" font-size="20">Require units and written lower/upper limits. Do not round a reject into acceptance.</text>
+
+<rect x="55" y="965" width="1090" height="400" rx="10" fill="#f7f7f7" stroke="#555"/>
+<text x="78" y="1008" font-family="Arial" font-size="26" font-weight="700">STATION C — Material Behavior</text>
+<text x="82" y="1055" font-family="Arial" font-size="22">1. Explain why hardness and toughness are not interchangeable.</text>
+<text x="82" y="1101" font-family="Arial" font-size="22">2. Identify the HAZ on the Day 8 reference if needed.</text>
+<text x="82" y="1147" font-family="Arial" font-size="22">3. State what “carbon steel” does NOT tell you by itself.</text>
+<text x="82" y="1193" font-family="Arial" font-size="22">4. Name the source needed for exact grade/composition.</text>
+<text x="82" y="1246" font-family="Arial" font-size="20">Observation is not proof of exact hardness, composition, cause, or procedure response.</text>
+<text x="82" y="1310" font-family="Arial" font-size="20" font-weight="700">Instructor: model one correction, then require an independent recheck.</text>
+</svg>
