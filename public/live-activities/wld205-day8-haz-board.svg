@@ -1,12 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1350" viewBox="0 0 1200 1350">
-<rect width="1200" height="1350" fill="white"/>
-<rect x="20" y="20" width="1160" height="1310" fill="none" stroke="#222" stroke-width="2"/>
-<text x="55" y="70" font-family="Arial" font-size="34" font-weight="700">WLD 205 DAY 8 — METALLURGY READINESS II</text>
-<text x="55" y="108" font-family="Arial" font-size="21">Heat, HAZ + Observable Change</text>
-<rect x="50" y="150" width="1100" height="420" rx="10" fill="#f7f7f7" stroke="#555"/><text x="72" y="188" font-family="Arial" font-size="24" font-weight="700">Simplified Weld Cross-Section</text><rect x="180" y="300" width="800" height="110" fill="#eeeeee" stroke="#111"/><path d="M480 410 Q580 260 680 410 Z" fill="#dddddd" stroke="#111" stroke-width="3"/><rect x="410" y="410" width="340" height="70" fill="#f5f5f5" stroke="#777" stroke-dasharray="8 6"/><text x="555" y="350" font-family="Arial" font-size="28" font-weight="700">A</text><text x="555" y="455" font-family="Arial" font-size="28" font-weight="700">B</text><text x="250" y="370" font-family="Arial" font-size="28" font-weight="700">C</text><text x="85" y="535" font-family="Arial" font-size="20">Label A / B / C: weld metal • HAZ • base metal</text><rect x="50" y="595" width="1100" height="340" rx="10" fill="#f7f7f7" stroke="#555"/><text x="72" y="633" font-family="Arial" font-size="24" font-weight="700">Observation Cards</text><text x="85" y="675" font-family="Arial" font-size="21">1) HAZ visible near weld: can appearance alone tell exact hardness?</text>
-<text x="85" y="727" font-family="Arial" font-size="21">2) Highly restrained joint shows angular movement: what concerns require evaluation?</text>
-<text x="85" y="779" font-family="Arial" font-size="21">3) Same alloy, different section thickness: could cooling behavior differ?</text><rect x="50" y="960" width="1100" height="320" rx="10" fill="#f7f7f7" stroke="#555"/><text x="72" y="998" font-family="Arial" font-size="24" font-weight="700">Cause / Consequence Map</text><text x="85" y="1040" font-family="Arial" font-size="21">Higher restraint → ______</text>
-<text x="85" y="1090" font-family="Arial" font-size="21">Higher thermal conductivity → ______</text>
-<text x="85" y="1140" font-family="Arial" font-size="21">Uncontrolled heat input/sequence → ______</text>
-<text x="85" y="1190" font-family="Arial" font-size="21">Observation is not proof of an exact cause/property.</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1380" viewBox="0 0 1200 1380">
+  <rect width="1200" height="1380" fill="white"/>
+  <rect x="20" y="20" width="1160" height="1340" fill="none" stroke="#222" stroke-width="2"/>
+  <text x="55" y="70" font-family="Arial" font-size="34" font-weight="700">WLD 205 DAY 8 — METALLURGY READINESS II</text>
+  <text x="55" y="108" font-family="Arial" font-size="21">Heat, HAZ + Observable Change</text>
+
+  <rect x="50" y="150" width="1100" height="470" rx="10" fill="#f7f7f7" stroke="#555"/>
+  <text x="72" y="190" font-family="Arial" font-size="24" font-weight="700">Simplified Weld Cross-Section</text>
+  <text x="72" y="224" font-family="Arial" font-size="18">The HAZ is part of the base metal. It was affected by welding heat but did not melt.</text>
+
+  <rect x="160" y="350" width="880" height="150" fill="#eeeeee" stroke="#111" stroke-width="2"/>
+  <path d="M455 350 Q600 175 745 350 Z" fill="#d8d8d8" stroke="#111" stroke-width="3"/>
+  <path d="M430 350 L455 350 Q500 410 535 500 L425 500 Z" fill="#fafafa" stroke="#777" stroke-width="2" stroke-dasharray="8 6"/>
+  <path d="M745 350 L770 350 L775 500 L665 500 Q700 410 745 350 Z" fill="#fafafa" stroke="#777" stroke-width="2" stroke-dasharray="8 6"/>
+  <line x1="455" y1="350" x2="535" y2="500" stroke="#444" stroke-width="2" stroke-dasharray="6 5"/>
+  <line x1="745" y1="350" x2="665" y2="500" stroke="#444" stroke-width="2" stroke-dasharray="6 5"/>
+
+  <text x="588" y="300" font-family="Arial" font-size="30" font-weight="700">A</text>
+  <text x="470" y="430" font-family="Arial" font-size="30" font-weight="700">B</text>
+  <text x="255" y="435" font-family="Arial" font-size="30" font-weight="700">C</text>
+  <text x="785" y="435" font-family="Arial" font-size="17">unaffected base metal</text>
+  <text x="72" y="548" font-family="Arial" font-size="19">Label A / B / C: weld metal • heat-affected zone (HAZ) • unaffected base metal</text>
+  <text x="72" y="582" font-family="Arial" font-size="18">Fusion boundary separates melted/fused weld region from unmelted parent material.</text>
+
+  <rect x="50" y="650" width="1100" height="330" rx="10" fill="#f7f7f7" stroke="#555"/>
+  <text x="72" y="690" font-family="Arial" font-size="24" font-weight="700">Observation Cards</text>
+  <text x="85" y="735" font-family="Arial" font-size="21">1) HAZ visible near weld: can appearance alone tell exact hardness?</text>
+  <text x="85" y="787" font-family="Arial" font-size="21">2) Restrained joint shows angular movement: what concerns require evaluation?</text>
+  <text x="85" y="839" font-family="Arial" font-size="21">3) Same alloy, different section thickness: could cooling behavior differ?</text>
+  <text x="85" y="900" font-family="Arial" font-size="19">Response rule: OBSERVE → CHECK SOURCE → STATE ONLY WHAT THE EVIDENCE SUPPORTS.</text>
+
+  <rect x="50" y="1010" width="1100" height="300" rx="10" fill="#f7f7f7" stroke="#555"/>
+  <text x="72" y="1050" font-family="Arial" font-size="24" font-weight="700">Heat-Effect Cause / Consequence Map</text>
+  <text x="85" y="1095" font-family="Arial" font-size="21">Higher restraint → possible residual-stress / distortion / cracking concerns → CHECK SOURCE</text>
+  <text x="85" y="1147" font-family="Arial" font-size="21">Higher thermal conductivity → heat carried away faster → CHECK MATERIAL / PROCEDURE</text>
+  <text x="85" y="1199" font-family="Arial" font-size="21">Uncontrolled heat input / sequence → distortion / HAZ-property concerns → CHECK PROCEDURE</text>
+  <text x="85" y="1260" font-family="Arial" font-size="19">Observation is not proof of exact hardness, exact cause, exact grade, or exact material response.</text>
 </svg>
