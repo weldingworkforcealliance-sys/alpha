@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500">
+  <rect width="1200" height="1500" fill="white"/>
+  <rect x="25" y="25" width="1150" height="1450" fill="none" stroke="#222" stroke-width="2"/>
+  <text x="55" y="75" font-family="Arial" font-size="34" font-weight="700">WLD 205 DAY 8 — INSTRUCTOR KEY / DELIVERY GUIDE</text>
+  <text x="55" y="115" font-family="Arial" font-size="20">Prerequisite metallurgy readiness. Do not begin formal ferrite/austenite/pearlite/TTT instruction here.</text>
+
+  <rect x="55" y="155" width="1090" height="235" rx="10" fill="#f7f7f7" stroke="#555"/>
+  <text x="75" y="195" font-family="Arial" font-size="23" font-weight="700">0–8 min — Weld / HAZ / Base-Metal Retrieval · Live Q1–3</text>
+  <text x="75" y="235" font-family="Arial" font-size="19">A = weld metal. B = heat-affected zone. C = unaffected base metal.</text>
+  <text x="75" y="270" font-family="Arial" font-size="19">Correction cue: the HAZ is base metal that experienced the welding thermal cycle but did not melt.</text>
+  <text x="75" y="305" font-family="Arial" font-size="19">Point out the fusion boundary. Do not describe the HAZ as a layer under the plate or as deposited weld metal.</text>
+  <text x="75" y="350" font-family="Arial" font-size="19" font-weight="700">Move on when students can identify all three regions without prompting.</text>
+
+  <rect x="55" y="410" width="1090" height="225" rx="10" fill="#f7f7f7" stroke="#555"/>
+  <text x="75" y="450" font-family="Arial" font-size="23" font-weight="700">8–20 min — Thermal Cycle + HAZ Model</text>
+  <text x="75" y="490" font-family="Arial" font-size="19">Model one clean idea: welding heat can change nearby unmelted base metal.</text>
+  <text x="75" y="525" font-family="Arial" font-size="19">Use: weld metal melted/fused; HAZ did not melt; unaffected base metal lies beyond the HAZ.</text>
+  <text x="75" y="560" font-family="Arial" font-size="19">Exact hardness, microstructure, or response depends on material/source, geometry/thickness, thermal cycle, restraint,</text>
+  <text x="75" y="592" font-family="Arial" font-size="19">approved WPS/procedure, testing, and governing requirements as applicable.</text>
+
+  <rect x="55" y="655" width="1090" height="265" rx="10" fill="#f7f7f7" stroke="#555"/>
+  <text x="75" y="695" font-family="Arial" font-size="23" font-weight="700">20–38 min — HAZ Observation Cards · Live Q4–6</text>
+  <text x="75" y="735" font-family="Arial" font-size="19">Card 1: visible HAZ does NOT provide exact hardness. Testing/source knowledge is required.</text>
+  <text x="75" y="770" font-family="Arial" font-size="19">Card 2: angular movement under restraint raises distortion/restraint/thermal-cycle concerns. Do not name one exact cause.</text>
+  <text x="75" y="805" font-family="Arial" font-size="19">Card 3: section thickness/geometry can change thermal behavior even for the same documented alloy.</text>
+  <text x="75" y="850" font-family="Arial" font-size="19" font-weight="700">Required response frame: OBSERVE → CHECK SOURCE → STATE ONLY WHAT THE EVIDENCE SUPPORTS.</text>
+  <text x="75" y="885" font-family="Arial" font-size="19">Samples/photos are observation aids only. They do not establish exact grade, alloy, hardness, or microstructure.</text>
+
+  <rect x="55" y="940" width="1090" height="270" rx="10" fill="#f7f7f7" stroke="#555"/>
+  <text x="75" y="980" font-family="Arial" font-size="23" font-weight="700">38–52 min — Heat-Effect Cause / Consequence Map · Live Q7–9</text>
+  <text x="75" y="1020" font-family="Arial" font-size="19">Higher restraint → possible residual-stress, distortion, and cracking concerns.</text>
+  <text x="75" y="1055" font-family="Arial" font-size="19">Higher thermal conductivity → heat can be carried away faster; material-specific procedure implications must be checked.</text>
+  <text x="75" y="1090" font-family="Arial" font-size="19">Uncontrolled heat input/sequence → possible distortion and HAZ/property concerns.</text>
+  <text x="75" y="1135" font-family="Arial" font-size="19">Do not invent preheat, interpass, heat-input, sequencing, distortion-control, or acceptance values.</text>
+  <text x="75" y="1170" font-family="Arial" font-size="19">Those values come from the authorized controlling source when applicable.</text>
+
+  <rect x="55" y="1230" width="1090" height="190" rx="10" fill="#f7f7f7" stroke="#555"/>
+  <text x="75" y="1270" font-family="Arial" font-size="23" font-weight="700">52–60 min — Independent HAZ Exit · Live Q10–12</text>
+  <text x="75" y="1310" font-family="Arial" font-size="19">Q10: HAZ did not melt. Q11: exact response is source/procedure/material/joint/thickness/thermal-cycle/restraint dependent.</text>
+  <text x="75" y="1345" font-family="Arial" font-size="19">Q12: formal ferrite/austenite/pearlite/TTT detail belongs in the shared Level II metallurgy block after Day 22.</text>
+  <text x="75" y="1385" font-family="Arial" font-size="19" font-weight="700">Remediate only the unresolved domain: Region ID | Observation vs Conclusion | Heat-Effect Reasoning | Source Control.</text>
+
+  <text x="60" y="1460" font-family="Arial" font-size="19" font-weight="700">Standing Day 8 rule: IDENTIFY → OBSERVE → CHECK SOURCE → STATE ONLY WHAT THE EVIDENCE SUPPORTS.</text>
+</svg>
