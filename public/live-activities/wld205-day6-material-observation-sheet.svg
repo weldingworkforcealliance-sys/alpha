@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500">
+<rect width="1200" height="1500" fill="white"/>
+<text x="55" y="75" font-family="Arial" font-size="34" font-weight="700">WLD 205 DAY 6 — MATERIAL OBSERVATION SHEET</text>
+<text x="55" y="112" font-family="Arial" font-size="20">Use with instructor-provided samples/photos where available. Observation is not material-grade identification.</text>
+<g font-family="Arial" fill="#111">
+<rect x="55" y="160" width="1090" height="250" rx="12" fill="#fafafa" stroke="#444"/>
+<text x="85" y="205" font-size="24" font-weight="700">STEP 1 — RECORD ONLY WHAT YOU CAN OBSERVE</text>
+<text x="85" y="255" font-size="19">Sample / photo label: ________________________________________________</text>
+<text x="85" y="305" font-size="19">Visible condition / surface / form: _______________________________________</text>
+<text x="85" y="355" font-size="19">Other instructor-approved observation: ___________________________________</text>
+
+<rect x="55" y="445" width="1090" height="250" rx="12" fill="#fafafa" stroke="#444"/>
+<text x="85" y="490" font-size="24" font-weight="700">STEP 2 — CHECK THE AUTHORIZED SOURCE</text>
+<text x="85" y="540" font-size="19">Source used: ________________________________________________________</text>
+<text x="85" y="590" font-size="19">Material family / designation stated by source: ______________________________</text>
+<text x="85" y="640" font-size="19">Property / behavior statement supported by source: ____________________________</text>
+
+<rect x="55" y="730" width="1090" height="320" rx="12" fill="#fafafa" stroke="#444"/>
+<text x="85" y="775" font-size="24" font-weight="700">STEP 3 — SEPARATE EVIDENCE FROM GUESSING</text>
+<text x="85" y="825" font-size="19">I can support this claim: _________________________________________________</text>
+<text x="85" y="875" font-size="19">The evidence does NOT establish: _________________________________________</text>
+<text x="85" y="925" font-size="19">If exact grade / alloy / temper is not documented, write:</text>
+<text x="85" y="972" font-size="21" font-weight="700">“Cannot determine from the information provided.”</text>
+<text x="85" y="1015" font-size="18">Do not infer welding procedure values or acceptance requirements from appearance.</text>
+
+<rect x="55" y="1095" width="1090" height="285" rx="12" fill="#f7f7f7" stroke="#555"/>
+<text x="85" y="1140" font-size="24" font-weight="700">INSTRUCTOR CHECK</text>
+<text x="85" y="1190" font-size="19">□ Student used the source before making a material/property claim.</text>
+<text x="85" y="1230" font-size="19">□ Student separated observation from documented identification.</text>
+<text x="85" y="1270" font-size="19">□ Student did not guess exact grade, alloy, temper, or procedure conditions.</text>
+<text x="85" y="1310" font-size="19">□ Remaining weak domain recorded for focused retry only.</text>
+</g>
+</svg>
