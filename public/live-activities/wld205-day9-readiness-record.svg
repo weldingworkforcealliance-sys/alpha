@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1150" viewBox="0 0 1200 1150">
+<rect width="1200" height="1150" fill="white"/>
+<rect x="25" y="25" width="1150" height="1100" fill="none" stroke="#222" stroke-width="2"/>
+<text x="55" y="72" font-family="Arial" font-size="32" font-weight="700">WLD 205 DAY 9 — BRIDGE READINESS RECORD</text>
+<text x="55" y="110" font-family="Arial" font-size="20">Readiness evidence only. Not an AWS credential or class ranking.</text>
+
+<text x="65" y="165" font-family="Arial" font-size="20">Student: ______________________________________</text>
+<text x="650" y="165" font-family="Arial" font-size="20">Date: __________________</text>
+
+<rect x="55" y="205" width="1090" height="260" fill="#f8f8f8" stroke="#555"/>
+<text x="78" y="245" font-family="Arial" font-size="24" font-weight="700">QUICK CHECK / DOMAIN EVIDENCE</text>
+<text x="82" y="292" font-family="Arial" font-size="20">Blueprint / Source:   Secure / Needs Support</text>
+<text x="82" y="338" font-family="Arial" font-size="20">Math / Tolerance:     Secure / Needs Support</text>
+<text x="82" y="384" font-family="Arial" font-size="20">Material Behavior:    Secure / Needs Support</text>
+<text x="82" y="430" font-family="Arial" font-size="18">Evidence note: ____________________________________________________________</text>
+
+<rect x="55" y="495" width="1090" height="250" fill="#f8f8f8" stroke="#555"/>
+<text x="78" y="535" font-family="Arial" font-size="24" font-weight="700">TARGETED REPAIR + PARALLEL RECHECK</text>
+<text x="82" y="582" font-family="Arial" font-size="20">Assigned mini-station: Blueprint Locate / Math Measure / Material Behavior</text>
+<text x="82" y="628" font-family="Arial" font-size="20">Parallel recheck item: __________________________   Result: Secure / Continue Support</text>
+<text x="82" y="674" font-family="Arial" font-size="18">Evidence note: ____________________________________________________________</text>
+<text x="82" y="714" font-family="Arial" font-size="18">Do not repeat a domain already demonstrated successfully.</text>
+
+<rect x="55" y="775" width="1090" height="260" fill="#f8f8f8" stroke="#555"/>
+<text x="78" y="815" font-family="Arial" font-size="24" font-weight="700">READINESS CLOSE</text>
+<text x="82" y="862" font-family="Arial" font-size="20">One demonstrated Level I strength: ________________________________________</text>
+<text x="82" y="908" font-family="Arial" font-size="20">One remaining support item: ______________________________________________</text>
+<text x="82" y="954" font-family="Arial" font-size="20">Evidence supporting this decision: _______________________________________</text>
+<text x="82" y="1000" font-family="Arial" font-size="18">Next sequence: Day 10 WLD-210 overlap; common WLD-205 sequence begins Day 11.</text>
+
+<text x="55" y="1085" font-family="Arial" font-size="18" font-weight="700">Instructor rule: CHECK → IDENTIFY GAP → REPAIR ONE DOMAIN → INTEGRATE → RECHECK → RECORD</text>
+</svg>
