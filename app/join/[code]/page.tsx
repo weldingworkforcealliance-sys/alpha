@@ -38,6 +38,8 @@ export default function StudentAssessmentPage(){
   const [answers,setAnswers]=useState<Record<string,string>>({});
   const [started,setStarted]=useState(false);
   const [referenceOpen,setReferenceOpen]=useState(false);
+  const [referenceMaximized,setReferenceMaximized]=useState(false);
+  const [referenceZoom,setReferenceZoom]=useState(1);
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState('');
   const [result,setResult]=useState<{score:number;possible_score:number;percent:number}|null>(null);
@@ -65,6 +67,20 @@ export default function StudentAssessmentPage(){
     localStorage.setItem(storageKey,JSON.stringify({name,studentId,teamMembers,answers}));
   },[answers,info,name,result,storageKey,studentId,teamMembers]);
 
+  useEffect(()=>{
+    if(!referenceMaximized)return;
+    const previousOverflow=document.body.style.overflow;
+    document.body.style.overflow='hidden';
+    const handleKeyDown=(event:KeyboardEvent)=>{
+      if(event.key==='Escape')setReferenceMaximized(false);
+    };
+    window.addEventListener('keydown',handleKeyDown);
+    return()=>{
+      document.body.style.overflow=previousOverflow;
+      window.removeEventListener('keydown',handleKeyDown);
+    };
+  },[referenceMaximized]);
+
   const submit=async()=>{
     if(Object.keys(answers).length!==questions.length){
       setError(`Answer all ${questions.length} questions before submitting.`);
@@ -87,40 +103,88 @@ export default function StudentAssessmentPage(){
     }
   };
 
+  const openMaximizedReference=()=>{
+    setReferenceZoom(1);
+    setReferenceMaximized(true);
+  };
+
+  const adjustReferenceZoom=(amount:number)=>{
+    setReferenceZoom(current=>Math.min(2.5,Math.max(.75,Number((current+amount).toFixed(2)))));
+  };
+
   const ReferencePanel=()=>{
     if(!(info?.reference_title||info?.reference_image_url||info?.reference_body))return null;
     const isWhiteboard=Boolean(info.reference_image_url);
     const openLabel=isWhiteboard?'Open Class Whiteboard':'Open Class Reference';
     const closeLabel=isWhiteboard?'Close Whiteboard':'Close Reference';
 
-    return <section className="card reference-card">
-      <div className="reference-head">
-        <div>
-          <div className="reference-kicker">Class Reference</div>
-          <div className="reference-title">{info.reference_title??'Live class reference'}</div>
+    return <>
+      <section className="card reference-card">
+        <div className="reference-head">
+          <div>
+            <div className="reference-kicker">Class Reference</div>
+            <div className="reference-title">{info.reference_title??'Live class reference'}</div>
+          </div>
+          <div className="reference-actions">
+            {referenceOpen&&info.reference_image_url&&
+              <button
+                type="button"
+                className="reference-toggle"
+                onClick={openMaximizedReference}
+              >
+                Maximize Whiteboard
+              </button>
+            }
+            <button
+              type="button"
+              className="reference-toggle"
+              aria-expanded={referenceOpen}
+              onClick={()=>setReferenceOpen(open=>!open)}
+            >
+              {referenceOpen?closeLabel:openLabel}
+            </button>
+          </div>
         </div>
-        <button
-          type="button"
-          className="reference-toggle"
-          aria-expanded={referenceOpen}
-          onClick={()=>setReferenceOpen(open=>!open)}
-        >
-          {referenceOpen?closeLabel:openLabel}
-        </button>
-      </div>
-      {referenceOpen&&
-        <div className="reference-content">
-          {info.reference_image_url&&
+        {referenceOpen&&
+          <div className="reference-content">
+            {info.reference_image_url&&
+              <img
+                className="reference-image"
+                src={info.reference_image_url}
+                alt={info.reference_title??'Live class reference'}
+              />
+            }
+            {info.reference_body&&<div className="reference-body">{info.reference_body}</div>}
+          </div>
+        }
+      </section>
+
+      {referenceMaximized&&info.reference_image_url&&
+        <div className="reference-overlay" role="dialog" aria-modal="true" aria-label={info.reference_title??'Maximized class whiteboard'}>
+          <div className="reference-overlay-toolbar">
+            <div className="reference-overlay-title">
+              <div className="reference-kicker">Maximized Whiteboard</div>
+              <strong>{info.reference_title??'Live class reference'}</strong>
+            </div>
+            <div className="reference-overlay-controls">
+              <button type="button" onClick={()=>adjustReferenceZoom(-.25)} disabled={referenceZoom<=.75} aria-label="Zoom out">−</button>
+              <button type="button" onClick={()=>setReferenceZoom(1)}>{Math.round(referenceZoom*100)}%</button>
+              <button type="button" onClick={()=>adjustReferenceZoom(.25)} disabled={referenceZoom>=2.5} aria-label="Zoom in">+</button>
+              <button type="button" className="reference-exit" onClick={()=>setReferenceMaximized(false)}>Exit Full Screen</button>
+            </div>
+          </div>
+          <div className="reference-overlay-canvas">
             <img
-              className="reference-image"
+              className="reference-overlay-image"
               src={info.reference_image_url}
               alt={info.reference_title??'Live class reference'}
+              style={{width:`${referenceZoom*100}%`}}
             />
-          }
-          {info.reference_body&&<div className="reference-body">{info.reference_body}</div>}
+          </div>
+          {info.reference_body&&<div className="reference-overlay-body">{info.reference_body}</div>}
         </div>
       }
-    </section>;
+    </>;
   };
 
   if(error&&!info)return <main className="center"><div><h1>Unable to Join</h1><p>{error}</p></div><style jsx>{styles}</style></main>;
@@ -158,7 +222,7 @@ export default function StudentAssessmentPage(){
             <input value={teamMembers} onChange={e=>setTeamMembers(e.target.value)} placeholder="Names of students working with you"/>
           </label>
         }
-        <button disabled={!name.trim()||!studentId.trim()} onClick={()=>{setReferenceOpen(false);setStarted(true);}}>Begin Live Activity</button>
+        <button disabled={!name.trim()||!studentId.trim()} onClick={()=>{setReferenceOpen(false);setReferenceMaximized(false);setStarted(true);}}>Begin Live Activity</button>
         <p className="draft-note">Your answers are saved on this device until you submit.</p>
       </div>
       <ReferencePanel/>
@@ -234,9 +298,19 @@ button:disabled{opacity:.4}
 .reference-head{display:flex;gap:14px;align-items:center;justify-content:space-between}
 .reference-kicker{color:#82966f;font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
 .reference-title{margin-top:4px;color:#caff77;font-weight:900}
+.reference-actions{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
 button.reference-toggle{width:auto;flex:0 0 auto;margin:0;padding:9px 12px;font-size:12px}
 .reference-content{margin-top:14px;max-height:70vh;overflow:auto;padding-right:2px}
 .reference-image{display:block;width:auto;max-width:100%;height:auto;max-height:56vh;margin:0 auto;border:1px solid #333;border-radius:7px;background:#fff;object-fit:contain}
 .reference-body{margin-top:10px;color:#bbb;white-space:pre-line;line-height:1.5;font-size:13px}
-@media(max-width:600px){main{padding:14px}.card{padding:16px}.top{align-items:flex-start}.top h1{font-size:20px}.reference-head{align-items:flex-start;flex-direction:column}button.reference-toggle{width:100%}.reference-content{max-height:64vh}.reference-image{max-height:50vh}}
+.reference-overlay{position:fixed;inset:0;z-index:1000;display:grid;grid-template-rows:auto minmax(0,1fr) auto;background:#080808;color:#ddd;padding:14px;box-sizing:border-box}
+.reference-overlay-toolbar{display:flex;gap:14px;align-items:center;justify-content:space-between;padding:0 0 12px;border-bottom:1px solid #303030}
+.reference-overlay-title strong{display:block;margin-top:4px;color:#caff77;font-size:16px}
+.reference-overlay-controls{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.reference-overlay-controls button{width:auto;min-width:46px;margin:0;padding:9px 12px;font-size:12px}
+.reference-overlay-controls .reference-exit{min-width:130px}
+.reference-overlay-canvas{min-height:0;overflow:auto;overscroll-behavior:contain;padding:14px;background:#111;border:1px solid #2c2c2c;border-radius:8px;margin-top:12px}
+.reference-overlay-image{display:block;min-width:100%;max-width:none;height:auto;margin:0 auto;background:#fff;border-radius:5px}
+.reference-overlay-body{padding:10px 2px 0;color:#bbb;white-space:pre-line;line-height:1.45;font-size:12px}
+@media(max-width:600px){main{padding:14px}.card{padding:16px}.top{align-items:flex-start}.top h1{font-size:20px}.reference-head{align-items:flex-start;flex-direction:column}.reference-actions{width:100%;justify-content:stretch}.reference-actions button.reference-toggle{width:100%}.reference-content{max-height:64vh}.reference-image{max-height:50vh}.reference-overlay{padding:8px}.reference-overlay-toolbar{align-items:flex-start;flex-direction:column}.reference-overlay-controls{width:100%;justify-content:stretch}.reference-overlay-controls button{flex:1}.reference-overlay-controls .reference-exit{flex-basis:100%}.reference-overlay-canvas{padding:8px;margin-top:8px}}
 `;
