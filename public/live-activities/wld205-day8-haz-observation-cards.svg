@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1100" viewBox="0 0 1200 1100">
+  <rect width="1200" height="1100" fill="white"/>
+  <rect x="25" y="25" width="1150" height="1050" fill="none" stroke="#222" stroke-width="2"/>
+  <text x="55" y="75" font-family="Arial" font-size="34" font-weight="700">WLD 205 DAY 8 — HAZ OBSERVATION CARDS</text>
+  <text x="55" y="115" font-family="Arial" font-size="20">For each card: OBSERVE → CHECK SOURCE → STATE ONLY WHAT THE EVIDENCE SUPPORTS.</text>
+
+  <rect x="60" y="160" width="1080" height="250" rx="12" fill="#f7f7f7" stroke="#555"/>
+  <text x="85" y="205" font-family="Arial" font-size="25" font-weight="700">CARD 1 — Visible HAZ</text>
+  <text x="85" y="250" font-family="Arial" font-size="22">You can see a heat-affected region next to the weld.</text>
+  <text x="85" y="300" font-family="Arial" font-size="20">What can you state from observation?</text>
+  <line x1="85" y1="330" x2="1110" y2="330" stroke="#999"/>
+  <text x="85" y="370" font-family="Arial" font-size="20">What can you NOT determine from appearance alone?</text>
+
+  <rect x="60" y="435" width="1080" height="250" rx="12" fill="#f7f7f7" stroke="#555"/>
+  <text x="85" y="480" font-family="Arial" font-size="25" font-weight="700">CARD 2 — Restrained Joint / Angular Movement</text>
+  <text x="85" y="525" font-family="Arial" font-size="22">A highly restrained joint shows angular movement after welding.</text>
+  <text x="85" y="575" font-family="Arial" font-size="20">What concerns should be evaluated?</text>
+  <line x1="85" y1="605" x2="1110" y2="605" stroke="#999"/>
+  <text x="85" y="645" font-family="Arial" font-size="20">What exact cause or control should NOT be guessed?</text>
+
+  <rect x="60" y="710" width="1080" height="250" rx="12" fill="#f7f7f7" stroke="#555"/>
+  <text x="85" y="755" font-family="Arial" font-size="25" font-weight="700">CARD 3 — Same Alloy, Different Thickness</text>
+  <text x="85" y="800" font-family="Arial" font-size="22">Two pieces are the same documented alloy but have very different section thickness.</text>
+  <text x="85" y="850" font-family="Arial" font-size="20">Could cooling behavior differ? Why might geometry matter?</text>
+  <line x1="85" y1="880" x2="1110" y2="880" stroke="#999"/>
+  <text x="85" y="920" font-family="Arial" font-size="20">What procedure/material conclusion still requires an authorized source?</text>
+
+  <text x="70" y="1030" font-family="Arial" font-size="19" font-weight="700">Rule: Observation is evidence of what is visible. It is not proof of exact hardness, microstructure, cause, grade, or required procedure.</text>
+</svg>
