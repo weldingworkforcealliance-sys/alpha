@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+  <rect width="1200" height="900" fill="white"/>
+  <rect x="25" y="25" width="1150" height="850" fill="none" stroke="#222" stroke-width="2"/>
+  <text x="55" y="75" font-family="Arial" font-size="34" font-weight="700">WLD 205 DAY 8 — WELD / HAZ / BASE-METAL RETRIEVAL</text>
+  <text x="55" y="115" font-family="Arial" font-size="21">Label A, B, and C before opening the live questions.</text>
+
+  <rect x="150" y="330" width="900" height="180" fill="#eeeeee" stroke="#111" stroke-width="2"/>
+  <path d="M440 330 Q600 130 760 330 Z" fill="#dddddd" stroke="#111" stroke-width="3"/>
+  <path d="M415 330 L440 330 Q492 410 535 510 L405 510 Z" fill="#fafafa" stroke="#777" stroke-width="2" stroke-dasharray="8 6"/>
+  <path d="M760 330 L785 330 L795 510 L665 510 Q708 410 760 330 Z" fill="#fafafa" stroke="#777" stroke-width="2" stroke-dasharray="8 6"/>
+  <line x1="440" y1="330" x2="535" y2="510" stroke="#444" stroke-width="2" stroke-dasharray="6 5"/>
+  <line x1="760" y1="330" x2="665" y2="510" stroke="#444" stroke-width="2" stroke-dasharray="6 5"/>
+
+  <circle cx="600" cy="265" r="32" fill="white" stroke="#111" stroke-width="2"/><text x="589" y="276" font-family="Arial" font-size="30" font-weight="700">A</text>
+  <circle cx="485" cy="425" r="32" fill="white" stroke="#111" stroke-width="2"/><text x="474" y="436" font-family="Arial" font-size="30" font-weight="700">B</text>
+  <circle cx="275" cy="425" r="32" fill="white" stroke="#111" stroke-width="2"/><text x="264" y="436" font-family="Arial" font-size="30" font-weight="700">C</text>
+
+  <text x="90" y="610" font-family="Arial" font-size="23" font-weight="700">Choose from:</text>
+  <text x="90" y="655" font-family="Arial" font-size="22">Weld metal • Heat-affected zone (HAZ) • Unaffected base metal</text>
+  <text x="90" y="720" font-family="Arial" font-size="20">Key idea: the HAZ is unmelted base metal changed by the welding thermal cycle.</text>
+  <text x="90" y="765" font-family="Arial" font-size="20">Do not infer exact hardness, microstructure, grade, or cause from appearance alone.</text>
+</svg>
