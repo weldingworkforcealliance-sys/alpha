@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1650" viewBox="0 0 1200 1650">
+<rect width="1200" height="1650" fill="white"/>
+<text x="55" y="75" font-family="Arial" font-size="34" font-weight="700">WLD 205 DAY 6 — MATERIAL-BEHAVIOR SCENARIOS</text>
+<text x="55" y="112" font-family="Arial" font-size="20">For each scenario: name the property, state what the evidence supports, then state what cannot be concluded.</text>
+<g font-family="Arial" fill="#111">
+<rect x="55" y="155" width="1090" height="290" rx="12" fill="#fafafa" stroke="#444"/>
+<text x="85" y="205" font-size="25" font-weight="700">SCENARIO 1 — BEND BEFORE BREAKING</text>
+<text x="85" y="250" font-size="21">A component must plastically deform / bend before fracture.</text>
+<text x="85" y="302" font-size="19" font-weight="700">Property:</text><text x="190" y="302" font-size="19">Ductility</text>
+<text x="85" y="347" font-size="19">Supported conclusion: ductility is the relevant property word.</text>
+<text x="85" y="392" font-size="19">Not supported: exact material grade, alloy, temper, or welding procedure.</text>
+
+<rect x="55" y="475" width="1090" height="290" rx="12" fill="#fafafa" stroke="#444"/>
+<text x="85" y="525" font-size="25" font-weight="700">SCENARIO 2 — ABSORB IMPACT ENERGY</text>
+<text x="85" y="570" font-size="21">A part must absorb impact energy before fracturing.</text>
+<text x="85" y="622" font-size="19" font-weight="700">Property:</text><text x="190" y="622" font-size="19">Toughness</text>
+<text x="85" y="667" font-size="19">Supported conclusion: toughness is the relevant property word.</text>
+<text x="85" y="712" font-size="19">Not supported: exact material grade, alloy, temper, or acceptance criteria.</text>
+
+<rect x="55" y="795" width="1090" height="290" rx="12" fill="#fafafa" stroke="#444"/>
+<text x="85" y="845" font-size="25" font-weight="700">SCENARIO 3 — HEAT MOVES AWAY RAPIDLY</text>
+<text x="85" y="890" font-size="21">A material rapidly carries heat away from the weld zone.</text>
+<text x="85" y="942" font-size="19" font-weight="700">Property:</text><text x="190" y="942" font-size="19">High thermal conductivity</text>
+<text x="85" y="987" font-size="19">Supported conclusion: heat conduction is the behavior being described.</text>
+<text x="85" y="1032" font-size="19">Not supported: machine settings, preheat/interpass values, or an exact alloy.</text>
+
+<rect x="55" y="1115" width="1090" height="290" rx="12" fill="#fafafa" stroke="#444"/>
+<text x="85" y="1165" font-size="25" font-weight="700">SCENARIO 4 — RESISTS INDENTATION</text>
+<text x="85" y="1210" font-size="21">A surface resists indentation / wear.</text>
+<text x="85" y="1262" font-size="19" font-weight="700">Property:</text><text x="190" y="1262" font-size="19">Hardness</text>
+<text x="85" y="1307" font-size="19">Supported conclusion: hardness is the property being described.</text>
+<text x="85" y="1352" font-size="19">Not supported: that the material is tough, brittle, or a particular grade.</text>
+
+<text x="55" y="1490" font-size="22" font-weight="700">STUDENT RESPONSE FRAME</text>
+<text x="55" y="1530" font-size="19">1. Property word: ____________________   2. Evidence says: ______________________________</text>
+<text x="55" y="1570" font-size="19">3. Cannot determine from this evidence: _____________________________________________</text>
+</g>
+</svg>
