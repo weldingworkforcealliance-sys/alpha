@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="980" viewBox="0 0 1200 980">
+  <rect width="1200" height="980" fill="white"/>
+  <rect x="25" y="25" width="1150" height="930" fill="none" stroke="#222" stroke-width="2"/>
+  <text x="55" y="75" font-family="Arial" font-size="34" font-weight="700">WLD 205 DAY 8 — MATERIAL / COUPON OBSERVATION SHEET</text>
+  <text x="55" y="115" font-family="Arial" font-size="20">Use only with instructor-provided samples, coupons, or photos. Observation is not material identification.</text>
+
+  <text x="60" y="165" font-family="Arial" font-size="20" font-weight="700">Sample / Photo ID:</text>
+  <line x1="245" y1="170" x2="1110" y2="170" stroke="#555"/>
+
+  <rect x="55" y="205" width="1090" height="135" fill="#fafafa" stroke="#777"/>
+  <text x="75" y="245" font-family="Arial" font-size="21" font-weight="700">1. What can you directly observe?</text>
+  <line x1="75" y1="285" x2="1110" y2="285" stroke="#aaa"/>
+  <line x1="75" y1="320" x2="1110" y2="320" stroke="#aaa"/>
+
+  <rect x="55" y="355" width="1090" height="135" fill="#fafafa" stroke="#777"/>
+  <text x="75" y="395" font-family="Arial" font-size="21" font-weight="700">2. What possible concern or question should be investigated?</text>
+  <line x1="75" y1="435" x2="1110" y2="435" stroke="#aaa"/>
+  <line x1="75" y1="470" x2="1110" y2="470" stroke="#aaa"/>
+
+  <rect x="55" y="505" width="1090" height="135" fill="#fafafa" stroke="#777"/>
+  <text x="75" y="545" font-family="Arial" font-size="21" font-weight="700">3. What authorized source / test / procedure would you need next?</text>
+  <line x1="75" y1="585" x2="1110" y2="585" stroke="#aaa"/>
+  <line x1="75" y1="620" x2="1110" y2="620" stroke="#aaa"/>
+
+  <rect x="55" y="655" width="1090" height="155" fill="#fafafa" stroke="#777"/>
+  <text x="75" y="695" font-family="Arial" font-size="21" font-weight="700">4. What can you NOT conclude from appearance alone?</text>
+  <text x="75" y="735" font-family="Arial" font-size="18">Examples of unsupported claims: exact hardness, exact microstructure, exact alloy/grade, exact cause,</text>
+  <text x="75" y="766" font-family="Arial" font-size="18">or required welding procedure / acceptance value unless the controlling source actually provides it.</text>
+
+  <rect x="55" y="845" width="1090" height="70" rx="8" fill="#f7f7f7" stroke="#555"/>
+  <text x="80" y="890" font-family="Arial" font-size="22" font-weight="700">OBSERVE → CHECK SOURCE → STATE ONLY WHAT THE EVIDENCE SUPPORTS</text>
+</svg>
