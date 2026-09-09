@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1700" viewBox="0 0 1200 1700">
+<rect width="1200" height="1700" fill="white"/>
+<rect x="25" y="25" width="1150" height="1650" fill="none" stroke="#222" stroke-width="2"/>
+<text x="55" y="72" font-family="Arial" font-size="32" font-weight="700">WLD 205 DAY 9 — PARALLEL RECHECK BANK</text>
+<text x="55" y="110" font-family="Arial" font-size="20">Instructor selects ONE new item in the student's weakest remaining domain.</text>
+
+<rect x="55" y="155" width="1090" height="430" rx="10" fill="#f8f8f8" stroke="#555"/>
+<text x="78" y="198" font-family="Arial" font-size="25" font-weight="700">BLUEPRINT / SOURCE RECHECKS</text>
+<text x="82" y="245" font-family="Arial" font-size="21">B1. A drawing shows “UNITS: INCHES” in the title block. What source controls the units?</text>
+<text x="82" y="285" font-family="Arial" font-size="19">Expected: the drawing/title block.</text>
+<text x="82" y="335" font-family="Arial" font-size="21">B2. A print says “WELD PER APPROVED WPS.” Where do procedure conditions come from?</text>
+<text x="82" y="375" font-family="Arial" font-size="19">Expected: the approved WPS/SWPS.</text>
+<text x="82" y="425" font-family="Arial" font-size="21">B3. A weld symbol is unclear. What is the next action?</text>
+<text x="82" y="465" font-family="Arial" font-size="19">Expected: stop and check the authorized source/instructor; do not guess.</text>
+<text x="82" y="520" font-family="Arial" font-size="18" font-weight="700">Pass evidence: correct source identified without prompting.</text>
+
+<rect x="55" y="615" width="1090" height="470" rx="10" fill="#f8f8f8" stroke="#555"/>
+<text x="78" y="658" font-family="Arial" font-size="25" font-weight="700">MATH / TOLERANCE RECHECKS</text>
+<text x="82" y="705" font-family="Arial" font-size="21">M1. 2 1/8 in + 1 3/4 in = ?</text>
+<text x="82" y="745" font-family="Arial" font-size="19">Expected: 3 7/8 in.</text>
+<text x="82" y="795" font-family="Arial" font-size="21">M2. Convert 9/16 in to decimal.</text>
+<text x="82" y="835" font-family="Arial" font-size="19">Expected: 0.5625 in.</text>
+<text x="82" y="885" font-family="Arial" font-size="21">M3. 4.000 ± 0.010 in, actual 4.012 in. Accept or reject?</text>
+<text x="82" y="925" font-family="Arial" font-size="19">Expected: reject. Limits = 3.990–4.010 in.</text>
+<text x="82" y="980" font-family="Arial" font-size="18" font-weight="700">Pass evidence: work shown, units included, decision based on written limits.</text>
+
+<rect x="55" y="1115" width="1090" height="470" rx="10" fill="#f8f8f8" stroke="#555"/>
+<text x="78" y="1158" font-family="Arial" font-size="25" font-weight="700">MATERIAL-BEHAVIOR / SOURCE-CONTROL RECHECKS</text>
+<text x="82" y="1205" font-family="Arial" font-size="21">R1. Which property describes resistance to indentation?</text>
+<text x="82" y="1245" font-family="Arial" font-size="19">Expected: hardness.</text>
+<text x="82" y="1295" font-family="Arial" font-size="21">R2. Which zone is heat affected but did not melt?</text>
+<text x="82" y="1335" font-family="Arial" font-size="19">Expected: HAZ.</text>
+<text x="82" y="1385" font-family="Arial" font-size="21">R3. Can exact alloy grade be identified from appearance alone?</text>
+<text x="82" y="1425" font-family="Arial" font-size="19">Expected: no; use source documentation/marking/MTR/project specification.</text>
+<text x="82" y="1480" font-family="Arial" font-size="18" font-weight="700">Pass evidence: supported conclusion stated without inventing exact material facts.</text>
+
+<text x="55" y="1630" font-family="Arial" font-size="19" font-weight="700">Do not recheck a strong domain. One clean independent parallel item is enough.</text>
+</svg>
