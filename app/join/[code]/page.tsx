@@ -109,7 +109,7 @@ export default function StudentAssessmentPage(){
   };
 
   const adjustReferenceZoom=(amount:number)=>{
-    setReferenceZoom(current=>Math.min(2.5,Math.max(.75,Number((current+amount).toFixed(2)))));
+    setReferenceZoom(current=>Math.min(2.5,Math.max(.25,Number((current+amount).toFixed(2)))));
   };
 
   const ReferencePanel=()=>{
@@ -167,8 +167,10 @@ export default function StudentAssessmentPage(){
               <strong>{info.reference_title??'Live class reference'}</strong>
             </div>
             <div className="reference-overlay-controls">
-              <button type="button" onClick={()=>adjustReferenceZoom(-.25)} disabled={referenceZoom<=.75} aria-label="Zoom out">−</button>
-              <button type="button" onClick={()=>setReferenceZoom(1)}>{Math.round(referenceZoom*100)}%</button>
+              <button type="button" onClick={()=>adjustReferenceZoom(-.25)} disabled={referenceZoom<=.25} aria-label="Zoom out">−</button>
+              <button type="button" onClick={()=>setReferenceZoom(.25)} aria-pressed={referenceZoom===.25}>25%</button>
+              <button type="button" onClick={()=>setReferenceZoom(.5)} aria-pressed={referenceZoom===.5}>50%</button>
+              <button type="button" onClick={()=>setReferenceZoom(1)} aria-pressed={referenceZoom===1}>100%</button>
               <button type="button" onClick={()=>adjustReferenceZoom(.25)} disabled={referenceZoom>=2.5} aria-label="Zoom in">+</button>
               <button type="button" className="reference-exit" onClick={()=>setReferenceMaximized(false)}>Exit Full Screen</button>
             </div>
@@ -308,9 +310,10 @@ button.reference-toggle{width:auto;flex:0 0 auto;margin:0;padding:9px 12px;font-
 .reference-overlay-title strong{display:block;margin-top:4px;color:#caff77;font-size:16px}
 .reference-overlay-controls{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
 .reference-overlay-controls button{width:auto;min-width:46px;margin:0;padding:9px 12px;font-size:12px}
+.reference-overlay-controls button[aria-pressed="true"]{background:rgba(154,223,75,.2);box-shadow:inset 0 0 0 1px #9adf4b}
 .reference-overlay-controls .reference-exit{min-width:130px}
 .reference-overlay-canvas{min-height:0;overflow:auto;overscroll-behavior:contain;padding:14px;background:#111;border:1px solid #2c2c2c;border-radius:8px;margin-top:12px}
-.reference-overlay-image{display:block;min-width:100%;max-width:none;height:auto;margin:0 auto;background:#fff;border-radius:5px}
+.reference-overlay-image{display:block;min-width:0;max-width:none;height:auto;margin:0 auto;background:#fff;border-radius:5px}
 .reference-overlay-body{padding:10px 2px 0;color:#bbb;white-space:pre-line;line-height:1.45;font-size:12px}
 @media(max-width:600px){main{padding:14px}.card{padding:16px}.top{align-items:flex-start}.top h1{font-size:20px}.reference-head{align-items:flex-start;flex-direction:column}.reference-actions{width:100%;justify-content:stretch}.reference-actions button.reference-toggle{width:100%}.reference-content{max-height:64vh}.reference-image{max-height:50vh}.reference-overlay{padding:8px}.reference-overlay-toolbar{align-items:flex-start;flex-direction:column}.reference-overlay-controls{width:100%;justify-content:stretch}.reference-overlay-controls button{flex:1}.reference-overlay-controls .reference-exit{flex-basis:100%}.reference-overlay-canvas{padding:8px;margin-top:8px}}
 `;
