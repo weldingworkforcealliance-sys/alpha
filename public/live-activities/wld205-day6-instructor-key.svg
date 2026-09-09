@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1750" viewBox="0 0 1200 1750">
+<rect width="1200" height="1750" fill="white"/>
+<text x="55" y="75" font-family="Arial" font-size="34" font-weight="700">WLD 205 DAY 6 — INSTRUCTOR KEY / DELIVERY GUIDE</text>
+<text x="55" y="112" font-family="Arial" font-size="20">Metallurgy Readiness I: Metal Properties + Material Behavior Vocabulary</text>
+<g font-family="Arial" fill="#111">
+<rect x="55" y="155" width="1090" height="250" rx="12" fill="#fafafa" stroke="#444"/>
+<text x="85" y="200" font-size="24" font-weight="700">0–8 MIN — MATERIAL-PROPERTY SORT</text>
+<text x="85" y="245" font-size="19">Use the six Property Cards. Students match term → definition, then give the retrieval cue when provided.</text>
+<text x="85" y="285" font-size="19">Terms: hardness • strength • toughness • ductility • brittleness • thermal conductivity.</text>
+<text x="85" y="325" font-size="19">Correction cue: keep hardness separate from toughness; keep ductility separate from brittleness.</text>
+<text x="85" y="365" font-size="19">Move on when the student can identify the term without prompting.</text>
+
+<rect x="55" y="435" width="1090" height="320" rx="12" fill="#fafafa" stroke="#444"/>
+<text x="85" y="480" font-size="24" font-weight="700">8–20 MIN — PROPERTY MEANING IN WELDING / FABRICATION</text>
+<text x="85" y="525" font-size="19">Model one consequence or contrast for each property without starting the formal iron-carbon/transformation lesson.</text>
+<text x="85" y="565" font-size="19">Hardness: indentation/wear resistance, not toughness. Toughness: absorb energy before fracture.</text>
+<text x="85" y="605" font-size="19">Ductility: plastically deform before fracture. Brittleness: fracture with little plastic deformation.</text>
+<text x="85" y="645" font-size="19">Thermal conductivity: ability to conduct heat. Strength: use the broad source-pack definition only.</text>
+<text x="85" y="690" font-size="19">Instructor rule: explain the property word, not an unsupported grade-specific behavior or procedure value.</text>
+
+<rect x="55" y="785" width="1090" height="310" rx="12" fill="#fafafa" stroke="#444"/>
+<text x="85" y="830" font-size="24" font-weight="700">20–38 MIN — PROPERTY COMPARISON MATRIX</text>
+<text x="85" y="875" font-size="19">Students compare carbon steel, stainless steel, and aluminum using the authorized source and Day 6 matrix.</text>
+<text x="85" y="915" font-size="19">Require one supported baseline statement for each material family and one statement they cannot safely infer.</text>
+<text x="85" y="955" font-size="19">Samples/photos are observation aids only. Exact grade/alloy/temper must come from source documentation.</text>
+<text x="85" y="995" font-size="19">Use the Material Observation Sheet if samples/photos are staged.</text>
+<text x="85" y="1035" font-size="19">Do not award credit for visual guessing that happens to land on the right answer.</text>
+
+<rect x="55" y="1125" width="1090" height="280" rx="12" fill="#fafafa" stroke="#444"/>
+<text x="85" y="1170" font-size="24" font-weight="700">38–52 MIN — MATERIAL-BEHAVIOR SCENARIOS</text>
+<text x="85" y="1215" font-size="19">Scenario keys: bend before breaking → ductility; absorb impact energy → toughness;</text>
+<text x="85" y="1255" font-size="19">rapidly carries heat away → high thermal conductivity; resists indentation → hardness.</text>
+<text x="85" y="1295" font-size="19">For each scenario require: property word → supported conclusion → what cannot be concluded.</text>
+<text x="85" y="1335" font-size="19">Coach only the failed reasoning step, then give a parallel prompt for immediate recheck.</text>
+
+<rect x="55" y="1435" width="1090" height="230" rx="12" fill="#f7f7f7" stroke="#555"/>
+<text x="85" y="1480" font-size="24" font-weight="700">52–60 MIN — METALLURGY VOCABULARY EXIT</text>
+<text x="85" y="1525" font-size="19">Run the live exit independently with no coaching.</text>
+<text x="85" y="1565" font-size="19">Review by domain: Property Vocabulary • Material Baseline / Source Control • Material-Behavior Scenarios.</text>
+<text x="85" y="1605" font-size="19">Record only the unresolved domain. Do not repeat a domain already demonstrated successfully.</text>
+<text x="85" y="1645" font-size="18">This bridge is prerequisite readiness, not formal Level II metallurgy completion or qualification evidence.</text>
+</g>
+</svg>
