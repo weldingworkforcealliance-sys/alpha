@@ -127,6 +127,20 @@ export default function AttendanceWorkspace({
     [students, records]
   );
 
+  const hasAttendanceData = useMemo(
+    () =>
+      students.some((student) => {
+        const record = records[student.id];
+        return Boolean(
+          record?.initialStatus ||
+          record?.finalStatus ||
+          record?.flags.length ||
+          record?.notes.trim()
+        );
+      }),
+    [students, records]
+  );
+
   const loadRoster = useCallback(
     async (info: SessionInfo) => {
       const enrollmentResult = await supabase
@@ -367,6 +381,35 @@ export default function AttendanceWorkspace({
     }
   };
 
+  const resetAttendance = async () => {
+    if (!session || session.finalized || !hasAttendanceData) return;
+
+    const confirmed =
+      typeof window === 'undefined' ||
+      window.confirm(
+        "Reset today's attendance? This clears all current attendance selections, end-of-day statuses, flags, and attendance notes. Finalized attendance cannot be reset."
+      );
+    if (!confirmed) return;
+
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      const { error: rpcError } = await supabase.rpc('reset_attendance_session', {
+        p_session_id: session.session_id,
+      });
+      if (rpcError) throw rpcError;
+      setGeneralNotes('');
+      await loadRoster(session);
+      await loadReportQueue(session);
+      setNotice('Attendance reset. All students are unmarked and ready to retake.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const toggleFlag = (studentId: string, flag: string) => {
     const current = records[studentId];
     if (!current) return;
@@ -439,6 +482,15 @@ export default function AttendanceWorkspace({
             <div className={styles.bulkRow}>
               <button type="button" className={styles.actionButton} onClick={markAllPresent} disabled={busy}>
                 Mark All Present
+              </button>
+              <button
+                type="button"
+                className={styles.secondaryButton}
+                onClick={resetAttendance}
+                disabled={busy || !hasAttendanceData}
+                title={hasAttendanceData ? 'Clear this open attendance session back to unmarked' : 'Nothing to reset'}
+              >
+                Reset Attendance
               </button>
               {!session.is_completion_section && (
                 <span className={styles.inlineHelp}>
