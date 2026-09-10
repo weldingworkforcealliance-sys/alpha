@@ -1,4 +1,25 @@
-LTG stabilization branch created 2026-09-10.
-Security hardening migration and regression test staged.
-Live beta database hardening applied and verified.
-Remaining merge gate: CI + review of branch diff.
+LTG core stabilization status — 2026-09-10
+
+COMPLETED AND LIVE IN BETA GENCO
+- Security hardening merged and verified.
+- RLS performance cleanup merged and verified.
+- Attendance student identity repair merged and verified; historical attendance preserved.
+- Official reporting now counts attendance records/statuses only from finalized sessions; draft sessions remain visible as data-quality signals.
+- Attendance reporting queue: 0 pending, 0 failed, 6 sent at last verification.
+- Expired active Connected Classroom sessions: 0.
+- Expired active Training Mode sessions: 0.
+
+INTENTIONALLY PRESERVED
+- Draft/unfinalized attendance sessions were not auto-finalized or deleted.
+- Open time-clock punches were not auto-closed without evidence they are erroneous.
+- Unmatched historical student submissions were not linked by name guessing.
+
+REMAINING BEFORE BROAD EXTERNAL EXPANSION
+- Browser-level end-to-end regression coverage.
+- GitHub main branch protection with LTG Build Check required before merge.
+- Supabase leaked-password protection enabled in Auth settings.
+- Continued SECURITY DEFINER review of authenticated RPC surface.
+- Incremental CSS consolidation only with visual regression coverage.
+- Query-plan-driven performance tuning rather than bulk index changes.
+
+Feature freeze remains in place for large bundles until the remaining expansion gates are addressed.
