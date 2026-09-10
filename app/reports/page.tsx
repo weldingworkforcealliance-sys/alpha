@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
@@ -38,7 +39,7 @@ type SchoolSummary = {
   school_id: string;
   school_name: string;
   timezone?: string;
-  period: { start: string; end: string };
+  period: { start: string; end: string; effective_end?: string };
   instruction: {
     sections: number;
     scheduled_days: number;
@@ -82,6 +83,10 @@ type SchoolSummary = {
   };
   usage: {
     audit_events: number;
+    analytics_events?: number;
+    page_views?: number;
+    live_classroom_events?: number;
+    job_card_events?: number;
   };
   data_quality: {
     unfinalized_attendance_sessions: number;
@@ -130,7 +135,10 @@ type AggregateSummary = {
   employeeHours: number;
   openPunches: number;
   adjustedEntries: number;
-  auditEvents: number;
+  analyticsEvents: number;
+  pageViews: number;
+  liveClassroomEvents: number;
+  jobCardEvents: number;
   unfinalizedAttendance: number;
   unlinkedClassroom: number;
   unlinkedJobCards: number;
@@ -169,48 +177,43 @@ function formatDateTime(value: string | null) {
 }
 
 function periodForPreset(preset: Exclude<PeriodPreset, 'custom'>, now = new Date()) {
+  const today = new Date(now);
   const start = new Date(now);
-  const end = new Date(now);
+  today.setHours(0, 0, 0, 0);
   start.setHours(0, 0, 0, 0);
-  end.setHours(0, 0, 0, 0);
 
   if (preset === 'today') {
-    return { start: dateKey(start), end: dateKey(end), label: 'Today' };
+    return { start: dateKey(today), end: dateKey(today), label: 'Today' };
   }
 
   if (preset === 'week') {
     const day = start.getDay();
     start.setDate(start.getDate() + (day === 0 ? -6 : 1 - day));
-    end.setTime(start.getTime());
-    end.setDate(end.getDate() + 6);
-    return { start: dateKey(start), end: dateKey(end), label: 'This Week' };
+    return { start: dateKey(start), end: dateKey(today), label: 'This Week to Date' };
   }
 
   if (preset === 'month') {
     start.setDate(1);
-    end.setMonth(end.getMonth() + 1, 0);
-    return { start: dateKey(start), end: dateKey(end), label: 'This Month' };
+    return { start: dateKey(start), end: dateKey(today), label: 'This Month to Date' };
   }
 
   if (preset === 'quarter') {
     const quarterStartMonth = Math.floor(start.getMonth() / 3) * 3;
     start.setMonth(quarterStartMonth, 1);
-    end.setMonth(quarterStartMonth + 3, 0);
     const quarter = Math.floor(quarterStartMonth / 3) + 1;
     return {
       start: dateKey(start),
-      end: dateKey(end),
-      label: `Calendar Q${quarter} ${start.getFullYear()}`,
+      end: dateKey(today),
+      label: `Calendar Q${quarter} ${start.getFullYear()} to Date`,
     };
   }
 
   const academicStartYear = start.getMonth() >= 6 ? start.getFullYear() : start.getFullYear() - 1;
   start.setFullYear(academicStartYear, 6, 1);
-  end.setFullYear(academicStartYear + 1, 5, 30);
   return {
     start: dateKey(start),
-    end: dateKey(end),
-    label: `Academic Year ${academicStartYear}–${academicStartYear + 1}`,
+    end: dateKey(today),
+    label: `Academic Year ${academicStartYear}–${academicStartYear + 1} to Date`,
   };
 }
 
@@ -249,7 +252,10 @@ function aggregatePayload(payload: ReportingPayload | null): AggregateSummary {
     employeeHours: 0,
     openPunches: 0,
     adjustedEntries: 0,
-    auditEvents: 0,
+    analyticsEvents: 0,
+    pageViews: 0,
+    liveClassroomEvents: 0,
+    jobCardEvents: 0,
     unfinalizedAttendance: 0,
     unlinkedClassroom: 0,
     unlinkedJobCards: 0,
@@ -285,7 +291,10 @@ function aggregatePayload(payload: ReportingPayload | null): AggregateSummary {
     aggregate.employeeHours += Number(school.workforce?.employee_hours ?? 0);
     aggregate.openPunches += Number(school.workforce?.open_punches ?? 0);
     aggregate.adjustedEntries += Number(school.workforce?.adjusted_entries ?? 0);
-    aggregate.auditEvents += Number(school.usage?.audit_events ?? 0);
+    aggregate.analyticsEvents += Number(school.usage?.analytics_events ?? school.usage?.audit_events ?? 0);
+    aggregate.pageViews += Number(school.usage?.page_views ?? 0);
+    aggregate.liveClassroomEvents += Number(school.usage?.live_classroom_events ?? 0);
+    aggregate.jobCardEvents += Number(school.usage?.job_card_events ?? 0);
     aggregate.unfinalizedAttendance += Number(school.data_quality?.unfinalized_attendance_sessions ?? 0);
     aggregate.unlinkedClassroom += Number(school.data_quality?.unlinked_classroom_submissions ?? 0);
     aggregate.unlinkedJobCards += Number(school.data_quality?.unlinked_job_card_submissions ?? 0);
@@ -300,8 +309,7 @@ function aggregatePayload(payload: ReportingPayload | null): AggregateSummary {
     }
   }
 
-  const attendanceDenominator =
-    aggregate.attendancePresent + aggregate.attendanceAbsent + aggregate.attendanceLeftEarly;
+  const attendanceDenominator = aggregate.attendancePresent + aggregate.attendanceAbsent + aggregate.attendanceLeftEarly;
   aggregate.attendanceRate = attendanceDenominator > 0
     ? Math.round((aggregate.attendancePresent * 1000) / attendanceDenominator) / 10
     : null;
@@ -352,6 +360,11 @@ export default function ReportsPage() {
 
   const selectedSchool = schools.find((school) => school.id === schoolId) ?? null;
   const isPlatformScope = isOwner && schoolId === 'all';
+  const viewingSnapshot = snapshots.find((snapshot) => snapshot.id === viewingSnapshotId) ?? null;
+  const displayStartDate = viewingSnapshot?.period_start ?? startDate;
+  const displayEndDate = viewingSnapshot?.period_end ?? endDate;
+  const displayPeriodLabel = viewingSnapshot?.period_label ?? periodLabel;
+
   const canSaveSelected = useMemo(() => {
     if (isOwner) return true;
     return memberships.some(
@@ -381,9 +394,7 @@ export default function ReportsPage() {
 
     let query = supabase
       .from('ltg_report_snapshots')
-      .select(
-        'id,school_id,report_scope,period_type,period_label,period_start,period_end,revision,status,payload,generated_at,finalized_at'
-      )
+      .select('id,school_id,report_scope,period_type,period_label,period_start,period_end,revision,status,payload,generated_at,finalized_at')
       .order('generated_at', { ascending: false })
       .limit(50);
 
@@ -401,7 +412,7 @@ export default function ReportsPage() {
   }, [isOwner, schoolId, supabase]);
 
   const loadSummary = useCallback(async () => {
-    if (!schoolId || !startDate || !endDate) return;
+    if (!schoolId || !startDate || !endDate || endDate < startDate) return;
     setDataLoading(true);
     setError('');
 
@@ -550,7 +561,7 @@ export default function ReportsPage() {
       'Period Start',
       'Period End',
       'Active Students',
-      'Scheduled Days',
+      'Scheduled Days Due',
       'Completed Days',
       'Instruction Hours',
       'Attendance Rate %',
@@ -561,6 +572,7 @@ export default function ReportsPage() {
       'Approved Changes',
       'Employee Hours',
       'Follow-Ups',
+      'Analytics Events',
       'Data Quality Issues',
     ]];
 
@@ -568,8 +580,8 @@ export default function ReportsPage() {
       const schoolAggregate = aggregatePayload(school);
       rows.push([
         school.school_name,
-        startDate,
-        endDate,
+        displayStartDate,
+        displayEndDate,
         schoolAggregate.activeStudents,
         schoolAggregate.scheduledDays,
         schoolAggregate.completedDays,
@@ -582,6 +594,7 @@ export default function ReportsPage() {
         schoolAggregate.approvedChanges,
         schoolAggregate.employeeHours,
         schoolAggregate.followups,
+        schoolAggregate.analyticsEvents,
         qualityIssueCount(schoolAggregate),
       ]);
     }
@@ -591,7 +604,7 @@ export default function ReportsPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `ltg-report-${startDate}-to-${endDate}.csv`;
+    link.download = `ltg-report-${displayStartDate}-to-${displayEndDate}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -691,9 +704,11 @@ export default function ReportsPage() {
             type="date"
             value={startDate}
             onChange={(event) => {
+              const nextStart = event.target.value;
               setPreset('custom');
               setPeriodLabel('Custom Period');
-              setStartDate(event.target.value);
+              setStartDate(nextStart);
+              if (endDate < nextStart) setEndDate(nextStart);
             }}
           />
         </label>
@@ -726,7 +741,7 @@ export default function ReportsPage() {
       <section className={styles.reportStatus}>
         <div>
           <strong>{snapshotPayload ? 'Saved Historical Report' : 'Live Reporting View'}</strong>
-          <span>{periodLabel} · {formatDate(startDate)} through {formatDate(endDate)}</span>
+          <span>{displayPeriodLabel} · {formatDate(displayStartDate)} through {formatDate(displayEndDate)}</span>
         </div>
         <div>
           <strong>{isPlatformScope ? 'Platform Owner' : selectedSchool?.name ?? 'School'}</strong>
@@ -736,7 +751,7 @@ export default function ReportsPage() {
 
       <section className={styles.metricGrid}>
         <Metric label="Instruction Hours" value={aggregate.instructionHours.toFixed(1)} detail={`${aggregate.completedDays} completed days`} />
-        <Metric label="Schedule Completion" value={aggregate.scheduledDays > 0 ? `${Math.round((aggregate.completedDays / aggregate.scheduledDays) * 100)}%` : '—'} detail={`${aggregate.completedDays} / ${aggregate.scheduledDays} scheduled`} />
+        <Metric label="Schedule Completion" value={aggregate.scheduledDays > 0 ? `${Math.round((aggregate.completedDays / aggregate.scheduledDays) * 100)}%` : '—'} detail={`${aggregate.completedDays} / ${aggregate.scheduledDays} days due`} />
         <Metric label="Active Students" value={aggregate.activeStudents} detail={`${aggregate.attendanceFinalized} finalized attendance sessions`} />
         <Metric label="Attendance Rate" value={aggregate.attendanceRate === null ? '—' : `${aggregate.attendanceRate.toFixed(1)}%`} detail={`${aggregate.attendancePresent} present records`} />
         <Metric label="Assessment Average" value={aggregate.assessmentAverage === null ? '—' : `${aggregate.assessmentAverage.toFixed(1)}%`} detail={`${aggregate.classroomSubmissions} submissions`} />
@@ -750,11 +765,11 @@ export default function ReportsPage() {
       <div className={styles.sectionGrid}>
         <ReportSection title="Instruction & Delivery">
           <StatRow label="Sections in scope" value={aggregate.sections} />
-          <StatRow label="Scheduled instructional days" value={aggregate.scheduledDays} />
+          <StatRow label="Scheduled instructional days due" value={aggregate.scheduledDays} />
           <StatRow label="Completed instructional days" value={aggregate.completedDays} />
           <StatRow label="Actual instructional hours" value={aggregate.instructionHours.toFixed(2)} />
           <StatRow label="Follow-ups flagged" value={aggregate.followups} warn={aggregate.followups > 0} />
-          <StatRow label="Scheduled days without completion" value={aggregate.missingCompletedDays} warn={aggregate.missingCompletedDays > 0} />
+          <StatRow label="Days due without completion" value={aggregate.missingCompletedDays} warn={aggregate.missingCompletedDays > 0} />
         </ReportSection>
 
         <ReportSection title="Students & Learning">
@@ -766,11 +781,13 @@ export default function ReportsPage() {
           <StatRow label="Job Card sessions" value={aggregate.jobCardSessions} />
         </ReportSection>
 
-        <ReportSection title="Instructional Improvement">
+        <ReportSection title="Instructional Improvement & Usage">
           <StatRow label="Instructor notes captured" value={aggregate.instructorNotes} />
           <StatRow label="Agenda / implementation reviews" value={aggregate.agendaReviews} />
           <StatRow label="Approved changes" value={aggregate.approvedChanges} />
-          <StatRow label="Recorded operational events" value={aggregate.auditEvents} />
+          <StatRow label="Analytics events captured" value={aggregate.analyticsEvents} />
+          <StatRow label="Page views captured" value={aggregate.pageViews} />
+          <StatRow label="Live Classroom usage events" value={aggregate.liveClassroomEvents} />
         </ReportSection>
 
         <ReportSection title="Data Quality & Exceptions" warn={issueCount > 0}>
@@ -879,7 +896,7 @@ export default function ReportsPage() {
       <section className={styles.methodology}>
         <strong>Reporting integrity rules</strong>
         <p>
-          Current planner delivery records are authoritative for totals. Superseded delivery archive rows remain available for audit history but are excluded from instructional totals. Saved reports are versioned snapshots. Assessment and Job Card records are linked to the canonical LTG student only when the submitted student ID matches the school student record; unmatched submissions are surfaced as data-quality exceptions instead of being guessed into place.
+          Current planner delivery records are authoritative for totals. Superseded delivery archive rows remain available for audit history but are excluded from instructional totals. In-progress period presets report through the current day so future scheduled classes are not falsely counted as missing. Saved reports are versioned snapshots. Assessment and Job Card records are linked to the canonical LTG student only when the submitted student ID matches the school student record; unmatched submissions are surfaced as data-quality exceptions instead of being guessed into place.
         </p>
       </section>
     </div>
@@ -912,7 +929,7 @@ function ReportSection({
   warn = false,
 }: {
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
   warn?: boolean;
 }) {
   return (
