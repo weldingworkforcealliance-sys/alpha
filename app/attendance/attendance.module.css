@@ -148,15 +148,38 @@
   border: 1px solid var(--ltg-border, #415668);
   background: var(--ltg-surface-3, #233948);
   color: var(--ltg-text, #f1f4f6);
+  transition: background-color .12s ease, border-color .12s ease, color .12s ease, box-shadow .12s ease;
 }
 .statusButton.active {
   border-color: var(--ltg-success, #4fa66c);
-  color: var(--ltg-success-text, #74eba0);
-  background: var(--ltg-success-bg, #123c2a);
+  color: #fff;
+  background: var(--ltg-success, #4fa66c);
+  box-shadow: 0 0 0 2px var(--ltg-success-bg, #123c2a), 0 0 0 4px var(--ltg-success, #4fa66c);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
-.statusButton.absent.active { border-color: var(--ltg-danger, #cf5868); color: var(--ltg-danger-text, #ff8795); background: var(--ltg-danger-bg, #4c2530); }
-.statusButton.late.active { border-color: var(--ltg-accent, #f0641d); color: var(--ltg-accent-text, #ffb184); background: var(--ltg-accent-soft, rgba(240,100,29,.13)); }
-.statusButton.excused.active { border-color: #7c69b8; color: #7c69b8; background: rgba(124,105,184,.12); }
+.statusButton.active::before {
+  content: '✓ ';
+  font-weight: 1000;
+}
+.statusButton.absent.active {
+  border-color: var(--ltg-danger, #cf5868);
+  color: #fff;
+  background: var(--ltg-danger, #cf5868);
+  box-shadow: 0 0 0 2px var(--ltg-danger-bg, #4c2530), 0 0 0 4px var(--ltg-danger, #cf5868);
+}
+.statusButton.late.active {
+  border-color: var(--ltg-accent, #f0641d);
+  color: #fff;
+  background: var(--ltg-accent-strong, #e95d18);
+  box-shadow: 0 0 0 2px var(--ltg-accent-soft, rgba(240,100,29,.13)), 0 0 0 4px var(--ltg-accent, #f0641d);
+}
+.statusButton.excused.active {
+  border-color: #7c69b8;
+  color: #fff;
+  background: #7c69b8;
+  box-shadow: 0 0 0 2px rgba(124,105,184,.12), 0 0 0 4px #7c69b8;
+}
 
 .completionGrid {
   margin-top: 10px;
@@ -289,23 +312,27 @@
 }
 .embeddedPanel .statusButton.active {
   border-color: var(--ltg-success, #4fa66c);
-  color: var(--ltg-success-text, #74eba0);
-  background: var(--ltg-success-bg, #123c2a);
+  color: #fff;
+  background: var(--ltg-success, #4fa66c);
+  box-shadow: 0 0 0 2px var(--ltg-success-bg, #123c2a), 0 0 0 4px var(--ltg-success, #4fa66c);
 }
 .embeddedPanel .statusButton.absent.active {
   border-color: var(--ltg-danger, #cf5868);
-  color: var(--ltg-danger-text, #ff8795);
-  background: var(--ltg-danger-bg, #4c2530);
+  color: #fff;
+  background: var(--ltg-danger, #cf5868);
+  box-shadow: 0 0 0 2px var(--ltg-danger-bg, #4c2530), 0 0 0 4px var(--ltg-danger, #cf5868);
 }
 .embeddedPanel .statusButton.late.active {
   border-color: var(--ltg-accent, #f0641d);
-  color: var(--ltg-accent-text, #ffb184);
-  background: var(--ltg-accent-soft, rgba(240,100,29,.13));
+  color: #fff;
+  background: var(--ltg-accent-strong, #e95d18);
+  box-shadow: 0 0 0 2px var(--ltg-accent-soft, rgba(240,100,29,.13)), 0 0 0 4px var(--ltg-accent, #f0641d);
 }
 .embeddedPanel .statusButton.excused.active {
   border-color: #7c69b8;
-  color: #7c69b8;
-  background: rgba(124,105,184,.12);
+  color: #fff;
+  background: #7c69b8;
+  box-shadow: 0 0 0 2px rgba(124,105,184,.12), 0 0 0 4px #7c69b8;
 }
 .embeddedPanel .notice.error {
   border-color: var(--ltg-danger, #cf5868);
