@@ -415,6 +415,10 @@ export default function AttendanceHistoryPage() {
   }, [records, visibleSessions]);
 
   const overallCounts = useMemo(() => sessionCounts(visibleRecordRows), [visibleRecordRows]);
+  const uniqueVisibleDays = useMemo(
+    () => new Set(visibleSessions.map((session) => session.attendance_date)).size,
+    [visibleSessions]
+  );
 
   const studentSummaries = useMemo(() => {
     const sessionIds = new Set(
@@ -746,7 +750,7 @@ export default function AttendanceHistoryPage() {
       </section>
 
       <section className={styles.stats} aria-label="Attendance summary">
-        <div><span>Days</span><strong>{visibleSessions.length}</strong></div>
+        <div><span>Days</span><strong>{uniqueVisibleDays}</strong></div>
         <div><span>Present</span><strong>{overallCounts.present}</strong></div>
         <div><span>Absent</span><strong>{overallCounts.absent}</strong></div>
         <div><span>Late</span><strong>{overallCounts.late}</strong></div>
