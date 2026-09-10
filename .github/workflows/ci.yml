@@ -40,3 +40,17 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: public-build-placeholder
         run: npm run build
+
+      - name: Public route smoke test
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: public-build-placeholder
+        run: |
+          set -euo pipefail
+          npm run start -- -p 3000 > /tmp/ltg-next.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" >/dev/null 2>&1 || true' EXIT
+          if ! npm run smoke:routes; then
+            cat /tmp/ltg-next.log
+            exit 1
+          fi
