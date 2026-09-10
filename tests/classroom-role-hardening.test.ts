@@ -10,27 +10,33 @@ const migrationPath =
   'supabase/migrations/20260910191500_harden_connected_classroom_roles.sql';
 
 describe('Connected Classroom role hardening', () => {
-  it('requires active instructional staff to launch a classroom session', () => {
+  it('limits class launch to Platform Owner, school management, or assigned section staff', () => {
     const migration = read(migrationPath);
 
+    expect(migration).toContain('public.can_review_instruction(target_school)');
     expect(migration).toContain(
-      'public.is_school_instructional_staff(target_school)'
+      'public.is_section_instructor(target_school, p_section_id)'
     );
     expect(migration).toContain(
-      "raise exception 'Active instructional staff access required'"
+      "raise exception 'Assigned instructor or school management access required'"
     );
     expect(migration).not.toContain(
       'from public.current_teaching_sections\n    where section_id = p_section_id'
     );
   });
 
-  it('does not authorize answer keys through generic school-member visibility', () => {
+  it('requires a real teaching assignment or management role for answer keys', () => {
     const migration = read(migrationPath);
 
     expect(migration).toContain('from public.school_memberships sm');
+    expect(migration).toContain(
+      "sm.role in ('school_admin','program_lead','lead_instructor')"
+    );
+    expect(migration).toContain('from public.section_instructors si');
+    expect(migration).toContain('and si.active = true');
     expect(migration).toContain("sm.status = 'active'");
     expect(migration).toContain(
-      "sm.role in ('school_admin','program_lead','lead_instructor','instructor')"
+      "raise exception 'Active instructor assignment or school management access required'"
     );
     expect(migration).not.toContain(
       'not exists(select 1 from public.current_teaching_sections)'
