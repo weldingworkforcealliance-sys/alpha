@@ -1,7 +1,8 @@
 -- LTG stabilization: keep Connected Classroom launch and answer-key access
--- limited to active instructional staff. current_teaching_sections intentionally
--- supports broader school-member visibility, so it must not be used as the
--- authorization boundary for privileged classroom actions.
+-- limited to staff who actually have instructional authority. The
+-- current_teaching_sections view intentionally supports broader school-member
+-- visibility, so it must not be used as the authorization boundary for
+-- privileged classroom actions.
 
 begin;
 
@@ -26,6 +27,7 @@ begin
     raise exception 'Expected students must be between 1 and 60';
   end if;
 
+  -- Opportunistically close this instructor's expired sessions before creating a new one.
   update public.classroom_sessions
      set status = 'ended',
          ended_at = coalesce(ended_at, expires_at)
@@ -41,8 +43,15 @@ begin
     raise exception 'Class not found';
   end if;
 
-  if not (public.is_platform_owner() or public.is_school_instructional_staff(target_school)) then
-    raise exception 'Active instructional staff access required';
+  -- Classroom launch is section-scoped. Platform Owner and school instructional
+  -- management may launch any section in scope; ordinary instructors/assistants
+  -- must have an active assignment to this section.
+  if not (
+    public.is_platform_owner()
+    or public.can_review_instruction(target_school)
+    or public.is_section_instructor(target_school, p_section_id)
+  ) then
+    raise exception 'Assigned instructor or school management access required';
   end if;
 
   if not exists (
@@ -99,15 +108,28 @@ begin
     raise exception 'Instructor login required';
   end if;
 
+  -- Answer keys are instructor-only. School instructional management can review
+  -- them without a section assignment; ordinary teaching staff must have an
+  -- active section assignment at an active school membership.
   if not public.is_platform_owner()
      and not exists (
        select 1
        from public.school_memberships sm
        where sm.user_id = auth.uid()
          and sm.status = 'active'
-         and sm.role in ('school_admin','program_lead','lead_instructor','instructor')
+         and sm.role in ('school_admin','program_lead','lead_instructor')
+     )
+     and not exists (
+       select 1
+       from public.section_instructors si
+       join public.school_memberships sm
+         on sm.school_id = si.school_id
+        and sm.user_id = si.instructor_id
+        and sm.status = 'active'
+       where si.instructor_id = auth.uid()
+         and si.active = true
      ) then
-    raise exception 'Active instructional staff access required';
+    raise exception 'Active instructor assignment or school management access required';
   end if;
 
   select jsonb_build_object(
@@ -146,8 +168,8 @@ begin
 end;
 $$;
 
--- Preserve the existing authenticated-only answer-key contract and classroom
--- launcher contract. Student access continues through the separate join-code RPCs.
+-- Preserve the authenticated-only answer-key and classroom-launch contracts.
+-- Student access continues through the separate join-code RPCs.
 revoke all on function public.start_classroom_session_v2(uuid, text, integer)
   from public, anon;
 grant execute on function public.start_classroom_session_v2(uuid, text, integer)
