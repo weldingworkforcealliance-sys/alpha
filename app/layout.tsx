@@ -17,6 +17,7 @@ import DashboardHero from './dashboard-hero';
 import DashboardPunchClock from './dashboard-punch-clock';
 import PlannerAttendancePanel from './planner-attendance-panel';
 import SchoolActiveTodayEmployees from './school-active-today-employees';
+import UsageTracker from './usage-tracker';
 import './styles.css';
 import './agenda/agenda.css';
 import './desktop-layout-fix.css';
@@ -49,6 +50,7 @@ export default function RootLayout({
   const isAccountRoute = pathname.startsWith('/accounts');
   const isAttendanceRoute = pathname.startsWith('/attendance');
   const isResourcesRoute = pathname.startsWith('/resources');
+  const isReportsRoute = pathname.startsWith('/reports');
   const isAuthRoute =
     pathname === '/login' ||
     pathname === '/account-setup' ||
@@ -92,6 +94,7 @@ export default function RootLayout({
       </head>
       <body className={bodyClassName || undefined}>
         <ThemeProvider>
+          <UsageTracker pathname={pathname} />
           <div className="app-container">
             {!hideWorkspaceNav && (
               <nav
@@ -166,6 +169,12 @@ export default function RootLayout({
                   </Link>
 
                   <div className="ltg-nav-section-label">Reports</div>
+                  <Link
+                    href="/reports"
+                    className={`ltg-nav-link ${isReportsRoute ? 'active' : ''}`}
+                  >
+                    Reporting &amp; Analytics
+                  </Link>
                   <PayrollNavLink />
 
                   <div className="ltg-nav-section-label">Admin</div>
