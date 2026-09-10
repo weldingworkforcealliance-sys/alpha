@@ -50,6 +50,24 @@ function escapeHtml(value: unknown) {
     .replaceAll("'", '&#039;');
 }
 
+function errorText(error: unknown) {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  if (error && typeof error === 'object') {
+    const value = error as Record<string, unknown>;
+    const parts = [value.message, value.details, value.hint, value.code]
+      .filter((item) => item !== null && item !== undefined && String(item).trim())
+      .map(String);
+    if (parts.length) return parts.join(' | ');
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return '[unserializable error]';
+    }
+  }
+  return String(error);
+}
+
 function labelStatus(value: string | null) {
   if (!value) return 'Not recorded';
   return value
@@ -73,14 +91,10 @@ function parseRecipients(value: string) {
     )
   );
 
-  if (!recipients.length) {
-    throw new Error('Attendance report has no recipient email');
-  }
+  if (!recipients.length) throw new Error('Attendance report has no recipient email');
 
   const invalid = recipients.find((email) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
-  if (invalid) {
-    throw new Error(`Invalid attendance report recipient: ${invalid}`);
-  }
+  if (invalid) throw new Error(`Invalid attendance report recipient: ${invalid}`);
 
   return recipients;
 }
@@ -166,16 +180,12 @@ async function sendResendEmail(args: {
   });
 
   const body = await response.text();
-  if (!response.ok) {
-    throw new Error(`Resend ${response.status}: ${body.slice(0, 500)}`);
-  }
+  if (!response.ok) throw new Error(`Resend ${response.status}: ${body.slice(0, 1000)}`);
   return body;
 }
 
 Deno.serve(async (req) => {
-  if (req.method !== 'POST') {
-    return new Response('Method Not Allowed', { status: 405 });
-  }
+  if (req.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -192,24 +202,16 @@ Deno.serve(async (req) => {
   });
 
   const suppliedSecret = req.headers.get('x-attendance-cron-secret') ?? '';
-  if (!suppliedSecret) {
-    return new Response('Unauthorized', { status: 401 });
-  }
+  if (!suppliedSecret) return new Response('Unauthorized', { status: 401 });
 
   const { data: secretValid, error: secretError } = await supabase.rpc(
     'verify_attendance_worker_secret',
     { p_secret: suppliedSecret }
   );
-  if (secretError || !secretValid) {
-    return new Response('Unauthorized', { status: 401 });
-  }
+  if (secretError || !secretValid) return new Response('Unauthorized', { status: 401 });
 
-  const { data: configData, error: configError } = await supabase.rpc(
-    'get_attendance_worker_config'
-  );
-  if (configError) {
-    return Response.json({ error: configError.message }, { status: 500 });
-  }
+  const { data: configData, error: configError } = await supabase.rpc('get_attendance_worker_config');
+  if (configError) return Response.json({ error: errorText(configError) }, { status: 500 });
 
   const config = (Array.isArray(configData) ? configData[0] : configData) as WorkerConfig | null;
   const resendApiKey = config?.resend_api_key ?? '';
@@ -221,14 +223,10 @@ Deno.serve(async (req) => {
     );
   }
 
-  const { data: claimed, error: claimError } = await supabase.rpc(
-    'claim_due_attendance_reports',
-    { p_limit: 25 }
-  );
-
-  if (claimError) {
-    return Response.json({ error: claimError.message }, { status: 500 });
-  }
+  const { data: claimed, error: claimError } = await supabase.rpc('claim_due_attendance_reports', {
+    p_limit: 25,
+  });
+  if (claimError) return Response.json({ error: errorText(claimError) }, { status: 500 });
 
   const queueRows = (claimed ?? []) as ClaimedQueue[];
   const results: Array<{ queue_id: string; status: 'sent' | 'failed'; error?: string }> = [];
@@ -240,7 +238,7 @@ Deno.serve(async (req) => {
         .select('id,pair_id,attendance_date,instructor_notes,finalized_at,finalized_by')
         .eq('id', queue.session_id)
         .maybeSingle();
-      if (sessionError) throw sessionError;
+      if (sessionError) throw new Error(`attendance_sessions: ${errorText(sessionError)}`);
       if (!sessionData) throw new Error('Attendance session not found');
       const session = sessionData as AttendanceSession;
       if (!session.finalized_at) throw new Error('Attendance session is not finalized');
@@ -258,8 +256,8 @@ Deno.serve(async (req) => {
             .eq('session_id', session.id),
         ]);
 
-      if (pairError) throw pairError;
-      if (recordError) throw recordError;
+      if (pairError) throw new Error(`attendance_pairs: ${errorText(pairError)}`);
+      if (recordError) throw new Error(`attendance_records: ${errorText(recordError)}`);
       if (!pairData) throw new Error('Attendance pair not found');
       const pair = pairData as AttendancePair;
       if (pair.attendance_mode !== 'pvhs') throw new Error('Queue item is not a PVHS attendance report');
@@ -272,7 +270,7 @@ Deno.serve(async (req) => {
           .from('attendance_students')
           .select('id,display_name,external_student_id')
           .in('id', studentIds);
-        if (studentError) throw studentError;
+        if (studentError) throw new Error(`attendance_students: ${errorText(studentError)}`);
         students = (studentData ?? []) as Student[];
       }
 
@@ -291,11 +289,11 @@ Deno.serve(async (req) => {
         .update({ status: 'sent', sent_at: new Date().toISOString(), last_error: null })
         .eq('id', queue.queue_id)
         .eq('status', 'processing');
-      if (sentError) throw sentError;
+      if (sentError) throw new Error(`queue mark sent: ${errorText(sentError)}`);
 
       results.push({ queue_id: queue.queue_id, status: 'sent' });
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = errorText(error);
       await supabase
         .from('attendance_report_queue')
         .update({ status: 'failed', last_error: message.slice(0, 2000) })
