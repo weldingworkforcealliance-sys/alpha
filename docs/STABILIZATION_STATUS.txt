@@ -1,0 +1,4 @@
+LTG stabilization branch created 2026-09-10.
+Security hardening migration and regression test staged.
+Live beta database hardening applied and verified.
+Remaining merge gate: CI + review of branch diff.
