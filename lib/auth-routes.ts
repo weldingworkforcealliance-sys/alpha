@@ -7,7 +7,7 @@ const PUBLIC_EXACT_ROUTES = new Set([
   '/demo',
 ]);
 
-const PUBLIC_ROUTE_PREFIXES = ['/join/', '/job/'];
+const PUBLIC_ROUTE_PREFIXES = ['/join/', '/job/', '/demo/'];
 
 export function isPublicRoute(pathname: string) {
   return (
