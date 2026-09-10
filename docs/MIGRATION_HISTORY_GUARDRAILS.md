@@ -20,6 +20,21 @@ The repository therefore treats those duplicate prefixes as historical exception
 
 These filenames are frozen unless a deliberate migration-history reconciliation is performed against every deployed environment.
 
+## Reconciled beta genco ledger mapping
+
+Read-only verification against `supabase_migrations.schema_migrations` on 2026-09-10 confirmed that all six grandfathered files have corresponding applied migration names in beta genco:
+
+| Repository file | Applied ledger version | Applied migration name |
+| --- | --- | --- |
+| `202609030009_fix_classroom_session_expiration.sql` | `20260903185605` | `fix_classroom_session_expiration` |
+| `202609030009_rename_timeclock_adp_export_to_report_download.sql` | `20260903171958` | `rename_timeclock_adp_export_to_report_download` |
+| `20260910190000_allow_assigned_instructor_complete_day.sql` | `20260910183759` | `allow_assigned_instructor_complete_day` |
+| `20260910190000_harden_audit_write_surface.sql` | `20260910185318` | `harden_audit_write_surface` |
+| `20260910193000_harden_job_card_section_authorization.sql` | `20260910192055` | `harden_job_card_section_authorization` |
+| `20260910193000_increase_attendance_report_worker_timeout.sql` | `20260910192555` | `increase_attendance_report_worker_timeout` |
+
+This confirms the collision is in repository filename prefixes, not duplicate application of the migrations in beta genco.
+
 ## Rules for new migrations
 
 1. Every new migration must use a unique 12- or 14-digit version prefix followed by a snake_case name.
