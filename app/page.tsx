@@ -112,7 +112,7 @@ export default function Home() {
       <section className="ltg-marketing-section ltg-marketing-security">
         <div className="ltg-marketing-section-heading">
           <span>BUILT FOR SCHOOL OPERATIONS</span>
-          <h2>Different people should see different things. Revolutionary concept, apparently.</h2>
+          <h2>Role-based access keeps each user focused on the information they are responsible for.</h2>
         </div>
         <div className="ltg-marketing-role-grid">
           <div><strong>Instructor</strong><p>Classes, daily instruction, student progress, attendance, and personal time records.</p></div>
