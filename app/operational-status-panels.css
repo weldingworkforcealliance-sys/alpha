@@ -1,6 +1,6 @@
-/* Pending LTG bundle. Kept off main until the grouped release is approved. */
+/* Live operational status styling. This file contains production-approved attendance emphasis and school punch-status presentation. */
 
-/* Change #1: make the embedded Student Attendance control easier to find. */
+/* Embedded Student Attendance control: keep the operational action easy to find. */
 .ltg-planner-attendance-slot > details {
   border-color: var(--ltg-success, #4fa66c) !important;
   box-shadow:
@@ -9,7 +9,7 @@
     0 8px 20px rgba(0, 0, 0, 0.08) !important;
 }
 
-/* Change #2: School Dashboard live daily employee punch status. */
+/* School Dashboard live daily employee punch status. */
 .ltg-school-live-punch-panel {
   width: min(1180px, calc(100% - 32px));
   margin: 16px auto 0;
