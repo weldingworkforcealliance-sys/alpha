@@ -10,7 +10,7 @@ begin;
 -- ---------------------------------------------------------------------------
 
 create unique index if not exists attendance_students_school_external_id_uidx
-  on public.attendance_students (school_id, external_student_id)
+  on public.attendance_students (school_id, btrim(external_student_id))
   where external_student_id is not null and btrim(external_student_id) <> '';
 
 alter table public.classroom_submissions
@@ -44,7 +44,7 @@ begin
       into new.student_uuid
     from public.attendance_students s
     where s.school_id = v_school_id
-      and s.external_student_id = btrim(new.student_id)
+      and btrim(s.external_student_id) = btrim(new.student_id)
     limit 1;
   else
     new.student_uuid := null;
@@ -74,7 +74,7 @@ begin
       into new.student_uuid
     from public.attendance_students s
     where s.school_id = new.school_id
-      and s.external_student_id = btrim(new.student_id)
+      and btrim(s.external_student_id) = btrim(new.student_id)
     limit 1;
   else
     new.student_uuid := null;
@@ -98,7 +98,7 @@ from public.classroom_sessions cs,
      public.attendance_students s
 where sub.classroom_session_id = cs.id
   and s.school_id = cs.school_id
-  and s.external_student_id = btrim(sub.student_id)
+  and btrim(s.external_student_id) = btrim(sub.student_id)
   and nullif(btrim(sub.student_id), '') is not null
   and sub.student_uuid is null;
 
@@ -106,7 +106,7 @@ update public.job_card_submissions sub
 set student_uuid = s.id
 from public.attendance_students s
 where s.school_id = sub.school_id
-  and s.external_student_id = btrim(sub.student_id)
+  and btrim(s.external_student_id) = btrim(sub.student_id)
   and nullif(btrim(sub.student_id), '') is not null
   and sub.student_uuid is null;
 
@@ -505,7 +505,7 @@ begin
   select count(distinct a.entry_id) into v_adjusted_entries
   from public.timeclock_adjustments a
   where a.school_id = check_school_id
-    and (a.adjusted_at at time zone v_timezone)::date between p_start_date and p_end_date;
+    and (a.created_at at time zone v_timezone)::date between p_start_date and p_end_date;
 
   return jsonb_build_object(
     'scope', 'school',
