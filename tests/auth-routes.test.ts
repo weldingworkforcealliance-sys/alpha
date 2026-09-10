@@ -6,6 +6,10 @@ describe('server route protection', () => {
     expect(isPublicRoute('/login')).toBe(true);
     expect(isPublicRoute('/join/ABC123')).toBe(true);
     expect(isPublicRoute('/job/ABC123')).toBe(true);
+    expect(isPublicRoute('/demo')).toBe(true);
+    expect(isPublicRoute('/demo/programs')).toBe(true);
+    expect(isPublicRoute('/demo/nursing')).toBe(true);
+    expect(isPublicRoute('/demolition')).toBe(false);
     expect(isPublicRoute('/dashboard')).toBe(false);
     expect(isPublicRoute('/owner/admin')).toBe(false);
   });
