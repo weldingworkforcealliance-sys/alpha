@@ -175,6 +175,29 @@ export default function PlannerDeliveryReconciler() {
     };
   }, [sectionId, supabase]);
 
+  useEffect(() => {
+    if (!attendanceBlock) return;
+
+    const attendanceHref = `/attendance?section=${encodeURIComponent(
+      attendanceBlock.sectionId
+    )}&date=${encodeURIComponent(attendanceBlock.attendanceDate)}`;
+
+    const interceptBlockedComplete = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const button = target.closest('button');
+      if (!button) return;
+      if (button.textContent?.trim() !== 'Complete Day') return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      window.location.assign(attendanceHref);
+    };
+
+    document.addEventListener('click', interceptBlockedComplete, true);
+    return () => document.removeEventListener('click', interceptBlockedComplete, true);
+  }, [attendanceBlock]);
+
   if (!attendanceBlock) return null;
 
   const attendanceHref = `/attendance?section=${encodeURIComponent(
@@ -205,7 +228,7 @@ export default function PlannerDeliveryReconciler() {
           Attendance confirmation required before Complete Day
         </strong>
         <span style={{ fontSize: 13 }}>
-          Review the paired-class attendance and press Finalize Pair Attendance. The class can then be completed normally.
+          Review the paired-class attendance and press Finalize Pair Attendance. Complete Day will work after attendance is finalized.
         </span>
       </div>
       <a
