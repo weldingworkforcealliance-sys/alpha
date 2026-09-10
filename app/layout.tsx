@@ -16,6 +16,7 @@ import SidebarSignOut from './sidebar-sign-out';
 import DashboardHero from './dashboard-hero';
 import DashboardPunchClock from './dashboard-punch-clock';
 import PlannerAttendancePanel from './planner-attendance-panel';
+import AttendanceFinalizationAlert from './attendance-finalization-alert';
 import SchoolActiveTodayEmployees from './school-active-today-employees';
 import UsageTracker from './usage-tracker';
 import './styles.css';
@@ -214,6 +215,7 @@ export default function RootLayout({
               <SchoolActiveTodayEmployees pathname={pathname} />
               {!isStudentDisplay && <CohortWorkspaceBar pathname={pathname} />}
               {!isStudentDisplay && <TeacherIdentityBar pathname={pathname} />}
+              <AttendanceFinalizationAlert pathname={pathname} />
               <PlannerAttendancePanel pathname={pathname} />
               {!isStudentDisplay && <AgendaNotePolicyBanner pathname={pathname} />}
               {children}
