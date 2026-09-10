@@ -15,6 +15,11 @@ function localDate() {
   ).padStart(2, '0')}`;
 }
 
+function displayDate(value: string) {
+  const [year, month, day] = value.split('-');
+  return year && month && day ? `${month}/${day}/${year}` : value;
+}
+
 export default function PlannerAttendancePanel({ pathname }: { pathname: string }) {
   const [supabase] = useState(getSupabase);
   const [sectionId, setSectionId] = useState<string | null>(() => readSelectedSectionId());
@@ -37,13 +42,23 @@ export default function PlannerAttendancePanel({ pathname }: { pathname: string 
 
       const { data } = await supabase
         .from('current_teaching_sections')
-        .select('scheduled_date')
+        .select('scheduled_date,planner_day_id')
         .eq('section_id', nextSectionId)
         .maybeSingle();
 
-      if (!cancelled) {
-        setAttendanceDate(data?.scheduled_date || localDate());
+      let resolvedDate = data?.scheduled_date || localDate();
+
+      if (data?.planner_day_id) {
+        const { data: delivery } = await supabase
+          .from('planner_day_delivery')
+          .select('actual_date')
+          .eq('section_id', nextSectionId)
+          .eq('planner_day_id', data.planner_day_id)
+          .maybeSingle();
+        if (delivery?.actual_date) resolvedDate = delivery.actual_date;
       }
+
+      if (!cancelled) setAttendanceDate(resolvedDate);
     };
 
     void selectSection(readSelectedSectionId());
@@ -56,6 +71,35 @@ export default function PlannerAttendancePanel({ pathname }: { pathname: string 
       unsubscribe();
     };
   }, [pathname, supabase]);
+
+  useEffect(() => {
+    if (pathname !== '/dashboard') return;
+
+    const syncFromActualDate = (event?: Event) => {
+      const candidate =
+        event?.target instanceof HTMLInputElement && event.target.id === 'actual-date'
+          ? event.target
+          : (document.getElementById('actual-date') as HTMLInputElement | null);
+      if (candidate?.value) setAttendanceDate(candidate.value);
+    };
+
+    const handleDateEvent = (event: Event) => {
+      if (event.target instanceof HTMLInputElement && event.target.id === 'actual-date') {
+        syncFromActualDate(event);
+        setCompletionNotice('');
+      }
+    };
+
+    const initialSync = window.setTimeout(() => syncFromActualDate(), 0);
+    document.addEventListener('input', handleDateEvent, true);
+    document.addEventListener('change', handleDateEvent, true);
+
+    return () => {
+      window.clearTimeout(initialSync);
+      document.removeEventListener('input', handleDateEvent, true);
+      document.removeEventListener('change', handleDateEvent, true);
+    };
+  }, [pathname, sectionId]);
 
   useEffect(() => {
     if (pathname !== '/dashboard' || !sectionId) return;
@@ -77,6 +121,8 @@ export default function PlannerAttendancePanel({ pathname }: { pathname: string 
         const actualDateInput = document.getElementById('actual-date') as HTMLInputElement | null;
         const completionDate = actualDateInput?.value || attendanceDate || localDate();
 
+        if (completionDate !== attendanceDate) setAttendanceDate(completionDate);
+
         const requirement = await supabase.rpc('attendance_completion_requirement', {
           p_section_id: sectionId,
           p_attendance_date: completionDate,
@@ -84,7 +130,7 @@ export default function PlannerAttendancePanel({ pathname }: { pathname: string 
 
         if (requirement.error) {
           setCompletionNotice(
-            `Unable to verify attendance before completing the day: ${requirement.error.message}`
+            `Unable to verify attendance for ${displayDate(completionDate)} before completing the day: ${requirement.error.message}`
           );
           const panel = document.getElementById('ltg-planner-attendance-slot');
           panel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -97,13 +143,15 @@ export default function PlannerAttendancePanel({ pathname }: { pathname: string 
 
         if (row?.attendance_required && !row?.finalized) {
           setCompletionNotice(
-            'Complete Day is waiting for the required end-of-day attendance confirmation. Review the paired-class attendance below and select Finalize Pair Attendance. Then tap Complete Day again.'
+            `Attendance for ${displayDate(completionDate)} must be finalized before this class day can be completed. Review the paired-class attendance below and select Finalize Pair Attendance. Then tap Complete Day again.`
           );
 
-          const panel = document.getElementById('ltg-planner-attendance-slot');
-          const details = panel?.querySelector('details');
-          if (details instanceof HTMLDetailsElement) details.open = true;
-          panel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          window.setTimeout(() => {
+            const panel = document.getElementById('ltg-planner-attendance-slot');
+            const details = panel?.querySelector('details');
+            if (details instanceof HTMLDetailsElement) details.open = true;
+            panel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 0);
           return;
         }
 
