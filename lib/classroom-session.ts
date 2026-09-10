@@ -1,4 +1,5 @@
 import { getSupabase } from './supabase-browser';
+import type { GradeCategory } from './gradebook';
 
 type BrowserSupabaseClient = ReturnType<typeof getSupabase>;
 
@@ -11,6 +12,8 @@ export type ClassroomSession = {
   section_id: string;
   assessment_slug: string;
   expected_students: number;
+  grade_category: GradeCategory;
+  counts_toward_grade: boolean;
 };
 
 export type ClassroomSubmission = {
@@ -25,7 +28,7 @@ export type ClassroomSubmission = {
 };
 
 const SESSION_FIELDS =
-  'id,join_code,status,started_at,expires_at,section_id,assessment_slug,expected_students';
+  'id,join_code,status,started_at,expires_at,section_id,assessment_slug,expected_students,grade_category,counts_toward_grade';
 
 const SUBMISSION_FIELDS =
   'id,student_name,student_id,team_members,score,possible_score,submitted_at,domain_scores';
@@ -74,14 +77,17 @@ export async function createClassroomSession(
     sectionId: string;
     assessmentSlug: string;
     expectedStudents: number;
+    gradeCategory?: GradeCategory;
   }
 ) {
+  const gradeCategory = options.gradeCategory ?? 'practice_only';
   const { data: sessionId, error: startError } = await supabase.rpc(
-    'start_classroom_session_v2',
+    'start_classroom_session_v3',
     {
       p_section_id: options.sectionId,
       p_assessment_slug: options.assessmentSlug,
       p_expected_students: options.expectedStudents,
+      p_grade_category: gradeCategory,
     }
   );
 
@@ -99,9 +105,10 @@ export async function createClassroomSession(
   const session = data as ClassroomSession;
   if (
     session.section_id !== options.sectionId ||
-    session.assessment_slug !== options.assessmentSlug
+    session.assessment_slug !== options.assessmentSlug ||
+    session.grade_category !== gradeCategory
   ) {
-    throw new Error('The created classroom session did not match the requested class and assessment.');
+    throw new Error('The created classroom session did not match the requested class, assessment, and gradebook classification.');
   }
 
   return session;
