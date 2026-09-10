@@ -14,6 +14,11 @@ type Snapshot = {
   sectionCompletedAt: string | null;
 };
 
+type AttendanceBlock = {
+  sectionId: string;
+  attendanceDate: string;
+};
+
 function storageKey(sectionId: string) {
   return `ltg:planner-delivery-snapshot:${sectionId}`;
 }
@@ -45,11 +50,14 @@ function wasInProgress(snapshot: Snapshot | null) {
 export default function PlannerDeliveryReconciler() {
   const [supabase] = useState(getSupabase);
   const [sectionId, setSectionId] = useState<string | null>(() => readSelectedSectionId());
+  const [attendanceBlock, setAttendanceBlock] = useState<AttendanceBlock | null>(null);
   const previousRef = useRef<Snapshot | null>(null);
   const reloadingRef = useRef(false);
+  const checkingRef = useRef(false);
 
   useEffect(() => {
     previousRef.current = sectionId ? readStoredSnapshot(sectionId) : null;
+    setAttendanceBlock(null);
   }, [sectionId]);
 
   useEffect(() => {
@@ -62,54 +70,90 @@ export default function PlannerDeliveryReconciler() {
     let cancelled = false;
 
     const reconcile = async () => {
-      if (cancelled || reloadingRef.current) return;
+      if (cancelled || reloadingRef.current || checkingRef.current) return;
+      checkingRef.current = true;
 
-      const { data: sectionRow, error: sectionError } = await supabase
-        .from('current_teaching_sections')
-        .select('planner_day_id,completed_at')
-        .eq('section_id', sectionId)
-        .maybeSingle();
-
-      if (sectionError || !sectionRow || cancelled) return;
-
-      let deliveryStatus: string | null = null;
-      let deliveryCompletedAt: string | null = null;
-
-      if (sectionRow.planner_day_id) {
-        const { data: deliveryRow, error: deliveryError } = await supabase
-          .from('planner_day_delivery')
-          .select('delivery_status,completed_at')
-          .eq('planner_day_id', sectionRow.planner_day_id)
+      try {
+        const { data: sectionRow, error: sectionError } = await supabase
+          .from('current_teaching_sections')
+          .select('planner_day_id,completed_at')
+          .eq('section_id', sectionId)
           .maybeSingle();
 
-        if (deliveryError || cancelled) return;
-        deliveryStatus = deliveryRow?.delivery_status ?? null;
-        deliveryCompletedAt = deliveryRow?.completed_at ?? null;
-      }
+        if (sectionError || !sectionRow || cancelled) return;
 
-      const next: Snapshot = {
-        plannerDayId: sectionRow.planner_day_id ?? null,
-        deliveryStatus,
-        deliveryCompletedAt,
-        sectionCompletedAt: sectionRow.completed_at ?? null,
-      };
+        let deliveryStatus: string | null = null;
+        let deliveryCompletedAt: string | null = null;
+        let deliveryActualDate: string | null = null;
 
-      const previous = previousRef.current;
-      const completedTransition =
-        wasInProgress(previous) &&
-        (
-          previous?.plannerDayId !== next.plannerDayId ||
-          next.deliveryStatus === 'completed' ||
-          Boolean(next.deliveryCompletedAt) ||
-          Boolean(next.sectionCompletedAt)
-        );
+        if (sectionRow.planner_day_id) {
+          const { data: deliveryRow, error: deliveryError } = await supabase
+            .from('planner_day_delivery')
+            .select('delivery_status,completed_at,actual_date')
+            .eq('section_id', sectionId)
+            .eq('planner_day_id', sectionRow.planner_day_id)
+            .maybeSingle();
 
-      previousRef.current = next;
-      storeSnapshot(sectionId, next);
+          if (deliveryError || cancelled) return;
+          deliveryStatus = deliveryRow?.delivery_status ?? null;
+          deliveryCompletedAt = deliveryRow?.completed_at ?? null;
+          deliveryActualDate = deliveryRow?.actual_date ?? null;
+        }
 
-      if (completedTransition) {
-        reloadingRef.current = true;
-        window.location.reload();
+        const inProgress =
+          deliveryStatus === 'in_progress' || deliveryStatus === 'started';
+
+        if (inProgress && deliveryActualDate) {
+          const requirement = await supabase.rpc('attendance_completion_requirement', {
+            p_section_id: sectionId,
+            p_attendance_date: deliveryActualDate,
+          });
+
+          if (!requirement.error && !cancelled) {
+            const row = Array.isArray(requirement.data)
+              ? requirement.data[0]
+              : requirement.data;
+            if (row?.attendance_required && !row?.finalized) {
+              setAttendanceBlock({
+                sectionId,
+                attendanceDate: deliveryActualDate,
+              });
+            } else {
+              setAttendanceBlock(null);
+            }
+          }
+        } else if (!cancelled) {
+          setAttendanceBlock(null);
+        }
+
+        const next: Snapshot = {
+          plannerDayId: sectionRow.planner_day_id ?? null,
+          deliveryStatus,
+          deliveryCompletedAt,
+          sectionCompletedAt: sectionRow.completed_at ?? null,
+        };
+
+        const previous = previousRef.current;
+        const completedTransition =
+          wasInProgress(previous) &&
+          (
+            previous?.plannerDayId !== next.plannerDayId ||
+            next.deliveryStatus === 'completed' ||
+            Boolean(next.deliveryCompletedAt) ||
+            Boolean(next.sectionCompletedAt)
+          );
+
+        previousRef.current = next;
+        storeSnapshot(sectionId, next);
+
+        if (completedTransition) {
+          reloadingRef.current = true;
+          window.location.reload();
+        }
+      } catch (error) {
+        console.error('Planner delivery reconciliation failed', error);
+      } finally {
+        checkingRef.current = false;
       }
     };
 
@@ -131,5 +175,54 @@ export default function PlannerDeliveryReconciler() {
     };
   }, [sectionId, supabase]);
 
-  return null;
+  if (!attendanceBlock) return null;
+
+  const attendanceHref = `/attendance?section=${encodeURIComponent(
+    attendanceBlock.sectionId
+  )}&date=${encodeURIComponent(attendanceBlock.attendanceDate)}`;
+
+  return (
+    <section
+      role="status"
+      aria-live="polite"
+      style={{
+        width: 'min(1500px, calc(100% - 20px))',
+        margin: '10px auto 0',
+        border: '1px solid rgba(255,154,56,.7)',
+        borderRadius: 10,
+        background: 'rgba(92,50,12,.94)',
+        color: '#ffe0bd',
+        padding: '12px 14px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12,
+        flexWrap: 'wrap',
+      }}
+    >
+      <div>
+        <strong style={{ display: 'block', color: '#fff1df' }}>
+          Attendance confirmation required before Complete Day
+        </strong>
+        <span style={{ fontSize: 13 }}>
+          Review the paired-class attendance and press Finalize Pair Attendance. The class can then be completed normally.
+        </span>
+      </div>
+      <a
+        href={attendanceHref}
+        style={{
+          border: '1px solid #ffb76d',
+          borderRadius: 8,
+          background: '#7a4318',
+          color: '#fff7ed',
+          padding: '9px 12px',
+          textDecoration: 'none',
+          fontWeight: 900,
+          whiteSpace: 'nowrap',
+        }}
+      >
+        Open Attendance
+      </a>
+    </section>
+  );
 }
