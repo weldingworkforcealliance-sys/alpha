@@ -1,12 +1,26 @@
 const baseUrl = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:3000';
 
-const routes = [
+const publicRoutes = [
   '/',
   '/login',
   '/account-setup',
   '/reset-password',
   '/training/login',
   '/demo',
+];
+
+const protectedRoutes = [
+  ['/dashboard', '/login'],
+  ['/agenda', '/login'],
+  ['/resources', '/login'],
+  ['/classroom', '/login'],
+  ['/attendance', '/login'],
+  ['/time-clock', '/login'],
+  ['/reports', '/login'],
+  ['/school', '/login'],
+  ['/owner', '/login'],
+  ['/accounts', '/login'],
+  ['/training', '/training/login'],
 ];
 
 async function waitForServer() {
@@ -27,7 +41,7 @@ async function waitForServer() {
 await waitForServer();
 
 const failures = [];
-for (const route of routes) {
+for (const route of publicRoutes) {
   try {
     const response = await fetch(`${baseUrl}${route}`, { redirect: 'manual' });
     const body = await response.text();
@@ -45,10 +59,48 @@ for (const route of routes) {
   }
 }
 
+for (const [route, expectedLoginPath] of protectedRoutes) {
+  try {
+    const response = await fetch(`${baseUrl}${route}`, { redirect: 'manual' });
+    if (response.status < 300 || response.status >= 400) {
+      failures.push(`${route}: expected an unauthenticated redirect, received HTTP ${response.status}`);
+      continue;
+    }
+
+    const location = response.headers.get('location');
+    if (!location) {
+      failures.push(`${route}: redirect did not include a Location header`);
+      continue;
+    }
+
+    const redirectUrl = new URL(location, baseUrl);
+    if (redirectUrl.pathname !== expectedLoginPath) {
+      failures.push(
+        `${route}: expected redirect to ${expectedLoginPath}, received ${redirectUrl.pathname}`
+      );
+    }
+
+    if (redirectUrl.searchParams.get('next') !== route) {
+      failures.push(
+        `${route}: redirect did not preserve the requested route in the next parameter`
+      );
+    }
+
+    const cacheControl = response.headers.get('cache-control') ?? '';
+    if (!cacheControl.toLowerCase().includes('no-store')) {
+      failures.push(`${route}: protected redirect is missing Cache-Control no-store`);
+    }
+  } catch (error) {
+    failures.push(`${route}: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
 if (failures.length > 0) {
-  console.error('\nPublic route smoke test failed:\n');
+  console.error('\nRuntime route smoke test failed:\n');
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
 
-console.log(`Public route smoke test passed: ${routes.length} public entry points returned HTTP 200.`);
+console.log(
+  `Runtime route smoke test passed: ${publicRoutes.length} public entry points returned HTTP 200 and ${protectedRoutes.length} protected routes redirected unauthenticated requests correctly.`
+);

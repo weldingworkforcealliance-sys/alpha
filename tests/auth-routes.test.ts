@@ -15,6 +15,7 @@ describe('server route protection', () => {
   });
 
   it('uses the training login for protected training pages', () => {
+    expect(loginRouteFor('/training')).toBe('/training/login');
     expect(loginRouteFor('/training/session/123/teacher')).toBe('/training/login');
     expect(loginRouteFor('/planner')).toBe('/login');
   });

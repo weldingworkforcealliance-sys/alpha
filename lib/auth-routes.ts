@@ -17,7 +17,9 @@ export function isPublicRoute(pathname: string) {
 }
 
 export function loginRouteFor(pathname: string) {
-  return pathname.startsWith('/training/') ? '/training/login' : '/login';
+  return pathname === '/training' || pathname.startsWith('/training/')
+    ? '/training/login'
+    : '/login';
 }
 
 export function safePostLoginRoute(value: string | null) {
