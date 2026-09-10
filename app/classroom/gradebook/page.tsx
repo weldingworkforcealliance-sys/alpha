@@ -1,0 +1,482 @@
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { getSupabase } from '@/lib/supabase-browser';
+import {
+  COUNTED_GRADE_CATEGORIES,
+  GRADE_CATEGORY_OPTIONS,
+  categoryAverages,
+  currentWeightedAverage,
+  gradeCategoryLabel,
+  gradeWeightTotal,
+  gradebookStudentKey,
+  type CountedGradeCategory,
+  type GradeCategory,
+  type GradeWeights,
+  unweightedGradeAverage,
+} from '@/lib/gradebook';
+
+type SectionOption = {
+  section_id: string;
+  section_name: string | null;
+  section_code: string | null;
+  course_code: string | null;
+  course_name: string | null;
+};
+
+type RosterStudent = {
+  attendance_student_id: string;
+  display_name: string;
+  external_student_id: string | null;
+};
+
+type GradebookSubmission = {
+  submission_id: string;
+  session_id: string;
+  attendance_student_id: string | null;
+  student_name: string;
+  student_id: string;
+  assessment_slug: string;
+  assessment_title: string;
+  grade_category: GradeCategory;
+  counts_toward_grade: boolean;
+  score: number;
+  possible_score: number;
+  percent: number;
+  domain_scores: Record<string, { correct: number; total: number }>;
+  submitted_at: string;
+};
+
+type GradebookSession = {
+  session_id: string;
+  assessment_slug: string;
+  assessment_title: string;
+  grade_category: GradeCategory;
+  counts_toward_grade: boolean;
+  status: string;
+  started_at: string;
+  ended_at: string | null;
+  submission_count: number;
+  class_average: number | null;
+  can_reclassify: boolean;
+};
+
+type JobCardEvidence = {
+  submission_id: string;
+  attendance_student_id: string | null;
+  student_name: string;
+  student_id: string;
+  job_title: string;
+  planner_day_number: number | null;
+  review_decision: 'accepted' | 'correction_required' | null;
+  review_notes: string | null;
+  evidence_type: string;
+  submitted_at: string;
+  reviewed_at: string | null;
+};
+
+type GradebookPayload = {
+  section: {
+    section_id: string;
+    section_name: string;
+    course_id: string;
+    course_code: string;
+    course_name: string;
+  };
+  can_manage_grading: boolean;
+  grading: {
+    weights: GradeWeights;
+    configured: boolean;
+    calculation_method: 'mean_percent';
+  };
+  roster: RosterStudent[];
+  sessions: GradebookSession[];
+  submissions: GradebookSubmission[];
+  job_card_evidence: JobCardEvidence[];
+};
+
+type StudentRow = {
+  key: string;
+  name: string;
+  externalId: string;
+  rosterLinked: boolean;
+  submissions: GradebookSubmission[];
+  jobCards: JobCardEvidence[];
+};
+
+type View = 'class' | 'student' | 'history' | 'settings';
+
+const EMPTY_WEIGHTS: Record<CountedGradeCategory, string> = {
+  test: '0',
+  quiz: '0',
+  task: '0',
+  activity: '0',
+  practical: '0',
+};
+
+function formatPercent(value: number | null | undefined) {
+  return value === null || value === undefined ? '—' : `${Math.round(value * 10) / 10}%`;
+}
+
+function formatDate(value: string) {
+  return new Date(value).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+export default function GradebookPage() {
+  const router = useRouter();
+  const [supabase] = useState(getSupabase);
+  const [sections, setSections] = useState<SectionOption[]>([]);
+  const [sectionId, setSectionId] = useState('');
+  const [payload, setPayload] = useState<GradebookPayload | null>(null);
+  const [view, setView] = useState<View>('class');
+  const [selectedStudentKey, setSelectedStudentKey] = useState('');
+  const [weightsDraft, setWeightsDraft] = useState(EMPTY_WEIGHTS);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data: auth } = await supabase.auth.getSession();
+        if (!auth.session) {
+          router.replace('/login');
+          return;
+        }
+        const { data, error: sectionError } = await supabase
+          .from('current_teaching_sections')
+          .select('section_id,section_name,section_code,course_code,course_name');
+        if (sectionError) throw sectionError;
+        const rows = (data ?? []) as SectionOption[];
+        setSections(rows);
+        const requested = new URLSearchParams(window.location.search).get('section');
+        const initial = requested && rows.some((row) => row.section_id === requested)
+          ? requested
+          : rows[0]?.section_id ?? '';
+        setSectionId(initial);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err));
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [router, supabase]);
+
+  const loadGradebook = async (targetSection = sectionId) => {
+    if (!targetSection) {
+      setPayload(null);
+      return;
+    }
+    setBusy(true);
+    setError('');
+    try {
+      const { data, error: rpcError } = await supabase.rpc('get_section_gradebook', {
+        p_section_id: targetSection,
+      });
+      if (rpcError) throw rpcError;
+      const next = data as GradebookPayload;
+      setPayload(next);
+      const weights = next.grading.weights ?? {};
+      setWeightsDraft(Object.fromEntries(
+        COUNTED_GRADE_CATEGORIES.map((category) => [category, String(weights[category] ?? 0)])
+      ) as Record<CountedGradeCategory, string>);
+    } catch (err) {
+      setPayload(null);
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  useEffect(() => {
+    if (sectionId) void loadGradebook(sectionId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sectionId]);
+
+  const students = useMemo<StudentRow[]>(() => {
+    if (!payload) return [];
+    const map = new Map<string, StudentRow>();
+
+    for (const student of payload.roster) {
+      const key = gradebookStudentKey(student.attendance_student_id, student.external_student_id);
+      map.set(key, {
+        key,
+        name: student.display_name,
+        externalId: student.external_student_id ?? 'No student ID',
+        rosterLinked: true,
+        submissions: [],
+        jobCards: [],
+      });
+    }
+
+    for (const submission of payload.submissions) {
+      const key = gradebookStudentKey(submission.attendance_student_id, submission.student_id);
+      const row = map.get(key) ?? {
+        key,
+        name: submission.student_name,
+        externalId: submission.student_id,
+        rosterLinked: Boolean(submission.attendance_student_id),
+        submissions: [],
+        jobCards: [],
+      };
+      row.submissions.push(submission);
+      map.set(key, row);
+    }
+
+    for (const evidence of payload.job_card_evidence) {
+      const key = gradebookStudentKey(evidence.attendance_student_id, evidence.student_id);
+      const row = map.get(key) ?? {
+        key,
+        name: evidence.student_name,
+        externalId: evidence.student_id,
+        rosterLinked: Boolean(evidence.attendance_student_id),
+        submissions: [],
+        jobCards: [],
+      };
+      row.jobCards.push(evidence);
+      map.set(key, row);
+    }
+
+    return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+  }, [payload]);
+
+  useEffect(() => {
+    if (students.length && !students.some((student) => student.key === selectedStudentKey)) {
+      setSelectedStudentKey(students[0].key);
+    }
+  }, [students, selectedStudentKey]);
+
+  const selectedStudent = students.find((student) => student.key === selectedStudentKey) ?? null;
+  const unmatchedCount = students.filter((student) => !student.rosterLinked && (student.submissions.length || student.jobCards.length)).length;
+  const activeWeights = payload?.grading.weights ?? {};
+
+  const saveWeights = async () => {
+    if (!payload) return;
+    const weights = Object.fromEntries(
+      COUNTED_GRADE_CATEGORIES.map((category) => [category, Number(weightsDraft[category] || 0)])
+    ) as GradeWeights;
+    const total = gradeWeightTotal(weights);
+    if (Math.round(total * 100) / 100 !== 100) {
+      setError(`Grade weights must total 100%. Current total: ${total}%.`);
+      return;
+    }
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      const { error: saveError } = await supabase.rpc('save_course_grade_settings', {
+        p_course_id: payload.section.course_id,
+        p_weights: weights,
+      });
+      if (saveError) throw saveError;
+      setNotice('Course grade weights saved.');
+      await loadGradebook(payload.section.section_id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const clearWeights = async () => {
+    if (!payload) return;
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      const { error: saveError } = await supabase.rpc('save_course_grade_settings', {
+        p_course_id: payload.section.course_id,
+        p_weights: {},
+      });
+      if (saveError) throw saveError;
+      setNotice('Weighted overall grade disabled. Category averages remain available.');
+      await loadGradebook(payload.section.section_id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const reclassifySession = async (sessionId: string, category: GradeCategory) => {
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      const { error: updateError } = await supabase.rpc('set_classroom_session_grade_category', {
+        p_session_id: sessionId,
+        p_grade_category: category,
+      });
+      if (updateError) throw updateError;
+      setNotice(`Gradebook classification updated to ${gradeCategoryLabel(category)}.`);
+      await loadGradebook();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (loading) return <main className="loading">Opening Student Progress…</main>;
+
+  return (
+    <div className="shell">
+      <header>
+        <div>
+          <div className="eyebrow">Living Teacher Guide · Live Classroom Evidence</div>
+          <h1>Student Progress & Gradebook</h1>
+          <p>Historical scores, category averages, practical evidence, and current course progress.</p>
+        </div>
+        <div className="header-actions">
+          <button onClick={() => router.push(sectionId ? `/classroom?section=${encodeURIComponent(sectionId)}` : '/classroom')}>Live Classroom</button>
+          <button onClick={() => router.push('/dashboard')}>Back to Planner</button>
+        </div>
+      </header>
+
+      <main>
+        {error && <div className="error">{error}</div>}
+        {notice && <div className="notice">{notice}</div>}
+
+        <section className="panel section-picker">
+          <label>
+            Teaching Section
+            <select value={sectionId} onChange={(event) => setSectionId(event.target.value)}>
+              {sections.map((section) => (
+                <option key={section.section_id} value={section.section_id}>
+                  {section.course_code ?? ''} · {section.section_name ?? section.section_code ?? 'Class'}
+                </option>
+              ))}
+            </select>
+          </label>
+          {payload && (
+            <div className="course-identity">
+              <span>{payload.section.course_code}</span>
+              <strong>{payload.section.course_name}</strong>
+              <small>{payload.section.section_name}</small>
+            </div>
+          )}
+          <div className="status-box">
+            <span>Overall Grade</span>
+            <strong>{payload?.grading.configured ? 'Weighted' : 'Not configured'}</strong>
+            <small>{payload?.grading.configured ? 'Uses approved course weights below' : 'Category averages only; no official weighting invented'}</small>
+          </div>
+        </section>
+
+        {unmatchedCount > 0 && (
+          <div className="warning">
+            <strong>{unmatchedCount} student record{unmatchedCount === 1 ? '' : 's'} need roster matching.</strong>
+            <span>Scores are preserved, but the typed Student ID did not resolve unambiguously to the Attendance roster.</span>
+          </div>
+        )}
+
+        <nav>
+          <button className={view === 'class' ? 'active' : ''} onClick={() => setView('class')}>Class Gradebook</button>
+          <button className={view === 'student' ? 'active' : ''} onClick={() => setView('student')}>Student Progress</button>
+          <button className={view === 'history' ? 'active' : ''} onClick={() => setView('history')}>Assessment History</button>
+          <button className={view === 'settings' ? 'active' : ''} onClick={() => setView('settings')}>Grading Setup</button>
+        </nav>
+
+        {busy && <div className="busy">Updating gradebook…</div>}
+
+        {payload && view === 'class' && (
+          <section className="panel">
+            <div className="panel-head">
+              <div><div className="eyebrow">Current Progress</div><h2>Class Gradebook</h2></div>
+              <div className="legend">Practice and competency-only evidence do not affect averages.</div>
+            </div>
+            <div className="table-wrap">
+              <table>
+                <thead><tr><th>Student</th><th>Tests</th><th>Quizzes</th><th>Tasks</th><th>Activities</th><th>Practical</th><th>Current Overall</th><th>Evidence</th></tr></thead>
+                <tbody>
+                  {students.map((student) => {
+                    const averages = categoryAverages(student.submissions);
+                    const overall = currentWeightedAverage(averages, activeWeights);
+                    return (
+                      <tr key={student.key}>
+                        <td><button className="student-link" onClick={() => { setSelectedStudentKey(student.key); setView('student'); }}>{student.name}<small>{student.externalId}{!student.rosterLinked ? ' · roster match needed' : ''}</small></button></td>
+                        <td>{formatPercent(averages.test)}</td>
+                        <td>{formatPercent(averages.quiz)}</td>
+                        <td>{formatPercent(averages.task)}</td>
+                        <td>{formatPercent(averages.activity)}</td>
+                        <td>{formatPercent(averages.practical)}</td>
+                        <td><strong className="overall">{payload.grading.configured ? formatPercent(overall) : 'Not weighted'}</strong><small>{student.submissions.filter((item) => item.counts_toward_grade).length} graded item(s)</small></td>
+                        <td>{student.jobCards.length} job card{student.jobCards.length === 1 ? '' : 's'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              {!students.length && <div className="empty">No roster or Live Classroom evidence found for this section yet.</div>}
+            </div>
+          </section>
+        )}
+
+        {payload && view === 'student' && (
+          <section className="student-layout">
+            <aside className="panel roster-panel">
+              <div className="eyebrow">Student Roster</div>
+              {students.map((student) => (
+                <button key={student.key} className={student.key === selectedStudentKey ? 'selected' : ''} onClick={() => setSelectedStudentKey(student.key)}>
+                  <strong>{student.name}</strong><span>{student.externalId}</span>
+                </button>
+              ))}
+            </aside>
+
+            <section className="panel student-detail">
+              {selectedStudent ? (() => {
+                const averages = categoryAverages(selectedStudent.submissions);
+                const weighted = currentWeightedAverage(averages, activeWeights);
+                const unweighted = unweightedGradeAverage(selectedStudent.submissions);
+                return <>
+                  <div className="panel-head"><div><div className="eyebrow">Student Progress</div><h2>{selectedStudent.name}</h2><p>{selectedStudent.externalId}{selectedStudent.rosterLinked ? ' · linked to Attendance roster' : ' · roster match needed'}</p></div><div className="big-grade"><span>Current Overall</span><strong>{payload.grading.configured ? formatPercent(weighted) : formatPercent(unweighted)}</strong><small>{payload.grading.configured ? 'weighted current grade' : 'unweighted graded-item average'}</small></div></div>
+                  <div className="category-grid">
+                    {COUNTED_GRADE_CATEGORIES.map((category) => <div key={category}><span>{gradeCategoryLabel(category)}</span><strong>{formatPercent(averages[category])}</strong><small>{selectedStudent.submissions.filter((item) => item.counts_toward_grade && item.grade_category === category).length} item(s)</small></div>)}
+                  </div>
+                  <h3>Live Classroom Results</h3>
+                  <div className="history-list">
+                    {selectedStudent.submissions.map((item) => <article key={item.submission_id}><div><strong>{item.assessment_title}</strong><span>{formatDate(item.submitted_at)} · {gradeCategoryLabel(item.grade_category)}{!item.counts_toward_grade ? ' · evidence only' : ''}</span></div><div className="score"><strong>{formatPercent(item.percent)}</strong><small>{item.score}/{item.possible_score}</small></div></article>)}
+                    {!selectedStudent.submissions.length && <p className="muted">No Live Classroom submissions yet.</p>}
+                  </div>
+                  <h3>Practical / Job Card Evidence</h3>
+                  <div className="history-list">
+                    {selectedStudent.jobCards.map((item) => <article key={item.submission_id}><div><strong>{item.job_title}</strong><span>{formatDate(item.submitted_at)}{item.planner_day_number ? ` · Day ${item.planner_day_number}` : ''}</span>{item.review_notes && <small>{item.review_notes}</small>}</div><div className={`decision ${item.review_decision ?? 'pending'}`}>{item.review_decision === 'accepted' ? 'Accepted' : item.review_decision === 'correction_required' ? 'Correction Required' : 'Pending Review'}</div></article>)}
+                    {!selectedStudent.jobCards.length && <p className="muted">No Live Job Card evidence yet.</p>}
+                  </div>
+                </>;
+              })() : <div className="empty">Select a student.</div>}
+            </section>
+          </section>
+        )}
+
+        {payload && view === 'history' && (
+          <section className="panel">
+            <div className="panel-head"><div><div className="eyebrow">All Sessions</div><h2>Assessment History</h2></div><span className="legend">Old sessions begin as Practice Only until intentionally classified.</span></div>
+            <div className="table-wrap"><table><thead><tr><th>Date</th><th>Assessment</th><th>Category</th><th>Students</th><th>Class Avg.</th><th>Status</th></tr></thead><tbody>
+              {payload.sessions.map((session) => <tr key={session.session_id}><td>{formatDate(session.started_at)}</td><td><strong>{session.assessment_title}</strong><small>{session.assessment_slug}</small></td><td>{session.can_reclassify ? <select value={session.grade_category} disabled={busy} onChange={(event) => void reclassifySession(session.session_id, event.target.value as GradeCategory)}>{GRADE_CATEGORY_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}{option.counts ? '' : ' · not averaged'}</option>)}</select> : gradeCategoryLabel(session.grade_category)}</td><td>{session.submission_count}</td><td>{formatPercent(session.class_average)}</td><td>{session.status}</td></tr>)}
+            </tbody></table>{!payload.sessions.length && <div className="empty">No historical Live Classroom sessions found.</div>}</div>
+          </section>
+        )}
+
+        {payload && view === 'settings' && (
+          <section className="panel settings-panel">
+            <div className="panel-head"><div><div className="eyebrow">Course-Level Rule</div><h2>Grading Setup</h2></div><div className="weight-total">Total <strong>{gradeWeightTotal(Object.fromEntries(COUNTED_GRADE_CATEGORIES.map((category) => [category, Number(weightsDraft[category] || 0)])) as GradeWeights)}%</strong></div></div>
+            <p>Weights apply to this course. LTG does not invent a formula. Until authorized weights total 100%, the gradebook shows category and unweighted progress only.</p>
+            <div className="weight-grid">
+              {COUNTED_GRADE_CATEGORIES.map((category) => <label key={category}>{gradeCategoryLabel(category)}<div><input type="number" min="0" max="100" step="1" disabled={!payload.can_manage_grading || busy} value={weightsDraft[category]} onChange={(event) => setWeightsDraft((current) => ({ ...current, [category]: event.target.value }))}/><span>%</span></div></label>)}
+            </div>
+            {payload.can_manage_grading ? <div className="actions"><button className="primary" disabled={busy} onClick={() => void saveWeights()}>Save Course Weights</button><button disabled={busy} onClick={() => void clearWeights()}>Disable Weighted Overall</button></div> : <div className="warning compact"><strong>Read only</strong><span>School or program administrator access is required to change the official course weighting.</span></div>}
+            <div className="policy"><strong>Calculation method</strong><span>Each category is the mean of the included item percentages. The current overall grade applies configured category weights only to categories that already contain graded evidence.</span></div>
+          </section>
+        )}
+      </main>
+
+      <style jsx>{`
+        .shell{min-height:100vh;background:#080808;color:#d7d7d7}.loading{min-height:100vh;display:grid;place-items:center;background:#080808;color:#aaa}header{display:flex;justify-content:space-between;gap:24px;align-items:center;padding:21px 28px;border-bottom:1px solid #292929;background:#111}header h1{margin:4px 0;color:#fff}header p{margin:5px 0 0;color:#888}.eyebrow{color:#9adf4b;text-transform:uppercase;letter-spacing:.12em;font-size:10px;font-weight:900}.header-actions,.actions{display:flex;gap:9px;flex-wrap:wrap}button{padding:10px 14px;border:1px solid #383838;border-radius:7px;background:#151515;color:#ddd;font-weight:800;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}.primary{border-color:#9adf4b;color:#caff77}main{width:min(1240px,calc(100% - 28px));margin:auto;padding:24px 0 55px}.panel{margin-bottom:16px;padding:20px;border:1px solid #292929;border-radius:10px;background:#131313}.section-picker{display:grid;grid-template-columns:minmax(280px,1.3fr) 1fr 1fr;gap:18px;align-items:end}.section-picker label,.weight-grid label{display:grid;gap:7px;color:#888;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}select,input{box-sizing:border-box;width:100%;padding:11px;border:1px solid #353535;border-radius:7px;background:#090909;color:#eee}.course-identity,.status-box{display:grid;gap:3px}.course-identity span,.status-box span{color:#777;font-size:10px;text-transform:uppercase}.course-identity strong,.status-box strong{color:#fff}.course-identity small,.status-box small{color:#777}.error,.notice,.warning,.busy{margin-bottom:14px;padding:12px 14px;border:1px solid #713333;border-radius:8px;color:#ff9e9e;background:#170d0d}.notice{border-color:#345f3e;color:#9eeab0;background:#0d1710}.warning{display:grid;gap:4px;border-color:#735c2c;color:#f2ca75;background:#17130b}.warning span{color:#b79d68}.warning.compact{margin:14px 0 0}.busy{border-color:#344f65;color:#9ed8ff;background:#0b1217}nav{display:flex;gap:8px;margin:18px 0;overflow-x:auto}nav button{white-space:nowrap}nav button.active{border-color:#9adf4b;color:#caff77;background:rgba(154,223,75,.08)}.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}.panel-head h2{margin:4px 0;color:#fff}.panel-head p{color:#888}.legend{max-width:420px;color:#777;font-size:11px;text-align:right}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;margin-top:12px}th,td{padding:11px;border-bottom:1px solid #292929;text-align:left;vertical-align:middle}th{color:#777;font-size:9px;text-transform:uppercase;letter-spacing:.08em}td small{display:block;margin-top:4px;color:#777}.student-link{padding:0;border:0;background:none;text-align:left;color:#eee}.student-link:hover strong{color:#caff77}.overall{color:#fff}.empty{padding:35px;text-align:center;color:#666}.student-layout{display:grid;grid-template-columns:260px 1fr;gap:16px}.roster-panel{display:flex;flex-direction:column;gap:7px;align-self:start}.roster-panel>button{display:grid;gap:3px;text-align:left}.roster-panel>button span{color:#777;font-size:10px}.roster-panel>button.selected{border-color:#9adf4b;background:rgba(154,223,75,.08)}.student-detail h3{margin:26px 0 10px;color:#fff}.big-grade{display:grid;gap:3px;text-align:right}.big-grade span{color:#777;font-size:10px;text-transform:uppercase}.big-grade strong{color:#caff77;font-size:30px}.big-grade small{color:#777}.category-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-top:16px}.category-grid>div{display:grid;gap:3px;padding:13px;border:1px solid #292929;border-radius:8px;background:#0d0d0d}.category-grid span{color:#777;font-size:9px;text-transform:uppercase}.category-grid strong{color:#fff;font-size:20px}.category-grid small{color:#666}.history-list{display:grid;gap:8px}.history-list article{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:12px;border:1px solid #292929;border-radius:8px;background:#0d0d0d}.history-list article>div:first-child{display:grid;gap:4px}.history-list article span,.history-list article small{color:#777;font-size:11px}.score{text-align:right}.score strong{display:block;color:#fff;font-size:18px}.score small{color:#777}.decision{padding:7px 9px;border:1px solid #555;border-radius:6px;font-size:10px;font-weight:900;text-transform:uppercase}.decision.accepted{border-color:#386847;color:#9eeab0}.decision.correction_required{border-color:#704141;color:#ffaaaa}.decision.pending{color:#aaa}.muted{color:#777}.settings-panel>p{max-width:850px;color:#888;line-height:1.5}.weight-total{color:#777}.weight-total strong{color:#fff;font-size:22px}.weight-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:18px 0}.weight-grid label>div{display:flex;align-items:center;gap:6px}.weight-grid label span{color:#777}.policy{display:grid;gap:5px;margin-top:20px;padding:14px;border-left:3px solid #9adf4b;background:#0d0d0d}.policy span{color:#888;line-height:1.5;font-size:12px}
+        @media(max-width:900px){.section-picker{grid-template-columns:1fr}.category-grid,.weight-grid{grid-template-columns:repeat(2,1fr)}.student-layout{grid-template-columns:1fr}.roster-panel{max-height:280px;overflow:auto}}
+        @media(max-width:680px){header{align-items:flex-start;flex-direction:column}.header-actions{width:100%}.header-actions button{flex:1}.panel-head{flex-direction:column}.legend,.big-grade{text-align:left}.category-grid,.weight-grid{grid-template-columns:1fr}.history-list article{align-items:flex-start;flex-direction:column}.score{text-align:left}}
+      `}</style>
+    </div>
+  );
+}
