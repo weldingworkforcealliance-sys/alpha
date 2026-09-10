@@ -231,12 +231,10 @@ export default function OwnerAdminPage() {
     try {
       const { error: e } = await supabase.auth.resetPasswordForEmail(p.email, { redirectTo: `${window.location.origin}/reset-password` });
       if (e) throw e;
-      const { error: auditError } = await supabase.rpc('write_audit_event', {
-        check_school_id: null,
-        p_action: 'owner_send_password_reset',
-        p_entity_type: 'profile',
-        p_entity_id: p.id,
-        p_details: { email: p.email, reason: passwordReason.trim() },
+      const { error: auditError } = await supabase.rpc('record_owner_password_reset_request', {
+        p_user_id: p.id,
+        p_email: p.email,
+        p_reason: passwordReason.trim(),
       });
       if (auditError) throw auditError;
       setNotice(`Password reset email sent to ${p.email}.`);
