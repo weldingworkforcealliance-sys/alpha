@@ -134,6 +134,10 @@ export default function Home() {
             <h3>Nursing</h3>
             <p>Retained on the roadmap as a future health-sciences demonstration after the Radiography proof is reviewed.</p>
           </article>
+          <article>
+            <h3>Beyond one department</h3>
+            <p>Each program can keep its own approved curriculum, terminology, evidence model, instructional workflow, and reporting context while using the same LTG operating layer.</p>
+          </article>
         </div>
       </section>
 
