@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
 
@@ -25,18 +25,15 @@ const LIVE_DAYS: Record<number, LiveConfig> = {
 type TeachingSection = {
   section_id: string;
   section_code: string | null;
-  course_code: string | null;
-  section_name: string | null;
 };
 
-export default function RadiographyLiveLauncherPage() {
+export default function RadiographyLiveClassroomHandoff() {
   const router = useRouter();
   const [supabase] = useState(getSupabase);
   const [dayNumber, setDayNumber] = useState<number | null>(null);
-  const [status, setStatus] = useState('Preparing Connected Classroom…');
+  const [status, setStatus] = useState('Opening LTG Live Classroom…');
   const [error, setError] = useState('');
   const [needsLogin, setNeedsLogin] = useState(false);
-  const launchedKey = useRef('');
 
   const config = useMemo(() => LIVE_DAYS[dayNumber ?? 1] ?? LIVE_DAYS[1], [dayNumber]);
 
@@ -47,12 +44,9 @@ export default function RadiographyLiveLauncherPage() {
 
   useEffect(() => {
     if (dayNumber === null) return;
-    const key = `${config.day}:${config.assessmentSlug}`;
-    if (launchedKey.current === key) return;
-    launchedKey.current = key;
     let cancelled = false;
 
-    const launchClassroom = async () => {
+    const handoff = async () => {
       setError('');
       setNeedsLogin(false);
       setStatus(`Locating ${config.course} demo section…`);
@@ -63,7 +57,6 @@ export default function RadiographyLiveLauncherPage() {
         return;
       }
       if (!auth.session) {
-        launchedKey.current = '';
         if (!cancelled) {
           setNeedsLogin(true);
           setStatus('Instructor login required');
@@ -73,65 +66,45 @@ export default function RadiographyLiveLauncherPage() {
 
       const { data, error: sectionError } = await supabase
         .from('current_teaching_sections')
-        .select('section_id,section_code,course_code,section_name')
+        .select('section_id,section_code')
         .eq('section_code', config.sectionCode)
         .limit(1);
 
       if (sectionError) {
-        launchedKey.current = '';
         if (!cancelled) setError(sectionError.message);
         return;
       }
 
       const section = ((data ?? [])[0] ?? null) as TeachingSection | null;
       if (!section) {
-        launchedKey.current = '';
         if (!cancelled) {
-          setError(`The staging ${config.course} section (${config.sectionCode}) is not available to this account.`);
           setStatus('Radiography demo section not found');
-        }
-        return;
-      }
-
-      setStatus(`Starting ${config.assessmentTitle}…`);
-      const { error: launchError } = await supabase.rpc('start_classroom_session_v2', {
-        p_section_id: section.section_id,
-        p_assessment_slug: config.assessmentSlug,
-        p_expected_students: 8,
-      });
-
-      if (launchError) {
-        launchedKey.current = '';
-        if (!cancelled) {
-          setError(launchError.message);
-          setStatus('Could not start Connected Classroom');
+          setError(`The staging ${config.course} section (${config.sectionCode}) is not available to this account.`);
         }
         return;
       }
 
       if (!cancelled) {
-        setStatus(`Live session started. Opening ${config.assessmentTitle}…`);
-        router.replace(`/classroom?section=${encodeURIComponent(section.section_id)}&assessment=${encodeURIComponent(config.assessmentSlug)}`);
+        setStatus(`Opening ${config.assessmentTitle} in the built LTG Live Classroom…`);
+        router.replace(
+          `/classroom/planner?section=${encodeURIComponent(section.section_id)}&assessment=${encodeURIComponent(config.assessmentSlug)}`
+        );
       }
     };
 
-    launchClassroom();
+    handoff();
     return () => { cancelled = true; };
   }, [config, dayNumber, router, supabase]);
 
   return (
-    <main style={{ minHeight: '100vh', background: '#0d1b26', color: '#f1f4f6', padding: 'clamp(18px,4vw,54px)', display: 'grid', placeItems: 'center' }}>
-      <section style={{ width: 'min(760px,100%)', border: '1px solid #415668', borderTop: '4px solid #f0641d', background: '#172b3a', borderRadius: 14, padding: 24 }}>
-        <div style={{ color: '#f0641d', fontSize: 11, fontWeight: 900, letterSpacing: '.12em' }}>RADIOGRAPHY · CONNECTED CLASSROOM</div>
-        <h1 style={{ margin: '8px 0 4px', fontSize: 'clamp(28px,4vw,44px)' }}>{config.course} · Day {config.day}</h1>
-        <h2 style={{ margin: '0 0 18px', color: '#b9e2f1', fontSize: 20 }}>{config.assessmentTitle}</h2>
-        <p style={{ color: '#b4bec6', lineHeight: 1.6 }}>{status}</p>
-        {error && <div style={{ border: '1px solid #965b55', background: '#3b2020', color: '#ffd1cd', borderRadius: 8, padding: 12, marginTop: 14 }}>{error}</div>}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 20 }}>
-          {needsLogin && <button type="button" onClick={() => router.push('/login')} style={{ border: '1px solid #f0641d', background: '#e95d18', color: '#fff', borderRadius: 8, padding: '11px 14px', fontWeight: 900, cursor: 'pointer' }}>Instructor Login</button>}
-          <button type="button" onClick={() => router.push(`/demo/radiography?day=${config.day}`)} style={{ border: '1px solid #415668', background: '#233948', color: '#f1f4f6', borderRadius: 8, padding: '11px 14px', fontWeight: 900, cursor: 'pointer' }}>Back to Radiography LTG</button>
-        </div>
-        <p style={{ marginTop: 20, fontSize: 12, color: '#83939e', lineHeight: 1.5 }}>This launcher starts the same LTG Connected Classroom engine as the live Welding platform. The instructor dashboard opens with an 8-student session, QR code, join code, live submission count, scoring, and individual reports.</p>
+    <main style={{ minHeight: '100vh', background: '#080808', color: '#ddd', display: 'grid', placeItems: 'center', padding: 24 }}>
+      <section style={{ width: 'min(720px,100%)', border: '1px solid #292929', borderRadius: 12, background: '#131313', padding: 24 }}>
+        <div style={{ color: '#9adf4b', fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase' }}>Living Teacher Guide · Planner Assessment</div>
+        <h1 style={{ margin: '8px 0 4px', color: '#fff' }}>{config.course} · Day {config.day}</h1>
+        <h2 style={{ margin: '0 0 18px', color: '#fff', fontSize: 20 }}>{config.assessmentTitle}</h2>
+        <p style={{ color: '#999', lineHeight: 1.6 }}>{status}</p>
+        {error && <div style={{ border: '1px solid #713333', background: '#1c0c0c', color: '#ff9999', borderRadius: 8, padding: 12, marginTop: 14 }}>{error}</div>}
+        {needsLogin && <button type="button" onClick={() => router.push('/login')} style={{ marginTop: 18, border: '1px solid #9adf4b', background: 'rgba(154,223,75,.08)', color: '#caff77', borderRadius: 8, padding: '11px 14px', fontWeight: 900, cursor: 'pointer' }}>Instructor Login</button>}
       </section>
     </main>
   );
