@@ -127,8 +127,8 @@ export default function Home() {
             <p>Live implementation and current proof case for the LTG operating model.</p>
           </article>
           <article>
-            <h3>Nursing</h3>
-            <p>Next demonstration program for skills checklists, safety instruction, assessments, attendance, and instructor review.</p>
+            <h3>Radiography</h3>
+            <p>Next demonstration program for clinical competencies, imaging workflows, safety, assessments, attendance, and instructor review.</p>
           </article>
           <article>
             <h3>Beyond one department</h3>
