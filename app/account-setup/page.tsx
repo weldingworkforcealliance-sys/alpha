@@ -25,12 +25,53 @@ export default function AccountSetupPage() {
       setError('');
 
       try {
+        /*
+          Supabase's built-in confirmation email uses the implicit browser
+          flow when the account is created by the isolated signup client in
+          /accounts. After verification, Supabase redirects to this page with
+          access_token and refresh_token in the URL fragment. The SSR browser
+          client does not consume those implicit-flow tokens automatically, so
+          establish the session explicitly here.
+        */
+        const hashParams = new URLSearchParams(
+          window.location.hash.startsWith('#')
+            ? window.location.hash.slice(1)
+            : window.location.hash
+        );
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        const hashError = hashParams.get('error_description');
+
+        if (hashError) {
+          throw new Error(hashError);
+        }
+
+        if (accessToken && refreshToken) {
+          const { data: sessionData, error: sessionError } =
+            await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+
+          if (sessionError) {
+            throw sessionError;
+          }
+
+          if (sessionData.user?.email) {
+            setEmail(sessionData.user.email);
+          }
+
+          window.history.replaceState({}, '', window.location.pathname);
+          setReady(true);
+          setMessage('Invitation link verified. Create your password below.');
+          return;
+        }
+
         const params = new URLSearchParams(window.location.search);
         const tokenHash = params.get('token_hash');
         const code = params.get('code');
 
-        // Preferred invitation flow: token-hash links work across devices and
-        // do not depend on PKCE state stored in the inviter's browser.
+        // Future-compatible token-hash flow for custom SMTP/templates.
         if (tokenHash) {
           const { data: verifyData, error: verifyError } =
             await supabase.auth.verifyOtp({
@@ -52,8 +93,7 @@ export default function AccountSetupPage() {
           return;
         }
 
-        // Legacy PKCE callback support for links created before token-hash
-        // templates were enabled.
+        // Legacy PKCE callback support.
         if (code) {
           const { error: exchangeError } =
             await supabase.auth.exchangeCodeForSession(code);
