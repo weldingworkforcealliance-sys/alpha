@@ -270,6 +270,11 @@ export default function RadiographyDemoPage() {
   const [savedMessage, setSavedMessage] = useState('');
 
   useEffect(() => {
+    const value = Number(new URLSearchParams(window.location.search).get('day'));
+    if (value >= 1 && value <= DAYS.length) setViewingDay(value);
+  }, []);
+
+  useEffect(() => {
     if (!startedAt) return;
     const timer = window.setInterval(() => setTimerNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
@@ -282,6 +287,14 @@ export default function RadiographyDemoPage() {
   const isCurrentDay = viewingDay === currentDay;
   const dayOptions: PlannerDayOption[] = DAYS.map((item) => ({ id: item.id, dayNumber: item.day, title: item.title }));
   const protectedOutcomes = OUTCOMES.filter((outcome) => day.outcomes.includes(outcome.code));
+  const liveClassroomResource: PlannerLaunchResource = {
+    id: `d${day.day}-live-classroom`,
+    title: `Launch Day ${day.day} Live Classroom`,
+    url: `/demo/radiography/live?day=${day.day}`,
+    type: 'assessment',
+    notes: 'Starts the real LTG Connected Classroom session for this Radiography day',
+    required: true,
+  };
 
   const supportItems = useMemo<PlannerSupportItem[]>(() => [
     { key: 'safety', label: 'Safety / Clinical Boundary', body: day.support.safety },
@@ -354,7 +367,7 @@ export default function RadiographyDemoPage() {
         formatLabel={day.format}
         protectedOutcomes={protectedOutcomes}
         rows={day.rows}
-        resources={day.resources}
+        resources={[liveClassroomResource, ...day.resources]}
         supportItems={supportItems}
         dayOptions={dayOptions}
         selectedGuideDayId={day.id}
