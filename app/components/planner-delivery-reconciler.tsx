@@ -134,10 +134,11 @@ export default function PlannerDeliveryReconciler() {
         };
 
         const previous = previousRef.current;
-        const completedTransition =
+        const activeDeliveryChanged =
           wasInProgress(previous) &&
           (
             previous?.plannerDayId !== next.plannerDayId ||
+            !inProgress ||
             next.deliveryStatus === 'completed' ||
             Boolean(next.deliveryCompletedAt) ||
             Boolean(next.sectionCompletedAt)
@@ -146,7 +147,7 @@ export default function PlannerDeliveryReconciler() {
         previousRef.current = next;
         storeSnapshot(sectionId, next);
 
-        if (completedTransition) {
+        if (activeDeliveryChanged) {
           reloadingRef.current = true;
           window.location.reload();
         }
