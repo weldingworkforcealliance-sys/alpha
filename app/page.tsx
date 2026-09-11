@@ -3,7 +3,7 @@ import './marketing.css';
 
 const features = [
   {
-    title: 'Living Daily Planner',
+    title: 'Living Teacher Guide',
     body: 'Turns approved curriculum into a usable day-by-day instructor workflow while protecting approved course outcomes.',
   },
   {
@@ -35,12 +35,13 @@ export default function Home() {
         <Link href="/" className="ltg-marketing-brand" aria-label="LTG home">
           <span className="ltg-marketing-mark">LTG</span>
           <span>
-            Living Teacher Guide
-            <small>Education Operating System</small>
+            Education Operating System
+            <small>Powered by the Living Teacher Guide</small>
           </span>
         </Link>
         <nav aria-label="Public site navigation">
           <a href="#platform">Platform</a>
+          <a href="#guide">Living Teacher Guide</a>
           <a href="#programs">Programs</a>
           <a href="#beta">Beta Partners</a>
           <Link href="/login" className="ltg-marketing-login">
@@ -50,20 +51,20 @@ export default function Home() {
       </header>
 
       <section className="ltg-marketing-hero">
-        <div className="ltg-marketing-kicker">Built in a real classroom. Designed to scale beyond one program.</div>
-        <h1>One operating system for the work that happens between curriculum and the classroom.</h1>
+        <div className="ltg-marketing-kicker">LTG · Education Operating System</div>
+        <h1>The operating system for the work between curriculum and the classroom.</h1>
         <p>
-          LTG connects instructor planning, live classroom activities, attendance, student progress,
-          workforce timekeeping, and school reporting without replacing the approved curriculum that
-          makes each program its own.
+          LTG connects curriculum delivery, instructor planning, live classroom activities,
+          attendance, student progress, workforce timekeeping, and school reporting without
+          replacing the approved curriculum that makes each program its own.
         </p>
         <div className="ltg-marketing-actions">
           <a href="#beta" className="ltg-marketing-primary">Founding School Beta</a>
           <Link href="/login" className="ltg-marketing-secondary">Open LTG</Link>
         </div>
         <div className="ltg-marketing-proof-grid" aria-label="Current product proof points">
-          <div><strong>Live</strong><span>Operating in an active welding program</span></div>
-          <div><strong>Connected</strong><span>Planner, classroom, attendance, reporting, and time clock</span></div>
+          <div><strong>Live</strong><span>Operating in an active technical education program</span></div>
+          <div><strong>Connected</strong><span>Instruction, classroom, attendance, reporting, and workforce operations</span></div>
           <div><strong>Protected</strong><span>Role-based school access and curriculum safeguards</span></div>
         </div>
       </section>
@@ -71,11 +72,11 @@ export default function Home() {
       <section className="ltg-marketing-section" id="platform">
         <div className="ltg-marketing-section-heading">
           <span>THE PLATFORM</span>
-          <h2>LTG is not another folder full of lesson plans.</h2>
+          <h2>One operating layer for daily education delivery.</h2>
           <p>
-            It is the operating layer instructors and administrators use every day. The point is not
-            to collect more information. Schools already have enough places to put information. The
-            point is to make the information usable while class is actually happening.
+            Schools already have systems for storing information. LTG is built for using that
+            information while instruction is actually happening. It connects the daily work of
+            instructors, students, administrators, and program leadership in one operational flow.
           </p>
         </div>
         <div className="ltg-marketing-feature-grid">
@@ -88,31 +89,58 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="ltg-marketing-program-band" id="programs">
+      <section className="ltg-marketing-program-band" id="guide">
         <div>
-          <span>PROVEN IMPLEMENTATION</span>
-          <h2>Welding is the first proof, not the boundary.</h2>
+          <span>THE CORE INSTRUCTION ENGINE</span>
+          <h2>The Living Teacher Guide turns approved curriculum into a live daily workflow.</h2>
           <p>
-            LTG was built against the demands of an active technical program: multiple courses,
-            instructor assignments, practical activities, attendance, assessments, student records,
-            and daily delivery. That working implementation becomes the proof case for the platform.
+            At the center of LTG is the Living Teacher Guide. It gives instructors a day-by-day
+            teaching workspace for pacing, demonstrations, resources, notes, activities, and class
+            progress while protecting approved curriculum and course outcomes from unauthorized
+            changes.
           </p>
         </div>
         <div className="ltg-marketing-program-card">
-          <span>NEXT DEMONSTRATION PROGRAM</span>
-          <h3>Nursing</h3>
+          <span>PROTECTED BY DESIGN</span>
+          <h3>Curriculum stays curriculum.</h3>
           <p>
-            A program-neutral Nursing demonstration will show the same LTG engine supporting skills
-            checklists, safety instruction, classroom activities, assessments, attendance, and
-            instructor review without relying on welding-specific workflows.
+            Instructors and administrators can improve implementation without silently rewriting
+            approved course outcomes. Core curriculum changes remain a formal review decision.
           </p>
+        </div>
+      </section>
+
+      <section className="ltg-marketing-section" id="programs">
+        <div className="ltg-marketing-section-heading">
+          <span>PROGRAM NEUTRAL</span>
+          <h2>Welding is the first proof, not the boundary.</h2>
+          <p>
+            LTG was built against the demands of a real welding program: multiple courses,
+            instructor assignments, practical activities, attendance, assessments, student records,
+            and daily delivery. That working implementation is the proof case for a platform designed
+            to support other career, technical, and professional programs.
+          </p>
+        </div>
+        <div className="ltg-marketing-feature-grid">
+          <article>
+            <h3>Welding</h3>
+            <p>Live implementation and current proof case for the LTG operating model.</p>
+          </article>
+          <article>
+            <h3>Nursing</h3>
+            <p>Next demonstration program for skills checklists, safety instruction, assessments, attendance, and instructor review.</p>
+          </article>
+          <article>
+            <h3>Beyond one department</h3>
+            <p>The same operating model can be configured around each program's approved curriculum, workflows, and outcomes.</p>
+          </article>
         </div>
       </section>
 
       <section className="ltg-marketing-section ltg-marketing-security">
         <div className="ltg-marketing-section-heading">
           <span>BUILT FOR SCHOOL OPERATIONS</span>
-          <h2>Role-based access keeps each user focused on the information they are responsible for.</h2>
+          <h2>Each role sees the information it is responsible for.</h2>
         </div>
         <div className="ltg-marketing-role-grid">
           <div><strong>Instructor</strong><p>Classes, daily instruction, student progress, attendance, and personal time records.</p></div>
@@ -147,7 +175,7 @@ export default function Home() {
       <footer className="ltg-marketing-footer">
         <div>
           <strong>LTG</strong>
-          <span>Living Teacher Guide · Education Operating System</span>
+          <span>Education Operating System · Living Teacher Guide core</span>
         </div>
         <Link href="/login">Platform Login</Link>
       </footer>
