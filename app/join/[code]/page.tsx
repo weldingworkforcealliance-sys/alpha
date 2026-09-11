@@ -52,6 +52,7 @@ export default function StudentAssessmentPage(){
       const payload=data as {session:SessionInfo;questions:Question[]};
       setInfo(payload.session);
       setQuestions(payload.questions);
+      if(payload.session.reference_body&&!payload.session.reference_image_url)setReferenceOpen(true);
       try{
         const saved=JSON.parse(localStorage.getItem(storageKey)??'{}');
         if(saved.name)setName(saved.name);
@@ -212,7 +213,7 @@ export default function StudentAssessmentPage(){
   if(!started)return <main className="center">
     <div className="start-stack">
       <div className="card">
-        <div className="eyebrow">PCCC Welding · Living Teacher Guide</div>
+        <div className="eyebrow">{info.session_name} · Living Teacher Guide</div>
         <h1>{info.assessment_title}</h1>
         <p>{info.question_count} live-check items · Results are sent directly to your instructor.</p>
         {info.instructions&&<div className="instructions">{info.instructions}</div>}
@@ -224,7 +225,7 @@ export default function StudentAssessmentPage(){
             <input value={teamMembers} onChange={e=>setTeamMembers(e.target.value)} placeholder="Names of students working with you"/>
           </label>
         }
-        <button disabled={!name.trim()||!studentId.trim()} onClick={()=>{setReferenceOpen(false);setReferenceMaximized(false);setStarted(true);}}>Begin Live Activity</button>
+        <button disabled={!name.trim()||!studentId.trim()} onClick={()=>{setReferenceMaximized(false);if(info.reference_image_url)setReferenceOpen(false);setStarted(true);}}>Begin Live Activity</button>
         <p className="draft-note">Your answers are saved on this device until you submit.</p>
       </div>
       <ReferencePanel/>
