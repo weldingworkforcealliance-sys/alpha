@@ -31,7 +31,7 @@ describe('standalone LTG product shell', () => {
     const home = read('app/page.tsx');
 
     expect(home).toContain('Welding is the first proof, not the boundary.');
-    expect(home).toContain('Nursing');
+    expect(home).toContain('Radiography');
     expect(home).toContain('Beyond one department');
   });
 
