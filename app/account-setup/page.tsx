@@ -34,6 +34,7 @@ export default function AccountSetupPage() {
 
           if (!exchangeError) {
             setReady(true);
+            setMessage('Invitation link verified. Create your password below.');
             return;
           }
         }
@@ -42,6 +43,7 @@ export default function AccountSetupPage() {
 
         if (data.session) {
           setReady(true);
+          setMessage('Invitation link verified. Create your password below.');
         }
       } catch (err) {
         console.error(err);
@@ -142,13 +144,21 @@ export default function AccountSetupPage() {
         {!ready ? (
           <>
             <p>
-              Enter your school email address and the verification code from
-              your invitation email.
+              Open the invitation email and click its confirmation link. That is
+              the normal setup path. If your email includes a numeric verification
+              code instead, you can enter it below.
             </p>
+
+            <div className="info">
+              No code in the email? That is normal for link-based invitations.
+              Use the confirmation link in the email and this page will continue
+              to password setup automatically.
+            </div>
 
             {error && <div className="error">{error}</div>}
             {message && <div className="success">{message}</div>}
 
+            <div className="fallback-label">Optional code fallback</div>
             <div className="form">
               <label>
                 Email
@@ -260,6 +270,26 @@ export default function AccountSetupPage() {
           color: #888;
           line-height: 1.5;
           margin: 0 0 20px;
+        }
+
+        .info {
+          margin-bottom: 18px;
+          padding: 11px;
+          border: 1px solid #2f3a3a;
+          border-radius: 7px;
+          background: #101616;
+          color: #a8c5c5;
+          font-size: 13px;
+          line-height: 1.45;
+        }
+
+        .fallback-label {
+          margin: 18px 0 10px;
+          color: #777;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          font-size: 10px;
+          font-weight: 850;
         }
 
         .form {
