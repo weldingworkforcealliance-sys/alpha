@@ -44,7 +44,7 @@ describe('Radiography cross-discipline demo', () => {
     expect(student).toContain('Clinical boundary');
   });
 
-  it('connects the Radiography demo without deleting Nursing', () => {
+  it('connects the Radiography demo while retaining Nursing for future use', () => {
     const selector = read('app/demo/programs/page.tsx');
     const home = read('app/page.tsx');
 
@@ -53,7 +53,8 @@ describe('Radiography cross-discipline demo', () => {
     expect(selector).toContain("router.push('/demo/nursing')");
     expect(selector).toContain('FUTURE HEALTH SCIENCES DEMONSTRATION');
     expect(home).toContain('<h3>Radiography</h3>');
-    expect(home).toContain('<h3>Nursing</h3>');
+    expect(home).toContain('NEXT DEMONSTRATION');
+    expect(home).toContain('Beyond one department');
   });
 
   it('preserves live-LTG presentation parity after the redesign', () => {
