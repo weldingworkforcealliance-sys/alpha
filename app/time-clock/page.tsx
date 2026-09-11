@@ -101,6 +101,26 @@ function localInputToIso(value: string) {
   return value ? new Date(value).toISOString() : null;
 }
 
+function localDatePart(value: string) {
+  return value ? value.slice(0, 10) : '';
+}
+
+function localTimePart(value: string) {
+  return value && value.length >= 16 ? value.slice(11, 16) : '';
+}
+
+function replaceLocalDate(value: string, nextDate: string) {
+  if (!nextDate) return '';
+  const time = localTimePart(value) || '00:00';
+  return `${nextDate}T${time}`;
+}
+
+function replaceLocalTime(value: string, nextTime: string, fallbackDate = '') {
+  const date = localDatePart(value) || fallbackDate;
+  if (!date || !nextTime) return date ? `${date}T00:00` : '';
+  return `${date}T${nextTime}`;
+}
+
 export default function TimeClockPage() {
   const router = useRouter();
   const [supabase] = useState(getSupabase);
@@ -183,11 +203,16 @@ export default function TimeClockPage() {
   }, [entries, rangeStart, rangeEnd]);
 
   const totalHours = useMemo(
-    () => filteredEntries.reduce((sum, entry) => sum + hoursBetween(entry.clock_in_at, entry.clock_out_at, now), 0),
+    () => filteredEntries.reduce(
+      (sum, entry) => sum + hoursBetween(entry.clock_in_at, entry.clock_out_at, now),
+      0
+    ),
     [filteredEntries, now]
   );
 
   const currentSchool = schools.find((school) => school.id === schoolId) ?? null;
+  const adjustingEntry = entries.find((entry) => entry.id === adjustingEntryId) ?? null;
+  const adjustingEmployee = adjustingEntry ? employeeById.get(adjustingEntry.employee_id) ?? null : null;
 
   const loadSchoolData = useCallback(async () => {
     if (!schoolId) return;
@@ -224,9 +249,10 @@ export default function TimeClockPage() {
 
       const loadedEmployees = (employeeResult.data ?? []) as Employee[];
       const combinedEntries = new Map<string, TimeEntry>();
-      [...((rangeEntryResult.data ?? []) as TimeEntry[]), ...((openEntryResult.data ?? []) as TimeEntry[])].forEach(
-        (entry) => combinedEntries.set(entry.id, entry)
-      );
+      [
+        ...((rangeEntryResult.data ?? []) as TimeEntry[]),
+        ...((openEntryResult.data ?? []) as TimeEntry[]),
+      ].forEach((entry) => combinedEntries.set(entry.id, entry));
 
       setEmployees(loadedEmployees);
       setEntries(Array.from(combinedEntries.values()));
@@ -256,7 +282,9 @@ export default function TimeClockPage() {
               .select('id,display_name,email')
               .in('id', ids)
               .order('display_name');
-            if (!profileResult.error) setProfileOptions((profileResult.data ?? []) as ProfileOption[]);
+            if (!profileResult.error) {
+              setProfileOptions((profileResult.data ?? []) as ProfileOption[]);
+            }
           } else {
             setProfileOptions([]);
           }
@@ -300,7 +328,11 @@ export default function TimeClockPage() {
 
         let schoolResult;
         if (owner) {
-          schoolResult = await supabase.from('schools').select('id,name').eq('status', 'active').order('name');
+          schoolResult = await supabase
+            .from('schools')
+            .select('id,name')
+            .eq('status', 'active')
+            .order('name');
         } else {
           const ids = activeMemberships.map((membership) => membership.school_id);
           schoolResult = ids.length
@@ -435,6 +467,15 @@ export default function TimeClockPage() {
     setAdjustOut(toLocalDateTimeInput(entry.clock_out_at));
     setAdjustReason('');
     setError('');
+    setNotice('');
+  };
+
+  const cancelAdjustment = () => {
+    setAdjustingEntryId('');
+    setAdjustIn('');
+    setAdjustOut('');
+    setAdjustReason('');
+    setError('');
   };
 
   const saveAdjustment = async () => {
@@ -454,6 +495,7 @@ export default function TimeClockPage() {
         p_reason: adjustReason.trim(),
       });
       if (rpcError) throw rpcError;
+
       setNotice('Time entry corrected and audit history recorded.');
       setAdjustingEntryId('');
       setAdjustIn('');
@@ -616,7 +658,13 @@ export default function TimeClockPage() {
 
               <label className={styles.field}>
                 Employee
-                <select value={selectedEmployeeId} onChange={(event) => { setSelectedEmployeeId(event.target.value); setPin(''); }}>
+                <select
+                  value={selectedEmployeeId}
+                  onChange={(event) => {
+                    setSelectedEmployeeId(event.target.value);
+                    setPin('');
+                  }}
+                >
                   {employees.map((employee) => (
                     <option key={employee.id} value={employee.id}>{employee.display_name}</option>
                   ))}
@@ -693,11 +741,19 @@ export default function TimeClockPage() {
                   </label>
                   <label className={styles.field}>
                     Display name
-                    <input value={newEmployeeName} onChange={(event) => setNewEmployeeName(event.target.value)} placeholder="Employee name" />
+                    <input
+                      value={newEmployeeName}
+                      onChange={(event) => setNewEmployeeName(event.target.value)}
+                      placeholder="Employee name"
+                    />
                   </label>
                   <label className={styles.field}>
                     Employee code
-                    <input value={newEmployeeCode} onChange={(event) => setNewEmployeeCode(event.target.value)} placeholder="Optional" />
+                    <input
+                      value={newEmployeeCode}
+                      onChange={(event) => setNewEmployeeCode(event.target.value)}
+                      placeholder="Optional"
+                    />
                   </label>
                 </div>
                 <button disabled={actionLoading} onClick={handleCreateEmployee}>Add Employee</button>
@@ -746,8 +802,12 @@ export default function TimeClockPage() {
               <h2>{canReport ? 'Attendance Report' : 'My Attendance'}</h2>
             </div>
             <div className={styles.reportActions}>
-              {canReport && <button onClick={exportCsv} disabled={filteredEntries.length === 0}>Export CSV</button>}
-              <button onClick={loadSchoolData} disabled={refreshing}>{refreshing ? 'Refreshing…' : 'Refresh'}</button>
+              {canReport && (
+                <button onClick={exportCsv} disabled={filteredEntries.length === 0}>Export CSV</button>
+              )}
+              <button onClick={loadSchoolData} disabled={refreshing}>
+                {refreshing ? 'Refreshing…' : 'Refresh'}
+              </button>
             </div>
           </div>
 
@@ -769,24 +829,76 @@ export default function TimeClockPage() {
           {adjustingEntryId && isManager && (
             <div className={styles.adjustBox}>
               <h3>Correct Time Entry</h3>
-              <p>Every correction is retained in the adjustment history with the manager and reason.</p>
+              <p>
+                {adjustingEmployee ? `Editing ${adjustingEmployee.display_name}. ` : ''}
+                Change the date and time fields below, then enter a reason. Every correction is retained in the audit history.
+              </p>
               <div className={styles.formGrid}>
                 <label className={styles.field}>
-                  Clock in
-                  <input type="datetime-local" value={adjustIn} onChange={(event) => setAdjustIn(event.target.value)} />
+                  Clock in date
+                  <input
+                    type="date"
+                    value={localDatePart(adjustIn)}
+                    onChange={(event) => setAdjustIn((current) => replaceLocalDate(current, event.target.value))}
+                  />
                 </label>
                 <label className={styles.field}>
-                  Clock out
-                  <input type="datetime-local" value={adjustOut} onChange={(event) => setAdjustOut(event.target.value)} />
+                  Clock in time
+                  <input
+                    type="time"
+                    step="60"
+                    value={localTimePart(adjustIn)}
+                    onChange={(event) => setAdjustIn((current) => replaceLocalTime(current, event.target.value))}
+                  />
+                </label>
+                <label className={styles.field}>
+                  Clock out date
+                  <input
+                    type="date"
+                    value={localDatePart(adjustOut)}
+                    onChange={(event) => setAdjustOut((current) => replaceLocalDate(current, event.target.value))}
+                  />
+                </label>
+                <label className={styles.field}>
+                  Clock out time
+                  <input
+                    type="time"
+                    step="60"
+                    value={localTimePart(adjustOut)}
+                    onChange={(event) => setAdjustOut((current) => replaceLocalTime(current, event.target.value, localDatePart(adjustIn)))}
+                  />
                 </label>
                 <label className={styles.fieldWide}>
-                  Reason
-                  <input value={adjustReason} onChange={(event) => setAdjustReason(event.target.value)} placeholder="Required correction reason" />
+                  Reason for correction
+                  <input
+                    value={adjustReason}
+                    onChange={(event) => setAdjustReason(event.target.value)}
+                    placeholder="Required, at least 3 characters"
+                  />
                 </label>
               </div>
               <div className={styles.inlineActions}>
-                <button onClick={saveAdjustment} disabled={actionLoading}>Save Correction</button>
-                <button className={styles.secondaryButton} onClick={() => setAdjustingEntryId('')}>Cancel</button>
+                <button onClick={saveAdjustment} disabled={actionLoading}>
+                  {actionLoading ? 'Saving…' : 'Save Correction'}
+                </button>
+                {adjustOut && (
+                  <button
+                    type="button"
+                    className={styles.secondaryButton}
+                    disabled={actionLoading}
+                    onClick={() => setAdjustOut('')}
+                  >
+                    Clear Clock Out
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={styles.secondaryButton}
+                  disabled={actionLoading}
+                  onClick={cancelAdjustment}
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           )}
@@ -821,7 +933,12 @@ export default function TimeClockPage() {
                       </td>
                       {isManager && (
                         <td>
-                          <button className={styles.tableButton} onClick={() => beginAdjustment(entry)}>Adjust</button>
+                          <button
+                            className={styles.tableButton}
+                            onClick={() => beginAdjustment(entry)}
+                          >
+                            Adjust
+                          </button>
                         </td>
                       )}
                     </tr>
@@ -829,7 +946,10 @@ export default function TimeClockPage() {
                 })}
                 {filteredEntries.length === 0 && (
                   <tr>
-                    <td colSpan={isManager ? (canReport ? 7 : 6) : (canReport ? 6 : 5)} className={styles.emptyCell}>
+                    <td
+                      colSpan={isManager ? (canReport ? 7 : 6) : (canReport ? 6 : 5)}
+                      className={styles.emptyCell}
+                    >
                       No time entries in this date range.
                     </td>
                   </tr>
