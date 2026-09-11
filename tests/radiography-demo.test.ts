@@ -39,6 +39,15 @@ describe('Radiography cross-discipline demo', () => {
     expect(student).not.toContain('<textarea');
   });
 
+  it('makes text class references visible and removes the hardcoded Welding join label', () => {
+    const join = read('app/join/[code]/page.tsx');
+    expect(join).toContain('payload.session.reference_body&&!payload.session.reference_image_url');
+    expect(join).toContain('setReferenceOpen(true)');
+    expect(join).toContain('{info.session_name} · Living Teacher Guide');
+    expect(join).not.toContain('PCCC Welding · Living Teacher Guide');
+    expect(join).toContain('if(info.reference_image_url)setReferenceOpen(false)');
+  });
+
   it('maps every Radiography day to a real one-click Connected Classroom session', () => {
     const live = read('app/demo/radiography/live/page.tsx');
     for (const slug of [
