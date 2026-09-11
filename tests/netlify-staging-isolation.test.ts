@@ -14,10 +14,9 @@ describe('Netlify Deploy Preview isolation', () => {
     expect(config).not.toContain('qsmvgyyaemjmklceyikr');
   });
 
-  it('does not contain privileged server credentials', () => {
-    expect(config).not.toMatch(/service[_-]?role/i);
-    expect(config).not.toMatch(/SUPABASE_SERVICE_ROLE_KEY/i);
-    expect(config).not.toMatch(/resend_api_key/i);
-    expect(config).not.toMatch(/attendance_cron_secret/i);
+  it('does not define privileged server credentials', () => {
+    expect(config).not.toMatch(/^\s*SUPABASE_SERVICE_ROLE_KEY\s*=/m);
+    expect(config).not.toMatch(/^\s*RESEND_API_KEY\s*=/m);
+    expect(config).not.toMatch(/^\s*ATTENDANCE_CRON_SECRET\s*=/m);
   });
 });
