@@ -39,7 +39,7 @@ describe('Radiography cross-discipline demo', () => {
     expect(student).not.toContain('<textarea');
   });
 
-  it('maps every Radiography day to a real Connected Classroom assessment and staging section', () => {
+  it('maps every Radiography day to a real one-click Connected Classroom session', () => {
     const live = read('app/demo/radiography/live/page.tsx');
     for (const slug of [
       'rad_demo_d1_orientation',
@@ -53,7 +53,16 @@ describe('Radiography cross-discipline demo', () => {
     expect(live).toContain("sectionCode: 'RAD-RA101'");
     expect(live).toContain("sectionCode: 'RAD-RA102'");
     expect(live).toContain("sectionCode: 'RAD-RA103'");
+    expect(live).toContain("supabase.rpc('start_classroom_session_v2'");
+    expect(live).toContain('p_expected_students: 8');
     expect(live).toContain('router.replace(`/classroom?section=${encodeURIComponent(section.section_id)}&assessment=${encodeURIComponent(config.assessmentSlug)}`)');
+  });
+
+  it('removes the welding-only session label from the shared classroom payload', () => {
+    const migration = read('supabase/migrations/202609110002_generalize_classroom_session_name.sql');
+    expect(migration).toContain("concat_ws(' · '");
+    expect(migration).toContain("'Live Class'");
+    expect(migration).not.toContain("'Live Welding Class'");
   });
 
   it('connects the Radiography demo while retaining Nursing for future use', () => {
