@@ -9,7 +9,6 @@ function read(path: string) {
 describe('Radiography cross-discipline demo', () => {
   it('uses the same teaching console as the live LTG planner', () => {
     const page = read('app/demo/radiography/page.tsx');
-
     expect(page).toContain("from '@/app/components/planner/PlannerTeachingConsole'");
     expect(page).toContain('<PlannerTeachingConsole');
     expect(page).toContain('Current Day Controls');
@@ -21,7 +20,6 @@ describe('Radiography cross-discipline demo', () => {
 
   it('keeps the Radiography proof set protected and faculty-governed', () => {
     const page = read('app/demo/radiography/page.tsx');
-
     expect(page).toContain('RADIOGRAPHY DEMONSTRATION');
     expect(page).toContain('Synthetic data only');
     expect(page).toContain('Department review required before curriculum use');
@@ -33,21 +31,34 @@ describe('Radiography cross-discipline demo', () => {
     expect(page).toContain('no real patient identifiers, images, diagnoses, exposure settings, or protected health information');
   });
 
-  it('has a working student display instead of placeholder launch controls', () => {
-    const page = read('app/demo/radiography/page.tsx');
+  it('connects students to the real LTG join-code submission route', () => {
     const student = read('app/demo/radiography/student/page.tsx');
+    expect(student).toContain('Join Live Classroom');
+    expect(student).toContain('router.push(`/join/${encodeURIComponent(code)}`)');
+    expect(student).toContain('answers are saved to that live session');
+    expect(student).not.toContain('<textarea');
+  });
 
-    expect(page).toContain("studentDisplayUrl={`/demo/radiography/student?day=${day.day}`}");
-    expect(page).toContain("url: '/demo/radiography/student?day=1'");
-    expect(student).toContain('LTG STUDENT DISPLAY · RADIOGRAPHY DEMO');
-    expect(student).toContain('LIVE CLASS ACTIVITY');
-    expect(student).toContain('Clinical boundary');
+  it('maps every Radiography day to a real Connected Classroom assessment and staging section', () => {
+    const live = read('app/demo/radiography/live/page.tsx');
+    for (const slug of [
+      'rad_demo_d1_orientation',
+      'rad_demo_d2_radiation_safety',
+      'rad_demo_d3_patient_care',
+      'rad_demo_d4_positioning_lab',
+      'rad_demo_d5_image_critique',
+      'rad_demo_d6_clinical_evidence',
+      'rad_demo_d7_progress_review',
+    ]) expect(live).toContain(slug);
+    expect(live).toContain("sectionCode: 'RAD-RA101'");
+    expect(live).toContain("sectionCode: 'RAD-RA102'");
+    expect(live).toContain("sectionCode: 'RAD-RA103'");
+    expect(live).toContain('router.replace(`/classroom?section=${encodeURIComponent(section.section_id)}&assessment=${encodeURIComponent(config.assessmentSlug)}`)');
   });
 
   it('connects the Radiography demo while retaining Nursing for future use', () => {
     const selector = read('app/demo/programs/page.tsx');
     const home = read('app/page.tsx');
-
     expect(selector).toContain("router.push('/demo/radiography')");
     expect(selector).toContain('ACTIVE HEALTH SCIENCES DEMONSTRATION');
     expect(selector).toContain("router.push('/demo/nursing')");
