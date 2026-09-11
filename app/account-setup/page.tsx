@@ -26,13 +26,44 @@ export default function AccountSetupPage() {
 
       try {
         const params = new URLSearchParams(window.location.search);
+        const tokenHash = params.get('token_hash');
         const code = params.get('code');
 
+        // Preferred invitation flow: token-hash links work across devices and
+        // do not depend on PKCE state stored in the inviter's browser.
+        if (tokenHash) {
+          const { data: verifyData, error: verifyError } =
+            await supabase.auth.verifyOtp({
+              token_hash: tokenHash,
+              type: 'email',
+            });
+
+          if (verifyError) {
+            throw verifyError;
+          }
+
+          if (verifyData.user?.email) {
+            setEmail(verifyData.user.email);
+          }
+
+          window.history.replaceState({}, '', window.location.pathname);
+          setReady(true);
+          setMessage('Invitation link verified. Create your password below.');
+          return;
+        }
+
+        // Legacy PKCE callback support for links created before token-hash
+        // templates were enabled.
         if (code) {
           const { error: exchangeError } =
             await supabase.auth.exchangeCodeForSession(code);
 
           if (!exchangeError) {
+            const { data: userData } = await supabase.auth.getUser();
+            if (userData.user?.email) {
+              setEmail(userData.user.email);
+            }
+            window.history.replaceState({}, '', window.location.pathname);
             setReady(true);
             setMessage('Invitation link verified. Create your password below.');
             return;
@@ -42,11 +73,18 @@ export default function AccountSetupPage() {
         const { data } = await supabase.auth.getSession();
 
         if (data.session) {
+          if (data.session.user.email) {
+            setEmail(data.session.user.email);
+          }
           setReady(true);
           setMessage('Invitation link verified. Create your password below.');
         }
       } catch (err) {
-        console.error(err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'This invitation link could not be verified. Request a new invitation.'
+        );
       }
     };
 
