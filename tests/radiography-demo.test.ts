@@ -55,4 +55,12 @@ describe('Radiography cross-discipline demo', () => {
     expect(home).toContain('<h3>Radiography</h3>');
     expect(home).toContain('<h3>Nursing</h3>');
   });
+
+  it('preserves live-LTG presentation parity after the redesign', () => {
+    const styles = read('app/demo/radiography/radiography-demo.module.css');
+    expect(styles).toContain('#0d1b26');
+    expect(styles).toContain('#f0641d');
+    expect(styles).toContain('.controlPanel');
+    expect(styles).toContain('.evidencePanel');
+  });
 });
