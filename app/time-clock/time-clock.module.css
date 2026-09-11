@@ -116,17 +116,20 @@
   padding: 13px 15px;
   border-radius: 10px;
   font-weight: 650;
+  position: sticky;
+  top: 12px;
+  z-index: 40;
 }
 
 .error {
   border: 1px solid rgba(255, 116, 116, 0.46);
-  background: rgba(122, 31, 31, 0.27);
+  background: rgba(122, 31, 31, 0.94);
   color: #ffd4d4;
 }
 
 .notice {
   border: 1px solid rgba(69, 213, 154, 0.4);
-  background: rgba(20, 93, 67, 0.27);
+  background: rgba(20, 93, 67, 0.94);
   color: #c9ffe9;
 }
 
@@ -384,8 +387,14 @@
   margin: 0 0 18px;
   padding: 18px;
   border-radius: 11px;
-  border: 1px solid rgba(255, 171, 87, 0.34);
-  background: rgba(93, 55, 20, 0.18);
+  border: 1px solid rgba(255, 171, 87, 0.54);
+  background: rgba(44, 28, 13, 0.97);
+  position: sticky;
+  top: 12px;
+  z-index: 30;
+  max-height: calc(100vh - 24px);
+  overflow: auto;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.42);
 }
 
 .adjustBox p {
@@ -439,6 +448,11 @@
 .tableButton {
   padding: 7px 10px !important;
   font-size: 0.8rem;
+}
+
+.tableButton:focus-visible {
+  outline: 2px solid rgba(108, 220, 255, 0.9);
+  outline-offset: 2px;
 }
 
 .emptyCell {
@@ -516,5 +530,10 @@
   .fieldWide,
   .rangeTotal {
     grid-column: auto;
+  }
+
+  .adjustBox {
+    top: 6px;
+    max-height: calc(100vh - 12px);
   }
 }
