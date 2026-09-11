@@ -9,6 +9,9 @@ function read(path: string) {
 const migration = read(
   'supabase/migrations/20260911154500_manager_historical_attendance_corrections.sql'
 );
+const upsertFix = read(
+  'supabase/migrations/20260911155500_fix_manager_attendance_correction_upsert.sql'
+);
 const page = read('app/attendance/corrections/page.tsx');
 const nav = read('app/attendance/attendance-nav.tsx');
 
@@ -37,6 +40,11 @@ describe('manager historical attendance corrections', () => {
     expect(migration).toContain("v_session.status = 'finalized'");
     expect(page).toContain('Create Past Attendance Session');
     expect(page).toContain('Save Correction');
+  });
+
+  it('keeps the ON CONFLICT correction path on the target alias', () => {
+    expect(upsertFix).toContain('else ar.completion_confirmed');
+    expect(upsertFix).toContain('ar_existing.session_id = p_session_id');
   });
 
   it('exposes the correction workspace only to owner or school management navigation', () => {
