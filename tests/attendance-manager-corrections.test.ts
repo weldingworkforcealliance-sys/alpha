@@ -7,10 +7,10 @@ function read(path: string) {
 }
 
 const migration = read(
-  'supabase/migrations/20260911154500_manager_historical_attendance_corrections.sql'
+  'supabase/migrations/20260911154142_manager_historical_attendance_corrections.sql'
 );
 const upsertFix = read(
-  'supabase/migrations/20260911155500_fix_manager_attendance_correction_upsert.sql'
+  'supabase/migrations/20260911154318_fix_manager_attendance_correction_upsert.sql'
 );
 const page = read('app/attendance/corrections/page.tsx');
 const nav = read('app/attendance/attendance-nav.tsx');

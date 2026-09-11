@@ -25,15 +25,87 @@ export default function AccountSetupPage() {
       setError('');
 
       try {
+        /*
+          Supabase's built-in confirmation email uses the implicit browser
+          flow when the account is created by the isolated signup client in
+          /accounts. After verification, Supabase redirects to this page with
+          access_token and refresh_token in the URL fragment. The SSR browser
+          client does not consume those implicit-flow tokens automatically, so
+          establish the session explicitly here.
+        */
+        const hashParams = new URLSearchParams(
+          window.location.hash.startsWith('#')
+            ? window.location.hash.slice(1)
+            : window.location.hash
+        );
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        const hashError = hashParams.get('error_description');
+
+        if (hashError) {
+          throw new Error(hashError);
+        }
+
+        if (accessToken && refreshToken) {
+          const { data: sessionData, error: sessionError } =
+            await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+
+          if (sessionError) {
+            throw sessionError;
+          }
+
+          if (sessionData.user?.email) {
+            setEmail(sessionData.user.email);
+          }
+
+          window.history.replaceState({}, '', window.location.pathname);
+          setReady(true);
+          setMessage('Invitation link verified. Create your password below.');
+          return;
+        }
+
         const params = new URLSearchParams(window.location.search);
+        const tokenHash = params.get('token_hash');
         const code = params.get('code');
 
+        // Future-compatible token-hash flow for custom SMTP/templates.
+        if (tokenHash) {
+          const { data: verifyData, error: verifyError } =
+            await supabase.auth.verifyOtp({
+              token_hash: tokenHash,
+              type: 'email',
+            });
+
+          if (verifyError) {
+            throw verifyError;
+          }
+
+          if (verifyData.user?.email) {
+            setEmail(verifyData.user.email);
+          }
+
+          window.history.replaceState({}, '', window.location.pathname);
+          setReady(true);
+          setMessage('Invitation link verified. Create your password below.');
+          return;
+        }
+
+        // Legacy PKCE callback support.
         if (code) {
           const { error: exchangeError } =
             await supabase.auth.exchangeCodeForSession(code);
 
           if (!exchangeError) {
+            const { data: userData } = await supabase.auth.getUser();
+            if (userData.user?.email) {
+              setEmail(userData.user.email);
+            }
+            window.history.replaceState({}, '', window.location.pathname);
             setReady(true);
+            setMessage('Invitation link verified. Create your password below.');
             return;
           }
         }
@@ -41,10 +113,18 @@ export default function AccountSetupPage() {
         const { data } = await supabase.auth.getSession();
 
         if (data.session) {
+          if (data.session.user.email) {
+            setEmail(data.session.user.email);
+          }
           setReady(true);
+          setMessage('Invitation link verified. Create your password below.');
         }
       } catch (err) {
-        console.error(err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'This invitation link could not be verified. Request a new invitation.'
+        );
       }
     };
 
@@ -142,13 +222,21 @@ export default function AccountSetupPage() {
         {!ready ? (
           <>
             <p>
-              Enter your school email address and the verification code from
-              your invitation email.
+              Open the invitation email and click its confirmation link. That is
+              the normal setup path. If your email includes a numeric verification
+              code instead, you can enter it below.
             </p>
+
+            <div className="info">
+              No code in the email? That is normal for link-based invitations.
+              Use the confirmation link in the email and this page will continue
+              to password setup automatically.
+            </div>
 
             {error && <div className="error">{error}</div>}
             {message && <div className="success">{message}</div>}
 
+            <div className="fallback-label">Optional code fallback</div>
             <div className="form">
               <label>
                 Email
@@ -260,6 +348,26 @@ export default function AccountSetupPage() {
           color: #888;
           line-height: 1.5;
           margin: 0 0 20px;
+        }
+
+        .info {
+          margin-bottom: 18px;
+          padding: 11px;
+          border: 1px solid #2f3a3a;
+          border-radius: 7px;
+          background: #101616;
+          color: #a8c5c5;
+          font-size: 13px;
+          line-height: 1.45;
+        }
+
+        .fallback-label {
+          margin: 18px 0 10px;
+          color: #777;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          font-size: 10px;
+          font-weight: 850;
         }
 
         .form {

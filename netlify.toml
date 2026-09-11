@@ -1,0 +1,13 @@
+# Netlify deploy safety for LTG.
+#
+# Production continues to use the Netlify UI/project configuration.
+# Deploy Previews are pinned to the isolated Gltg Supabase staging project so
+# preview builds cannot accidentally operate against the live beta database.
+#
+# The publishable key below is intentionally browser-safe. Never place a
+# service-role key, secret key, Resend key, or cron secret in this file.
+
+[context.deploy-preview.environment]
+  NEXT_PUBLIC_SUPABASE_URL = "https://ezlvivmeneefiiwqwgqd.supabase.co"
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_VDQ-Ug5VBliSzl1I-FKCog_ZNPv-g7R"
+  NEXT_PUBLIC_DEPLOYMENT_ENV = "staging"
