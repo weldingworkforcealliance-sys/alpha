@@ -6,7 +6,8 @@ begin;
 
 create or replace function public.manager_create_attendance_session(
   p_pair_id uuid,
-  p_attendance_date date
+  p_attendance_date date,
+  p_reason text
 )
 returns table(
   session_id uuid,
@@ -46,6 +47,10 @@ begin
 
   if p_attendance_date is null then
     raise exception 'Attendance date is required';
+  end if;
+
+  if nullif(btrim(coalesce(p_reason, '')), '') is null or char_length(btrim(coalesce(p_reason, ''))) < 3 then
+    raise exception 'A correction reason of at least 3 characters is required';
   end if;
 
   if p_attendance_date > current_date then
@@ -110,6 +115,7 @@ begin
         'pair_id', v_pair.id,
         'attendance_date', p_attendance_date,
         'mode', v_pair.attendance_mode,
+        'reason', btrim(p_reason),
         'created_by', auth.uid()
       )
     );
@@ -287,12 +293,12 @@ begin
 end;
 $$;
 
-revoke all on function public.manager_create_attendance_session(uuid, date)
+revoke all on function public.manager_create_attendance_session(uuid, date, text)
   from public, anon;
 revoke all on function public.manager_correct_attendance_record(uuid, uuid, text, text, text[], text, text)
   from public, anon;
 
-grant execute on function public.manager_create_attendance_session(uuid, date)
+grant execute on function public.manager_create_attendance_session(uuid, date, text)
   to authenticated;
 grant execute on function public.manager_correct_attendance_record(uuid, uuid, text, text, text[], text, text)
   to authenticated;
