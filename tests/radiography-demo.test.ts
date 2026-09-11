@@ -24,7 +24,7 @@ describe('Radiography cross-discipline demo', () => {
     expect(page).toContain('LTG does not self-authorize clinical practice.');
     expect(page).toContain('Authorized faculty and clinical evaluators remain the decision-makers.');
     expect(page).toContain('No real student or patient data');
-    expect(page).toContain('No real patient identifiers, images, diagnoses, exposure settings, or protected health information.');
+    expect(page).toContain('The demo intentionally uses no real patient identifiers, images, diagnoses, exposure settings, or protected health information.');
   });
 
   it('connects the radiography demo from the program selector without deleting nursing', () => {
