@@ -41,7 +41,6 @@ type EditableRecord = {
   notes: string;
 };
 type ReportQueue = { status: string; sent_at: string | null; recipient_email: string };
-
 type ErrorLike = { message?: unknown; details?: unknown; hint?: unknown; code?: unknown };
 
 const DAILY_STATUSES = [
@@ -99,6 +98,7 @@ export default function AttendanceCorrectionsPage() {
   const [records, setRecords] = useState<Record<string, EditableRecord>>({});
   const [reportQueue, setReportQueue] = useState<ReportQueue | null>(null);
   const [reason, setReason] = useState('');
+  const [dayLoaded, setDayLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -106,6 +106,17 @@ export default function AttendanceCorrectionsPage() {
 
   const selectedPair = useMemo(() => pairs.find((pair) => pair.id === pairId) ?? null, [pairs, pairId]);
   const correctionReady = reason.trim().length >= 3;
+
+  const resetLoadedDay = () => {
+    setSession(null);
+    setStudents([]);
+    setRecords({});
+    setReportQueue(null);
+    setReason('');
+    setDayLoaded(false);
+    setNotice('');
+    setError('');
+  };
 
   const loadSchools = async () => {
     const { data: owner, error: ownerError } = await supabase.rpc('is_platform_owner');
@@ -161,10 +172,7 @@ export default function AttendanceCorrectionsPage() {
 
   const loadRoster = async (targetSession: Session, targetPairId: string) => {
     const [enrollmentResult, recordResult, queueResult] = await Promise.all([
-      supabase
-        .from('attendance_pair_enrollments')
-        .select('student_id,active')
-        .eq('pair_id', targetPairId),
+      supabase.from('attendance_pair_enrollments').select('student_id,active').eq('pair_id', targetPairId),
       supabase
         .from('attendance_records')
         .select('id,student_id,initial_status,final_status,completion_flags,notes')
@@ -180,10 +188,9 @@ export default function AttendanceCorrectionsPage() {
     if (recordResult.error) throw recordResult.error;
     if (queueResult.error) throw queueResult.error;
 
+    const enrollmentRows = (enrollmentResult.data ?? []) as { student_id: string; active: boolean }[];
     const rows = (recordResult.data ?? []) as RecordRow[];
-    const currentIds = (enrollmentResult.data ?? [])
-      .filter((row: { active: boolean }) => row.active)
-      .map((row: { student_id: string }) => row.student_id);
+    const currentIds = enrollmentRows.filter((row) => row.active).map((row) => row.student_id);
     const recordIds = rows.map((row) => row.student_id);
     const ids = Array.from(new Set([...currentIds, ...recordIds]));
 
@@ -242,8 +249,10 @@ export default function AttendanceCorrectionsPage() {
         setRecords({});
         setReportQueue(null);
       }
+      setDayLoaded(true);
     } catch (err) {
       setError(formatError(err));
+      setDayLoaded(false);
     } finally {
       setBusy(false);
     }
@@ -273,10 +282,7 @@ export default function AttendanceCorrectionsPage() {
       setError('');
       try {
         await loadPairs(schoolId);
-        setSession(null);
-        setStudents([]);
-        setRecords({});
-        setReportQueue(null);
+        resetLoadedDay();
       } catch (err) {
         setError(formatError(err));
       } finally {
@@ -286,7 +292,7 @@ export default function AttendanceCorrectionsPage() {
   }, [schoolId]);
 
   const createPastSession = async () => {
-    if (!selectedPair || !attendanceDate) return;
+    if (!selectedPair || !attendanceDate || !correctionReady) return;
     setBusy(true);
     setError('');
     setNotice('');
@@ -294,10 +300,22 @@ export default function AttendanceCorrectionsPage() {
       const { error: rpcError } = await supabase.rpc('manager_create_attendance_session', {
         p_pair_id: selectedPair.id,
         p_attendance_date: attendanceDate,
+        p_reason: reason.trim(),
       });
       if (rpcError) throw rpcError;
-      setNotice('Historical attendance session created. Enter the correct statuses, then finalize the day.');
-      await loadDay();
+
+      const { data, error: sessionError } = await supabase
+        .from('attendance_sessions')
+        .select('id,school_id,pair_id,attendance_date,status,attendance_mode,finalized_at')
+        .eq('pair_id', selectedPair.id)
+        .eq('attendance_date', attendanceDate)
+        .single();
+      if (sessionError) throw sessionError;
+      const created = data as Session;
+      setSession(created);
+      setDayLoaded(true);
+      await loadRoster(created, selectedPair.id);
+      setNotice('Historical attendance session created. Enter the correct statuses, save each correction, then finalize the day.');
     } catch (err) {
       setError(formatError(err));
     } finally {
@@ -306,10 +324,7 @@ export default function AttendanceCorrectionsPage() {
   };
 
   const patchRecord = (studentId: string, patch: Partial<EditableRecord>) => {
-    setRecords((existing) => ({
-      ...existing,
-      [studentId]: { ...existing[studentId], ...patch },
-    }));
+    setRecords((existing) => ({ ...existing, [studentId]: { ...existing[studentId], ...patch } }));
   };
 
   const toggleFlag = (studentId: string, flag: string) => {
@@ -377,12 +392,15 @@ export default function AttendanceCorrectionsPage() {
         p_general_notes: `Administrative historical correction: ${reason.trim()}`,
       });
       if (rpcError) throw rpcError;
+
+      const finalized = { ...session, status: 'finalized' };
+      setSession(finalized);
+      await loadRoster(finalized, session.pair_id);
       setNotice(
         selectedPair.attendance_mode === 'pvhs'
           ? 'Past attendance finalized. The PVHS report is queued using the normal reporting workflow.'
           : 'Past attendance finalized.'
       );
-      await loadDay();
     } catch (err) {
       setError(formatError(err));
     } finally {
@@ -414,26 +432,26 @@ export default function AttendanceCorrectionsPage() {
       <section className={styles.toolbar}>
         <label className={styles.field}>
           School
-          <select value={schoolId} onChange={(event) => setSchoolId(event.target.value)} disabled={busy}>
+          <select value={schoolId} onChange={(event) => { setSchoolId(event.target.value); resetLoadedDay(); }} disabled={busy}>
             {schools.map((school) => <option key={school.id} value={school.id}>{school.name}</option>)}
           </select>
         </label>
         <label className={styles.field}>
           Class pair
-          <select value={pairId} onChange={(event) => { setPairId(event.target.value); setSession(null); }} disabled={busy}>
+          <select value={pairId} onChange={(event) => { setPairId(event.target.value); resetLoadedDay(); }} disabled={busy}>
             {pairs.map((pair) => <option key={pair.id} value={pair.id}>{pair.pair_name}</option>)}
           </select>
         </label>
         <label className={styles.field}>
           Attendance date
-          <input type="date" value={attendanceDate} max={localDate()} onChange={(event) => { setAttendanceDate(event.target.value); setSession(null); }} disabled={busy} />
+          <input type="date" value={attendanceDate} max={localDate()} onChange={(event) => { setAttendanceDate(event.target.value); resetLoadedDay(); }} disabled={busy} />
         </label>
         <button type="button" className={styles.secondaryButton} onClick={loadDay} disabled={busy || !pairId || !attendanceDate}>
           {busy ? 'Loading…' : 'Load Attendance'}
         </button>
       </section>
 
-      {!session && pairId && (
+      {dayLoaded && !session && pairId && (
         <section className={styles.finalizeCard}>
           <div className={styles.finalizeHeader}>
             <div>
@@ -441,8 +459,9 @@ export default function AttendanceCorrectionsPage() {
               <h2>{selectedPair?.pair_name} · {attendanceDate}</h2>
             </div>
           </div>
-          <p>If this was a real class day, create the historical session and enter the corrected attendance.</p>
-          <button type="button" className={styles.actionButton} onClick={createPastSession} disabled={busy}>
+          <p>If this was a real class day, enter a correction reason first, then create the historical attendance session.</p>
+          <textarea rows={2} value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Required reason for creating this historical attendance day" />
+          <button type="button" className={styles.actionButton} onClick={createPastSession} disabled={busy || !correctionReady}>
             Create Past Attendance Session
           </button>
         </section>
@@ -465,12 +484,7 @@ export default function AttendanceCorrectionsPage() {
                 <h2>Why is this attendance being corrected?</h2>
               </div>
             </div>
-            <textarea
-              rows={2}
-              value={reason}
-              onChange={(event) => setReason(event.target.value)}
-              placeholder="Example: Student was added to the roster after the original attendance was finalized."
-            />
+            <textarea rows={2} value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Example: Student was added to the roster after the original attendance was finalized." />
             <div className={styles.reportLine}>
               {reportQueue?.status === 'sent'
                 ? 'A PVHS report was already sent for this day. Saving a correction updates LTG history but does not automatically send a duplicate email.'
