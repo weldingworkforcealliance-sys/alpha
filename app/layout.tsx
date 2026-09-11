@@ -37,6 +37,7 @@ import './interaction-feedback.css';
 import './operational-status-panels.css';
 
 const THEME_BOOTSTRAP = `(function(){try{var t=localStorage.getItem('ltg_theme');if(t!=='light'&&t!=='dark')t='dark';document.documentElement.dataset.theme=t;document.documentElement.style.colorScheme=t;}catch(e){document.documentElement.dataset.theme='dark';document.documentElement.style.colorScheme='dark';}})();`;
+const IS_STAGING = process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging';
 
 export default function RootLayout({
   children,
@@ -95,6 +96,28 @@ export default function RootLayout({
       </head>
       <body className={bodyClassName || undefined}>
         <ThemeProvider>
+          {IS_STAGING && (
+            <div
+              role="status"
+              aria-label="Staging environment"
+              style={{
+                position: 'sticky',
+                top: 0,
+                zIndex: 10000,
+                width: '100%',
+                padding: '7px 12px',
+                textAlign: 'center',
+                fontSize: '12px',
+                fontWeight: 800,
+                letterSpacing: '0.12em',
+                background: '#f5c542',
+                color: '#171717',
+                borderBottom: '2px solid #171717',
+              }}
+            >
+              STAGING · NO LIVE DATA
+            </div>
+          )}
           <UsageTracker pathname={pathname} />
           <div className="app-container">
             {!hideWorkspaceNav && (
