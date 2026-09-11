@@ -127,12 +127,12 @@ export default function Home() {
             <p>Live implementation and current proof case for the LTG operating model.</p>
           </article>
           <article>
-            <h3>Nursing</h3>
-            <p>Next demonstration program for skills checklists, safety instruction, assessments, attendance, and instructor review.</p>
+            <h3>Radiography</h3>
+            <p>Active next demonstration: classroom, lab, clinical evidence, faculty review, attendance, and program oversight in one connected workflow.</p>
           </article>
           <article>
-            <h3>Beyond one department</h3>
-            <p>The same operating model can be configured around each program's approved curriculum, workflows, and outcomes.</p>
+            <h3>Nursing</h3>
+            <p>Retained on the roadmap as a future health-sciences demonstration after the Radiography proof is reviewed.</p>
           </article>
         </div>
       </section>
