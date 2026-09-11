@@ -31,6 +31,13 @@ describe('Radiography cross-discipline demo', () => {
     expect(page).toContain('no real patient identifiers, images, diagnoses, exposure settings, or protected health information');
   });
 
+  it('preserves the selected Radiography day in the demo URL handoff', () => {
+    const page = read('app/demo/radiography/page.tsx');
+    expect(page).toContain("new URLSearchParams(window.location.search).get('day')");
+    expect(page).toContain('setViewingDay(value)');
+    expect(page).toContain('url: `/demo/radiography/live?day=${day.day}`');
+  });
+
   it('connects students to the real LTG join-code submission route', () => {
     const student = read('app/demo/radiography/student/page.tsx');
     expect(student).toContain('Join Live Classroom');
@@ -48,7 +55,7 @@ describe('Radiography cross-discipline demo', () => {
     expect(join).toContain('if(info.reference_image_url)setReferenceOpen(false)');
   });
 
-  it('maps every Radiography day to a real one-click Connected Classroom session', () => {
+  it('maps every Radiography day into the built Welding planner-classroom engine', () => {
     const live = read('app/demo/radiography/live/page.tsx');
     for (const slug of [
       'rad_demo_d1_orientation',
@@ -62,9 +69,21 @@ describe('Radiography cross-discipline demo', () => {
     expect(live).toContain("sectionCode: 'RAD-RA101'");
     expect(live).toContain("sectionCode: 'RAD-RA102'");
     expect(live).toContain("sectionCode: 'RAD-RA103'");
-    expect(live).toContain("supabase.rpc('start_classroom_session_v2'");
-    expect(live).toContain('p_expected_students: 8');
-    expect(live).toContain('router.replace(`/classroom?section=${encodeURIComponent(section.section_id)}&assessment=${encodeURIComponent(config.assessmentSlug)}`)');
+    expect(live).toContain('/classroom/planner?section=${encodeURIComponent(section.section_id)}&assessment=${encodeURIComponent(config.assessmentSlug)}');
+    expect(live).not.toContain("supabase.rpc('start_classroom_session_v2'");
+    expect(live).not.toContain('p_expected_students');
+    expect(live).not.toContain('/classroom?section=');
+  });
+
+  it('keeps the shared planner classroom responsible for session lifecycle', () => {
+    const classroom = read('app/classroom/planner/page.tsx');
+    expect(classroom).toContain('createClassroomSession');
+    expect(classroom).toContain('findActiveClassroomSession');
+    expect(classroom).toContain('loadClassroomSubmissions');
+    expect(classroom).toContain('subscribeClassroomSubmissions');
+    expect(classroom).toContain('endClassroomSession');
+    expect(classroom).toContain('session.join_code');
+    expect(classroom).toContain('QR code for students to join this planner assessment');
   });
 
   it('removes the welding-only session label from the shared classroom payload', () => {
