@@ -13,7 +13,7 @@ describe('standalone LTG product shell', () => {
 
     expect(layout).toContain("const isMarketingRoute = pathname === '/';");
     expect(layout).toContain('isMarketingRoute || isAuthRoute');
-    expect(home).toContain('Founding School Beta');
+    expect(home).toContain('FOUNDING SCHOOL BETA');
     expect(home).toContain('href="/login"');
   });
 
@@ -25,6 +25,19 @@ describe('standalone LTG product shell', () => {
     expect(home).toContain('Education Operating System');
     expect(home).toContain('THE CORE INSTRUCTION ENGINE');
     expect(home).toContain('The Living Teacher Guide turns approved curriculum into a live daily workflow.');
+  });
+
+  it('leads with verified current-school reporting instead of decorative product art', () => {
+    const home = read('app/page.tsx');
+
+    expect(home).toContain('VERIFIED CURRENT-SCHOOL SNAPSHOT');
+    expect(home).toContain('See the health of your program in one place.');
+    expect(home).toContain("value: '42.5'");
+    expect(home).toContain("value: '92.5%'");
+    expect(home).toContain("value: '70.9%'");
+    expect(home).toContain('Analytics events captured');
+    expect(home).toContain('Passaic County Community College');
+    expect(home).not.toContain('ltg-marketing-helmet');
   });
 
   it('presents LTG as program-neutral while retaining welding as the proof case', () => {
