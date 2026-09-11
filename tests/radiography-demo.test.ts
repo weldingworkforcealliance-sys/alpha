@@ -7,41 +7,52 @@ function read(path: string) {
 }
 
 describe('Radiography cross-discipline demo', () => {
-  it('uses a protected synthetic radiography proof set', () => {
+  it('uses the same teaching console as the live LTG planner', () => {
+    const page = read('app/demo/radiography/page.tsx');
+
+    expect(page).toContain("from '@/app/components/planner/PlannerTeachingConsole'");
+    expect(page).toContain('<PlannerTeachingConsole');
+    expect(page).toContain('Current Day Controls');
+    expect(page).toContain('Student Attendance');
+    expect(page).toContain('Radiography Practice Evidence');
+    expect(page).toContain('Start Current Day');
+    expect(page).toContain('Complete Day');
+  });
+
+  it('keeps the Radiography proof set protected and faculty-governed', () => {
     const page = read('app/demo/radiography/page.tsx');
 
     expect(page).toContain('RADIOGRAPHY DEMONSTRATION');
-    expect(page).toContain('SYNTHETIC DATA ONLY');
-    expect(page).toContain('DEPARTMENT REVIEW REQUIRED BEFORE CURRICULUM USE');
-    expect(page).toContain('RA 101');
-    expect(page).toContain('RA 102');
-    expect(page).toContain('RA 103');
-  });
-
-  it('keeps clinical judgment with authorized faculty', () => {
-    const page = read('app/demo/radiography/page.tsx');
-
+    expect(page).toContain('Synthetic data only');
+    expect(page).toContain('Department review required before curriculum use');
+    expect(page).toContain("course: 'RA 101'");
+    expect(page).toContain("course: 'RA 102'");
+    expect(page).toContain("course: 'RA 103'");
     expect(page).toContain('LTG does not self-authorize clinical practice.');
     expect(page).toContain('Authorized faculty and clinical evaluators remain the decision-makers.');
-    expect(page).toContain('No real student or patient data');
-    expect(page).toContain('The demo intentionally uses no real patient identifiers, images, diagnoses, exposure settings, or protected health information.');
+    expect(page).toContain('no real patient identifiers, images, diagnoses, exposure settings, or protected health information');
   });
 
-  it('connects the radiography demo from the program selector without deleting nursing', () => {
+  it('has a working student display instead of placeholder launch controls', () => {
+    const page = read('app/demo/radiography/page.tsx');
+    const student = read('app/demo/radiography/student/page.tsx');
+
+    expect(page).toContain("studentDisplayUrl={`/demo/radiography/student?day=${day.day}`}");
+    expect(page).toContain("url: '/demo/radiography/student?day=1'");
+    expect(student).toContain('LTG STUDENT DISPLAY · RADIOGRAPHY DEMO');
+    expect(student).toContain('LIVE CLASS ACTIVITY');
+    expect(student).toContain('Clinical boundary');
+  });
+
+  it('connects the Radiography demo without deleting Nursing', () => {
     const selector = read('app/demo/programs/page.tsx');
+    const home = read('app/page.tsx');
 
     expect(selector).toContain("router.push('/demo/radiography')");
     expect(selector).toContain('ACTIVE HEALTH SCIENCES DEMONSTRATION');
     expect(selector).toContain("router.push('/demo/nursing')");
     expect(selector).toContain('FUTURE HEALTH SCIENCES DEMONSTRATION');
-  });
-
-  it('makes radiography the active public next demo while retaining nursing on the roadmap', () => {
-    const home = read('app/page.tsx');
-
     expect(home).toContain('<h3>Radiography</h3>');
-    expect(home).toContain('Active next demonstration');
     expect(home).toContain('<h3>Nursing</h3>');
-    expect(home).toContain('Retained on the roadmap');
   });
 });
