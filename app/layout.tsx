@@ -46,6 +46,7 @@ export default function RootLayout({
 }) {
   const pathname = usePathname();
   const [navOpen, setNavOpen] = useState(false);
+  const isMarketingRoute = pathname === '/';
   const isStudentJoin = pathname.startsWith('/join/');
   const isStudentDisplay = pathname.startsWith('/student-display/');
   const isTrainingRoute = pathname.startsWith('/training');
@@ -62,8 +63,9 @@ export default function RootLayout({
   const isPrimaryPlannerRoute =
     pathname === '/planner' || pathname === '/dashboard' || pathname === '/agenda';
 
-  const hideWorkspaceNav = isAuthRoute || isStudentJoin || isStudentDisplay;
-  const useNightShift = !isStudentJoin;
+  const hideWorkspaceNav =
+    isMarketingRoute || isAuthRoute || isStudentJoin || isStudentDisplay;
+  const useNightShift = !isStudentJoin && !isMarketingRoute;
   const isSecondaryRoute =
     useNightShift &&
     !isAuthRoute &&
@@ -77,6 +79,7 @@ export default function RootLayout({
 
   const bodyClassName = [
     useNightShift ? 'night-shift-shell' : '',
+    isMarketingRoute ? 'ltg-marketing-route' : '',
     isAuthRoute ? 'ltg-auth-route' : '',
     isTrainingRoute ? 'ltg-training-route' : '',
     isSecondaryRoute ? 'ltg-secondary-route' : '',
@@ -91,7 +94,7 @@ export default function RootLayout({
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>LTG | Welding Education Operating System</title>
+        <title>LTG | Education Operating System</title>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
       </head>
       <body className={bodyClassName || undefined}>
@@ -118,7 +121,7 @@ export default function RootLayout({
               STAGING · NO LIVE DATA
             </div>
           )}
-          <UsageTracker pathname={pathname} />
+          {!isMarketingRoute && <UsageTracker pathname={pathname} />}
           <div className="app-container">
             {!hideWorkspaceNav && (
               <nav
@@ -129,7 +132,7 @@ export default function RootLayout({
                   <div className="ltg-brand">
                     <span className="ltg-brand-mark">LTG</span>
                     <span className="ltg-brand-copy">
-                      Welding Education
+                      Education
                       <br />
                       Operating System
                     </span>
