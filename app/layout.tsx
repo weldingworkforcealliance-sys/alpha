@@ -38,6 +38,8 @@ import './theme-component-overrides.css';
 import './interaction-feedback.css';
 import './operational-status-panels.css';
 import './pccc-welding-skin.css';
+import './pccc-component-shell.css';
+import { PcccBrand, PcccPortalHeader, PcccLearningHub } from './components/pccc-portal';
 
 const THEME_BOOTSTRAP = `(function(){try{var t=localStorage.getItem('ltg_theme');if(t!=='light'&&t!=='dark')t='dark';document.documentElement.dataset.theme=t;document.documentElement.style.colorScheme=t;}catch(e){document.documentElement.dataset.theme='dark';document.documentElement.style.colorScheme='dark';}})();`;
 const IS_STAGING = process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging';
@@ -49,6 +51,8 @@ export default function RootLayout({
 }) {
   const pathname = usePathname();
   const [navOpen, setNavOpen] = useState(false);
+  const [pcccMode, setPcccMode] = useState<'school' | 'instructor' | 'demo' | null>(null);
+  const portalMode = pcccMode === 'school' ? 'school' : 'instructor';
   const isMarketingRoute = pathname === '/';
   const isDemoRoute = pathname.startsWith('/demo');
   const isStudentJoin = pathname.startsWith('/join/');
@@ -104,7 +108,7 @@ export default function RootLayout({
       </head>
       <body className={bodyClassName || undefined}>
         <ThemeProvider>
-          <PcccSkinController pathname={pathname} />
+          <PcccSkinController pathname={pathname} onModeChange={setPcccMode} />
           <DemoSessionGuard />
           {IS_STAGING && (
             <div
@@ -129,14 +133,14 @@ export default function RootLayout({
             </div>
           )}
           {!isMarketingRoute && !isDemoRoute && <UsageTracker pathname={pathname} />}
-          <div className="app-container">
+          <div className={`app-container${pcccMode && !hideWorkspaceNav ? " pccc-component-shell" : ""}`}>
             {!hideWorkspaceNav && (
               <nav
                 aria-label="Planner workspace navigation"
                 className={navOpen ? 'ltg-sidebar mobile-open' : 'ltg-sidebar'}
               >
                 <div className="ltg-sidebar-header">
-                  <div className="ltg-brand">
+                  {pcccMode ? <PcccBrand /> : <div className="ltg-brand">
                     <span className="ltg-brand-mark">LTG</span>
                     <span className="ltg-brand-copy">
                       Education
@@ -144,6 +148,7 @@ export default function RootLayout({
                       Operating System
                     </span>
                   </div>
+                  }
                   <button
                     type="button"
                     className="ltg-mobile-menu-button"
@@ -243,9 +248,10 @@ export default function RootLayout({
             )}
 
             <div className={hideWorkspaceNav ? 'ltg-public-content' : 'ltg-main-content'}>
+              {pcccMode && !hideWorkspaceNav && <PcccPortalHeader mode={portalMode} title={pathname.split('/').filter(Boolean).join(' / ').replaceAll('-', ' ')} />}
               {!isDemoRoute && (
                 <>
-                  {pathname === '/dashboard' && <DashboardHero />}
+                  {(pathname === '/dashboard' || pathname === '/school') && (pcccMode ? <PcccLearningHub mode={portalMode} /> : pathname === '/dashboard' ? <DashboardHero /> : null)}
                   <DashboardPunchClock pathname={pathname} />
                   <SchoolActiveTodayEmployees pathname={pathname} />
                   {!isStudentDisplay && <CohortWorkspaceBar pathname={pathname} />}

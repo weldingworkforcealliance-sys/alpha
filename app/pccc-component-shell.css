@@ -1,0 +1,37 @@
+/* Integration boundaries for real portal components. Legacy content retains its
+   event handlers and data ownership inside the shared enclosure. */
+body.pccc-welding-skin .pccc-component-shell .ltg-main-content::before { content:none !important; display:none !important; }
+body.pccc-welding-skin .pccc-component-shell .ltg-main-content { overflow:visible !important; }
+body.pccc-welding-skin .pccc-component-shell .ltg-main-content > header { border-radius:0 14px 0 0; }
+body.pccc-welding-skin .pccc-component-shell .ltg-sidebar-header { align-items:flex-start; }
+body.pccc-welding-skin .pccc-component-shell .ltg-sidebar { padding:24px 18px !important; }
+body.pccc-welding-skin .pccc-component-shell .ltg-nav-section-label { font-size:10px !important; margin-top:26px !important; letter-spacing:.13em !important; }
+body.pccc-welding-skin .pccc-component-shell .ltg-nav-link { min-height:42px; display:flex; align-items:center; font-size:12px !important; border-radius:5px !important; }
+body.pccc-welding-skin .pccc-component-shell .ltg-punch-row { grid-template-columns:minmax(0,1.5fr) minmax(220px,1fr) !important; }
+body.pccc-welding-skin .pccc-component-shell .ltg-punch-row > div:first-child { background:transparent !important; border:0 !important; padding:0 !important; box-shadow:none !important; }
+body.pccc-welding-skin .pccc-component-shell .ltg-today-card { align-self:center; padding:24px !important; }
+body.pccc-welding-skin .pccc-component-shell .ltg-punch-row [class*='finsen-sierra-clock'][class*='clock_'] { width:min(100%,680px); }
+body.pccc-welding-skin .pccc-component-demo { --ltg-accent:#75b5dd; --ltg-accent-text:#caeaff; --ltg-surface:#15212b; --ltg-surface-2:#1d2e39; --ltg-text:#f2f5f7; --ltg-muted:#b7c4cc; --ltg-border:#4d606c; margin:16px; border:1px solid #7c8890; border-radius:14px; overflow:clip; grid-template-columns:245px minmax(0,1fr) !important; background:#0d171f !important; box-shadow:0 20px 60px #0005; }
+body.pccc-welding-skin .pccc-component-demo[data-portal-mode='school'] { --ltg-accent:#e66f7e; --ltg-accent-text:#ffd0d5; }
+body.pccc-welding-skin .pccc-component-demo > .sidebar { padding:24px 18px !important; border-right:1px solid #7c8890 !important; background:linear-gradient(90deg,#ffffff0d,transparent 15%,#0002),repeating-linear-gradient(0deg,#ffffff04 0 1px,transparent 1px 4px),linear-gradient(160deg,#3d4851,#1c252d 35%,#141d25) !important; }
+body.pccc-welding-skin .pccc-component-demo[data-portal-mode='school'] > .sidebar { background:linear-gradient(90deg,#ffffff17,transparent 15%,#0002),repeating-linear-gradient(0deg,#ffffff04 0 1px,transparent 1px 4px),linear-gradient(160deg,#a22536,#661321 45%,#300e17) !important; }
+body.pccc-welding-skin .pccc-component-demo > .workspace { min-width:0; background:var(--ltg-canvas,#0d171f) !important; }
+body.pccc-welding-skin .pccc-component-demo .brand-block::after,body.pccc-welding-skin .pccc-component-demo .workspace::before { display:none !important; }
+body.pccc-welding-skin .pccc-component-demo .workspace-header { background:var(--ltg-surface) !important; padding:22px 26px !important; }
+body.pccc-welding-skin .pccc-component-demo .workspace-header h1 { color:var(--ltg-text) !important; font-size:24px !important; }
+body.pccc-welding-skin .pccc-component-demo .nav-link { padding:12px !important; font-size:12px !important; border-radius:5px !important; }
+body.pccc-welding-skin .pccc-component-demo .sidebar :is(.nav-label,.nav-link,.demo-chip,.school-context,.course-button) { color:#dce4e9 !important; }
+body.pccc-welding-skin .pccc-component-demo .nav-link.active { color:#fff !important; background:linear-gradient(#3b7294,#244c66) !important; border-color:#7daac7 !important; box-shadow:inset 0 1px #ffffff2b !important; }
+body.pccc-welding-skin .pccc-component-demo[data-portal-mode='school'] .nav-link.active { background:linear-gradient(#b52e43,#7f192b) !important; border-color:#e18290 !important; }
+body.pccc-welding-skin .pccc-component-demo .context-strip { background:var(--ltg-surface-2) !important; border-color:var(--ltg-border) !important; }
+body.pccc-welding-skin .pccc-component-demo .context-strip strong { color:var(--ltg-text) !important; }
+body.pccc-welding-skin .pccc-component-demo .context-strip span { color:var(--ltg-muted) !important; }
+body.pccc-welding-skin .pccc-component-demo .banner { font-size:10px !important; background:var(--ltg-surface) !important; color:var(--ltg-muted) !important; border-color:var(--ltg-border) !important; }
+html[data-theme='light'] body.pccc-welding-skin .pccc-component-demo { --ltg-canvas:#e4e9ed; --ltg-surface:#f8fafb; --ltg-surface-2:#edf2f5; --ltg-text:#172d3b; --ltg-muted:#465e6d; --ltg-border:#a5b6c2; --ltg-accent:#286084; --ltg-accent-text:#225675; }
+html[data-theme='light'] body.pccc-welding-skin .pccc-component-demo[data-portal-mode='school'] { --ltg-accent:#a21930; --ltg-accent-text:#97152c; }
+@media(max-width:1100px) { body.pccc-welding-skin .pccc-component-shell .ltg-punch-row { grid-template-columns:minmax(0,1fr) !important; } }
+@media(max-width:760px) { body.pccc-welding-skin .pccc-component-demo { display:block !important; margin:0; border-radius:0; }.pccc-component-demo > .sidebar { height:auto !important; position:relative !important; } body.pccc-welding-skin .pccc-component-shell .ltg-sidebar { padding:12px 16px !important; } body.pccc-welding-skin .pccc-component-shell .ltg-main-content > header { border-radius:0; } body.pccc-welding-skin .pccc-component-demo .sidebar nav { display:grid !important; grid-template-columns:1fr 1fr !important; } }
+.pccc-demo-dashboard-clock { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(220px,1fr); align-items:center; gap:24px; margin:0 24px 24px; }
+.pccc-demo-clock-summary { padding:24px; color:var(--ltg-text); background:var(--ltg-surface); border:1px solid var(--ltg-border); border-radius:10px; }
+.pccc-demo-clock-summary > span { font-size:9px; letter-spacing:.14em; color:var(--ltg-muted); }.pccc-demo-clock-summary h2 { font-size:21px; font-weight:550; margin:14px 0; color:var(--ltg-text); }.pccc-demo-clock-summary p { font-size:13px; line-height:1.6; color:var(--ltg-muted); }.pccc-demo-clock-summary > strong { display:block; font-size:28px; margin-top:20px; }.pccc-demo-clock-summary small { font-size:10px; color:var(--ltg-muted); }
+@media(max-width:1100px) { .pccc-demo-dashboard-clock { grid-template-columns:1fr; gap:10px; }.pccc-demo-clock-summary { padding:16px; } }
