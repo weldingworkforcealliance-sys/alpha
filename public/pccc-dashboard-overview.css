@@ -1,0 +1,312 @@
+/* PCCC dashboard architecture. Loaded after the legacy app CSS. */
+body.pccc-welding-skin.ltg-dashboard-route.pccc-overview-ready .dashboard-container {
+  display:none !important;
+}
+
+body.pccc-welding-skin.ltg-dashboard-route.pccc-overview-ready section[aria-label='Class workspace selector'],
+body.pccc-welding-skin.ltg-dashboard-route.pccc-overview-ready div[aria-label='Assigned instructor and selected class'],
+body.pccc-welding-skin.ltg-dashboard-route.pccc-overview-ready #ltg-planner-attendance-slot {
+  display:none !important;
+}
+
+body.pccc-school-skin.ltg-dashboard-route .ltg-punch-row {
+  display:none !important;
+}
+
+.pccc-portal-dashboard {
+  margin:0 20px 18px;
+  border:1px solid #475963;
+  border-radius:12px;
+  overflow:hidden;
+  background:linear-gradient(145deg,rgba(255,255,255,.025),transparent 34%),#0f1a22;
+  color:#edf3f6;
+  box-shadow:0 18px 42px rgba(0,0,0,.24);
+}
+
+.pccc-portal-dashboard__heading {
+  min-height:150px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:28px;
+  padding:26px 30px;
+  border-bottom:1px solid #41515b;
+  background:
+    linear-gradient(100deg,rgba(8,17,24,.99) 0 58%,rgba(8,17,24,.78) 77%,rgba(8,17,24,.94) 100%),
+    radial-gradient(circle at 86% 50%,rgba(63,127,168,.23),transparent 18rem),
+    #0c1820;
+}
+
+body.pccc-school-skin .pccc-portal-dashboard__heading {
+  border-bottom-color:#693640;
+  background:
+    linear-gradient(100deg,rgba(17,7,10,.99) 0 58%,rgba(35,8,13,.88) 77%,rgba(11,14,18,.96) 100%),
+    radial-gradient(circle at 86% 50%,rgba(199,25,45,.20),transparent 18rem),
+    #130b0e;
+}
+
+.pccc-portal-dashboard__eyebrow {
+  display:block;
+  margin-bottom:6px;
+  color:#73b7df;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+}
+
+body.pccc-school-skin .pccc-portal-dashboard__eyebrow { color:#ef8994; }
+
+.pccc-portal-dashboard__heading h2 {
+  margin:0;
+  color:#fff;
+  font-size:clamp(28px,3.5vw,46px);
+  line-height:1;
+  letter-spacing:-.04em;
+}
+
+.pccc-portal-dashboard__heading p {
+  max-width:720px;
+  margin:10px 0 0;
+  color:#b9c6cd;
+  font-size:14px;
+  line-height:1.55;
+}
+
+.pccc-portal-dashboard__seal {
+  min-width:168px;
+  padding:14px 18px;
+  border:1px solid #66737c;
+  border-radius:8px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.01)),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,rgba(0,0,0,.03) 1px 3px),
+    #202930;
+  box-shadow:inset 0 1px rgba(255,255,255,.15),0 10px 24px rgba(0,0,0,.24);
+  text-align:center;
+}
+
+body.pccc-school-skin .pccc-portal-dashboard__seal {
+  border-color:#b74451;
+  background:linear-gradient(180deg,#9d1020,#5e0913);
+}
+
+.pccc-portal-dashboard__seal span {
+  display:block;
+  color:#f5f6f7;
+  font-size:28px;
+  font-weight:950;
+  font-style:italic;
+  letter-spacing:-.06em;
+}
+
+.pccc-portal-dashboard__seal strong {
+  display:block;
+  margin-top:1px;
+  color:#e33949;
+  font-size:13px;
+  font-style:italic;
+  letter-spacing:.14em;
+}
+
+body.pccc-school-skin .pccc-portal-dashboard__seal strong { color:#fff; }
+
+.pccc-portal-dashboard__actions {
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:10px;
+  padding:14px;
+  background:#0b151c;
+}
+
+.pccc-portal-dashboard__actions a {
+  min-height:112px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:13px 14px;
+  border:1px solid #3e4f59;
+  border-radius:8px;
+  background:linear-gradient(150deg,rgba(255,255,255,.03),transparent 40%),#14212a;
+  color:#eaf0f3;
+  text-decoration:none;
+  box-shadow:inset 0 1px rgba(255,255,255,.04);
+  transition:transform .15s ease,border-color .15s ease,background .15s ease;
+}
+
+.pccc-portal-dashboard__actions a:hover {
+  transform:translateY(-2px);
+  border-color:#64a8d2;
+  background:#172a37;
+}
+
+body.pccc-school-skin .pccc-portal-dashboard__actions a:hover {
+  border-color:#dc4b5a;
+  background:#291218;
+}
+
+.pccc-portal-dashboard__actions a > span {
+  margin-bottom:10px;
+  color:#6eb7e3;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.12em;
+}
+
+body.pccc-school-skin .pccc-portal-dashboard__actions a > span { color:#ee7d89; }
+
+.pccc-portal-dashboard__actions strong {
+  color:#fff;
+  font-size:13px;
+  line-height:1.2;
+}
+
+.pccc-portal-dashboard__actions small {
+  margin-top:5px;
+  color:#94a7b3;
+  font-size:10px;
+  line-height:1.35;
+}
+
+body.pccc-instructor-skin .pccc-school-only,
+body.pccc-school-skin .pccc-instructor-only {
+  display:none !important;
+}
+
+.pccc-portal-dashboard__lower {
+  display:grid;
+  grid-template-columns:minmax(0,2fr) minmax(270px,.8fr);
+  gap:12px;
+  padding:0 14px 14px;
+  background:#0b151c;
+}
+
+.pccc-portal-dashboard__schedule,
+.pccc-portal-dashboard__education {
+  border:1px solid #3d4e58;
+  border-radius:9px;
+  overflow:hidden;
+  background:#111d25;
+}
+
+.pccc-portal-dashboard__schedule header {
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:18px;
+  padding:14px 16px;
+  border-bottom:1px solid #3d4e58;
+  background:linear-gradient(180deg,#1b2b35,#14212a);
+}
+
+.pccc-portal-dashboard__schedule header span,
+.pccc-portal-dashboard__education > span {
+  color:#79b9df;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.16em;
+}
+
+body.pccc-school-skin .pccc-portal-dashboard__schedule header span,
+body.pccc-school-skin .pccc-portal-dashboard__education > span { color:#e98791; }
+
+.pccc-portal-dashboard__schedule h3,
+.pccc-portal-dashboard__education h3 {
+  margin:4px 0 0;
+  color:#f5f8f9;
+  font-size:17px;
+}
+
+.pccc-portal-dashboard__schedule header a {
+  color:#8ccbed;
+  font-size:11px;
+  font-weight:800;
+  text-decoration:none;
+}
+
+body.pccc-school-skin .pccc-portal-dashboard__schedule header a { color:#efa0a8; }
+
+.pccc-portal-dashboard__section-list { padding:4px 0; }
+
+.pccc-portal-dashboard__section-row {
+  display:grid;
+  grid-template-columns:14px minmax(110px,1.2fr) minmax(120px,1fr) minmax(70px,.6fr) minmax(90px,.7fr);
+  align-items:center;
+  gap:10px;
+  min-height:48px;
+  padding:8px 14px;
+  border-bottom:1px solid #2e3f49;
+  color:#aebdc6;
+  font-size:11px;
+}
+
+.pccc-portal-dashboard__section-row:last-child { border-bottom:0; }
+.pccc-portal-dashboard__section-row strong { color:#edf3f6; font-size:12px; }
+
+.pccc-portal-dashboard__status-dot {
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#59c887;
+  box-shadow:0 0 8px rgba(89,200,135,.5);
+}
+
+.pccc-portal-dashboard__education {
+  padding:18px;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.028),transparent 38%),
+    #121f28;
+}
+
+.pccc-portal-dashboard__education p {
+  margin:10px 0 20px;
+  color:#aebdc6;
+  font-size:12px;
+  line-height:1.55;
+}
+
+.pccc-portal-dashboard__education > div {
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  padding-top:14px;
+  border-top:1px solid #33444f;
+}
+
+.pccc-portal-dashboard__education > div strong {
+  color:#fff;
+  font-size:30px;
+  line-height:1;
+}
+
+.pccc-portal-dashboard__education > div small {
+  color:#9eafb8;
+  font-size:11px;
+}
+
+.pccc-portal-dashboard__empty {
+  min-height:82px;
+  display:flex;
+  align-items:center;
+  padding:16px;
+  color:#9dafb8;
+  font-size:12px;
+}
+
+@media (max-width:1180px) {
+  .pccc-portal-dashboard__actions { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .pccc-portal-dashboard__lower { grid-template-columns:1fr; }
+}
+
+@media (max-width:760px) {
+  .pccc-portal-dashboard { margin:0 10px 14px; }
+  .pccc-portal-dashboard__heading { align-items:flex-start; padding:20px; }
+  .pccc-portal-dashboard__seal { display:none; }
+  .pccc-portal-dashboard__actions { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .pccc-portal-dashboard__section-row {
+    grid-template-columns:12px 1fr auto;
+    gap:8px;
+  }
+  .pccc-portal-dashboard__section-row span:nth-of-type(2),
+  .pccc-portal-dashboard__section-row span:nth-of-type(4) { display:none; }
+}
