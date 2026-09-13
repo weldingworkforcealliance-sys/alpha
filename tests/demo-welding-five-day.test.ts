@@ -40,10 +40,14 @@ describe('Welding public demo curriculum snapshot', () => {
 
   it('uses the reusable demo engine instead of keeping a copied welding UI', () => {
     const page = readFileSync('app/demo/welding/page.tsx', 'utf8');
+    const augmented = readFileSync('app/demo/welding/WeldingDemoAugmentedWorkspace.tsx', 'utf8');
+    const live = readFileSync('app/demo/welding/WeldingDemoLiveWorkspace.tsx', 'utf8');
     const engine = readFileSync('app/demo/_components/DemoProgramWorkspace.tsx', 'utf8');
 
-    expect(page).toContain('DemoProgramWorkspace');
+    expect(page).toContain('WeldingDemoAugmentedWorkspace');
     expect(page).toContain('WELDING_DEMO_PROGRAM');
+    expect(augmented).toContain('WeldingDemoLiveWorkspace');
+    expect(live).toContain('DemoProgramWorkspace');
     expect(page).not.toContain('Orientation & Shop Readiness');
     expect(page).not.toContain('SMAW Setup & Arc Starts');
     expect(engine).toContain("`ltg_demo_${program.id}_full_system_v1`");
