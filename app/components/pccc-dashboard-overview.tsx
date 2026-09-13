@@ -128,7 +128,7 @@ export default function PcccDashboardOverview() {
         <Link href="/attendance"><span>03</span><strong>Student Attendance</strong><small>Daily & class-pair records</small></Link>
         <Link href="/resources"><span>04</span><strong>Content & Resources</strong><small>WPS · Codes · Teaching media</small></Link>
         <Link href="/reports"><span>05</span><strong>Results & Reports</strong><small>Progress · Evidence · Outcomes</small></Link>
-        <Link href="/time-clock"><span>06</span><strong>Employee Time</strong><small>Finsen Sierra Time Clock</small></Link>
+        <Link href="/time-clock"><span>06</span><strong>Employee Time</strong><small>Open workforce time module</small></Link>
       </div>
 
       <div className="pccc-portal-dashboard__actions pccc-school-only">
