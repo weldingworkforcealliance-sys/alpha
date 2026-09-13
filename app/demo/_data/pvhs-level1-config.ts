@@ -1,5 +1,13 @@
 import type { DemoCohort } from '../_lib/demo-types';
 
+const FIRST_FIVE_PVHS_DATES = [
+  '2026-09-08',
+  '2026-09-09',
+  '2026-09-10',
+  '2026-09-11',
+  '2026-09-14',
+];
+
 /**
  * Public-demo mirror of the current PVHS Level 1 operating configuration.
  * Structural values mirror production. Student identities and the report recipient
@@ -13,6 +21,7 @@ export const PVHS_LEVEL1_DEMO_COHORTS: DemoCohort[] = [
     dailyStartTime: '8:30 AM',
     dailyEndTime: '11:30 AM',
     plannedInstructionalDays: 165,
+    demoDates: FIRST_FIVE_PVHS_DATES,
     sections: [
       {
         courseCode: 'WLD 105',
@@ -38,7 +47,7 @@ export const PVHS_LEVEL1_DEMO_COHORTS: DemoCohort[] = [
       mode: 'pvhs',
       reportDelayMinutes: 30,
       reportingEnabled: true,
-      recipientLabel: 'Configured PVHS attendance recipient',
+      recipientLabel: 'Configured PVHS attendance recipient · delivery suppressed in public demo',
     },
     students: [
       'PVHS B Demo Student 01',
@@ -56,6 +65,7 @@ export const PVHS_LEVEL1_DEMO_COHORTS: DemoCohort[] = [
     dailyStartTime: '11:30 AM',
     dailyEndTime: '2:30 PM',
     plannedInstructionalDays: 165,
+    demoDates: FIRST_FIVE_PVHS_DATES,
     sections: [
       {
         courseCode: 'WLD 105',
@@ -81,7 +91,7 @@ export const PVHS_LEVEL1_DEMO_COHORTS: DemoCohort[] = [
       mode: 'pvhs',
       reportDelayMinutes: 10,
       reportingEnabled: true,
-      recipientLabel: 'Configured PVHS attendance recipient',
+      recipientLabel: 'Configured PVHS attendance recipient · delivery suppressed in public demo',
     },
     students: [
       'PVHS C Demo Student 01',
