@@ -53,6 +53,7 @@ type Props = {
   onNext?: () => void;
   onSelectDay?: (dayNumber: number) => void;
   onReturnCurrent?: () => void;
+  onLaunchResource?: (resource: PlannerLaunchResource) => void;
   studentDisplayUrl?: string | null;
   actionPanel?: ReactNode;
   footerPanel?: ReactNode;
@@ -110,6 +111,7 @@ export default function PlannerTeachingConsole({
   onNext,
   onSelectDay,
   onReturnCurrent,
+  onLaunchResource,
   studentDisplayUrl,
   actionPanel,
   footerPanel,
@@ -325,6 +327,14 @@ export default function PlannerTeachingConsole({
                       >
                         {resourceButtonLabel(resource.type)}
                       </a>
+                    ) : onLaunchResource && !secureExam ? (
+                      <button
+                        type="button"
+                        className={styles.resourceButton}
+                        onClick={() => onLaunchResource(resource)}
+                      >
+                        {resourceButtonLabel(resource.type)}
+                      </button>
                     ) : (
                       <span className={styles.resourceStatus}>
                         {secureExam ? 'Protected' : 'Link pending'}
