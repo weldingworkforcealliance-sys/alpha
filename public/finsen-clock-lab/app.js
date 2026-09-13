@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'finsen-clock-lab-v1';
+const FRAME_SOURCE = '/finsen-sierra/source-material-clock.b64.txt';
 
 const defaultState = () => ({
   employee: {
@@ -19,6 +20,18 @@ const dialog = el('timeDialog');
 
 let state = loadState();
 let now = new Date();
+
+async function loadFrame() {
+  try {
+    const response = await fetch(FRAME_SOURCE, { cache: 'force-cache' });
+    if (!response.ok) throw new Error('Frame artwork unavailable');
+    const encoded = (await response.text()).trim();
+    if (encoded.length < 10000) throw new Error('Frame artwork incomplete');
+    el('frameImage').src = `data:image/webp;base64,${encoded}`;
+  } catch (error) {
+    showToast(error instanceof Error ? error.message : 'Unable to load clock frame');
+  }
+}
 
 function loadState() {
   try {
@@ -176,5 +189,6 @@ el('scenarioIn').addEventListener('click', setScenarioIn);
 el('scenarioOut').addEventListener('click', setScenarioOut);
 el('resetLab').addEventListener('click', resetLab);
 
+void loadFrame();
 renderClock();
 setInterval(renderClock, 1000);
