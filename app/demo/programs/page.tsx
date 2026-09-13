@@ -42,6 +42,16 @@ export default function ProgramDemoSelectorPage() {
             </div>
             <button onClick={() => router.push('/demo/nursing')}>Open Nursing Demo</button>
           </article>
+
+          <article className="card timeclock">
+            <div className="tag">OPTIONAL WORKFORCE MODULE</div>
+            <h2>Finsen Sierra Time Clock</h2>
+            <p>The separate LTG punch-clock module with its fixed black-and-brass timepiece face, live punch state, vintage status lamps, employee time record, and school/department branding capability.</p>
+            <div className="chips">
+              <span>Clock In / Out</span><span>Live Status</span><span>Time Record</span><span>Brandable</span><span>Optional Module</span>
+            </div>
+            <button onClick={() => router.push('/demo/time-clock')}>Open Time Clock Demo</button>
+          </article>
         </section>
 
         <section className="message">
@@ -65,7 +75,7 @@ export default function ProgramDemoSelectorPage() {
         main { width:min(1200px,calc(100% - 30px)); margin:auto; padding:28px 0 60px; }
         .proof { display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:14px 16px; border:1px solid #d5e3e8; background:white; border-radius:11px; margin-bottom:18px; box-shadow:0 8px 20px rgba(42,77,90,.05); }
         .proof span { padding:8px 10px; border-radius:7px; background:#f5f9fa; border:1px solid #dfe9ed; font-size:10px; font-weight:850; color:#46606b; } .proof b { color:#8b9ca4; }
-        .programs { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+        .programs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; }
         .card { min-height:360px; padding:28px; border-radius:15px; display:grid; align-content:start; box-shadow:0 14px 30px rgba(42,77,90,.09); }
         .card .tag { font-size:9px; font-weight:900; letter-spacing:.12em; margin-bottom:8px; }
         .card p { line-height:1.62; font-size:13px; margin:8px 0 18px; }
@@ -74,8 +84,10 @@ export default function ProgramDemoSelectorPage() {
         .card button { justify-self:start; margin-top:auto; border-radius:8px; padding:11px 14px; font-weight:850; cursor:pointer; }
         .welding { background:#111619; color:#dbe1e4; border:1px solid #252d31; } .welding h2 { color:white; } .welding .tag { color:#60d4ff; } .welding p { color:#9ba7ac; } .welding .chips span { background:#1b2226; border:1px solid #303b40; color:#bbc6ca; } .welding button { background:#151c20; border:1px solid #5dcfff; color:#5dcfff; }
         .nursing { background:white; color:#435a64; border:1px solid #d6e4e9; border-top:5px solid #0e7898; } .nursing h2 { color:#17313c; } .nursing .tag { color:#0e7898; } .nursing .chips span { background:#eff9fc; border:1px solid #cce5ed; color:#356a7b; } .nursing button { background:#0e6c88; border:1px solid #0e6c88; color:white; }
+        .timeclock { background:linear-gradient(145deg,#171512,#0c0d0e); color:#d8d0c4; border:1px solid #6c5233; border-top:5px solid #b48245; } .timeclock h2 { color:#f5e6cc; font-family:Georgia,'Times New Roman',serif; } .timeclock .tag { color:#d4a25f; } .timeclock p { color:#aaa093; } .timeclock .chips span { background:#211c17; border:1px solid #594329; color:#d3b889; } .timeclock button { background:#211a13; border:1px solid #b48245; color:#e1bc7d; }
         .message { display:grid; grid-template-columns:.8fr 1.2fr; gap:24px; align-items:center; margin-top:18px; padding:22px; border-radius:12px; background:white; border:1px solid #d7e4e9; }
         .message p { color:#657983; line-height:1.6; font-size:12px; }
+        @media(max-width:980px) { .programs { grid-template-columns:1fr 1fr; } }
         @media(max-width:760px) { header { align-items:flex-start; padding:24px 16px; flex-wrap:wrap; } h1 { font-size:25px; } .programs,.message { grid-template-columns:1fr; } .card { min-height:320px; padding:22px; } .home { width:100%; } }
       `}</style>
     </div>
