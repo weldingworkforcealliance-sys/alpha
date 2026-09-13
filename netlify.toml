@@ -7,6 +7,15 @@
 # The publishable key below is intentionally browser-safe. Never place a
 # service-role key, secret key, Resend key, or cron secret in this file.
 
+# Preserve the requested path when someone uses the legacy Netlify hostname.
+# This prevents /demo and every nested /demo/* route from collapsing back to
+# the canonical LTG homepage when Netlify sends traffic to ltgeducation.com.
+[[redirects]]
+  from = "https://livingtguide.netlify.app/*"
+  to = "https://ltgeducation.com/:splat"
+  status = 301
+  force = true
+
 [build]
   command = "rm -rf .next && npm run build"
 
