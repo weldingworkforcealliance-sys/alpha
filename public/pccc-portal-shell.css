@@ -1,0 +1,545 @@
+/* PCCC WELDING PORTAL SHELL
+   This is the structural skin layer, not merely a color theme.
+   It deliberately overrides older component-scoped LTG styles so the live School
+   and Instructor workspaces read as one PCCC Welding system. */
+
+body.pccc-welding-skin {
+  --pccc-shell-red:#b20c1e;
+  --pccc-shell-red-hi:#e03143;
+  --pccc-shell-blue:#3b7ba5;
+  --pccc-shell-blue-hi:#67b3e4;
+  --pccc-shell-graphite:#0a1117;
+  --pccc-shell-panel:#101b23;
+  --pccc-shell-panel-2:#15242e;
+  --pccc-shell-panel-3:#1a2c37;
+  --pccc-shell-line:#3d4d58;
+  --pccc-shell-line-hi:#75838c;
+  --pccc-shell-text:#edf3f6;
+  --pccc-shell-muted:#aab8c1;
+  --pccc-shell-shadow:0 24px 60px rgba(0,0,0,.42);
+  background:#071017 !important;
+}
+
+body.pccc-welding-skin .app-container {
+  min-height:100vh !important;
+  padding:16px !important;
+  gap:0 !important;
+  background:
+    radial-gradient(circle at 76% -8%,rgba(78,131,166,.13),transparent 34rem),
+    linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px),
+    #071017 !important;
+  background-size:auto,42px 42px,42px 42px,auto !important;
+}
+
+/* ===== OUTER PORTAL ENCLOSURE ===== */
+body.pccc-welding-skin nav[aria-label='Planner workspace navigation'] {
+  position:relative !important;
+  margin:0 !important;
+  border:1px solid #59656e !important;
+  border-right:0 !important;
+  border-radius:16px 0 0 16px !important;
+  overflow:hidden !important;
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.16),
+    inset 3px 0 rgba(255,255,255,.035),
+    -10px 18px 44px rgba(0,0,0,.30) !important;
+}
+
+body.pccc-instructor-skin nav[aria-label='Planner workspace navigation'] {
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.10),transparent 5%,transparent 94%,rgba(0,0,0,.28)),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,rgba(0,0,0,.028) 1px 3px),
+    linear-gradient(180deg,#3b454d 0,#182128 12%,#0a1117 42%,#080e13 100%) !important;
+  border-color:#68737b !important;
+}
+
+body.pccc-school-skin nav[aria-label='Planner workspace navigation'] {
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.16),transparent 7%,transparent 92%,rgba(0,0,0,.27)),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.026) 0 1px,rgba(0,0,0,.03) 1px 3px),
+    linear-gradient(180deg,#ba1024 0,#7b0b17 18%,#3b080e 48%,#17070b 100%) !important;
+  border-color:#d04655 !important;
+}
+
+body.pccc-welding-skin .ltg-main-content {
+  position:relative !important;
+  min-width:0 !important;
+  margin:0 !important;
+  border:1px solid #59656e !important;
+  border-radius:0 16px 16px 0 !important;
+  overflow:hidden !important;
+  background:
+    radial-gradient(circle at 82% 1%,rgba(80,138,176,.10),transparent 31rem),
+    linear-gradient(180deg,#0a141c,#081118 32%,#071017) !important;
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.10),
+    18px 24px 60px rgba(0,0,0,.36) !important;
+}
+
+body.pccc-school-skin .ltg-main-content {
+  border-color:#8d303b !important;
+  box-shadow:inset 0 1px rgba(255,255,255,.12),18px 24px 60px rgba(0,0,0,.38) !important;
+}
+
+/* A real portal header on every authenticated PCCC screen. */
+body.pccc-welding-skin .ltg-main-content::before {
+  display:flex !important;
+  align-items:center !important;
+  min-height:74px !important;
+  padding:14px 28px 14px 30px !important;
+  border-bottom:1px solid #56636d !important;
+  color:#f6f8f9 !important;
+  font-size:14px !important;
+  font-weight:900 !important;
+  letter-spacing:.09em !important;
+  line-height:1.25 !important;
+  text-transform:uppercase !important;
+  white-space:pre-line !important;
+  box-sizing:border-box !important;
+  box-shadow:inset 0 1px rgba(255,255,255,.14),0 12px 30px rgba(0,0,0,.20) !important;
+  z-index:3 !important;
+}
+
+body.pccc-instructor-skin .ltg-main-content::before {
+  content:'PCCC  WELDING   |   INSTRUCTOR PORTAL\A EDUCATION • SKILLS • OPPORTUNITY   ·   TEACH • MENTOR • INSPIRE' !important;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.10),transparent 8%,transparent 94%,rgba(0,0,0,.22)),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,rgba(0,0,0,.025) 1px 3px),
+    linear-gradient(180deg,#3c464d,#1c252c 52%,#10171c) !important;
+  border-bottom-color:#64717a !important;
+  text-shadow:0 1px #000 !important;
+}
+
+body.pccc-school-skin .ltg-main-content::before {
+  content:'PCCC  WELDING   |   SCHOOL PORTAL\A EDUCATE • EQUIP • EMPOWER   ·   CURRICULUM • STUDENTS • OUTCOMES' !important;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.17),transparent 7%,transparent 94%,rgba(0,0,0,.25)),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.023) 0 1px,rgba(0,0,0,.03) 1px 3px),
+    linear-gradient(180deg,#bd1024,#7f0b18 56%,#4d0911) !important;
+  border-bottom-color:#d04b59 !important;
+  text-shadow:0 1px #4a0008 !important;
+}
+
+/* Thin automotive accent rail beneath the portal header. */
+body.pccc-welding-skin .ltg-main-content::after {
+  content:'' !important;
+  display:block !important;
+  height:4px !important;
+  background:linear-gradient(90deg,transparent,var(--pccc-shell-blue-hi) 8%,#97d4f7 22%,var(--pccc-shell-blue) 62%,transparent) !important;
+  box-shadow:0 0 16px rgba(91,173,226,.33) !important;
+}
+body.pccc-school-skin .ltg-main-content::after {
+  background:linear-gradient(90deg,transparent,#ff5867 8%,#ff9aa3 22%,#d51a2d 62%,transparent) !important;
+  box-shadow:0 0 16px rgba(226,38,57,.35) !important;
+}
+
+/* ===== SIDEBAR / BRAND ===== */
+body.pccc-welding-skin .ltg-sidebar-header {
+  padding:18px 14px 10px !important;
+  border-bottom:1px solid rgba(255,255,255,.13) !important;
+}
+body.pccc-welding-skin .ltg-brand {
+  min-height:86px !important;
+  padding:0 4px 12px !important;
+}
+body.pccc-welding-skin .ltg-brand-mark::after {
+  font-size:29px !important;
+  letter-spacing:-.07em !important;
+}
+body.pccc-welding-skin .ltg-brand-copy::before {
+  font-size:17px !important;
+  letter-spacing:.11em !important;
+}
+body.pccc-welding-skin .ltg-brand-copy::after {
+  font-size:7px !important;
+  letter-spacing:.12em !important;
+}
+body.pccc-welding-skin .ltg-brand::after {
+  width:50px !important;
+  height:44px !important;
+  right:1px !important;
+  top:8px !important;
+}
+body.pccc-welding-skin .ltg-sidebar-menu { padding-top:10px !important; }
+body.pccc-welding-skin .ltg-nav-section-label {
+  margin-top:16px !important;
+  padding-left:12px !important;
+  font-size:8px !important;
+  letter-spacing:.22em !important;
+  opacity:.90 !important;
+}
+body.pccc-welding-skin .ltg-nav-link {
+  min-height:44px !important;
+  margin:3px 8px !important;
+  padding:10px 12px !important;
+  border:1px solid transparent !important;
+  border-radius:7px !important;
+  font-size:13px !important;
+  font-weight:750 !important;
+}
+body.pccc-instructor-skin .ltg-nav-link.active {
+  border-color:#5e9bc0 !important;
+  background:linear-gradient(90deg,#285f82,#17384e 68%,#0f2635) !important;
+  box-shadow:inset 3px 0 #9ad8ff,0 8px 20px rgba(0,0,0,.22) !important;
+}
+body.pccc-school-skin .ltg-nav-link.active {
+  border-color:#e6505f !important;
+  background:linear-gradient(90deg,#b50d20,#760a16 68%,#490810) !important;
+  box-shadow:inset 3px 0 #ffb0b8,0 8px 20px rgba(0,0,0,.24) !important;
+}
+
+/* ===== HERO / EDUCATION FIRST ===== */
+body.pccc-welding-skin .ltg-dashboard-hero {
+  min-height:170px !important;
+  margin:18px 20px 16px !important;
+  padding:28px 34px !important;
+  border:1px solid #52616b !important;
+  border-radius:11px !important;
+  background:
+    linear-gradient(90deg,rgba(7,16,23,.98) 0 47%,rgba(7,16,23,.82) 70%,rgba(7,16,23,.96) 100%),
+    radial-gradient(circle at 82% 42%,rgba(74,140,183,.22),transparent 18rem),
+    #0d1921 !important;
+  box-shadow:inset 0 1px rgba(255,255,255,.05),0 16px 34px rgba(0,0,0,.24) !important;
+}
+body.pccc-school-skin .ltg-dashboard-hero { border-color:#74404a !important; }
+body.pccc-welding-skin .ltg-dashboard-hero h1 {
+  margin-top:5px !important;
+  color:#fff !important;
+  font-size:clamp(30px,4vw,50px) !important;
+  letter-spacing:-.04em !important;
+}
+body.pccc-welding-skin .ltg-dashboard-hero p {
+  max-width:620px !important;
+  color:#d0d9de !important;
+  font-size:16px !important;
+}
+body.pccc-welding-skin .ltg-dashboard-hero::after {
+  content:'CURRICULUM  •  INSTRUCTION  •  ASSESSMENT  •  STUDENT SUPPORT  •  CAREER READINESS' !important;
+  color:#93a4ae !important;
+  font-size:8px !important;
+  letter-spacing:.16em !important;
+}
+
+/* ===== FINSEN SIERRA DASHBOARD CLOCK ===== */
+body.pccc-welding-skin .ltg-punch-row {
+  display:grid !important;
+  grid-template-columns:minmax(0,2.15fr) minmax(250px,.85fr) !important;
+  gap:16px !important;
+  margin:0 20px 18px !important;
+  padding:0 !important;
+  background:transparent !important;
+  border:0 !important;
+}
+body.pccc-welding-skin .ltg-punch-row > div:first-child {
+  min-width:0 !important;
+  border:1px solid #4b5861 !important;
+  border-radius:12px !important;
+  padding:14px !important;
+  background:linear-gradient(145deg,#111d25,#0b141b) !important;
+  box-shadow:inset 0 1px rgba(255,255,255,.04),0 15px 36px rgba(0,0,0,.25) !important;
+}
+body.pccc-welding-skin .ltg-today-card {
+  border:1px solid #42515b !important;
+  border-radius:12px !important;
+  background:linear-gradient(155deg,#15242e,#0e1921) !important;
+  box-shadow:inset 0 1px rgba(255,255,255,.04),0 14px 30px rgba(0,0,0,.20) !important;
+}
+body.pccc-welding-skin .ltg-today-heading { border-bottom-color:#33444f !important; }
+body.pccc-welding-skin .ltg-today-heading strong,
+body.pccc-welding-skin .ltg-today-total strong { color:#f5f8fa !important; }
+body.pccc-welding-skin .ltg-today-session,
+body.pccc-welding-skin .ltg-today-total { color:#aebdc6 !important; }
+
+/* ===== CLASS SELECTOR / IDENTITY BARS ===== */
+body.pccc-welding-skin section[aria-label='Class workspace selector'],
+body.pccc-welding-skin div[aria-label='Assigned instructor and selected class'] {
+  width:calc(100% - 40px) !important;
+  margin:0 20px !important;
+  border:1px solid #3f4f59 !important;
+  background:linear-gradient(180deg,#13212a,#0f1a22) !important;
+  color:#e8eef1 !important;
+  box-shadow:none !important;
+}
+body.pccc-welding-skin section[aria-label='Class workspace selector'] {
+  border-radius:11px 11px 0 0 !important;
+  border-bottom:0 !important;
+  padding:16px 18px !important;
+}
+body.pccc-welding-skin div[aria-label='Assigned instructor and selected class'] {
+  border-radius:0 0 11px 11px !important;
+  margin-bottom:14px !important;
+  padding:11px 18px !important;
+}
+body.pccc-welding-skin .ltg-class-choice {
+  border:1px solid #52616b !important;
+  background:linear-gradient(180deg,#1b2a34,#13202a) !important;
+  color:#dce5ea !important;
+  box-shadow:inset 0 1px rgba(255,255,255,.04) !important;
+}
+body.pccc-instructor-skin .ltg-class-choice[aria-pressed='true'] {
+  border-color:#68add8 !important;
+  background:linear-gradient(180deg,#285e80,#173b53) !important;
+  color:#fff !important;
+  box-shadow:0 0 0 2px rgba(91,170,219,.12) !important;
+}
+body.pccc-school-skin .ltg-class-choice[aria-pressed='true'] {
+  border-color:#e44b5b !important;
+  background:linear-gradient(180deg,#af1021,#6f0b16) !important;
+  color:#fff !important;
+}
+
+/* ===== PLANNER: OVERRIDE OLD COMPONENT-SCOPED BLACK BOXES ===== */
+body.pccc-welding-skin .dashboard-container {
+  max-width:none !important;
+  margin:0 !important;
+  padding:0 20px 24px !important;
+  color:var(--pccc-shell-text) !important;
+  background:transparent !important;
+}
+body.pccc-welding-skin .dashboard-header {
+  margin:16px 0 12px !important;
+  border:1px solid #45545e !important;
+  border-radius:10px !important;
+  background:linear-gradient(180deg,#172630,#101b23) !important;
+  color:#fff !important;
+  box-shadow:0 12px 28px rgba(0,0,0,.18) !important;
+}
+body.pccc-welding-skin .dashboard-header h1 { color:#fff !important; }
+body.pccc-welding-skin .dashboard-main,
+body.pccc-welding-skin .dashboard-content,
+body.pccc-welding-skin .section-details { background:transparent !important; }
+body.pccc-welding-skin .section-details {
+  border:1px solid #40505a !important;
+  border-radius:12px !important;
+  overflow:hidden !important;
+  box-shadow:0 18px 40px rgba(0,0,0,.20) !important;
+}
+body.pccc-welding-skin .section-header,
+body.pccc-welding-skin .guide-day-heading,
+body.pccc-welding-skin .agenda-card-title,
+body.pccc-welding-skin .coaching-heading,
+body.pccc-welding-skin .calendar-month h4 {
+  border-color:#40505a !important;
+  background:linear-gradient(180deg,#1a2a34,#13212a) !important;
+  color:#fff !important;
+}
+body.pccc-welding-skin .section-header h2,
+body.pccc-welding-skin .guide-day-title-block h3,
+body.pccc-welding-skin .agenda-card-title h4,
+body.pccc-welding-skin .class-calendar-section h3,
+body.pccc-welding-skin .calendar-month h4 { color:#f6f9fa !important; }
+body.pccc-welding-skin .section-cohort-text,
+body.pccc-welding-skin .guide-objective p,
+body.pccc-welding-skin .guide-info-card p,
+body.pccc-welding-skin .coaching-grid p,
+body.pccc-welding-skin .math-goal,
+body.pccc-welding-skin .book-connection { color:#c5d0d6 !important; }
+body.pccc-welding-skin .details-grid {
+  gap:12px !important;
+  padding:14px !important;
+  background:#0d1820 !important;
+}
+body.pccc-welding-skin .detail-item {
+  border:1px solid #3f505a !important;
+  border-radius:9px !important;
+  background:linear-gradient(155deg,#172630,#111d25) !important;
+  box-shadow:inset 0 1px rgba(255,255,255,.035) !important;
+}
+body.pccc-welding-skin .detail-item label,
+body.pccc-welding-skin .guide-eyebrow,
+body.pccc-welding-skin .guide-label {
+  color:#91b9d0 !important;
+  font-weight:850 !important;
+  letter-spacing:.10em !important;
+}
+body.pccc-school-skin .detail-item label,
+body.pccc-school-skin .guide-eyebrow,
+body.pccc-school-skin .guide-label { color:#e9939d !important; }
+body.pccc-welding-skin .detail-value { color:#e8eef1 !important; }
+body.pccc-welding-skin .status-active { color:#82d9a7 !important; }
+
+body.pccc-welding-skin .teacher-guide-section,
+body.pccc-welding-skin .agenda-card,
+body.pccc-welding-skin .guide-info-card,
+body.pccc-welding-skin .coaching-card,
+body.pccc-welding-skin .class-calendar-section,
+body.pccc-welding-skin .calendar-month {
+  border-color:#3d4d57 !important;
+  background:linear-gradient(145deg,rgba(255,255,255,.018),transparent 34%),#101b23 !important;
+  color:#e7edf0 !important;
+  box-shadow:none !important;
+}
+body.pccc-welding-skin .guide-browser {
+  border-bottom-color:#3c4d57 !important;
+  background:#0c171f !important;
+}
+body.pccc-welding-skin .guide-browser-status { color:#d7e0e5 !important; }
+body.pccc-welding-skin .guide-day-select-label { color:#93a7b3 !important; }
+body.pccc-welding-skin .guide-browser-button,
+body.pccc-welding-skin .back-current-button,
+body.pccc-welding-skin .calendar-nav-button,
+body.pccc-welding-skin .logout-button,
+body.pccc-welding-skin .action-button {
+  border-color:#4a5a64 !important;
+  background:linear-gradient(180deg,#1c2a34,#13202a) !important;
+  color:#e9eff2 !important;
+  box-shadow:inset 0 1px rgba(255,255,255,.04) !important;
+}
+body.pccc-instructor-skin .guide-browser-button:hover:not(:disabled),
+body.pccc-instructor-skin .calendar-nav-button:hover:not(:disabled) { border-color:#68add8 !important; color:#fff !important; }
+body.pccc-school-skin .guide-browser-button:hover:not(:disabled),
+body.pccc-school-skin .calendar-nav-button:hover:not(:disabled) { border-color:#df4c5b !important; color:#fff !important; }
+body.pccc-welding-skin .guide-format-badge {
+  border-color:#4a5a64 !important;
+  background:#0d1820 !important;
+  color:#d5e0e6 !important;
+}
+body.pccc-welding-skin .guide-summary-row { border-color:#3b4b55 !important; }
+body.pccc-welding-skin .guide-objective,
+body.pccc-welding-skin .guide-outcomes { border-color:#3b4b55 !important; }
+body.pccc-welding-skin .outcome-chip {
+  border-color:#40515b !important;
+  background:#0c171e !important;
+  color:#d1dbe0 !important;
+}
+body.pccc-welding-skin .outcome-chip strong { color:#8ec6e8 !important; }
+body.pccc-school-skin .outcome-chip strong { color:#ef9da6 !important; }
+body.pccc-welding-skin .agenda-table th {
+  border-color:#33434d !important;
+  background:#0d1820 !important;
+  color:#9dabb4 !important;
+}
+body.pccc-welding-skin .agenda-table td {
+  border-color:#33434d !important;
+  background:#101b23 !important;
+  color:#d1d9de !important;
+}
+body.pccc-welding-skin .math-instructor-only {
+  border-color:#46647a !important;
+  background:#102330 !important;
+}
+body.pccc-school-skin .math-instructor-only {
+  border-color:#70404a !important;
+  background:#271218 !important;
+}
+body.pccc-welding-skin .resource-item { border-color:#35454f !important; }
+body.pccc-welding-skin .resource-item strong { color:#eff4f6 !important; }
+body.pccc-welding-skin .resource-link {
+  border-color:#4f93bc !important;
+  background:#173b53 !important;
+  color:#dff3ff !important;
+}
+body.pccc-school-skin .resource-link {
+  border-color:#bd3b49 !important;
+  background:#4b1018 !important;
+  color:#ffd7db !important;
+}
+body.pccc-welding-skin .coaching-grid > div {
+  border-color:#394954 !important;
+  background:#101b23 !important;
+}
+body.pccc-welding-skin .coaching-grid strong { color:#eef3f5 !important; }
+body.pccc-welding-skin .actions-section {
+  border-color:#3e4e58 !important;
+  background:linear-gradient(145deg,#121f28,#0d1820) !important;
+}
+body.pccc-welding-skin .actions-section textarea,
+body.pccc-welding-skin .actions-section input,
+body.pccc-welding-skin .teacher-guide-section select {
+  border-color:#485a65 !important;
+  background:#0b161d !important;
+  color:#eef3f5 !important;
+}
+body.pccc-welding-skin .class-calendar-section { margin-top:16px !important; }
+body.pccc-welding-skin .calendar-weekdays div {
+  border-color:#31414b !important;
+  background:#0c171e !important;
+  color:#8f9ea7 !important;
+}
+body.pccc-welding-skin .calendar-day {
+  border-color:#30404a !important;
+  background:#101b23 !important;
+  color:#c7d1d7 !important;
+}
+body.pccc-welding-skin .calendar-day.blank { background:#0b151c !important; }
+body.pccc-welding-skin .calendar-day.completed { background:#123044 !important; }
+body.pccc-welding-skin .calendar-day.current { background:#173d2c !important; box-shadow:inset 0 0 0 1px #52ba7e !important; }
+body.pccc-welding-skin .calendar-day.planned { background:#14212a !important; }
+body.pccc-welding-skin .calendar-day.no-class { background:#3b2116 !important; }
+body.pccc-welding-skin .calendar-day.actual { background:#2b1d35 !important; }
+body.pccc-welding-skin .calendar-date-number { color:#90a0aa !important; }
+body.pccc-welding-skin .calendar-event { color:#c1ccd2 !important; }
+body.pccc-welding-skin .calendar-event.strong { color:#fff !important; }
+
+/* ===== ATTENDANCE / REPORTS / SCHOOL / SECONDARY SCREENS ===== */
+body.pccc-welding-skin .ltg-secondary-route,
+body.pccc-welding-skin .school-shell,
+body.pccc-welding-skin .owner-shell { background:transparent !important; }
+body.pccc-welding-skin :where(
+  .panel,.card,.metric,.session,.table-card,.queue-card,.summary-card,.setup-card,
+  .control-card,.results-card,.report-card,.action-card,.danger-zone,
+  .attendance-card,.attendance-panel,.history-card,.employee-card,.payroll-card
+) {
+  border-color:#3d4e58 !important;
+  background:linear-gradient(150deg,rgba(255,255,255,.022),transparent 35%),#111d25 !important;
+  color:#edf3f6 !important;
+  box-shadow:0 12px 28px rgba(0,0,0,.17) !important;
+}
+body.pccc-welding-skin :where(table,.fake-table,.table,.student-table,.report-table,.result-table) {
+  border-color:#3c4c56 !important;
+  background:#0f1a22 !important;
+  color:#dce4e8 !important;
+}
+body.pccc-welding-skin :where(thead,.table-head,.thead,.student-head,.report-head,.result-head) {
+  background:#1a2b35 !important;
+  color:#c9d5db !important;
+}
+body.pccc-welding-skin :where(input,select,textarea) {
+  border-color:#475963 !important;
+  background:#0b161d !important;
+  color:#edf3f6 !important;
+}
+body.pccc-welding-skin :where(input,select,textarea):focus {
+  outline:none !important;
+  border-color:var(--ltg-accent) !important;
+  box-shadow:0 0 0 3px var(--ltg-accent-soft) !important;
+}
+
+/* ===== MOBILE / TABLET ===== */
+@media (max-width:1100px) {
+  body.pccc-welding-skin .app-container { padding:8px !important; }
+  body.pccc-welding-skin .ltg-punch-row { grid-template-columns:1fr !important; }
+  body.pccc-welding-skin .ltg-main-content::before { min-height:66px !important; padding:12px 18px !important; font-size:12px !important; }
+}
+
+@media (max-width:760px) {
+  body.pccc-welding-skin .app-container { padding:0 !important; }
+  body.pccc-welding-skin nav[aria-label='Planner workspace navigation'] {
+    border-radius:0 !important;
+    border-left:0 !important;
+    border-right:0 !important;
+  }
+  body.pccc-welding-skin .ltg-main-content {
+    border-radius:0 !important;
+    border-left:0 !important;
+    border-right:0 !important;
+  }
+  body.pccc-welding-skin .ltg-main-content::before {
+    min-height:58px !important;
+    padding:10px 14px !important;
+    font-size:10px !important;
+    letter-spacing:.07em !important;
+  }
+  body.pccc-welding-skin .ltg-dashboard-hero,
+  body.pccc-welding-skin .ltg-punch-row,
+  body.pccc-welding-skin section[aria-label='Class workspace selector'],
+  body.pccc-welding-skin div[aria-label='Assigned instructor and selected class'] {
+    width:auto !important;
+    margin-left:10px !important;
+    margin-right:10px !important;
+  }
+  body.pccc-welding-skin .dashboard-container { padding-left:10px !important; padding-right:10px !important; }
+  body.pccc-welding-skin .ltg-dashboard-hero { min-height:142px !important; padding:22px !important; }
+  body.pccc-welding-skin .ltg-dashboard-hero::after { display:none !important; }
+}

@@ -17,6 +17,8 @@ const PCCC_SKIN_CLASSES = ['pccc-welding-skin', 'pccc-school-skin', 'pccc-instru
 // Stable production tenant id for Passaic County Community College in the live LTG database.
 // Keep the name fallback below so the skin still works if PCCC is ever migrated to a new school row.
 const KNOWN_PCCC_SCHOOL_IDS = new Set(['08ccb452-83ab-482f-bb28-5576e02741b2']);
+const PORTAL_SHELL_LINK_ID = 'pccc-portal-shell-css';
+const PORTAL_SHELL_HREF = '/pccc-portal-shell.css?v=20260913-2';
 
 function isPcccName(name: string | null | undefined) {
   const normalized = (name ?? '').trim().toLowerCase();
@@ -30,6 +32,22 @@ function isPcccName(name: string | null | undefined) {
 
 function isKnownPcccSchoolId(id: string | null | undefined) {
   return Boolean(id && KNOWN_PCCC_SCHOOL_IDS.has(id));
+}
+
+function ensurePortalShellStyles() {
+  if (typeof document === 'undefined') return;
+  const existing = document.getElementById(PORTAL_SHELL_LINK_ID) as HTMLLinkElement | null;
+  if (existing) {
+    if (existing.href.endsWith(PORTAL_SHELL_HREF)) return;
+    existing.href = PORTAL_SHELL_HREF;
+    return;
+  }
+
+  const link = document.createElement('link');
+  link.id = PORTAL_SHELL_LINK_ID;
+  link.rel = 'stylesheet';
+  link.href = PORTAL_SHELL_HREF;
+  document.head.appendChild(link);
 }
 
 function isSchoolContext(pathname: string) {
@@ -55,6 +73,8 @@ function applyPcccClasses(mode: SkinMode) {
   if (typeof document === 'undefined') return;
   const targets = [document.documentElement, document.body];
   const modeClass = skinClassForMode(mode);
+
+  if (mode) ensurePortalShellStyles();
 
   targets.forEach((target) => {
     PCCC_SKIN_CLASSES.forEach((className) => target.classList.remove(className));
@@ -89,6 +109,8 @@ export default function PcccSkinController({ pathname }: { pathname: string }) {
   useEffect(() => {
     let cancelled = false;
     let activeMode: SkinMode = null;
+
+    ensurePortalShellStyles();
 
     const setMode = (mode: SkinMode) => {
       if (cancelled) return;
