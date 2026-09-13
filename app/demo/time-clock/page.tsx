@@ -86,7 +86,7 @@ export default function DemoTimeClockPage() {
         <div className="module-title">
           <span>WORKFORCE TIME · OPTIONAL MODULE</span>
           <h1>Finsen Sierra Time Clock</h1>
-          <p>Fine-timepiece character on the clock itself. Cleaner school software around it. Humanity continues to survive branding systems somehow.</p>
+          <p>Fine-timepiece character on the clock itself, with a cleaner school software environment around it.</p>
         </div>
         <div className="header-actions">
           <button type="button" onClick={reset}>Reset Clock</button>
