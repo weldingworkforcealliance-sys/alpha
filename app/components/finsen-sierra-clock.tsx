@@ -19,10 +19,7 @@ type FinsenSierraClockProps = {
   backgroundImage?: string;
 };
 
-const APPROVED_SKIN_PARTS = Array.from({ length: 9 }, (_, index) =>
-  `/finsen-sierra/approved-bronze/clock-${String(index + 1).padStart(2, '0')}.txt`
-);
-const APPROVED_SKIN_BASE64_LENGTH = 48_180;
+const STABLE_SOURCE_MATERIAL = '/finsen-sierra/source-material-clock.b64.txt';
 
 function initials(name: string) {
   return name
@@ -62,25 +59,28 @@ export default function FinsenSierraClock({
   useEffect(() => {
     let cancelled = false;
 
-    Promise.all(
-      APPROVED_SKIN_PARTS.map(async (path) => {
-        const response = await fetch(path, { cache: 'force-cache' });
-        if (!response.ok) throw new Error(`clock artwork unavailable: ${path}`);
+    fetch(STABLE_SOURCE_MATERIAL, { cache: 'force-cache' })
+      .then((response) => {
+        if (!response.ok) throw new Error('clock artwork unavailable');
         return response.text();
       })
-    )
-      .then((parts) => {
-        const encoded = parts.join('').replace(/\s+/g, '');
-        if (encoded.length !== APPROVED_SKIN_BASE64_LENGTH) {
-          throw new Error('approved clock artwork is incomplete');
+      .then((encodedSource) => {
+        const encoded = encodedSource.replace(/\s+/g, '');
+        // WebP files begin with RIFF, whose base64 form starts with UklG.
+        // Reject malformed source data rather than displaying a partially corrupted clock.
+        if (!encoded.startsWith('UklG') || encoded.length < 10_000) {
+          throw new Error('clock artwork failed integrity check');
         }
         if (!cancelled) {
           setSkinError(false);
-          setSourceSkin(`data:image/avif;base64,${encoded}`);
+          setSourceSkin(`data:image/webp;base64,${encoded}`);
         }
       })
       .catch(() => {
-        if (!cancelled) setSkinError(true);
+        if (!cancelled) {
+          setSourceSkin('');
+          setSkinError(true);
+        }
       });
 
     return () => { cancelled = true; };
@@ -118,44 +118,50 @@ export default function FinsenSierraClock({
           draggable={false}
         />
       ) : (
-        <div className={styles.skinLoading}>{skinError ? 'Clock artwork unavailable' : 'Loading clock artwork…'}</div>
+        <div className={styles.skinLoading}>
+          {skinError ? 'Time clock artwork unavailable. Punch controls remain available from Employee Time Clock.' : 'Loading clock artwork…'}
+        </div>
       )}
 
-      <div className={`${styles.lampVeil} ${styles.leftLampVeil}`} aria-hidden="true" />
-      <div className={`${styles.lampVeil} ${styles.rightLampVeil}`} aria-hidden="true" />
+      {sourceSkin && (
+        <>
+          <div className={`${styles.lampVeil} ${styles.leftLampVeil}`} aria-hidden="true" />
+          <div className={`${styles.lampVeil} ${styles.rightLampVeil}`} aria-hidden="true" />
 
-      <div className={styles.identityReadout} aria-live="polite">
-        <span>{greeting(now)}</span>
-        <strong>{displayName}</strong>
-        <small>People make progress.</small>
-      </div>
+          <div className={styles.identityReadout} aria-live="polite">
+            <span>{greeting(now)}</span>
+            <strong>{displayName}</strong>
+            <small>People make progress.</small>
+          </div>
 
-      <div className={styles.dateReadout}>{currentDate}</div>
+          <div className={styles.dateReadout}>{currentDate}</div>
 
-      <div className={styles.timeReadout} aria-live="off">
-        <strong>{currentTime}</strong>
-        <span>ON TIME. ON PURPOSE.</span>
-      </div>
+          <div className={styles.timeReadout} aria-live="off">
+            <strong>{currentTime}</strong>
+            <span>ON TIME. ON PURPOSE.</span>
+          </div>
 
-      <div className={styles.employeeReadout}>
-        <span className={styles.avatar}>{initials(displayName)}</span>
-        <span className={styles.employeeIdentity}>
-          <strong>{displayName}</strong>
-          <small>{employeeLine}</small>
-        </span>
-        <span className={styles.statusReadout}>
-          <small>Status</small>
-          <strong className={clockedIn ? styles.onSite : styles.offSite}>
-            <i aria-hidden="true" /> {clockedIn ? 'On Site' : 'Off Site'}
-          </strong>
-          <small>{clockedIn && sinceLabel ? `Since ${sinceLabel}` : 'Not currently punched in'}</small>
-        </span>
-        <span className={styles.totalReadout}>
-          <small>Today&apos;s Total</small>
-          <strong>{todayTotal}</strong>
-          <small>{clockedIn ? 'Time is running' : 'Recorded time today'}</small>
-        </span>
-      </div>
+          <div className={styles.employeeReadout}>
+            <span className={styles.avatar}>{initials(displayName)}</span>
+            <span className={styles.employeeIdentity}>
+              <strong>{displayName}</strong>
+              <small>{employeeLine}</small>
+            </span>
+            <span className={styles.statusReadout}>
+              <small>Status</small>
+              <strong className={clockedIn ? styles.onSite : styles.offSite}>
+                <i aria-hidden="true" /> {clockedIn ? 'On Site' : 'Off Site'}
+              </strong>
+              <small>{clockedIn && sinceLabel ? `Since ${sinceLabel}` : 'Not currently punched in'}</small>
+            </span>
+            <span className={styles.totalReadout}>
+              <small>Today&apos;s Total</small>
+              <strong>{todayTotal}</strong>
+              <small>{clockedIn ? 'Time is running' : 'Recorded time today'}</small>
+            </span>
+          </div>
+        </>
+      )}
 
       <button
         type="button"
