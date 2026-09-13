@@ -26,7 +26,7 @@ export default function ProgramDemoSelectorPage() {
           <article className="card welding">
             <div className="tag">WELDING IMPLEMENTATION DEMO</div>
             <h2>Welding Technology</h2>
-            <p>Shop-based technical instruction with daily planners, resources, attendance, performance evidence, instructor notes, the integrated Finsen Sierra workforce time clock, and school reporting.</p>
+            <p>Shop-based technical instruction with daily planners, resources, attendance, performance evidence, instructor notes, the integrated workforce time clock, and school reporting.</p>
             <div className="chips">
               <span>Shop / Lab</span><span>Performance Testing</span><span>Attendance</span><span>Time Clock</span><span>Resources</span><span>Reporting</span>
             </div>
