@@ -1,0 +1,1 @@
+This folder contains the isolated student-facing Live Classroom demo route and temporary browser-only participant tracking.
