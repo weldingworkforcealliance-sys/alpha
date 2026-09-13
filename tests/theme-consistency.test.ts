@@ -84,4 +84,16 @@ describe('LTG visual theme consistency', () => {
     expect(display).toContain('var(--ltg-accent)');
     expect(display).not.toContain('#06100f');
   });
+
+  it('allows PCCC accounts to keep the saved LTG light or dark preference', () => {
+    const controller = read('app/pccc-skin-controller.tsx');
+    const lightCss = read('public/pccc-light-mode.css');
+
+    expect(controller).toContain("const LIGHT_MODE_HREF = '/pccc-light-mode.css");
+    expect(controller).toContain('restoreSavedTheme();');
+    expect(controller).not.toContain("document.documentElement.dataset.theme !== 'dark'");
+    expect(lightCss).toContain("html[data-theme='light'] body.pccc-welding-skin");
+    expect(lightCss).toContain('--ltg-canvas:#dce3e7');
+    expect(lightCss).toContain('Connected Classroom');
+  });
 });
