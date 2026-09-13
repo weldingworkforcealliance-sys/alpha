@@ -56,14 +56,54 @@ export default function Home() {
             <a href="#platform" className="ltg-marketing-secondary">Explore the Platform</a>
           </div>
         </div>
-        <div className="ltg-snapshot-context">
-          <span>VERIFIED CURRENT-SCHOOL SNAPSHOT</span>
-          <strong>Current School Administrative Reporting</strong>
-          <p>Calendar Q3 2026 to Date</p>
-          <small>Jul 1, 2026 through Sep 11, 2026</small>
-          <div className="ltg-context-rule" />
-          <p className="ltg-context-note">Public preview uses aggregated school-level values only. Authorized users can open the full reporting workspace.</p>
+
+        <div className="ltg-hero-product-shot" aria-label="LTG current school reporting preview">
+          <div className="ltg-shot-browser-bar">
+            <div className="ltg-shot-dots" aria-hidden="true"><i /><i /><i /></div>
+            <span>LTG · Reporting &amp; Analytics</span>
+            <b>LIVE SCHOOL DATA</b>
+          </div>
+          <div className="ltg-shot-workspace">
+            <aside aria-hidden="true">
+              <strong>LTG</strong>
+              <span>Planner</span>
+              <span>Live Classroom</span>
+              <span>Attendance</span>
+              <span className="active">Reporting</span>
+              <span>Time Clock</span>
+            </aside>
+            <div className="ltg-shot-main">
+              <header>
+                <div><small>CURRENT SCHOOL</small><strong>Program Health</strong></div>
+                <span>Q3 2026</span>
+              </header>
+              <div className="ltg-shot-kpis">
+                <div><small>Attendance</small><strong>92.5%</strong></div>
+                <div><small>Assessment Avg</small><strong>70.9%</strong></div>
+                <div><small>Instruction Hrs</small><strong>42.5</strong></div>
+              </div>
+              <div className="ltg-shot-health">
+                <small>CURRENT PERIOD HEALTH</small>
+                <div><span>Schedule completion</span><i><b style={{ width: '100%' }} /></i><strong>100%</strong></div>
+                <div><span>Attendance</span><i><b style={{ width: '92.5%' }} /></i><strong>92.5%</strong></div>
+                <div><span>Assessment average</span><i><b style={{ width: '70.9%' }} /></i><strong>70.9%</strong></div>
+              </div>
+              <div className="ltg-shot-foot">
+                <div><strong>268</strong><span>Analytics events</span></div>
+                <div><strong>58</strong><span>Live Classroom events</span></div>
+                <div><strong>0</strong><span>Open punches</span></div>
+              </div>
+            </div>
+          </div>
+          <div className="ltg-shot-caption">Real LTG school-level reporting, presented with aggregated values only.</div>
         </div>
+      </section>
+
+      <section className="ltg-snapshot-strip" aria-label="Verified current-school snapshot context">
+        <span>VERIFIED CURRENT-SCHOOL SNAPSHOT</span>
+        <strong>Current School Administrative Reporting</strong>
+        <div><b>Calendar Q3 2026 to Date</b><small>Jul 1, 2026 through Sep 11, 2026</small></div>
+        <p>Public preview uses aggregated school-level values only. Authorized users can open the full reporting workspace.</p>
       </section>
 
       <section className="ltg-kpi-band" aria-label="Current school reporting snapshot">
