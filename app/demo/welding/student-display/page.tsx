@@ -6,10 +6,8 @@ type PageProps = {
 
 export default async function DemoStudentDisplayPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const sessionValue = params.session;
-  const activityValue = params.activity;
-  const sessionId = Array.isArray(sessionValue) ? sessionValue[0] ?? '' : sessionValue ?? '';
-  const activityKey = Array.isArray(activityValue) ? activityValue[0] ?? 'preclass_math' : activityValue ?? 'preclass_math';
+  const codeValue = params.code;
+  const joinCode = Array.isArray(codeValue) ? codeValue[0] ?? '' : codeValue ?? '';
 
-  return <StudentDisplayClient sessionId={sessionId} activityKey={activityKey} />;
+  return <StudentDisplayClient joinCode={joinCode} />;
 }

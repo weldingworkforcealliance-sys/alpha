@@ -1,39 +1,38 @@
 'use client';
 
 import { useEffect } from 'react';
+import { connectDemoClassroomStudent } from '../_lib/demo-classroom-api';
 
-type Participant = { name: string; connectedAt: number; lastSeenAt: number };
-
-type Submission = { studentName: string };
-
-function keyFor(sessionId: string) {
-  return `ltg_demo_classroom_${sessionId}`;
-}
-
-export default function ParticipantHeartbeat({ sessionId, studentName }: { sessionId: string; studentName: string }) {
+export default function ParticipantHeartbeat({
+  joinCode,
+  studentName,
+  enabled,
+}: {
+  joinCode: string;
+  studentName: string;
+  enabled: boolean;
+}) {
   useEffect(() => {
-    if (!sessionId) return;
-    const write = () => {
+    if (!enabled || !joinCode || studentName.trim().length < 2) return;
+    let cancelled = false;
+
+    const beat = async () => {
       try {
-        const key = keyFor(sessionId);
-        const raw = localStorage.getItem(key);
-        if (!raw) return;
-        const current = JSON.parse(raw) as { participants?: Participant[]; submissions?: Submission[]; lastActivityAt?: number };
-        const now = Date.now();
-        const normalized = studentName.trim() || 'Demo Student';
-        const participants = Array.isArray(current.participants) ? [...current.participants] : [];
-        const existingIndex = participants.findIndex((item) => item.name === normalized);
-        if (existingIndex >= 0) participants[existingIndex] = { ...participants[existingIndex], lastSeenAt: now };
-        else participants.push({ name: normalized, connectedAt: now, lastSeenAt: now });
-        localStorage.setItem(key, JSON.stringify({ ...current, lastActivityAt: now, participants }));
+        await connectDemoClassroomStudent(joinCode, studentName);
       } catch {
-        // Temporary demo storage only.
+        if (!cancelled) {
+          // The main student screen owns visible error handling. A missed heartbeat is non-fatal.
+        }
       }
     };
-    write();
-    const id = window.setInterval(write, 5000);
-    return () => window.clearInterval(id);
-  }, [sessionId, studentName]);
+
+    void beat();
+    const id = window.setInterval(() => void beat(), 15000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [enabled, joinCode, studentName]);
 
   return null;
 }
