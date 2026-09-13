@@ -70,11 +70,18 @@
 
 @media(max-width:1100px){
   .ltg-marketing-nav{grid-template-columns:1fr auto}.ltg-marketing-nav nav{display:none}.ltg-admin-hero{grid-template-columns:1fr}.ltg-kpi-band{grid-template-columns:repeat(3,1fr)}
-  .ltg-ring-card,.ltg-performance-card,.ltg-improvement-card{grid-column:span 4}.ltg-quality-card,.ltg-school-card{grid-column:1/-1}.ltg-section-heading,.ltg-core-band,.ltg-beta{grid-template-columns:1fr}.ltg-beta-actions{justify-content:flex-start}
+  .ltg-ring-card,.ltg-performance-card,.ltg-improvement-card{grid-column:span 6}.ltg-quality-card,.ltg-school-card{grid-column:1/-1}.ltg-section-heading,.ltg-core-band,.ltg-beta{grid-template-columns:1fr}.ltg-beta-actions{justify-content:flex-start}
+}
+@media(max-width:900px){
+  .ltg-feature-grid,.ltg-program-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:760px){
   .ltg-marketing-nav{padding:10px 16px}.ltg-marketing-brand-copy{display:none}.ltg-marketing-demo{display:none}.ltg-admin-hero{padding:48px 18px 30px}.ltg-admin-hero h1{font-size:clamp(2.7rem,13vw,4.7rem)}
   .ltg-kpi-band{grid-template-columns:1fr 1fr;padding:14px 14px 20px}.ltg-kpi-card{padding:18px 16px}.ltg-kpi-card strong{font-size:1.75rem}
   .ltg-analytics-board{grid-template-columns:1fr;padding:28px 14px 48px}.ltg-ring-card,.ltg-performance-card,.ltg-improvement-card,.ltg-quality-card,.ltg-school-card{grid-column:1}.ltg-quality-card{grid-template-columns:1fr}.ltg-ring{width:158px;height:158px}.ltg-ring>div{width:116px;height:116px}
+  .ltg-school-card table{min-width:0}.ltg-school-card th:nth-child(3),.ltg-school-card td:nth-child(3),.ltg-school-card th:nth-child(4),.ltg-school-card td:nth-child(4),.ltg-school-card th:nth-child(7),.ltg-school-card td:nth-child(7){display:none}
   .ltg-platform-section,.ltg-core-band,.ltg-programs,.ltg-beta{padding:58px 18px}.ltg-section-heading{grid-template-columns:1fr}.ltg-feature-grid,.ltg-program-grid{grid-template-columns:1fr}.ltg-program-grid article{grid-template-columns:78px 1fr}.ltg-marketing-footer{flex-direction:column}.ltg-marketing-footer>div:last-child{flex-wrap:wrap}
+}
+@media(max-width:420px){
+  .ltg-marketing-login{min-height:42px;padding:0 14px}.ltg-snapshot-context{padding:22px 20px}.ltg-kpi-card span{font-size:.76rem}.ltg-kpi-card small{font-size:.72rem}.ltg-live-use{grid-template-columns:1fr}.ltg-school-card,.ltg-quality-card{padding:18px}
 }
