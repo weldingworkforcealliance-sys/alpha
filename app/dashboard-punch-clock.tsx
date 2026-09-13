@@ -175,18 +175,7 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
 
   return (
     <section className="ltg-punch-row" aria-label="Punch clock summary">
-      <div className="ltg-punch-card">
-        <div className="ltg-punch-card-heading">
-          <div>
-            <span className="ltg-punch-icon" aria-hidden="true">◷</span>
-            <div>
-              <h2>Punch Clock</h2>
-              <p>Track your work hours</p>
-            </div>
-          </div>
-          <Link href="/time-clock">View Time Clock →</Link>
-        </div>
-
+      <div style={{ minWidth: 0, background: 'transparent', border: 0, boxShadow: 'none', padding: 0 }}>
         {loading ? (
           <div className="ltg-punch-loading">Loading clock status…</div>
         ) : !employee ? (

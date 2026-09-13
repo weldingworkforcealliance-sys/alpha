@@ -1,0 +1,26 @@
+/* The Finsen Sierra clock is the presentation surface. Do not place a second decorative box around it. */
+.clock-panel {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.clock-panel .demo-inline-clock {
+  margin-top: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.clock-panel .demo-inline-clock-heading {
+  display: none !important;
+}
+
+.clock-panel .demo-time-details {
+  margin-top: 8px !important;
+}
+
+.clock-panel .demo-time-details > div {
+  background: rgba(10, 16, 20, 0.72) !important;
+}
