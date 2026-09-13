@@ -1,0 +1,61 @@
+/* Production-line refinements for the isolated full-system demo. */
+
+body.pccc-demo-skin .brand-block>div:last-child>strong,
+body.pccc-demo-skin .brand-block>div:last-child>span {
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+}
+
+/* The Admin group contains only School Dashboard. When it is active, switch
+   the shell from instructor gunmetal/blue to the school automotive-red finish. */
+body.pccc-demo-skin .demo-app:has(.nav-group:last-child .nav-link.active) .sidebar {
+  border-right-color: #b14752 !important;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.11),transparent 6%,transparent 94%,rgba(0,0,0,.17)),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.022) 0 1px,rgba(0,0,0,.026) 1px 3px),
+    linear-gradient(180deg,#99101f 0%,#6a0a15 34%,#2c080d 100%) !important;
+}
+
+body.pccc-demo-skin .demo-app:has(.nav-group:last-child .nav-link.active) .workspace-header {
+  border-bottom-color: #71313a !important;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.07),transparent 18%),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.014) 0 1px,rgba(0,0,0,.02) 1px 3px),
+    linear-gradient(180deg,#6e0d17,#3f0a10) !important;
+}
+
+body.pccc-demo-skin .demo-app:has(.nav-group:last-child .nav-link.active) .eyebrow,
+body.pccc-demo-skin .demo-app:has(.nav-group:last-child .nav-link.active) .resource-card span,
+body.pccc-demo-skin .demo-app:has(.nav-group:last-child .nav-link.active) .launch-card>span {
+  color: #ff9aa5 !important;
+}
+
+body.pccc-demo-skin .demo-app:has(.nav-group:last-child .nav-link.active) .nav-link.active,
+body.pccc-demo-skin .demo-app:has(.nav-group:last-child .nav-link.active) .course-button.selected {
+  border-color: rgba(255,255,255,.28) !important;
+  border-left-color: #fff !important;
+  background: linear-gradient(90deg,rgba(255,255,255,.16),rgba(45,0,7,.22)) !important;
+}
+
+body.pccc-demo-skin .demo-app:has(.nav-group:last-child .nav-link.active) .panel {
+  border-color: #523139 !important;
+}
+
+/* Education language stays visible even when the physical clock or welding
+   imagery is the focal content. */
+body.pccc-demo-skin .context-strip::after {
+  content: 'CURRICULUM  •  INSTRUCTION  •  ASSESSMENT  •  STUDENT SUPPORT  •  CAREER READINESS';
+  grid-column: 1 / -1;
+  padding: 7px 16px;
+  background: #0d171e;
+  color: #7f929d;
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: .11em;
+  text-align: right;
+}
+
+@media(max-width:760px) {
+  body.pccc-demo-skin .context-strip::after { text-align:left; line-height:1.6; }
+}
