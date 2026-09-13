@@ -20,6 +20,7 @@ import AttendanceFinalizationAlert from './attendance-finalization-alert';
 import SchoolActiveTodayEmployees from './school-active-today-employees';
 import UsageTracker from './usage-tracker';
 import DemoSessionGuard from './demo-session-guard';
+import PcccSkinController from './pccc-skin-controller';
 import './styles.css';
 import './agenda/agenda.css';
 import './desktop-layout-fix.css';
@@ -36,6 +37,7 @@ import './theme-consistency.css';
 import './theme-component-overrides.css';
 import './interaction-feedback.css';
 import './operational-status-panels.css';
+import './pccc-welding-skin.css';
 
 const THEME_BOOTSTRAP = `(function(){try{var t=localStorage.getItem('ltg_theme');if(t!=='light'&&t!=='dark')t='dark';document.documentElement.dataset.theme=t;document.documentElement.style.colorScheme=t;}catch(e){document.documentElement.dataset.theme='dark';document.documentElement.style.colorScheme='dark';}})();`;
 const IS_STAGING = process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging';
@@ -102,6 +104,7 @@ export default function RootLayout({
       </head>
       <body className={bodyClassName || undefined}>
         <ThemeProvider>
+          <PcccSkinController pathname={pathname} />
           <DemoSessionGuard />
           {IS_STAGING && (
             <div
