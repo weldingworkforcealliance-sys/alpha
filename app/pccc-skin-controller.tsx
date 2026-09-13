@@ -19,6 +19,8 @@ const PCCC_SKIN_CLASSES = ['pccc-welding-skin', 'pccc-school-skin', 'pccc-instru
 const KNOWN_PCCC_SCHOOL_IDS = new Set(['08ccb452-83ab-482f-bb28-5576e02741b2']);
 const PORTAL_SHELL_LINK_ID = 'pccc-portal-shell-css';
 const PORTAL_SHELL_HREF = '/pccc-portal-shell.css?v=20260913-2';
+const LIGHT_MODE_LINK_ID = 'pccc-light-mode-css';
+const LIGHT_MODE_HREF = '/pccc-light-mode.css?v=20260913-1';
 
 function isPcccName(name: string | null | undefined) {
   const normalized = (name ?? '').trim().toLowerCase();
@@ -34,20 +36,26 @@ function isKnownPcccSchoolId(id: string | null | undefined) {
   return Boolean(id && KNOWN_PCCC_SCHOOL_IDS.has(id));
 }
 
-function ensurePortalShellStyles() {
+function ensureStylesheet(id: string, href: string) {
   if (typeof document === 'undefined') return;
-  const existing = document.getElementById(PORTAL_SHELL_LINK_ID) as HTMLLinkElement | null;
+  const existing = document.getElementById(id) as HTMLLinkElement | null;
   if (existing) {
-    if (existing.href.endsWith(PORTAL_SHELL_HREF)) return;
-    existing.href = PORTAL_SHELL_HREF;
+    if (!existing.href.endsWith(href)) existing.href = href;
     return;
   }
 
   const link = document.createElement('link');
-  link.id = PORTAL_SHELL_LINK_ID;
+  link.id = id;
   link.rel = 'stylesheet';
-  link.href = PORTAL_SHELL_HREF;
+  link.href = href;
   document.head.appendChild(link);
+}
+
+function ensurePcccStyles() {
+  ensureStylesheet(PORTAL_SHELL_LINK_ID, PORTAL_SHELL_HREF);
+  // Loaded after the structural portal shell so light-mode tokens and surfaces can
+  // override the dark painted-steel defaults without removing PCCC branding.
+  ensureStylesheet(LIGHT_MODE_LINK_ID, LIGHT_MODE_HREF);
 }
 
 function isSchoolContext(pathname: string) {
@@ -74,7 +82,7 @@ function applyPcccClasses(mode: SkinMode) {
   const targets = [document.documentElement, document.body];
   const modeClass = skinClassForMode(mode);
 
-  if (mode) ensurePortalShellStyles();
+  if (mode) ensurePcccStyles();
 
   targets.forEach((target) => {
     PCCC_SKIN_CLASSES.forEach((className) => target.classList.remove(className));
@@ -86,14 +94,9 @@ function applyPcccClasses(mode: SkinMode) {
     }
   });
 
-  // The approved PCCC skin is a dark painted-steel interface. Do not allow a saved
-  // generic LTG light-theme preference to flatten the branded surfaces back to white.
-  if (mode) {
-    document.documentElement.dataset.theme = 'dark';
-    document.documentElement.style.colorScheme = 'dark';
-  } else {
-    restoreSavedTheme();
-  }
+  // PCCC branding follows the account's normal LTG theme preference. The tenant
+  // skin must never overwrite the light/dark choice made by the user.
+  restoreSavedTheme();
 }
 
 function modeForMembership(pathname: string, membership: Membership | null) {
@@ -110,7 +113,7 @@ export default function PcccSkinController({ pathname }: { pathname: string }) {
     let cancelled = false;
     let activeMode: SkinMode = null;
 
-    ensurePortalShellStyles();
+    ensurePcccStyles();
 
     const setMode = (mode: SkinMode) => {
       if (cancelled) return;
@@ -118,21 +121,21 @@ export default function PcccSkinController({ pathname }: { pathname: string }) {
       applyPcccClasses(mode);
     };
 
-    // RootLayout and theme state can both touch document classes/theme after hydration.
-    // Re-assert the PCCC identity instead of letting the branded shell silently disappear.
+    // RootLayout can rewrite document classes during client renders. Re-assert only
+    // tenant identity; the ThemeProvider remains the sole owner of light/dark state.
     const observer = new MutationObserver(() => {
       if (!activeMode) return;
       const requiredClass = skinClassForMode(activeMode);
-      if (
+      const bodyMissing =
         !document.body.classList.contains('pccc-welding-skin') ||
-        (requiredClass && !document.body.classList.contains(requiredClass)) ||
-        document.documentElement.dataset.theme !== 'dark'
-      ) {
-        applyPcccClasses(activeMode);
-      }
+        Boolean(requiredClass && !document.body.classList.contains(requiredClass));
+      const htmlMissing =
+        !document.documentElement.classList.contains('pccc-welding-skin') ||
+        Boolean(requiredClass && !document.documentElement.classList.contains(requiredClass));
+      if (bodyMissing || htmlMissing) applyPcccClasses(activeMode);
     });
     observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme', 'style'] });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
     const apply = async () => {
       setMode(null);
@@ -162,8 +165,6 @@ export default function PcccSkinController({ pathname }: { pathname: string }) {
 
         const rows = ((membershipResult.data ?? []) as Membership[]).filter((row) => row.school_id);
 
-        // Fast, deterministic production path. This removes the second tenant lookup as a
-        // prerequisite for users who already have an active PCCC membership.
         const directPcccMembership = rows.find((row) => isKnownPcccSchoolId(row.school_id)) ?? null;
         if (directPcccMembership) {
           setMode(modeForMembership(pathname, directPcccMembership));
