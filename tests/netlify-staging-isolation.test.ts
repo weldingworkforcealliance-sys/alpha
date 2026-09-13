@@ -19,4 +19,9 @@ describe('Netlify Deploy Preview isolation', () => {
     expect(config).not.toMatch(/^\s*RESEND_API_KEY\s*=/m);
     expect(config).not.toMatch(/^\s*ATTENDANCE_CRON_SECRET\s*=/m);
   });
+
+  it('cleans the Next.js output without deleting Netlify runtime plugins', () => {
+    expect(config).toContain('command = "rm -rf .next && npm run build"');
+    expect(config).not.toContain('rm -rf .next .netlify');
+  });
 });
