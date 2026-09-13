@@ -3,8 +3,7 @@
   width: 100%;
   aspect-ratio: 4 / 3;
   overflow: hidden;
-  color: #fff;
-  background: #0b0b0a;
+  background: #0a0908;
   isolation: isolate;
 }
 
@@ -18,227 +17,87 @@
   pointer-events: none;
 }
 
+.skinLoading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #0a0908;
+  color: #c99b53;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 14px;
+  letter-spacing: .08em;
+}
+
+/* The source artwork supplies every visible material. These veils only turn the
+   original 1950s indicator lamps on/off without redrawing them. */
 .lampVeil {
   position: absolute;
   z-index: 3;
-  top: 25.1%;
-  width: 6.2%;
-  height: 18.8%;
-  border-radius: 40%;
-  background: rgba(0, 0, 0, .68);
-  box-shadow: inset 0 0 22px rgba(0, 0, 0, .95);
-  transition: opacity .18s ease;
+  top: 25.4%;
+  width: 6.6%;
+  height: 13.6%;
+  border-radius: 34%;
+  background: rgba(4, 4, 3, .88);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, .95);
+  transition: opacity .15s ease;
   pointer-events: none;
 }
 
-.leftLampVeil { left: 4.35%; }
-.rightLampVeil { right: 4.2%; }
+.leftLampVeil { left: 4.55%; }
+.rightLampVeil { right: 4.55%; }
 
-.clock[data-clocked-in='true'] .leftLampVeil { opacity: .04; }
-.clock[data-clocked-in='true'] .rightLampVeil { opacity: .78; }
-.clock[data-clocked-in='false'] .leftLampVeil { opacity: .78; }
-.clock[data-clocked-in='false'] .rightLampVeil { opacity: .04; }
+.clock[data-clocked-in='true'] .leftLampVeil { opacity: 0; }
+.clock[data-clocked-in='true'] .rightLampVeil { opacity: .84; }
+.clock[data-clocked-in='false'] .leftLampVeil { opacity: .84; }
+.clock[data-clocked-in='false'] .rightLampVeil { opacity: 0; }
 
-.identityGlass,
-.dateGlass,
-.timeGlass,
-.footerGlass {
-  position: absolute;
-  z-index: 5;
-  color: #fff;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, .95);
-}
-
-.identityGlass {
-  left: 18.1%;
-  top: 27%;
-  width: 24.5%;
-  min-height: 11.5%;
-  display: grid;
-  align-content: center;
-  gap: .2vw;
-  padding: .7vw 1vw;
-  border-radius: 1vw;
-  background: rgba(4, 9, 11, .7);
-  backdrop-filter: blur(7px);
-}
-
-.identityGlass span,
-.identityGlass small {
-  color: rgba(255,255,255,.88);
-  font-size: clamp(7px, 1.05vw, 16px);
-}
-
-.identityGlass strong {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(15px, 2vw, 31px);
-  line-height: 1.05;
-  font-weight: 500;
-}
-
-.dateGlass {
-  right: 18.6%;
-  top: 27%;
-  padding: .55vw .8vw;
-  border-radius: .8vw;
-  background: rgba(4, 9, 11, .72);
-  backdrop-filter: blur(7px);
-  font-size: clamp(7px, 1.05vw, 16px);
-  font-weight: 700;
-}
-
-.timeGlass {
-  left: 37.5%;
-  top: 36.5%;
-  width: 25%;
-  min-height: 12.5%;
-  display: grid;
-  place-items: center;
-  align-content: center;
-  border-radius: 1vw;
-  background: rgba(4, 9, 11, .56);
-  backdrop-filter: blur(5px);
-}
-
-.timeGlass strong {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(31px, 6.2vw, 92px);
-  line-height: .9;
-  font-weight: 500;
-}
-
-.timeGlass span {
-  margin-top: .45vw;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(6px, .9vw, 14px);
-  letter-spacing: .16em;
-}
-
+/* Invisible interaction layer. The visible buttons remain the real buttons in
+   the supplied source artwork rather than CSS imitations. */
 .hotspot {
   position: absolute;
-  z-index: 7;
-  top: 52.2%;
-  height: 10.1%;
+  z-index: 6;
+  display: block;
   border: 0;
-  border-radius: 1.3vw;
+  padding: 0;
+  margin: 0;
   background: transparent;
   cursor: pointer;
-}
-
-.hotspot:hover:not(:disabled),
-.hotspot:focus-visible {
-  outline: 3px solid rgba(255,255,255,.72);
-  outline-offset: -3px;
+  appearance: none;
 }
 
 .hotspot:disabled {
   cursor: default;
-  background: rgba(0, 0, 0, .38);
+  background: transparent;
+}
+
+.hotspot:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, .9);
+  outline-offset: -4px;
 }
 
 .clockInHotspot {
-  left: 24.4%;
-  width: 24.3%;
+  left: 24.2%;
+  top: 50.0%;
+  width: 23.4%;
+  height: 9.2%;
+  border-radius: 2.5%;
 }
 
 .clockOutHotspot {
-  left: 51.1%;
-  width: 24.1%;
+  left: 50.0%;
+  top: 50.0%;
+  width: 23.4%;
+  height: 9.2%;
+  border-radius: 2.5%;
 }
 
-.footerGlass {
-  left: 16.9%;
-  right: 16.9%;
-  top: 63.1%;
-  min-height: 9.2%;
-  display: grid;
-  grid-template-columns: auto 1.5fr 1.15fr 1fr auto;
-  gap: 1.2vw;
-  align-items: center;
-  padding: .65vw .9vw;
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: 1vw;
-  background: rgba(8, 16, 21, .92);
-  box-shadow: 0 8px 22px rgba(0,0,0,.28);
-  backdrop-filter: blur(8px);
-}
-
-.avatar {
-  display: grid;
-  place-items: center;
-  width: clamp(26px, 3.8vw, 56px);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: #687687;
-  color: #fff;
-  font-size: clamp(9px, 1.2vw, 17px);
-  font-weight: 800;
-}
-
-.employeeBlock,
-.statusBlock,
-.totalBlock {
-  min-width: 0;
-  display: grid;
-  gap: .16vw;
-}
-
-.employeeBlock strong,
-.statusBlock strong,
-.totalBlock strong {
-  overflow: hidden;
-  color: #fff;
-  font-size: clamp(7px, 1vw, 15px);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.employeeBlock span,
-.statusBlock span,
-.statusBlock small,
-.totalBlock span,
-.totalBlock small {
-  overflow: hidden;
-  color: rgba(255,255,255,.7);
-  font-size: clamp(5px, .72vw, 11px);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.statusBlock strong i {
-  display: inline-block;
-  width: .7em;
-  height: .7em;
-  margin-right: .35em;
-  border-radius: 50%;
-  vertical-align: .06em;
-  background: currentColor;
-  box-shadow: 0 0 9px currentColor;
-}
-
-.statusIn { color: #1df094 !important; }
-.statusOut { color: #ff5a51 !important; }
-
-.viewTime {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: clamp(25px, 3.5vw, 50px);
-  padding: 0 clamp(8px, 1vw, 15px);
-  border: 1px solid rgba(255,255,255,.22);
-  border-radius: .65vw;
-  background: rgba(29, 43, 54, .94);
-  color: #fff;
-  font: inherit;
-  font-size: clamp(6px, .82vw, 12px);
-  font-weight: 800;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.viewTime:disabled {
-  opacity: .5;
-  cursor: default;
+.viewTimeHotspot {
+  left: 68.7%;
+  top: 60.0%;
+  width: 12.0%;
+  height: 7.5%;
+  border-radius: 5%;
 }
 
 .srOnly {
@@ -248,53 +107,7 @@
   padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip: rect(0,0,0,0);
+  clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
-}
-
-@media (max-width: 760px) {
-  .identityGlass {
-    left: 17.7%;
-    width: 27%;
-    padding: 1vw;
-  }
-
-  .dateGlass {
-    right: 17.8%;
-  }
-
-  .timeGlass {
-    left: 36%;
-    width: 28%;
-  }
-
-  .footerGlass {
-    left: 16%;
-    right: 16%;
-    gap: .7vw;
-    grid-template-columns: auto 1.4fr 1fr 1fr auto;
-  }
-}
-
-@media (max-width: 520px) {
-  .identityGlass small,
-  .employeeBlock span,
-  .statusBlock span,
-  .statusBlock small,
-  .totalBlock span,
-  .totalBlock small {
-    display: none;
-  }
-
-  .footerGlass {
-    top: 62.8%;
-    min-height: 9.8%;
-    grid-template-columns: auto 1fr auto auto;
-  }
-
-  .statusBlock small,
-  .totalBlock small { display: none; }
-  .avatar { display: none; }
-  .viewTime { padding: 0 5px; }
 }
