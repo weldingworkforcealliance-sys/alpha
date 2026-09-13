@@ -8,7 +8,7 @@
 # service-role key, secret key, Resend key, or cron secret in this file.
 
 [build]
-  command = "rm -rf .next .netlify && npm run build"
+  command = "rm -rf .next && npm run build"
 
 [context.deploy-preview.environment]
   NEXT_PUBLIC_SUPABASE_URL = "https://ezlvivmeneefiiwqwgqd.supabase.co"
