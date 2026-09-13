@@ -1,0 +1,301 @@
+/* LTG SKIN CONTRACT
+   Tenant skins sit above light/dark theme. Components should consume these tokens
+   instead of hard-coding brand colors. This file intentionally loads last.
+   Finsen Sierra Time Clock is a separate module and is not styled here. */
+
+html[data-ltg-skin],
+body[data-ltg-skin] {
+  --skin-canvas: var(--ltg-canvas);
+  --skin-surface: var(--ltg-surface);
+  --skin-surface-2: var(--ltg-surface-2);
+  --skin-surface-3: var(--ltg-surface-3);
+  --skin-input: var(--ltg-input);
+  --skin-text: var(--ltg-text);
+  --skin-muted: var(--ltg-muted);
+  --skin-faint: var(--ltg-faint);
+  --skin-border: var(--ltg-border);
+  --skin-border-soft: var(--ltg-border-soft);
+  --skin-accent: var(--ltg-accent);
+  --skin-accent-strong: var(--ltg-accent-strong);
+  --skin-accent-soft: var(--ltg-accent-soft);
+  --skin-shadow: var(--ltg-shadow);
+  --skin-radius: 12px;
+}
+
+/* PCCC Welding brand tokens. Light/dark changes the working surfaces, not identity. */
+html[data-ltg-skin='pccc-welding'][data-theme='dark'],
+html[data-ltg-skin='pccc-welding'][data-theme='dark'] body {
+  --skin-canvas:#071017;
+  --skin-surface:#101b23;
+  --skin-surface-2:#15242e;
+  --skin-surface-3:#1a2c37;
+  --skin-input:#0b1720;
+  --skin-text:#eef3f6;
+  --skin-muted:#aebbc3;
+  --skin-faint:#7f929d;
+  --skin-border:#465963;
+  --skin-border-soft:#31414b;
+  --skin-shadow:0 18px 42px rgba(0,0,0,.28);
+}
+
+html[data-ltg-skin='pccc-welding'][data-theme='light'],
+html[data-ltg-skin='pccc-welding'][data-theme='light'] body {
+  --skin-canvas:#dce3e7;
+  --skin-surface:#f7f9fa;
+  --skin-surface-2:#edf1f3;
+  --skin-surface-3:#e2e8eb;
+  --skin-input:#ffffff;
+  --skin-text:#17242d;
+  --skin-muted:#586873;
+  --skin-faint:#778690;
+  --skin-border:#8e9aa3;
+  --skin-border-soft:#c0c8cd;
+  --skin-shadow:0 14px 30px rgba(13,24,33,.14);
+}
+
+html[data-ltg-skin='pccc-welding'][data-ltg-access='school'],
+html[data-ltg-skin='pccc-welding'][data-ltg-access='school'] body {
+  --skin-accent:#c7192d;
+  --skin-accent-strong:#e33a48;
+  --skin-accent-soft:rgba(199,25,45,.15);
+  --skin-role-metal:#8b0d19;
+  --skin-role-metal-dark:#41080e;
+  --skin-role-metal-hi:#f05a68;
+}
+
+html[data-ltg-skin='pccc-welding'][data-ltg-access='instructor'],
+html[data-ltg-skin='pccc-welding'][data-ltg-access='instructor'] body {
+  --skin-accent:#4d87ad;
+  --skin-accent-strong:#75b5dd;
+  --skin-accent-soft:rgba(77,135,173,.16);
+  --skin-role-metal:#39444c;
+  --skin-role-metal-dark:#10171c;
+  --skin-role-metal-hi:#78858e;
+}
+
+html[data-ltg-skin='pccc-welding'] body.night-shift-shell,
+html[data-ltg-skin='pccc-welding'] body.night-shift-shell .ltg-main-content,
+html[data-ltg-skin='pccc-welding'] body.night-shift-shell .ltg-public-content {
+  background:var(--skin-canvas) !important;
+  color:var(--skin-text) !important;
+}
+
+/* Structural enclosure. This is the skin boundary, not a loose color override. */
+html[data-ltg-skin='pccc-welding'] body .app-container {
+  min-height:100vh !important;
+  padding:16px !important;
+  gap:0 !important;
+  background:
+    radial-gradient(circle at 78% -10%,var(--skin-accent-soft),transparent 34rem),
+    linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px),
+    var(--skin-canvas) !important;
+  background-size:auto,42px 42px,42px 42px,auto !important;
+}
+
+html[data-ltg-skin='pccc-welding'] body nav[aria-label='Planner workspace navigation'] {
+  position:relative !important;
+  margin:0 !important;
+  border:1px solid var(--skin-role-metal-hi) !important;
+  border-right:0 !important;
+  border-radius:16px 0 0 16px !important;
+  overflow:hidden !important;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.12),transparent 7%,transparent 93%,rgba(0,0,0,.22)),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,rgba(0,0,0,.025) 1px 3px),
+    linear-gradient(180deg,var(--skin-role-metal),var(--skin-role-metal-dark) 42%,#080e13) !important;
+  box-shadow:inset 0 1px rgba(255,255,255,.15),-10px 18px 44px rgba(0,0,0,.26) !important;
+}
+
+html[data-ltg-skin='pccc-welding'] body .ltg-main-content {
+  position:relative !important;
+  min-width:0 !important;
+  margin:0 !important;
+  border:1px solid var(--skin-role-metal-hi) !important;
+  border-radius:0 16px 16px 0 !important;
+  overflow:hidden !important;
+  background:var(--skin-canvas) !important;
+  box-shadow:inset 0 1px rgba(255,255,255,.08),18px 24px 60px rgba(0,0,0,.28) !important;
+}
+
+html[data-ltg-skin='pccc-welding'] body .ltg-main-content::before {
+  display:flex !important;
+  align-items:center !important;
+  min-height:74px !important;
+  padding:14px 28px 14px 30px !important;
+  border-bottom:1px solid var(--skin-role-metal-hi) !important;
+  color:#fff !important;
+  font-size:14px !important;
+  font-weight:900 !important;
+  letter-spacing:.09em !important;
+  line-height:1.25 !important;
+  text-transform:uppercase !important;
+  white-space:pre-line !important;
+  box-sizing:border-box !important;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.12),transparent 8%,transparent 94%,rgba(0,0,0,.23)),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,rgba(0,0,0,.025) 1px 3px),
+    linear-gradient(180deg,var(--skin-role-metal),var(--skin-role-metal-dark)) !important;
+  box-shadow:inset 0 1px rgba(255,255,255,.14),0 12px 30px rgba(0,0,0,.18) !important;
+}
+
+html[data-ltg-skin='pccc-welding'][data-ltg-access='school'] body .ltg-main-content::before {
+  content:'PCCC  WELDING   |   SCHOOL PORTAL\A EDUCATE • EQUIP • EMPOWER   ·   CURRICULUM • STUDENTS • OUTCOMES' !important;
+}
+html[data-ltg-skin='pccc-welding'][data-ltg-access='instructor'] body .ltg-main-content::before {
+  content:'PCCC  WELDING   |   INSTRUCTOR PORTAL\A EDUCATION • SKILLS • OPPORTUNITY   ·   TEACH • MENTOR • INSPIRE' !important;
+}
+
+/* Brand lockup and nav. */
+html[data-ltg-skin='pccc-welding'] body .ltg-brand-mark {
+  border:0 !important;
+  background:transparent !important;
+  color:transparent !important;
+  box-shadow:none !important;
+  font-size:0 !important;
+}
+html[data-ltg-skin='pccc-welding'] body .ltg-brand-mark::after {
+  content:'PCCC' !important;
+  color:#fff !important;
+  font-size:28px !important;
+  font-style:italic !important;
+  font-weight:950 !important;
+  letter-spacing:-.06em !important;
+}
+html[data-ltg-skin='pccc-welding'] body .ltg-brand-copy {
+  color:transparent !important;
+  font-size:0 !important;
+}
+html[data-ltg-skin='pccc-welding'] body .ltg-brand-copy::before {
+  content:'WELDING' !important;
+  display:block !important;
+  color:#fff !important;
+  font-size:16px !important;
+  font-style:italic !important;
+  font-weight:950 !important;
+  letter-spacing:.09em !important;
+}
+html[data-ltg-skin='pccc-welding'] body .ltg-brand-copy::after {
+  content:'PASSAIC COUNTY COMMUNITY COLLEGE' !important;
+  display:block !important;
+  margin-top:5px !important;
+  color:#c3ccd2 !important;
+  font-size:7px !important;
+  font-weight:800 !important;
+  letter-spacing:.09em !important;
+}
+html[data-ltg-skin='pccc-welding'] body .ltg-nav-link {
+  min-height:44px !important;
+  margin:3px 8px !important;
+  padding:10px 12px !important;
+  border:1px solid transparent !important;
+  border-radius:7px !important;
+  color:#e3e8eb !important;
+  background:rgba(7,15,20,.16) !important;
+}
+html[data-ltg-skin='pccc-welding'] body .ltg-nav-link:hover {
+  border-color:rgba(255,255,255,.20) !important;
+  background:rgba(255,255,255,.07) !important;
+  color:#fff !important;
+}
+html[data-ltg-skin='pccc-welding'] body .ltg-nav-link.active,
+html[data-ltg-skin='pccc-welding'] body .ltg-nav-link[aria-current='page'] {
+  border-color:var(--skin-accent-strong) !important;
+  background:linear-gradient(90deg,var(--skin-accent),color-mix(in srgb,var(--skin-accent) 48%,#09131a)) !important;
+  color:#fff !important;
+  box-shadow:inset 3px 0 rgba(255,255,255,.76),0 8px 20px rgba(0,0,0,.20) !important;
+}
+
+/* Universal work surfaces. This deliberately wins over old page-scoped CSS. */
+html[data-ltg-skin='pccc-welding'] body :where(
+  .panel,.card,.metric,.session,.table-card,.queue-card,.summary-card,.setup-card,
+  .control-card,.results-card,.report-card,.action-card,.section-details,.teacher-guide-section,
+  .agenda-card,.guide-info-card,.coaching-card,.class-calendar-section,.calendar-month,.school-note,
+  .planner-action-panel,.course-agenda,.resource-card,.launch-card,.live-grid article
+):not([class*='finsen']) {
+  border-color:var(--skin-border-soft) !important;
+  border-radius:var(--skin-radius) !important;
+  background:linear-gradient(150deg,rgba(255,255,255,.025),transparent 36%),var(--skin-surface) !important;
+  color:var(--skin-text) !important;
+  box-shadow:var(--skin-shadow) !important;
+}
+
+html[data-ltg-skin='pccc-welding'] body :where(
+  .panel,.card,.metric,.session,.table-card,.queue-card,.summary-card,.setup-card,
+  .control-card,.results-card,.report-card,.action-card,.section-details,.teacher-guide-section,
+  .agenda-card,.guide-info-card,.coaching-card,.class-calendar-section,.calendar-month
+) :where(h1,h2,h3,h4,strong) {
+  color:var(--skin-text) !important;
+}
+html[data-ltg-skin='pccc-welding'] body :where(
+  .panel,.card,.metric,.session,.table-card,.queue-card,.summary-card,.setup-card,
+  .control-card,.results-card,.report-card,.action-card,.section-details,.teacher-guide-section,
+  .agenda-card,.guide-info-card,.coaching-card,.class-calendar-section,.calendar-month
+) :where(p,small,.muted,.sub,.helper,.hint) {
+  color:var(--skin-muted) !important;
+}
+
+html[data-ltg-skin='pccc-welding'] body :where(input,select,textarea) {
+  border-color:var(--skin-border) !important;
+  border-radius:8px !important;
+  background:var(--skin-input) !important;
+  color:var(--skin-text) !important;
+}
+html[data-ltg-skin='pccc-welding'] body :where(input,select,textarea):focus {
+  outline:none !important;
+  border-color:var(--skin-accent) !important;
+  box-shadow:0 0 0 3px var(--skin-accent-soft) !important;
+}
+
+html[data-ltg-skin='pccc-welding'] body :where(button,a.button):not([class*='finsen']) {
+  border-color:var(--skin-border) !important;
+  border-radius:8px !important;
+  background:linear-gradient(180deg,var(--skin-surface-3),var(--skin-surface-2)) !important;
+  color:var(--skin-text) !important;
+}
+html[data-ltg-skin='pccc-welding'] body :where(button.primary,a.primary):not([class*='finsen']) {
+  border-color:var(--skin-accent) !important;
+  background:var(--skin-accent) !important;
+  color:#fff !important;
+}
+
+/* Tables and operational data remain education software, not dashboard chrome. */
+html[data-ltg-skin='pccc-welding'] body :where(table,.fake-table,.table,.student-table,.report-table,.result-table) {
+  border-color:var(--skin-border-soft) !important;
+  background:var(--skin-surface) !important;
+  color:var(--skin-text) !important;
+}
+html[data-ltg-skin='pccc-welding'] body :where(thead,.table-head,.thead,.student-head,.report-head,.result-head) {
+  background:var(--skin-surface-2) !important;
+  color:var(--skin-muted) !important;
+}
+
+/* Styled JSX / CSS-module legacy surfaces used by planner, classroom and admin pages. */
+html[data-ltg-skin='pccc-welding'] body [class*='PlannerTeachingConsole_']:not([class*='finsen']),
+html[data-ltg-skin='pccc-welding'] body [class*='PlannerDay_']:not([class*='finsen']) {
+  --panel:var(--skin-surface);
+  --panel-2:var(--skin-surface-2);
+  --line:var(--skin-border-soft);
+  --text:var(--skin-text);
+  --muted:var(--skin-muted);
+  --accent:var(--skin-accent);
+}
+
+/* Mobile becomes one framed system instead of two desktop panels squeezed together. */
+@media (max-width: 900px) {
+  html[data-ltg-skin='pccc-welding'] body .app-container { padding:0 !important; }
+  html[data-ltg-skin='pccc-welding'] body nav[aria-label='Planner workspace navigation'] {
+    border-radius:0 !important;
+    border-right:1px solid var(--skin-role-metal-hi) !important;
+  }
+  html[data-ltg-skin='pccc-welding'] body .ltg-main-content {
+    border-radius:0 !important;
+    border-left:0 !important;
+  }
+  html[data-ltg-skin='pccc-welding'] body .ltg-main-content::before {
+    min-height:62px !important;
+    padding:12px 16px !important;
+    font-size:11px !important;
+    letter-spacing:.06em !important;
+  }
+}
