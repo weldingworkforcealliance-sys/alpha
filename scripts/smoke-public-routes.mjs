@@ -14,7 +14,7 @@ const publicRoutes = [
 
 const expectedPublicContent = new Map([
   ['/demo', 'Experience LTG as an operating system, not a slideshow.'],
-  ['/demo/programs', 'Program Demonstrations'],
+  ['/demo/programs', 'One platform. Different programs.'],
   ['/demo/welding', 'Welding Demo Workspace'],
 ]);
 
