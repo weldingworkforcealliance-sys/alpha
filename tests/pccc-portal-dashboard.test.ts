@@ -31,6 +31,6 @@ describe('PCCC portal dashboard', () => {
     const css = read('app/pccc-portal-dashboard.css');
 
     expect(portal.toLowerCase()).not.toContain('finsen');
-    expect(css.toLowerCase()).not.toContain('finsen sierra');
+    expect(css).not.toContain("[class*='finsen']");
   });
 });
