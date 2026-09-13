@@ -12,10 +12,12 @@ describe('LTG visual theme consistency', () => {
     const launchIndex = layout.indexOf("import './launch-theme.css';");
     const consistencyIndex = layout.indexOf("import './theme-consistency.css';");
     const componentIndex = layout.indexOf("import './theme-component-overrides.css';");
+    const skinIndex = layout.indexOf("import './skin-contract.css';");
 
     expect(launchIndex).toBeGreaterThan(-1);
     expect(consistencyIndex).toBeGreaterThan(launchIndex);
     expect(componentIndex).toBeGreaterThan(consistencyIndex);
+    expect(skinIndex).toBeGreaterThan(componentIndex);
   });
 
   it('defines one semantic token set for both light and dark modes', () => {
@@ -85,15 +87,27 @@ describe('LTG visual theme consistency', () => {
     expect(display).not.toContain('#06100f');
   });
 
-  it('allows PCCC accounts to keep the saved LTG light or dark preference', () => {
-    const controller = read('app/pccc-skin-controller.tsx');
-    const lightCss = read('public/pccc-light-mode.css');
+  it('treats tenant skin and light/dark theme as independent state', () => {
+    const provider = read('app/skin-provider.tsx');
+    const contract = read('app/skin-contract.css');
+    const layout = read('app/layout.tsx');
 
-    expect(controller).toContain("const LIGHT_MODE_HREF = '/pccc-light-mode.css");
-    expect(controller).toContain('restoreSavedTheme();');
-    expect(controller).not.toContain("document.documentElement.dataset.theme !== 'dark'");
-    expect(lightCss).toContain("html[data-theme='light'] body.pccc-welding-skin");
-    expect(lightCss).toContain('--ltg-canvas:#dce3e7');
-    expect(lightCss).toContain('Connected Classroom');
+    expect(layout).toContain("import SkinProvider from './skin-provider';");
+    expect(layout).toContain('<SkinProvider pathname={pathname}>');
+    expect(layout).toContain('SKIN_BOOTSTRAP');
+    expect(provider).toContain("target.dataset.ltgSkin = skinId");
+    expect(provider).toContain("target.dataset.ltgAccess = accessMode");
+    expect(provider).not.toContain('document.documentElement.dataset.theme =');
+    expect(contract).toContain("data-ltg-skin='pccc-welding'");
+    expect(contract).toContain("data-ltg-access='school'");
+    expect(contract).toContain("data-ltg-access='instructor'");
+    expect(contract).toContain("data-theme='light'");
+    expect(contract).toContain("data-theme='dark'");
+  });
+
+  it('keeps the Finsen Sierra clock outside the tenant skin contract', () => {
+    const contract = read('app/skin-contract.css');
+    expect(contract).toContain('Finsen Sierra Time Clock is a separate module');
+    expect(contract).not.toContain('.finsen-sierra-clock');
   });
 });

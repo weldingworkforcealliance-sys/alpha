@@ -20,7 +20,7 @@ import AttendanceFinalizationAlert from './attendance-finalization-alert';
 import SchoolActiveTodayEmployees from './school-active-today-employees';
 import UsageTracker from './usage-tracker';
 import DemoSessionGuard from './demo-session-guard';
-import PcccSkinController from './pccc-skin-controller';
+import SkinProvider from './skin-provider';
 import './styles.css';
 import './agenda/agenda.css';
 import './desktop-layout-fix.css';
@@ -38,8 +38,10 @@ import './theme-component-overrides.css';
 import './interaction-feedback.css';
 import './operational-status-panels.css';
 import './pccc-welding-skin.css';
+import './skin-contract.css';
 
 const THEME_BOOTSTRAP = `(function(){try{var t=localStorage.getItem('ltg_theme');if(t!=='light'&&t!=='dark')t='dark';document.documentElement.dataset.theme=t;document.documentElement.style.colorScheme=t;}catch(e){document.documentElement.dataset.theme='dark';document.documentElement.style.colorScheme='dark';}})();`;
+const SKIN_BOOTSTRAP = `(function(){try{var p=location.pathname;if(p.indexOf('/demo/welding')===0||p.indexOf('/demo/time-clock')===0){document.documentElement.dataset.ltgSkin='pccc-welding';document.documentElement.dataset.ltgAccess='demo';return;}if(p==='/'||p.indexOf('/login')===0||p.indexOf('/forgot-password')===0||p.indexOf('/reset-password')===0||p.indexOf('/demo')===0){return;}var raw=localStorage.getItem('ltg_skin_context_v1');if(!raw)return;var s=JSON.parse(raw);if(!s||!s.skinId||s.skinId==='default')return;document.documentElement.dataset.ltgSkin=s.skinId;if(s.accessMode)document.documentElement.dataset.ltgAccess=s.accessMode;}catch(e){}})();`;
 const IS_STAGING = process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging';
 
 export default function RootLayout({
@@ -101,163 +103,165 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>LTG | Education Operating System</title>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
+        <script dangerouslySetInnerHTML={{ __html: SKIN_BOOTSTRAP }} />
       </head>
       <body className={bodyClassName || undefined}>
         <ThemeProvider>
-          <PcccSkinController pathname={pathname} />
-          <DemoSessionGuard />
-          {IS_STAGING && (
-            <div
-              role="status"
-              aria-label="Staging environment"
-              style={{
-                position: 'sticky',
-                top: 0,
-                zIndex: 10000,
-                width: '100%',
-                padding: '7px 12px',
-                textAlign: 'center',
-                fontSize: '12px',
-                fontWeight: 800,
-                letterSpacing: '0.12em',
-                background: '#f5c542',
-                color: '#171717',
-                borderBottom: '2px solid #171717',
-              }}
-            >
-              STAGING · NO LIVE DATA
-            </div>
-          )}
-          {!isMarketingRoute && !isDemoRoute && <UsageTracker pathname={pathname} />}
-          <div className="app-container">
-            {!hideWorkspaceNav && (
-              <nav
-                aria-label="Planner workspace navigation"
-                className={navOpen ? 'ltg-sidebar mobile-open' : 'ltg-sidebar'}
+          <SkinProvider pathname={pathname}>
+            <DemoSessionGuard />
+            {IS_STAGING && (
+              <div
+                role="status"
+                aria-label="Staging environment"
+                style={{
+                  position: 'sticky',
+                  top: 0,
+                  zIndex: 10000,
+                  width: '100%',
+                  padding: '7px 12px',
+                  textAlign: 'center',
+                  fontSize: '12px',
+                  fontWeight: 800,
+                  letterSpacing: '0.12em',
+                  background: '#f5c542',
+                  color: '#171717',
+                  borderBottom: '2px solid #171717',
+                }}
               >
-                <div className="ltg-sidebar-header">
-                  <div className="ltg-brand">
-                    <span className="ltg-brand-mark">LTG</span>
-                    <span className="ltg-brand-copy">
-                      Education
-                      <br />
-                      Operating System
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    className="ltg-mobile-menu-button"
-                    aria-expanded={navOpen}
-                    aria-controls="ltg-sidebar-menu"
-                    onClick={() => setNavOpen((open) => !open)}
-                  >
-                    <span aria-hidden="true">☰</span>
-                    Menu
-                  </button>
-                </div>
-
-                <div id="ltg-sidebar-menu" className="ltg-sidebar-menu">
-                  <div className="ltg-nav-section-label">Teaching</div>
-                  <Link
-                    href="/dashboard"
-                    className={`ltg-nav-link ${
-                      pathname === '/dashboard' || pathname === '/planner' ? 'active' : ''
-                    }`}
-                  >
-                    Planner
-                  </Link>
-                  <Link
-                    href="/agenda"
-                    className={`ltg-nav-link ${pathname === '/agenda' ? 'active' : ''}`}
-                  >
-                    Agenda Workspace
-                  </Link>
-                  <Link
-                    href="/resources"
-                    className={`ltg-nav-link ${isResourcesRoute ? 'active' : ''}`}
-                  >
-                    Content &amp; Resources
-                  </Link>
-                  <Link
-                    href="/classroom"
-                    className={`ltg-nav-link ${pathname.startsWith('/classroom') ? 'active' : ''}`}
-                  >
-                    Live Classroom
-                  </Link>
-
-                  <div className="ltg-nav-section-label">Classroom Tools</div>
-                  <Link
-                    href="/attendance"
-                    className={`ltg-nav-link ${isAttendanceRoute ? 'active' : ''}`}
-                  >
-                    Student Attendance
-                  </Link>
-                  <ReviewQueueLink />
-                  <Link
-                    href="/time-clock"
-                    className={`ltg-nav-link ${
-                      pathname === '/time-clock' ? 'active' : ''
-                    }`}
-                  >
-                    Employee Time Clock
-                  </Link>
-
-                  <div className="ltg-nav-section-label">Reports</div>
-                  <Link
-                    href="/reports"
-                    className={`ltg-nav-link ${isReportsRoute ? 'active' : ''}`}
-                  >
-                    Reporting &amp; Analytics
-                  </Link>
-                  <PayrollNavLink />
-
-                  <div className="ltg-nav-section-label">Admin</div>
-                  <PlannerUtilityNavLinks />
-
-                  {isAccountRoute && (
-                    <>
-                      <div className="ltg-nav-section-label">Account Tools</div>
-                      <Link
-                        href="/accounts"
-                        className={`ltg-nav-link ${pathname === '/accounts' ? 'active' : ''}`}
-                      >
-                        Account Management
-                      </Link>
-                      <Link
-                        href="/accounts/diagnostics"
-                        className={`ltg-nav-link ${
-                          pathname === '/accounts/diagnostics' ? 'active' : ''
-                        }`}
-                      >
-                        Invitation Diagnostics
-                      </Link>
-                    </>
-                  )}
-
-                  <div className="ltg-sidebar-footer">
-                    <ThemeToggle />
-                    <SidebarSignOut />
-                  </div>
-                </div>
-              </nav>
+                STAGING · NO LIVE DATA
+              </div>
             )}
+            {!isMarketingRoute && !isDemoRoute && <UsageTracker pathname={pathname} />}
+            <div className="app-container">
+              {!hideWorkspaceNav && (
+                <nav
+                  aria-label="Planner workspace navigation"
+                  className={navOpen ? 'ltg-sidebar mobile-open' : 'ltg-sidebar'}
+                >
+                  <div className="ltg-sidebar-header">
+                    <div className="ltg-brand">
+                      <span className="ltg-brand-mark">LTG</span>
+                      <span className="ltg-brand-copy">
+                        Education
+                        <br />
+                        Operating System
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      className="ltg-mobile-menu-button"
+                      aria-expanded={navOpen}
+                      aria-controls="ltg-sidebar-menu"
+                      onClick={() => setNavOpen((open) => !open)}
+                    >
+                      <span aria-hidden="true">☰</span>
+                      Menu
+                    </button>
+                  </div>
 
-            <div className={hideWorkspaceNav ? 'ltg-public-content' : 'ltg-main-content'}>
-              {!isDemoRoute && (
-                <>
-                  {pathname === '/dashboard' && <DashboardHero />}
-                  <DashboardPunchClock pathname={pathname} />
-                  <SchoolActiveTodayEmployees pathname={pathname} />
-                  {!isStudentDisplay && <CohortWorkspaceBar pathname={pathname} />}
-                  {!isStudentDisplay && <TeacherIdentityBar pathname={pathname} />}
-                  <AttendanceFinalizationAlert pathname={pathname} />
-                  <PlannerAttendancePanel pathname={pathname} />
-                  {!isStudentDisplay && <AgendaNotePolicyBanner pathname={pathname} />}
-                </>
+                  <div id="ltg-sidebar-menu" className="ltg-sidebar-menu">
+                    <div className="ltg-nav-section-label">Teaching</div>
+                    <Link
+                      href="/dashboard"
+                      className={`ltg-nav-link ${
+                        pathname === '/dashboard' || pathname === '/planner' ? 'active' : ''
+                      }`}
+                    >
+                      Planner
+                    </Link>
+                    <Link
+                      href="/agenda"
+                      className={`ltg-nav-link ${pathname === '/agenda' ? 'active' : ''}`}
+                    >
+                      Agenda Workspace
+                    </Link>
+                    <Link
+                      href="/resources"
+                      className={`ltg-nav-link ${isResourcesRoute ? 'active' : ''}`}
+                    >
+                      Content &amp; Resources
+                    </Link>
+                    <Link
+                      href="/classroom"
+                      className={`ltg-nav-link ${pathname.startsWith('/classroom') ? 'active' : ''}`}
+                    >
+                      Live Classroom
+                    </Link>
+
+                    <div className="ltg-nav-section-label">Classroom Tools</div>
+                    <Link
+                      href="/attendance"
+                      className={`ltg-nav-link ${isAttendanceRoute ? 'active' : ''}`}
+                    >
+                      Student Attendance
+                    </Link>
+                    <ReviewQueueLink />
+                    <Link
+                      href="/time-clock"
+                      className={`ltg-nav-link ${
+                        pathname === '/time-clock' ? 'active' : ''
+                      }`}
+                    >
+                      Employee Time Clock
+                    </Link>
+
+                    <div className="ltg-nav-section-label">Reports</div>
+                    <Link
+                      href="/reports"
+                      className={`ltg-nav-link ${isReportsRoute ? 'active' : ''}`}
+                    >
+                      Reporting &amp; Analytics
+                    </Link>
+                    <PayrollNavLink />
+
+                    <div className="ltg-nav-section-label">Admin</div>
+                    <PlannerUtilityNavLinks />
+
+                    {isAccountRoute && (
+                      <>
+                        <div className="ltg-nav-section-label">Account Tools</div>
+                        <Link
+                          href="/accounts"
+                          className={`ltg-nav-link ${pathname === '/accounts' ? 'active' : ''}`}
+                        >
+                          Account Management
+                        </Link>
+                        <Link
+                          href="/accounts/diagnostics"
+                          className={`ltg-nav-link ${
+                            pathname === '/accounts/diagnostics' ? 'active' : ''
+                          }`}
+                        >
+                          Invitation Diagnostics
+                        </Link>
+                      </>
+                    )}
+
+                    <div className="ltg-sidebar-footer">
+                      <ThemeToggle />
+                      <SidebarSignOut />
+                    </div>
+                  </div>
+                </nav>
               )}
-              {children}
+
+              <div className={hideWorkspaceNav ? 'ltg-public-content' : 'ltg-main-content'}>
+                {!isDemoRoute && (
+                  <>
+                    {pathname === '/dashboard' && <DashboardHero />}
+                    <DashboardPunchClock pathname={pathname} />
+                    <SchoolActiveTodayEmployees pathname={pathname} />
+                    {!isStudentDisplay && <CohortWorkspaceBar pathname={pathname} />}
+                    {!isStudentDisplay && <TeacherIdentityBar pathname={pathname} />}
+                    <AttendanceFinalizationAlert pathname={pathname} />
+                    <PlannerAttendancePanel pathname={pathname} />
+                    {!isStudentDisplay && <AgendaNotePolicyBanner pathname={pathname} />}
+                  </>
+                )}
+                {children}
+              </div>
             </div>
-          </div>
+          </SkinProvider>
         </ThemeProvider>
       </body>
     </html>
