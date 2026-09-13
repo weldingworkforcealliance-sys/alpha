@@ -1,0 +1,191 @@
+/* PCCC branded light-mode override.
+   Loaded after the structural PCCC portal shell. Branding remains PCCC; working
+   surfaces follow the user's LTG light-theme preference. */
+
+html[data-theme='light'] body.pccc-welding-skin {
+  --pccc-shell-graphite:#263642;
+  --pccc-shell-panel:#f7f9fa;
+  --pccc-shell-panel-2:#eef2f4;
+  --pccc-shell-panel-3:#e3e9ed;
+  --pccc-shell-line:#9aa8b1;
+  --pccc-shell-line-hi:#6f7f89;
+  --pccc-shell-text:#142534;
+  --pccc-shell-muted:#52616c;
+  --pccc-shell-shadow:0 18px 42px rgba(19,35,47,.16);
+
+  --ltg-canvas:#dce3e7;
+  --ltg-surface:#f7f9fa;
+  --ltg-surface-2:#eef2f4;
+  --ltg-surface-3:#e3e9ed;
+  --ltg-input:#ffffff;
+  --ltg-text:#142534;
+  --ltg-muted:#52616c;
+  --ltg-faint:#71808a;
+  --ltg-border:#94a3ad;
+  --ltg-border-soft:#c4cdd3;
+  --ltg-shadow:0 12px 28px rgba(14,26,36,.14);
+  --ltg-success:#247a46;
+  --ltg-success-bg:#dcebe0;
+  --ltg-success-text:#0d5b31;
+  --ltg-danger:#b84250;
+  --ltg-danger-bg:#f2dfe1;
+  --ltg-danger-text:#932333;
+  --ltg-warning-bg:#f6e7d8;
+  --ltg-warning-text:#8a4818;
+
+  color:var(--ltg-text) !important;
+  background:#dce3e7 !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin .app-container {
+  background:
+    linear-gradient(rgba(20,37,52,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(20,37,52,.025) 1px,transparent 1px),
+    radial-gradient(circle at 78% 0,rgba(77,135,173,.08),transparent 34rem),
+    #dce3e7 !important;
+  background-size:42px 42px,42px 42px,auto,auto !important;
+}
+
+/* Keep the branded navigation/header dark and legible; make the work area light. */
+html[data-theme='light'] body.pccc-welding-skin .ltg-main-content {
+  background:
+    radial-gradient(circle at 82% 1%,rgba(80,138,176,.08),transparent 31rem),
+    linear-gradient(180deg,#f7f9fa,#eef2f4 48%,#e4eaee) !important;
+  color:var(--ltg-text) !important;
+  border-color:#9aa8b1 !important;
+  box-shadow:inset 0 1px rgba(255,255,255,.9),18px 24px 60px rgba(19,35,47,.15) !important;
+}
+
+html[data-theme='light'] body.pccc-school-skin .ltg-main-content {
+  border-color:#b77079 !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin :where(
+  .panel,.card,.metric,.session,.table-card,.queue-card,.summary-card,.setup-card,
+  .control-card,.results-card,.report-card,.action-card,.danger-zone,.shell,
+  .review-shell,.workspace-shell,.loading,.centered
+) {
+  background:var(--ltg-surface) !important;
+  color:var(--ltg-text) !important;
+  border-color:var(--ltg-border-soft) !important;
+  box-shadow:var(--ltg-shadow) !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin :where(
+  .panel,.card,.metric,.session,.table-card,.queue-card,.summary-card,.setup-card,
+  .control-card,.results-card,.report-card,.action-card,.danger-zone
+) :where(h1,h2,h3,h4,strong) {
+  color:var(--ltg-text) !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin :where(
+  .panel,.card,.metric,.session,.table-card,.queue-card,.summary-card,.setup-card,
+  .control-card,.results-card,.report-card,.action-card
+) :where(p,small,.muted,.sub,.helper,.hint,label) {
+  color:var(--ltg-muted) !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin :where(input,select,textarea) {
+  background:var(--ltg-input) !important;
+  color:var(--ltg-text) !important;
+  border-color:var(--ltg-border) !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin :where(button,a.button) {
+  background:var(--ltg-surface-3) !important;
+  color:var(--ltg-text) !important;
+  border-color:var(--ltg-border) !important;
+  box-shadow:inset 0 1px rgba(255,255,255,.75) !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin :where(button.primary,a.primary,.primary-button,.action-button) {
+  background:var(--ltg-accent-strong) !important;
+  color:#fff !important;
+  border-color:var(--ltg-accent) !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin :where(button.danger,a.danger,.danger-button) {
+  background:var(--ltg-danger-bg) !important;
+  color:var(--ltg-danger-text) !important;
+  border-color:var(--ltg-danger) !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin :where(table,thead,tbody,tr,th,td) {
+  border-color:var(--ltg-border-soft) !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin :where(th,.table-head,.results-head) {
+  background:var(--ltg-surface-2) !important;
+  color:var(--ltg-muted) !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin :where(td,.list-row,.person-row,.activity-row) {
+  background:var(--ltg-surface) !important;
+  color:var(--ltg-text) !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin .ltg-dashboard-hero {
+  background:
+    linear-gradient(105deg,rgba(247,249,250,.98) 0 54%,rgba(238,242,244,.90) 78%,rgba(247,249,250,.96) 100%),
+    radial-gradient(circle at 86% 42%,rgba(77,135,173,.14),transparent 18rem),
+    #f7f9fa !important;
+  border-color:var(--ltg-border) !important;
+  box-shadow:var(--ltg-shadow) !important;
+}
+html[data-theme='light'] body.pccc-welding-skin .ltg-dashboard-hero :where(h1,h2,strong) { color:var(--ltg-text) !important; }
+html[data-theme='light'] body.pccc-welding-skin .ltg-dashboard-hero p { color:var(--ltg-muted) !important; }
+html[data-theme='light'] body.pccc-welding-skin .ltg-dashboard-hero::after { color:var(--ltg-faint) !important; }
+
+html[data-theme='light'] body.pccc-welding-skin .ltg-punch-row > div:first-child,
+html[data-theme='light'] body.pccc-welding-skin .ltg-today-card,
+html[data-theme='light'] body.pccc-welding-skin section[aria-label='Class workspace selector'],
+html[data-theme='light'] body.pccc-welding-skin div[aria-label='Assigned instructor and selected class'] {
+  background:var(--ltg-surface) !important;
+  color:var(--ltg-text) !important;
+  border-color:var(--ltg-border-soft) !important;
+  box-shadow:var(--ltg-shadow) !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin .ltg-class-choice {
+  background:var(--ltg-surface-2) !important;
+  color:var(--ltg-text) !important;
+  border-color:var(--ltg-border) !important;
+}
+
+html[data-theme='light'] body.pccc-instructor-skin .ltg-class-choice[aria-pressed='true'] {
+  background:#d9eaf4 !important;
+  color:#15384e !important;
+  border-color:#4d87ad !important;
+}
+
+html[data-theme='light'] body.pccc-school-skin .ltg-class-choice[aria-pressed='true'] {
+  background:#f3dfe2 !important;
+  color:#6f111c !important;
+  border-color:#b84250 !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin .ltg-today-heading,
+html[data-theme='light'] body.pccc-welding-skin .ltg-today-session,
+html[data-theme='light'] body.pccc-welding-skin .ltg-today-total {
+  color:var(--ltg-muted) !important;
+  border-color:var(--ltg-border-soft) !important;
+}
+html[data-theme='light'] body.pccc-welding-skin .ltg-today-heading strong,
+html[data-theme='light'] body.pccc-welding-skin .ltg-today-total strong { color:var(--ltg-text) !important; }
+
+/* Connected Classroom has legacy component-scoped dark colors. These selectors
+   deliberately override them so the live classroom follows the account theme. */
+html[data-theme='light'] body.pccc-welding-skin.ltg-secondary-route :where(.shell,.loading) {
+  background:var(--ltg-canvas) !important;
+  color:var(--ltg-text) !important;
+}
+html[data-theme='light'] body.pccc-welding-skin.ltg-secondary-route header {
+  background:var(--ltg-surface-2) !important;
+  color:var(--ltg-text) !important;
+  border-color:var(--ltg-border-soft) !important;
+}
+html[data-theme='light'] body.pccc-welding-skin.ltg-secondary-route :where(.panel,.report) {
+  background:var(--ltg-surface) !important;
+  color:var(--ltg-text) !important;
+  border-color:var(--ltg-border-soft) !important;
+}
