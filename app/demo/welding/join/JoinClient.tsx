@@ -33,7 +33,6 @@ export default function JoinClient({ initialCode }: { initialCode: string }) {
     if (!initialCode) return;
     const id = window.setTimeout(() => void join(), 0);
     return () => window.clearTimeout(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
