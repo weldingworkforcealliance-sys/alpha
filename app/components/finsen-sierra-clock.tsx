@@ -19,7 +19,7 @@ type FinsenSierraClockProps = {
   backgroundImage?: string;
 };
 
-const APPROVED_SKIN_PARTS = Array.from({ length: 15 }, (_, index) =>
+const APPROVED_SKIN_PARTS = Array.from({ length: 10 }, (_, index) =>
   `/finsen-sierra/approved/clock-${String(index + 1).padStart(2, '0')}.txt`
 );
 
