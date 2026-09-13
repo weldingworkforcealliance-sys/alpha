@@ -7,12 +7,13 @@ function read(path: string) {
 }
 
 describe('standalone LTG product shell', () => {
-  it('keeps the public home page separate from the authenticated workspace', () => {
+  it('keeps the public home and demo routes separate from the authenticated workspace', () => {
     const layout = read('app/layout.tsx');
     const home = read('app/page.tsx');
 
     expect(layout).toContain("const isMarketingRoute = pathname === '/';");
-    expect(layout).toContain('isMarketingRoute || isAuthRoute');
+    expect(layout).toContain("const isDemoRoute = pathname.startsWith('/demo');");
+    expect(layout).toContain('isMarketingRoute || isDemoRoute || isAuthRoute');
     expect(home).toContain('FOUNDING SCHOOL BETA');
     expect(home).toContain('href="/login"');
   });
@@ -48,14 +49,17 @@ describe('standalone LTG product shell', () => {
     expect(home).toContain('Beyond one department');
   });
 
-  it('does not run authenticated usage tracking on the public marketing route', () => {
+  it('does not run authenticated usage tracking on public marketing or demo routes', () => {
     const layout = read('app/layout.tsx');
-    expect(layout).toContain("{!isMarketingRoute && <UsageTracker pathname={pathname} />}");
+    expect(layout).toContain(
+      '{!isMarketingRoute && !isDemoRoute && <UsageTracker pathname={pathname} />}'
+    );
   });
 
-  it('preserves the staging warning while isolating the public route', () => {
+  it('preserves the staging warning while isolating public routes', () => {
     const layout = read('app/layout.tsx');
     expect(layout).toContain('STAGING · NO LIVE DATA');
     expect(layout).toContain("const IS_STAGING = process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging';");
+    expect(layout).toContain('<DemoSessionGuard />');
   });
 });
