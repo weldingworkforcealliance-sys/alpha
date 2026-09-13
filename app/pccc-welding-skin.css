@@ -1,0 +1,514 @@
+/* PCCC Welding tenant skin
+   Premium automotive painted-steel shell + calmer education-first working surfaces.
+   Real texture is concentrated on rails, headers and the Finsen Sierra clock instead
+   of turning every teaching card into a piece of shop equipment. */
+
+body.pccc-welding-skin {
+  --pccc-red:#c7192d;
+  --pccc-red-bright:#e33a48;
+  --pccc-red-deep:#5b0812;
+  --pccc-blue:#4d87ad;
+  --pccc-blue-bright:#75b5dd;
+  --pccc-blue-deep:#17374c;
+  --pccc-steel:#b7c0c6;
+  --pccc-graphite:#111920;
+  --pccc-panel:#131f28;
+  --pccc-panel-2:#182731;
+  --pccc-line:#344550;
+  --pccc-text:#f2f5f7;
+  --pccc-muted:#aebbc3;
+  --pccc-success:#49b87b;
+  --pccc-warning:#e3b14b;
+  --pccc-danger:#dc5261;
+
+  --ltg-canvas:#0a1219;
+  --ltg-surface:#131f28;
+  --ltg-surface-2:#182731;
+  --ltg-surface-3:#1e303b;
+  --ltg-input:#0d1922;
+  --ltg-text:#f2f5f7;
+  --ltg-muted:#b4bec5;
+  --ltg-faint:#83949f;
+  --ltg-border:#465761;
+  --ltg-border-soft:#30404a;
+  --ltg-shadow:0 14px 34px rgba(0,0,0,.24);
+  --ltg-success:#49b87b;
+  --ltg-success-bg:#143b2a;
+  --ltg-success-text:#9bedbd;
+  --ltg-danger:#dc5261;
+  --ltg-danger-bg:#48212a;
+  --ltg-danger-text:#ffb5be;
+  --ltg-warning-bg:#43351e;
+  --ltg-warning-text:#f4cd79;
+
+  --ns-bg:#0a1219;
+  --ns-rail:#0a131a;
+  --ns-panel:#131f28;
+  --ns-panel-2:#182731;
+  --ns-panel-3:#1e303b;
+  --ns-line:#30404a;
+  --ns-line-soft:#24333d;
+  --ns-text:#f2f5f7;
+  --ns-muted:#aebbc3;
+  --ns-faint:#81919b;
+  --ns-success:#49b87b;
+
+  color:var(--pccc-text) !important;
+  background:
+    radial-gradient(circle at 78% 4%,rgba(77,135,173,.08),transparent 28rem),
+    linear-gradient(145deg,#071018,#0d1821 52%,#09131a) !important;
+}
+
+body.pccc-school-skin {
+  --ltg-accent:var(--pccc-red);
+  --ltg-accent-strong:var(--pccc-red-bright);
+  --ltg-accent-soft:rgba(199,25,45,.15);
+  --ltg-accent-text:#ffc1c7;
+  --ns-copper:var(--pccc-red);
+  --ns-copper-bright:var(--pccc-red-bright);
+  --ns-copper-soft:rgba(199,25,45,.14);
+  --ns-teal:#aeb7bd;
+}
+
+body.pccc-instructor-skin {
+  --ltg-accent:var(--pccc-blue);
+  --ltg-accent-strong:var(--pccc-blue-bright);
+  --ltg-accent-soft:rgba(77,135,173,.16);
+  --ltg-accent-text:#caeaff;
+  --ns-copper:var(--pccc-blue);
+  --ns-copper-bright:var(--pccc-blue-bright);
+  --ns-copper-soft:rgba(77,135,173,.13);
+  --ns-teal:var(--pccc-blue);
+}
+
+/* ===== LIVE LTG ===== */
+body.pccc-welding-skin:not(.pccc-demo-skin) .app-container {
+  background:
+    linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px),
+    radial-gradient(circle at 78% 0,rgba(77,135,173,.055),transparent 34rem),
+    #0a1219 !important;
+  background-size:42px 42px,42px 42px,auto,auto !important;
+}
+body.pccc-welding-skin:not(.pccc-demo-skin) .ltg-main-content { background:transparent !important; }
+
+/* Fine automotive paint / satin steel on the outer navigation only. */
+body.pccc-welding-skin:not(.pccc-demo-skin) nav[aria-label='Planner workspace navigation'] {
+  border-right:1px solid #5b6670 !important;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.09),transparent 7%,transparent 93%,rgba(255,255,255,.025)),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.012) 0 1px,rgba(0,0,0,.02) 1px 3px),
+    linear-gradient(180deg,#333d45 0%,#151e24 24%,#0b1218 100%) !important;
+  box-shadow:inset -1px 0 rgba(255,255,255,.07),14px 0 36px rgba(0,0,0,.20) !important;
+}
+body.pccc-school-skin nav[aria-label='Planner workspace navigation'] {
+  border-right-color:#b14752 !important;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.11),transparent 6%,transparent 94%,rgba(0,0,0,.17)),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.022) 0 1px,rgba(0,0,0,.026) 1px 3px),
+    linear-gradient(180deg,#99101f 0%,#6a0a15 34%,#2c080d 100%) !important;
+}
+body.pccc-welding-skin nav[aria-label='Planner workspace navigation']::after { display:none !important; }
+
+/* PCCC WELDING lockup and corrected one-head panther. */
+body.pccc-welding-skin .ltg-brand {
+  position:relative;
+  min-height:104px !important;
+  padding:10px 6px 18px !important;
+  border-bottom:1px solid rgba(255,255,255,.14) !important;
+  overflow:visible;
+}
+body.pccc-welding-skin .ltg-brand-mark {
+  width:76px !important;
+  height:52px !important;
+  border:0 !important;
+  clip-path:none !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  color:transparent !important;
+  font-size:0 !important;
+}
+body.pccc-welding-skin .ltg-brand-mark::after {
+  content:'PCCC';
+  display:block;
+  color:#f7f8f9;
+  font-size:25px;
+  font-style:italic;
+  font-weight:950;
+  letter-spacing:-.06em;
+  line-height:52px;
+  text-shadow:0 1px 0 #000,0 0 14px rgba(255,255,255,.08);
+}
+body.pccc-welding-skin .ltg-brand-copy {
+  min-width:112px;
+  color:transparent !important;
+  font-size:0 !important;
+  line-height:1 !important;
+}
+body.pccc-welding-skin .ltg-brand-copy::before {
+  content:'WELDING';
+  display:block;
+  color:#f6f7f8;
+  font-size:16px;
+  font-style:italic;
+  font-weight:950;
+  letter-spacing:.08em;
+}
+body.pccc-welding-skin .ltg-brand-copy::after {
+  content:'PASSAIC COUNTY\A COMMUNITY COLLEGE';
+  white-space:pre;
+  display:block;
+  margin-top:6px;
+  color:#bcc5ca;
+  font-size:8px;
+  font-weight:800;
+  line-height:1.3;
+  letter-spacing:.11em;
+}
+body.pccc-welding-skin .ltg-brand::after {
+  content:'';
+  position:absolute;
+  right:2px;
+  top:18px;
+  width:47px;
+  height:41px;
+  opacity:.95;
+  background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 76'%3E%3Cpath fill='none' stroke='%23d4d9dc' stroke-width='4.5' stroke-linecap='round' stroke-linejoin='round' d='M14 61c9-4 15-12 18-22 2-9 7-17 15-23 9-7 20-8 31-4l-9 7 13 4-12 5 8 7-14 2-7 9-10-6-5 12-11-4-5 13H14Z'/%3E%3Cpath fill='none' stroke='%23d4d9dc' stroke-width='3.8' stroke-linecap='round' d='M56 24c5 1 9 4 12 8M45 34l8-2M59 31l2 1'/%3E%3C/svg%3E");
+}
+
+body.pccc-welding-skin .ltg-nav-section-label {
+  color:#8f9da6 !important;
+  font-size:9px !important;
+  letter-spacing:.17em !important;
+}
+body.pccc-school-skin .ltg-nav-section-label { color:#dfafb4 !important; }
+body.pccc-welding-skin nav[aria-label='Planner workspace navigation'] a {
+  min-height:45px !important;
+  border-radius:8px !important;
+  color:#d7dde1 !important;
+  background:rgba(5,10,14,.10);
+}
+body.pccc-welding-skin nav[aria-label='Planner workspace navigation'] a:hover {
+  border-color:rgba(255,255,255,.18) !important;
+  background:rgba(255,255,255,.055) !important;
+  color:#fff !important;
+}
+body.pccc-school-skin nav[aria-label='Planner workspace navigation'] a.active,
+body.pccc-school-skin nav[aria-label='Planner workspace navigation'] a[aria-current='page'] {
+  border-color:rgba(255,255,255,.24) !important;
+  background:linear-gradient(90deg,rgba(255,255,255,.16),rgba(45,0,7,.20)) !important;
+  color:#fff !important;
+  box-shadow:inset 3px 0 #fff,0 8px 18px rgba(0,0,0,.14) !important;
+}
+body.pccc-instructor-skin nav[aria-label='Planner workspace navigation'] a.active,
+body.pccc-instructor-skin nav[aria-label='Planner workspace navigation'] a[aria-current='page'] {
+  border-color:rgba(117,181,221,.45) !important;
+  background:linear-gradient(90deg,rgba(23,55,76,.94),rgba(13,27,37,.86)) !important;
+  color:#eef8ff !important;
+  box-shadow:inset 3px 0 var(--pccc-blue-bright),0 8px 18px rgba(0,0,0,.14) !important;
+}
+
+/* More education, less spectacle. */
+body.pccc-welding-skin .ltg-dashboard-hero {
+  position:relative;
+  overflow:hidden;
+  margin:18px 20px 14px !important;
+  border:1px solid #53616b !important;
+  border-radius:12px !important;
+  background:
+    linear-gradient(115deg,rgba(9,17,23,.985) 0 51%,rgba(9,17,23,.78) 75%,rgba(9,17,23,.94) 100%),
+    radial-gradient(circle at 86% 42%,rgba(77,135,173,.19),transparent 18rem),
+    #111c24 !important;
+  box-shadow:0 16px 32px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.05) !important;
+}
+body.pccc-school-skin .ltg-dashboard-hero { border-color:#6d343c !important; }
+body.pccc-welding-skin .ltg-dashboard-hero::after {
+  content:'PCCC WELDING  •  CURRICULUM  •  INSTRUCTION  •  ASSESSMENT  •  STUDENT SUPPORT';
+  position:absolute;
+  right:24px;
+  bottom:17px;
+  color:#a8b6bf;
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.13em;
+}
+body.pccc-welding-skin .ltg-dashboard-hero :where(h1,h2,strong) { color:#fff !important; }
+body.pccc-welding-skin .ltg-dashboard-hero p { color:#b8c4cb !important; }
+body.pccc-school-skin .ltg-dashboard-hero-eyebrow { color:#ff929d !important; }
+body.pccc-instructor-skin .ltg-dashboard-hero-eyebrow { color:var(--pccc-blue-bright) !important; }
+
+body.pccc-welding-skin:not(.pccc-demo-skin) :where(
+  .panel,.card,.metric,.session,.table-card,.queue-card,.summary-card,.setup-card,
+  .control-card,.results-card,.report-card,.action-card,.danger-zone
+) {
+  border:1px solid var(--ltg-border-soft) !important;
+  border-radius:11px !important;
+  background:linear-gradient(150deg,rgba(255,255,255,.026),transparent 36%),var(--ltg-surface) !important;
+  color:var(--ltg-text) !important;
+  box-shadow:0 11px 24px rgba(0,0,0,.16) !important;
+}
+body.pccc-welding-skin :where(.eyebrow,.section-eyebrow,.label,.status-label) { color:var(--ltg-accent-strong) !important; }
+body.pccc-welding-skin :where(input,select,textarea) {
+  border-radius:8px !important;
+  border-color:#42525d !important;
+  background:#0d1922 !important;
+  color:#f1f4f6 !important;
+}
+body.pccc-welding-skin :where(input,select,textarea):focus {
+  outline:none !important;
+  border-color:var(--ltg-accent) !important;
+  box-shadow:0 0 0 3px var(--ltg-accent-soft) !important;
+}
+body.pccc-welding-skin:not(.pccc-demo-skin) :where(button,a.button) {
+  border-radius:8px !important;
+  border-color:#45545f !important;
+  background:linear-gradient(180deg,#1d2b35,#13202a) !important;
+  color:#e5ebee !important;
+  box-shadow:inset 0 1px rgba(255,255,255,.045) !important;
+}
+body.pccc-welding-skin:not(.pccc-demo-skin) :where(button,a.button):hover { border-color:var(--ltg-accent) !important; color:#fff !important; }
+body.pccc-welding-skin:not(.pccc-demo-skin) :where(button.primary,a.primary) {
+  border-color:var(--ltg-accent) !important;
+  background:var(--ltg-accent) !important;
+  color:#fff !important;
+}
+
+/* School/admin headers use the automotive red shell, but records remain neutral. */
+body.pccc-school-skin.ltg-secondary-route header,
+body.pccc-school-skin :where(.school-shell,.owner-shell) .topbar {
+  border-color:#7b2732 !important;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.08),transparent 7%,transparent 92%,rgba(0,0,0,.15)),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.016) 0 1px,rgba(0,0,0,.02) 1px 3px),
+    linear-gradient(180deg,#7d0c18,#510a12) !important;
+  box-shadow:inset 0 1px rgba(255,255,255,.12),0 10px 30px rgba(0,0,0,.18) !important;
+}
+body.pccc-school-skin.ltg-secondary-route header :where(h1,h2,h3,strong) { color:#fff !important; }
+
+/* School records, student lists and assessment tables. */
+body.pccc-welding-skin :where(table,.fake-table,.table,.student-table,.report-table,.result-table) {
+  border-color:#34444f !important;
+  background:#101b23 !important;
+}
+body.pccc-welding-skin :where(thead,.table-head,.thead,.student-head,.report-head,.result-head) {
+  background:#1a2a35 !important;
+  color:#c8d2d8 !important;
+}
+body.pccc-welding-skin :where(.live,.success,.present,.dot.on,.pass) { color:#91e5b5 !important; }
+body.pccc-welding-skin :where(.danger,.absent,.error) { color:#ff9ca7 !important; }
+body.pccc-welding-skin :where(.warning,.review,.late) { color:#f2c874 !important; }
+
+/* ===== PUBLIC WELDING DEMO ===== */
+body.pccc-demo-skin .app-container,
+body.pccc-demo-skin .ltg-public-content {
+  width:100%; max-width:none; margin:0; padding:0; display:block; background:transparent !important;
+}
+body.pccc-demo-skin .demo-app {
+  background:radial-gradient(circle at 78% 0,rgba(77,135,173,.08),transparent 30rem),#0a1219 !important;
+  color:#e7edf0 !important;
+}
+body.pccc-demo-skin .sidebar {
+  border-right:1px solid #5b6670 !important;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.09),transparent 7%,transparent 93%,rgba(0,0,0,.16)),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.014) 0 1px,rgba(0,0,0,.023) 1px 3px),
+    linear-gradient(180deg,#343e46,#171f25 28%,#0b1218) !important;
+  box-shadow:14px 0 36px rgba(0,0,0,.18) !important;
+}
+body.pccc-demo-skin .brand-block {
+  position:relative;
+  min-height:84px;
+  border-bottom-color:rgba(255,255,255,.14) !important;
+}
+body.pccc-demo-skin .brand-mark {
+  width:74px !important; height:50px !important; border-radius:0 !important;
+  background:transparent !important; color:transparent !important; font-size:0 !important;
+}
+body.pccc-demo-skin .brand-mark::after {
+  content:'PCCC'; display:block; color:#f6f7f8; font-size:24px; font-style:italic; font-weight:950; letter-spacing:-.06em; line-height:50px;
+}
+body.pccc-demo-skin .brand-block>div:last-child>strong,
+body.pccc-demo-skin .brand-block>div:last-child>span {
+  color:transparent !important; font-size:0 !important; line-height:0 !important;
+}
+body.pccc-demo-skin .brand-block>div:last-child::before {
+  content:'WELDING'; display:block; color:#fff; font-size:15px; font-style:italic; font-weight:950; letter-spacing:.08em;
+}
+body.pccc-demo-skin .brand-block>div:last-child::after {
+  content:'PASSAIC COUNTY COMMUNITY COLLEGE'; display:block; max-width:110px; margin-top:5px; color:#aebbc3; font-size:7px; font-weight:800; line-height:1.35; letter-spacing:.08em;
+}
+body.pccc-demo-skin .brand-block::after {
+  content:''; position:absolute; right:4px; top:16px; width:42px; height:38px;
+  background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 76'%3E%3Cpath fill='none' stroke='%23d4d9dc' stroke-width='4.5' stroke-linecap='round' stroke-linejoin='round' d='M14 61c9-4 15-12 18-22 2-9 7-17 15-23 9-7 20-8 31-4l-9 7 13 4-12 5 8 7-14 2-7 9-10-6-5 12-11-4-5 13H14Z'/%3E%3Cpath fill='none' stroke='%23d4d9dc' stroke-width='3.8' stroke-linecap='round' d='M56 24c5 1 9 4 12 8M45 34l8-2M59 31l2 1'/%3E%3C/svg%3E");
+}
+body.pccc-demo-skin .demo-chip {
+  border-color:#465966 !important; background:#111f29 !important; color:#b9d5e5 !important; letter-spacing:.12em !important;
+}
+body.pccc-demo-skin .school-context,
+body.pccc-demo-skin .course-button,
+body.pccc-demo-skin .sidebar-footer button {
+  border-color:#35444e !important; background:rgba(12,22,29,.72) !important;
+}
+body.pccc-demo-skin .course-button.selected,
+body.pccc-demo-skin .nav-link.active {
+  border-color:#75b5dd !important; border-left-color:#75b5dd !important;
+  background:linear-gradient(90deg,#17374c,#111e27) !important; color:#fff !important;
+}
+body.pccc-demo-skin .workspace { background:transparent !important; }
+body.pccc-demo-skin .banner {
+  border-bottom-color:#52616b !important;
+  background:linear-gradient(90deg,#1a2b36,#223b4a,#1a2b36) !important;
+  color:#d8e4ea !important;
+}
+body.pccc-demo-skin .workspace-header {
+  position:relative;
+  border-bottom-color:#3b4a54 !important;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.045),transparent 20%),
+    linear-gradient(180deg,#202b33,#111a21) !important;
+  box-shadow:inset 0 1px rgba(255,255,255,.045) !important;
+}
+body.pccc-demo-skin .workspace-header::after {
+  content:'PCCC WELDING  •  CURRICULUM  •  INSTRUCTION  •  ASSESSMENT  •  STUDENT SUPPORT';
+  display:block; color:#82939e; font-size:8px; font-weight:850; letter-spacing:.1em;
+}
+body.pccc-demo-skin .eyebrow { color:#75b5dd !important; }
+body.pccc-demo-skin .context-strip { border-bottom-color:#2f404a !important; background:#2f404a !important; }
+body.pccc-demo-skin .context-strip div { background:#101b23 !important; }
+body.pccc-demo-skin .context-strip::after {
+  content:'EDUCATION  •  OPPORTUNITY  •  SUCCESS  •  COMMUNITY';
+  grid-column:1 / -1;
+  padding:7px 16px;
+  background:#0d171e;
+  color:#7f929d;
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:.11em;
+  text-align:right;
+}
+body.pccc-demo-skin :where(.panel,.planner-action-panel,.course-agenda,.resource-card,.launch-card,.clock-card,.school-note,.classroom-session-head,.live-grid article) {
+  border-color:#34454f !important;
+  background:linear-gradient(150deg,rgba(255,255,255,.024),transparent 38%),#131f28 !important;
+  box-shadow:0 10px 24px rgba(0,0,0,.13) !important;
+}
+body.pccc-demo-skin :where(.course-heading,.results-heading) { background:#182731 !important; border-color:#34454f !important; }
+body.pccc-demo-skin :where(button,.resource-card a) {
+  border-color:#465761 !important; border-radius:8px !important;
+  background:linear-gradient(180deg,#1d2b35,#13202a) !important; color:#e5ebee !important;
+}
+body.pccc-demo-skin :where(button,.resource-card a):hover { border-color:#75b5dd !important; color:#fff !important; }
+body.pccc-demo-skin button.accent { border-color:#4d87ad !important; background:linear-gradient(180deg,#386f92,#285975) !important; color:#fff !important; }
+body.pccc-demo-skin :where(.resource-card span,.launch-card>span,.course-heading span,.agenda-rows span,.join-code strong) { color:#91c6e8 !important; }
+
+/* School Dashboard demo becomes automotive-red because it is the School access level. */
+body.pccc-demo-skin .demo-app:has(.nav-group:last-child .nav-link.active) .sidebar {
+  border-right-color:#b14752 !important;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.11),transparent 6%,transparent 94%,rgba(0,0,0,.17)),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.022) 0 1px,rgba(0,0,0,.026) 1px 3px),
+    linear-gradient(180deg,#99101f 0%,#6a0a15 34%,#2c080d 100%) !important;
+}
+body.pccc-demo-skin .demo-app:has(.nav-group:last-child .nav-link.active) .workspace-header {
+  border-bottom-color:#71313a !important;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.07),transparent 18%),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.014) 0 1px,rgba(0,0,0,.02) 1px 3px),
+    linear-gradient(180deg,#6e0d17,#3f0a10) !important;
+}
+body.pccc-demo-skin .demo-app:has(.nav-group:last-child .nav-link.active) .eyebrow { color:#ff9aa5 !important; }
+body.pccc-demo-skin .demo-app:has(.nav-group:last-child .nav-link.active) .nav-link.active,
+body.pccc-demo-skin .demo-app:has(.nav-group:last-child .nav-link.active) .course-button.selected {
+  border-color:rgba(255,255,255,.28) !important;
+  border-left-color:#fff !important;
+  background:linear-gradient(90deg,rgba(255,255,255,.16),rgba(45,0,7,.22)) !important;
+}
+body.pccc-demo-skin .demo-app:has(.nav-group:last-child .nav-link.active) .panel { border-color:#523139 !important; }
+
+/* Connected classroom stays classroom software, not a sci-fi control room. */
+body.pccc-demo-skin .live-overlay { background:#0a1219 !important; }
+body.pccc-demo-skin .live-shell { background:radial-gradient(circle at top right,rgba(77,135,173,.12),transparent 30rem),#0a1219 !important; }
+body.pccc-demo-skin .live-header { border-bottom-color:#34454f !important; }
+body.pccc-demo-skin .live-header .kicker,
+body.pccc-demo-skin .results-heading .kicker { color:#75b5dd !important; }
+body.pccc-demo-skin :where(.live-overlay .launch-card,.live-overlay .session-card,.live-overlay .metrics article,.live-overlay .results-card,.live-overlay .review-card,.live-overlay .review-question) {
+  border-color:#34454f !important; background:#131f28 !important;
+}
+body.pccc-demo-skin .live-overlay .results-heading { background:#182731 !important; }
+body.pccc-demo-skin .privacy-note { border-color:#355363 !important; background:#101f28 !important; color:#8fb0c0 !important; }
+body.pccc-demo-skin .live-overlay .demo-qr-insert {
+  border-color:#4d5d66 !important;
+  background:linear-gradient(145deg,#16232b,#0d171d) !important;
+}
+
+/* Finsen Sierra module remains the deliberately physical centerpiece. */
+body.pccc-demo-skin .clock-panel {
+  border-color:#44545e !important;
+  background:linear-gradient(150deg,rgba(255,255,255,.025),transparent 35%),#121f27 !important;
+}
+body.pccc-demo-skin .clock-panel .demo-inline-clock-heading {
+  border-color:#495962 !important;
+  background:linear-gradient(180deg,#202b32,#111a20) !important;
+}
+body.pccc-demo-skin .clock-panel .demo-inline-clock-heading span { color:#75b5dd !important; }
+body.pccc-demo-skin .clock-panel .demo-inline-clock-heading strong::after {
+  content:' · PCCC WELDING'; color:#d8dde0; letter-spacing:.05em;
+}
+
+/* Student join + assessment screens inherit the PCCC educational treatment too. */
+body.pccc-demo-skin .join-shell,
+body.pccc-demo-skin .student-shell {
+  background:radial-gradient(circle at top,rgba(77,135,173,.16) 0,#0b151d 42%,#081118 100%) !important;
+  color:#e7edf0 !important;
+}
+body.pccc-demo-skin .join-card,
+body.pccc-demo-skin .student-card {
+  position:relative;
+  border-color:#44545f !important;
+  background:linear-gradient(150deg,rgba(255,255,255,.025),transparent 36%),#131f28 !important;
+  box-shadow:0 22px 55px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.035) !important;
+}
+body.pccc-demo-skin .join-card::before,
+body.pccc-demo-skin .student-card::before {
+  content:'PCCC WELDING  •  LIVE CLASSROOM';
+  display:block;
+  margin-bottom:10px;
+  padding-bottom:9px;
+  border-bottom:1px solid #31424d;
+  color:#8ebfe0;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.12em;
+}
+body.pccc-demo-skin .join-card>span,
+body.pccc-demo-skin .student-card .kicker,
+body.pccc-demo-skin .student-card .domain { color:#75b5dd !important; }
+body.pccc-demo-skin .join-card button,
+body.pccc-demo-skin .student-card .submit {
+  border-color:#4d87ad !important;
+  background:linear-gradient(180deg,#386f92,#285975) !important;
+}
+body.pccc-demo-skin .student-card :where(.question,.code-panel,.student-row,.progress,.result-grid div) {
+  border-color:#334650 !important;
+  background:#0f1a22 !important;
+}
+body.pccc-demo-skin .student-card .option.selected {
+  border-color:#75b5dd !important;
+  background:#17374c !important;
+}
+
+@media(max-width:979px) {
+  body.pccc-welding-skin .ltg-brand { min-height:78px !important; margin-bottom:8px !important; }
+  body.pccc-welding-skin .ltg-brand::after { width:38px; height:34px; top:13px; }
+  body.pccc-welding-skin .ltg-dashboard-hero { margin:12px !important; }
+  body.pccc-welding-skin .ltg-dashboard-hero::after { position:static; display:block; margin-top:10px; font-size:8px; }
+}
+@media(max-width:760px) {
+  body.pccc-demo-skin .workspace-header::after { display:none; }
+  body.pccc-demo-skin .brand-block::after { width:34px; height:31px; }
+  body.pccc-demo-skin .context-strip::after { text-align:left; line-height:1.6; }
+}
+@media(prefers-reduced-motion:reduce) {
+  body.pccc-welding-skin *,body.pccc-welding-skin *::before,body.pccc-welding-skin *::after {
+    transition-duration:.01ms !important; animation-duration:.01ms !important; animation-iteration-count:1 !important;
+  }
+}
