@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import type { CSSProperties } from 'react';
 import styles from './finsen-sierra-clock.module.css';
 
 type FinsenSierraClockProps = {
@@ -19,7 +20,7 @@ type FinsenSierraClockProps = {
   backgroundImage?: string;
 };
 
-const STABLE_SOURCE_MATERIAL = '/finsen-sierra/source-material-clock.b64.txt';
+const SOURCE_SKIN = '/finsen-sierra/finsen-sierra-time-clock-master.webp';
 
 function initials(name: string) {
   return name
@@ -38,6 +39,15 @@ function greeting(date: Date) {
   return 'Good evening,';
 }
 
+function MountainMark() {
+  return (
+    <svg viewBox="0 0 90 62" role="img" aria-label="Finsen Sierra mountain mark">
+      <path d="M8 53 33 18l12 17 9-13 28 31h-14L55 38l-10 15-12-18-12 18H8Z" fill="currentColor" />
+      <path d="m30 25 4-7 5 7-4-2-5 2Zm23 4 3-5 4 5-3-2-4 2Z" fill="#15100a" opacity=".42" />
+    </svg>
+  );
+}
+
 export default function FinsenSierraClock({
   displayName,
   department = 'LTG Employee',
@@ -51,40 +61,10 @@ export default function FinsenSierraClock({
   onClockOut,
   viewTimeHref,
   onViewTime,
+  backgroundImage,
 }: FinsenSierraClockProps) {
-  const [sourceSkin, setSourceSkin] = useState('');
   const [skinError, setSkinError] = useState(false);
   const [now, setNow] = useState(() => new Date());
-
-  useEffect(() => {
-    let cancelled = false;
-
-    fetch(STABLE_SOURCE_MATERIAL, { cache: 'force-cache' })
-      .then((response) => {
-        if (!response.ok) throw new Error('clock artwork unavailable');
-        return response.text();
-      })
-      .then((encodedSource) => {
-        const encoded = encodedSource.replace(/\s+/g, '');
-        // WebP files begin with RIFF, whose base64 form starts with UklG.
-        // Reject malformed source data rather than displaying a partially corrupted clock.
-        if (!encoded.startsWith('UklG') || encoded.length < 10_000) {
-          throw new Error('clock artwork failed integrity check');
-        }
-        if (!cancelled) {
-          setSkinError(false);
-          setSourceSkin(`data:image/webp;base64,${encoded}`);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setSourceSkin('');
-          setSkinError(true);
-        }
-      });
-
-    return () => { cancelled = true; };
-  }, []);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1_000);
@@ -103,6 +83,9 @@ export default function FinsenSierraClock({
     [now]
   );
   const employeeLine = employeeNumber ? `${department} · Employee #${employeeNumber}` : department;
+  const brandingStyle = backgroundImage
+    ? ({ '--finsen-brand-image': `url("${backgroundImage.replace(/"/g, '%22')}")` } as CSSProperties)
+    : undefined;
 
   return (
     <section
@@ -110,23 +93,30 @@ export default function FinsenSierraClock({
       data-clocked-in={clockedIn ? 'true' : 'false'}
       aria-label="Finsen Sierra Time Clock"
     >
-      {sourceSkin ? (
+      {!skinError ? (
         <img
           className={styles.sourceSkin}
-          src={sourceSkin}
+          src={SOURCE_SKIN}
           alt="Finsen Sierra Time Clock"
           draggable={false}
+          onError={() => setSkinError(true)}
         />
       ) : (
         <div className={styles.skinLoading}>
-          {skinError ? 'Time clock artwork unavailable. Punch controls remain available from Employee Time Clock.' : 'Loading clock artwork…'}
+          Time clock artwork unavailable. Punch controls remain available from Employee Time Clock.
         </div>
       )}
 
-      {sourceSkin && (
+      {!skinError && (
         <>
+          {backgroundImage && <div className={styles.screenBranding} style={brandingStyle} aria-hidden="true" />}
+
           <div className={`${styles.lampVeil} ${styles.leftLampVeil}`} aria-hidden="true" />
           <div className={`${styles.lampVeil} ${styles.rightLampVeil}`} aria-hidden="true" />
+
+          <div className={styles.crestInsert} aria-label="Finsen Sierra logo">
+            <MountainMark />
+          </div>
 
           <div className={styles.identityReadout} aria-live="polite">
             <span>{greeting(now)}</span>
