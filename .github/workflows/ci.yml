@@ -6,7 +6,9 @@ on:
       - main
       - product/standalone-mainline-2026-09-11
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - product/standalone-mainline-2026-09-11
 
 jobs:
   validate:
