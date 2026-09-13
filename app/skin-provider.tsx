@@ -60,8 +60,18 @@ function isSchoolContext(pathname: string) {
   );
 }
 
-function accessModeFor(pathname: string, role: string | null | undefined): LtgAccessMode {
-  if (isSchoolContext(pathname) || (role && SCHOOL_ACCESS_ROLES.has(role))) return 'school';
+function accessModeFor(
+  pathname: string,
+  role: string | null | undefined,
+  platformOwner = false
+): LtgAccessMode {
+  if (
+    platformOwner ||
+    isSchoolContext(pathname) ||
+    (role && SCHOOL_ACCESS_ROLES.has(role))
+  ) {
+    return 'school';
+  }
   return 'instructor';
 }
 
@@ -127,11 +137,6 @@ function writeCachedSkin(skinId: LtgSkinId, accessMode: LtgAccessMode) {
   window.localStorage.setItem(CACHE_KEY, JSON.stringify({ skinId, accessMode }));
 }
 
-function clearSkin() {
-  applySkinToDocument('default', null);
-  writeCachedSkin('default', null);
-}
-
 export default function SkinProvider({
   pathname,
   children,
@@ -146,14 +151,36 @@ export default function SkinProvider({
 
   useEffect(() => {
     let cancelled = false;
+    let activeSkin: LtgSkinId = 'default';
+    let activeAccess: LtgAccessMode = null;
 
     const commitSkin = (nextSkin: LtgSkinId, nextAccess: LtgAccessMode) => {
       if (cancelled) return;
+      activeSkin = nextSkin;
+      activeAccess = nextAccess;
       setSkinId(nextSkin);
       setAccessMode(nextAccess);
       applySkinToDocument(nextSkin, nextAccess);
       writeCachedSkin(nextSkin, nextAccess);
     };
+
+    // React owns the route classes on <body>. Tenant identity is separate state, so if a
+    // route render replaces body classes, reassert the skin without touching light/dark.
+    const observer = new MutationObserver(() => {
+      if (cancelled || activeSkin === 'default') return;
+      const expectedLegacy = legacyClassFor(activeAccess);
+      const htmlWrong =
+        document.documentElement.dataset.ltgSkin !== activeSkin ||
+        document.documentElement.dataset.ltgAccess !== (activeAccess ?? undefined);
+      const bodyWrong =
+        document.body.dataset.ltgSkin !== activeSkin ||
+        document.body.dataset.ltgAccess !== (activeAccess ?? undefined) ||
+        !document.body.classList.contains('pccc-welding-skin') ||
+        Boolean(expectedLegacy && !document.body.classList.contains(expectedLegacy));
+      if (htmlWrong || bodyWrong) applySkinToDocument(activeSkin, activeAccess);
+    });
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class', 'data-ltg-skin', 'data-ltg-access'] });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-ltg-skin', 'data-ltg-access'] });
 
     const resolve = async () => {
       setReady(false);
@@ -171,12 +198,8 @@ export default function SkinProvider({
         pathname.startsWith('/forgot-password') ||
         pathname.startsWith('/reset-password')
       ) {
-        clearSkin();
-        if (!cancelled) {
-          setSkinId('default');
-          setAccessMode(null);
-          setReady(true);
-        }
+        commitSkin('default', null);
+        setReady(true);
         return;
       }
 
@@ -184,7 +207,7 @@ export default function SkinProvider({
         const { data: sessionData } = await supabase.auth.getSession();
         const userId = sessionData.session?.user.id;
         if (!userId || cancelled) {
-          clearSkin();
+          commitSkin('default', null);
           return;
         }
 
@@ -199,7 +222,7 @@ export default function SkinProvider({
 
         const isOwner = Boolean(ownerResult.data);
         if (membershipResult.error && !isOwner) {
-          clearSkin();
+          commitSkin('default', null);
           return;
         }
 
@@ -207,17 +230,18 @@ export default function SkinProvider({
           (row) => row.school_id
         );
 
-        // Deterministic fast path for PCCC. This avoids waiting for a second query before
-        // the branded shell is authoritative.
         const directPccc = memberships.find((row) => isPcccSchoolId(row.school_id));
         if (directPccc) {
-          commitSkin('pccc-welding', accessModeFor(pathname, directPccc.role));
+          commitSkin(
+            'pccc-welding',
+            accessModeFor(pathname, directPccc.role, isOwner)
+          );
           return;
         }
 
         const schoolIds = Array.from(new Set(memberships.map((row) => row.school_id)));
         if (!schoolIds.length && !isOwner) {
-          clearSkin();
+          commitSkin('default', null);
           return;
         }
 
@@ -236,21 +260,24 @@ export default function SkinProvider({
           (school) => skinForSchool(school.id, school.name) !== 'default'
         );
         if (!skinnedSchool) {
-          clearSkin();
+          commitSkin('default', null);
           return;
         }
 
         const resolvedSkin = skinForSchool(skinnedSchool.id, skinnedSchool.name);
         const membership = memberships.find((row) => row.school_id === skinnedSchool.id) ?? null;
         if (!membership && !isOwner) {
-          clearSkin();
+          commitSkin('default', null);
           return;
         }
 
-        commitSkin(resolvedSkin, accessModeFor(pathname, membership?.role));
+        commitSkin(
+          resolvedSkin,
+          accessModeFor(pathname, membership?.role, isOwner && !membership)
+        );
       } catch (error) {
         console.error('Unable to resolve LTG tenant skin:', error);
-        clearSkin();
+        commitSkin('default', null);
       } finally {
         if (!cancelled) setReady(true);
       }
@@ -261,6 +288,7 @@ export default function SkinProvider({
 
     return () => {
       cancelled = true;
+      observer.disconnect();
       listener.subscription.unsubscribe();
     };
   }, [pathname, supabase]);
