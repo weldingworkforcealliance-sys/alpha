@@ -1,321 +1,202 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-const DEMO_DAYS = [
-  {
-    day: 1,
-    title: 'Orientation & Shop Readiness',
-    objective: 'Introduce the planner workflow and prepare students for safe, organized shop instruction.',
-    safety: 'PPE expectations, eye protection, work-area awareness.',
-    demo: 'Instructor models how a daily welding lesson moves from briefing to demonstration to guided practice.',
-    practice: 'Students identify required PPE and review the day plan.',
-    check: 'Quick verbal safety and workflow check.',
-  },
-  {
-    day: 2,
-    title: 'Welding Safety in Practice',
-    objective: 'Connect routine shop decisions to safe welding practice.',
-    safety: 'Hot work, sparks, ventilation, nearby combustibles.',
-    demo: 'Instructor walks through a pre-weld work-area inspection.',
-    practice: 'Students inspect a sample work area and identify hazards.',
-    check: 'Students explain one correction before welding begins.',
-  },
-  {
-    day: 3,
-    title: 'Blueprint to Shop Task',
-    objective: 'Show how a drawing becomes a clear fabrication task.',
-    safety: 'Safe measuring, handling, and layout-tool use.',
-    demo: 'Instructor reads a simple drawing and demonstrates basic layout sequence.',
-    practice: 'Students identify dimensions and transfer a sample measurement.',
-    check: 'Students verify the sample layout before work proceeds.',
-  },
+const CAPABILITIES = [
+  ['Daily Instruction', 'Turn approved curriculum into a usable day-by-day teaching workflow.'],
+  ['Live Classroom', 'Launch instructor-guided activities, assessments, job cards, and student participation.'],
+  ['Attendance', 'Record daily attendance, completion status, notes, corrections, and history.'],
+  ['Content & Resources', 'Keep procedures, references, activities, and teaching resources attached to the work.'],
+  ['Workforce Time', 'Connect instructor time records to school review and payroll-ready reporting.'],
+  ['Reporting & Analytics', 'Give school leaders a connected view of instruction, attendance, progress, and operations.'],
 ];
 
-function formatClock(seconds: number) {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${String(s).padStart(2, '0')}`;
-}
+const WORKFLOW = [
+  ['01', 'Choose a program', 'Open a demonstration built around a real instructional environment.'],
+  ['02', 'Use the workflow', 'Move through the platform as an instructor or school user would.'],
+  ['03', 'Leave no footprint', 'Temporary demo data is discarded after 30 minutes of inactivity.'],
+];
 
-export default function DemoPage() {
+export default function DemoLandingPage() {
   const router = useRouter();
-  const [view, setView] = useState<'teacher' | 'school'>('teacher');
-  const [currentDay, setCurrentDay] = useState(1);
-  const [viewingDay, setViewingDay] = useState(1);
-  const [startedAt, setStartedAt] = useState<number | null>(null);
-  const [elapsed, setElapsed] = useState(0);
-  const [completed, setCompleted] = useState<number[]>([]);
-  const [note, setNote] = useState('');
-  const [followUp, setFollowUp] = useState(false);
-  const [savedNote, setSavedNote] = useState('');
-
-  useEffect(() => {
-    if (!startedAt) {
-      setElapsed(0);
-      return;
-    }
-    const update = () => setElapsed(Math.max(0, Math.floor((Date.now() - startedAt) / 1000)));
-    update();
-    const id = window.setInterval(update, 1000);
-    return () => window.clearInterval(id);
-  }, [startedAt]);
-
-  const day = DEMO_DAYS.find((item) => item.day === viewingDay) ?? DEMO_DAYS[0];
-
-  const progress = useMemo(
-    () => Math.round((completed.length / DEMO_DAYS.length) * 100),
-    [completed]
-  );
-
-  const completeDay = () => {
-    if (!startedAt) return;
-    if (!completed.includes(currentDay)) {
-      setCompleted((items) => [...items, currentDay]);
-    }
-    setSavedNote(note.trim());
-    setStartedAt(null);
-    setNote('');
-    if (currentDay < DEMO_DAYS.length) {
-      const next = currentDay + 1;
-      setCurrentDay(next);
-      setViewingDay(next);
-    }
-  };
-
-  const resetDemo = () => {
-    setView('teacher');
-    setCurrentDay(1);
-    setViewingDay(1);
-    setStartedAt(null);
-    setCompleted([]);
-    setNote('');
-    setSavedNote('');
-    setFollowUp(false);
-  };
 
   return (
-    <div className="shell">
-      <div className="demo-banner">
-        TRY DEMO · LIMITED SAMPLE · NOTHING IS SAVED OR REPORTED
-      </div>
-
-      <header>
-        <div>
-          <div className="eyebrow">Living Teacher Planner</div>
-          <h1>Public Try Demo</h1>
-        </div>
-        <div className="actions">
-          <button onClick={() => router.push('/demo/programs')}>Program Demos</button>
-          <button onClick={resetDemo}>Reset Demo</button>
-          <button onClick={() => router.push('/training/login')}>Training Mode</button>
-          <button onClick={() => router.push('/login')}>Live Login</button>
-        </div>
+    <main className="demo-page">
+      <header className="topbar">
+        <button className="brand" type="button" onClick={() => router.push('/')} aria-label="LTG home">
+          <span className="mark">LTG</span>
+          <span className="brand-copy">Education<br />Operating System</span>
+        </button>
+        <button className="login-link" type="button" onClick={() => router.push('/login')}>
+          Live Platform Login
+        </button>
       </header>
 
-      <main>
-        <nav>
-          <button className={view === 'teacher' ? 'active' : ''} onClick={() => setView('teacher')}>
-            Teacher Dashboard Sample
-          </button>
-          <button className={view === 'school' ? 'active' : ''} onClick={() => setView('school')}>
-            School Dashboard Sample
-          </button>
-        </nav>
+      <section className="hero-wrap">
+        <div className="hero-copy">
+          <div className="eyebrow">Interactive Public Demo</div>
+          <h1>Experience LTG as an operating system, not a slideshow.</h1>
+          <p className="lead">
+            Explore how daily instruction, classroom activity, attendance, resources, workforce records,
+            and school reporting connect inside one education operating environment.
+          </p>
 
-        {view === 'teacher' && (
-          <div className="grid">
-            <section className="panel">
-              <div className="eyebrow">Demo Welding School</div>
-              <h2>WLD 105 · Demo Section</h2>
-
-              <div className="status-row">
-                <span>Current Teaching Day <strong>Day {currentDay}</strong></span>
-                <span>Status <strong>{startedAt ? 'IN PROGRESS' : completed.includes(currentDay) ? 'COMPLETED' : 'READY'}</strong></span>
-                <span>Timer <strong>{startedAt ? formatClock(elapsed) : '0:00'}</strong></span>
-              </div>
-
-              <div className="controls">
-                <button
-                  className="primary"
-                  disabled={Boolean(startedAt)}
-                  onClick={() => {
-                    setViewingDay(currentDay);
-                    setStartedAt(Date.now());
-                  }}
-                >
-                  Start Today
-                </button>
-                <button
-                  disabled={!startedAt}
-                  onClick={completeDay}
-                >
-                  Complete Day
-                </button>
-              </div>
-
-              <label>
-                Daily note
-                <textarea
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  placeholder="Try entering a teacher note. It disappears when the demo resets."
-                />
-              </label>
-
-              <label className="check">
-                <input
-                  type="checkbox"
-                  checked={followUp}
-                  onChange={(e) => setFollowUp(e.target.checked)}
-                />
-                Flag follow-up
-              </label>
-
-              {savedNote && (
-                <div className="sample-note">
-                  <strong>Last simulated note</strong>
-                  <span>{savedNote}</span>
-                  {followUp && <b>Follow-up flagged</b>}
-                </div>
-              )}
-            </section>
-
-            <section className="panel">
-              <div className="eyebrow">Teacher Guide Preview</div>
-              <div className="day-nav">
-                {DEMO_DAYS.map((item) => (
-                  <button
-                    key={item.day}
-                    className={viewingDay === item.day ? 'active' : ''}
-                    onClick={() => setViewingDay(item.day)}
-                  >
-                    Day {item.day}
-                  </button>
-                ))}
-              </div>
-
-              <h2>Day {day.day}: {day.title}</h2>
-              <GuideRow label="Objective" text={day.objective} />
-              <GuideRow label="Safety Focus" text={day.safety} />
-              <GuideRow label="Demonstration" text={day.demo} />
-              <GuideRow label="Guided Practice" text={day.practice} />
-              <GuideRow label="Evidence / Check" text={day.check} />
-
-              <div className="limited">
-                This public demo intentionally shows only three sample days. Full course guides are available only in authorized Training Mode and the live platform.
-              </div>
-            </section>
+          <div className="actions">
+            <button className="primary" type="button" onClick={() => router.push('/demo/programs')}>
+              Enter Public Demo <span aria-hidden="true">→</span>
+            </button>
+            <button className="secondary" type="button" onClick={() => router.push('/')}>
+              Back to LTG Overview
+            </button>
           </div>
-        )}
 
-        {view === 'school' && (
-          <section className="panel">
-            <div className="eyebrow">School Dashboard Preview</div>
-            <h2>Demo Welding School</h2>
+          <div className="trust-strip" aria-label="Public demo safeguards">
+            <div><strong>Isolated</strong><span>Closed demo environment</span></div>
+            <div><strong>Temporary</strong><span>Resets after 30 minutes of inactivity</span></div>
+            <div><strong>Private</strong><span>No live school records</span></div>
+            <div><strong>Disposable</strong><span>Demo changes are discarded</span></div>
+          </div>
+        </div>
 
-            <div className="metrics">
-              <Metric label="Active Sections" value="1" />
-              <Metric label="Instructors" value="1" />
-              <Metric label="Current Day" value={`Day ${currentDay}`} />
-              <Metric label="Demo Progress" value={`${progress}%`} />
-              <Metric label="Follow-Ups" value={followUp ? '1' : '0'} />
-            </div>
+        <aside className="workflow-card">
+          <div className="panel-label">A connected school day</div>
+          <h2>One workflow creates the operational picture.</h2>
+          <div className="flow-list">
+            <div><span>1</span><p><b>Open the class</b><small>Current section, day, schedule, and instructor context.</small></p></div>
+            <div><span>2</span><p><b>Teach from the guide</b><small>Objectives, pacing, demonstrations, resources, and evidence.</small></p></div>
+            <div><span>3</span><p><b>Run classroom activity</b><small>Live questions, assessments, tasks, and performance evidence.</small></p></div>
+            <div><span>4</span><p><b>Record what happened</b><small>Attendance, notes, completion, follow-up, and time records.</small></p></div>
+            <div><span>5</span><p><b>See the program</b><small>School reporting reflects the work performed in the classroom.</small></p></div>
+          </div>
+        </aside>
+      </section>
 
-            <div className="fake-table">
-              <div className="table-head">
-                <span>Section</span><span>Instructor</span><span>Progress</span><span>Status</span>
-              </div>
-              <div className="table-row">
-                <span>WLD 105 · Demo Section</span>
-                <span>Demo Instructor</span>
-                <span>Day {currentDay} / 3</span>
-                <span>{startedAt ? 'In Progress' : 'Ready'}</span>
-              </div>
-            </div>
+      <section className="section capabilities-section">
+        <div className="section-heading">
+          <div className="eyebrow">What LTG connects</div>
+          <h2>The platform is built around the work schools already have to do.</h2>
+          <p>Instead of making instructors and administrators bounce between disconnected systems, LTG keeps the operating pieces attached to the same instructional workflow.</p>
+        </div>
 
-            <div className="limited">
-              School reporting in the public demo is sample-only. No demo activity is written to production reporting.
-            </div>
-          </section>
-        )}
-      </main>
+        <div className="capability-grid">
+          {CAPABILITIES.map(([title, text]) => (
+            <article key={title} className="capability-card">
+              <h3>{title}</h3>
+              <p>{text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="section how-section">
+        <div className="how-heading">
+          <div className="eyebrow">How the public demo works</div>
+          <h2>Real interaction. No production footprint.</h2>
+        </div>
+        <div className="steps">
+          {WORKFLOW.map(([number, title, text]) => (
+            <article key={number} className="step">
+              <span>{number}</span>
+              <div><h3>{title}</h3><p>{text}</p></div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="cta">
+        <div>
+          <div className="eyebrow">Ready to explore</div>
+          <h2>Choose a program and enter the demo environment.</h2>
+          <p>Welding demonstrates the original LTG implementation. Additional program demonstrations show how the same operating model adapts beyond one department.</p>
+        </div>
+        <button type="button" onClick={() => router.push('/demo/programs')}>Choose Program <span aria-hidden="true">→</span></button>
+      </section>
+
+      <footer>
+        <span>LTG · Living Teacher Guide · Education Operating System</span>
+        <span>Public demo activity is temporary and isolated from live school records.</span>
+      </footer>
 
       <style jsx>{`
-        .shell { min-height:100vh; background:#080808; color:#ddd; }
-        .demo-banner {
-          position: sticky; top:0; z-index:20; padding:9px 14px; text-align:center;
-          background:#0b79b7; color:white; font-size:11px; font-weight:900; letter-spacing:.08em;
+        :global(body.ltg-demo-route) { margin:0; background:#f3f6f7; color:#18303a; }
+        :global(body.ltg-demo-route .app-container),
+        :global(body.ltg-demo-route .ltg-public-content) { width:100%; max-width:none; margin:0; padding:0; display:block; }
+        .demo-page { min-height:100vh; background:linear-gradient(180deg,#ffffff 0,#f6f9fa 54%,#edf3f5 100%); color:#20343d; }
+        .topbar { height:78px; display:flex; align-items:center; justify-content:space-between; gap:24px; padding:0 max(24px,calc((100vw - 1220px)/2)); border-bottom:1px solid #dde6e9; background:rgba(255,255,255,.94); }
+        .brand { display:flex; align-items:center; gap:12px; border:0; padding:0; background:transparent; cursor:pointer; text-align:left; }
+        .mark { color:#f36a2f; font-size:25px; font-weight:950; letter-spacing:-.04em; }
+        .brand-copy { color:#718087; font-size:11px; font-weight:850; line-height:1.05; text-transform:uppercase; letter-spacing:.04em; }
+        .login-link { border:1px solid #cad7dc; border-radius:8px; background:#fff; color:#38515c; padding:10px 14px; font-weight:800; cursor:pointer; }
+        .login-link:hover { border-color:#173a48; color:#173a48; }
+        .hero-wrap { width:min(1220px,calc(100% - 40px)); margin:0 auto; padding:72px 0 54px; display:grid; grid-template-columns:minmax(0,1.12fr) minmax(360px,.88fr); gap:58px; align-items:center; }
+        .eyebrow { color:#d85c28; font-size:11px; font-weight:950; letter-spacing:.14em; text-transform:uppercase; }
+        h1,h2,h3,p { margin-top:0; }
+        h1 { max-width:760px; margin:12px 0 20px; color:#102b35; font-size:clamp(42px,5.3vw,72px); line-height:.98; letter-spacing:-.045em; }
+        .lead { max-width:730px; color:#62777f; font-size:18px; line-height:1.65; }
+        .actions { display:flex; flex-wrap:wrap; gap:10px; margin:30px 0 28px; }
+        .actions button,.cta button { border-radius:9px; padding:13px 17px; font-weight:900; cursor:pointer; }
+        .primary,.cta button { border:1px solid #173a48; background:#173a48; color:#fff; box-shadow:0 10px 24px rgba(23,58,72,.16); }
+        .primary:hover,.cta button:hover { background:#0e2b36; }
+        .secondary { border:1px solid #cbd8dd; background:#fff; color:#425b65; }
+        .trust-strip { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1px; overflow:hidden; border:1px solid #dce6e9; border-radius:12px; background:#dce6e9; box-shadow:0 12px 35px rgba(25,53,64,.05); }
+        .trust-strip div { min-height:82px; padding:16px; background:#fff; display:flex; flex-direction:column; justify-content:center; gap:4px; }
+        .trust-strip strong { color:#17333e; font-size:13px; }
+        .trust-strip span { color:#778a92; font-size:11px; line-height:1.35; }
+        .workflow-card { border:1px solid #202c31; border-radius:18px; background:#11191d; color:#dbe5e8; padding:28px; box-shadow:0 28px 60px rgba(19,37,44,.19); }
+        .panel-label { color:#62d5ff; font-size:10px; font-weight:900; letter-spacing:.13em; text-transform:uppercase; }
+        .workflow-card h2 { margin:8px 0 22px; color:#fff; font-size:28px; line-height:1.15; letter-spacing:-.02em; }
+        .flow-list { display:grid; gap:6px; }
+        .flow-list>div { display:grid; grid-template-columns:34px 1fr; gap:12px; padding:13px 0; border-top:1px solid #283239; }
+        .flow-list>div:first-child { border-top:0; }
+        .flow-list>div>span { width:28px; height:28px; border-radius:50%; display:grid; place-items:center; background:#1b282f; border:1px solid #30424b; color:#62d5ff; font-size:11px; font-weight:900; }
+        .flow-list p { margin:0; display:grid; gap:3px; }
+        .flow-list b { color:#eef6f8; font-size:13px; }
+        .flow-list small { color:#8fa1a8; font-size:11px; line-height:1.45; }
+        .section { width:min(1220px,calc(100% - 40px)); margin:0 auto; padding:64px 0; }
+        .capabilities-section { border-top:1px solid #e0e8eb; }
+        .section-heading { max-width:780px; margin-bottom:28px; }
+        .section-heading h2,.how-heading h2,.cta h2 { margin:7px 0 10px; color:#17333e; font-size:32px; line-height:1.14; letter-spacing:-.025em; }
+        .section-heading p,.cta p { color:#71848c; line-height:1.62; }
+        .capability-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+        .capability-card { min-height:154px; padding:22px; border:1px solid #dbe5e8; border-radius:13px; background:rgba(255,255,255,.84); box-shadow:0 12px 30px rgba(32,59,69,.045); }
+        .capability-card h3 { margin-bottom:8px; color:#1a3945; font-size:16px; }
+        .capability-card p { margin:0; color:#71848c; font-size:12px; line-height:1.6; }
+        .how-section { display:grid; grid-template-columns:.72fr 1.28fr; gap:44px; align-items:start; border-top:1px solid #dce5e8; }
+        .steps { display:grid; gap:10px; }
+        .step { display:grid; grid-template-columns:52px 1fr; gap:16px; align-items:start; padding:20px; border:1px solid #d8e3e7; border-radius:12px; background:#fff; }
+        .step>span { color:#d85c28; font-size:12px; font-weight:950; letter-spacing:.1em; }
+        .step h3 { margin:0 0 4px; color:#1b3742; font-size:15px; }
+        .step p { margin:0; color:#73858d; font-size:12px; line-height:1.55; }
+        .cta { width:min(1220px,calc(100% - 40px)); margin:0 auto 54px; padding:30px 32px; display:grid; grid-template-columns:1fr auto; gap:28px; align-items:center; border:1px solid #cfdde1; border-radius:16px; background:#fff; box-shadow:0 18px 38px rgba(24,54,65,.07); }
+        .cta p { max-width:820px; margin-bottom:0; font-size:13px; }
+        .cta button { white-space:nowrap; }
+        footer { display:flex; justify-content:space-between; gap:24px; padding:24px max(24px,calc((100vw - 1220px)/2)); border-top:1px solid #d6e1e4; color:#7b8b91; font-size:10px; background:#eaf0f2; }
+        @media(max-width:900px) {
+          .hero-wrap { grid-template-columns:1fr; padding-top:48px; }
+          .workflow-card { max-width:none; }
+          .trust-strip { grid-template-columns:1fr 1fr; }
+          .capability-grid { grid-template-columns:1fr 1fr; }
+          .how-section { grid-template-columns:1fr; gap:24px; }
+          .cta { grid-template-columns:1fr; }
+          .cta button { justify-self:start; }
         }
-        header {
-          display:flex; justify-content:space-between; gap:20px; align-items:center;
-          padding:20px 28px; border-bottom:1px solid #262626; background:#111;
-        }
-        .eyebrow { color:#4ecbff; font-size:10px; text-transform:uppercase; letter-spacing:.12em; font-weight:900; }
-        h1,h2 { margin:4px 0; color:white; }
-        h1 { font-size:24px; } h2 { font-size:21px; }
-        .actions, nav, .controls, .day-nav { display:flex; flex-wrap:wrap; gap:8px; }
-        button {
-          padding:10px 13px; border-radius:7px; border:1px solid #303030; background:#161616;
-          color:#ddd; font-weight:750; cursor:pointer;
-        }
-        button:hover:not(:disabled), button.active { border-color:#4ecbff; color:#4ecbff; }
-        button.primary { border-color:#00ff88; color:#00ff88; }
-        button:disabled { opacity:.4; cursor:not-allowed; }
-        main { width:min(1280px, calc(100% - 28px)); margin:auto; padding:24px 0 50px; }
-        nav { margin-bottom:16px; border-bottom:1px solid #252525; padding-bottom:12px; }
-        .grid { display:grid; grid-template-columns:minmax(320px,.8fr) minmax(380px,1.2fr); gap:16px; }
-        .panel { padding:20px; border:1px solid #292929; border-radius:10px; background:#141414; }
-        .status-row, .metrics {
-          display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:16px 0;
-        }
-        .status-row span, .metrics :global(.metric) { background:#101010; border-radius:8px; padding:11px; color:#777; font-size:11px; }
-        .status-row strong { display:block; margin-top:3px; color:#eee; font-size:15px; }
-        label { display:grid; gap:7px; margin-top:14px; color:#888; font-size:11px; font-weight:800; text-transform:uppercase; }
-        textarea {
-          min-height:90px; resize:vertical; padding:11px; border:1px solid #303030; border-radius:7px;
-          background:#0d0d0d; color:#eee; font:inherit;
-        }
-        .check { display:flex; grid-auto-flow:column; justify-content:start; align-items:center; text-transform:none; }
-        .sample-note, .limited {
-          margin-top:14px; padding:12px; border-radius:7px; background:#101010; border:1px solid #292929;
-          display:grid; gap:5px; color:#aaa; font-size:12px;
-        }
-        .sample-note b { color:#ffad70; }
-        .limited { border-color:rgba(78,203,255,.28); color:#7997a4; line-height:1.5; }
-        .guide-row { display:grid; gap:5px; padding:13px 0; border-bottom:1px solid #252525; }
-        .guide-row strong { color:#4ecbff; font-size:10px; text-transform:uppercase; letter-spacing:.08em; }
-        .guide-row span { color:#c7c7c7; line-height:1.5; }
-        .fake-table { margin-top:18px; border:1px solid #292929; border-radius:8px; overflow:hidden; }
-        .table-head, .table-row { display:grid; grid-template-columns:1.5fr 1fr 1fr 1fr; gap:10px; padding:12px; }
-        .table-head { background:#101010; color:#666; font-size:10px; text-transform:uppercase; font-weight:800; }
-        .table-row { color:#ccc; font-size:12px; border-top:1px solid #252525; }
-        @media(max-width:800px) {
-          header { align-items:flex-start; flex-direction:column; }
-          .grid { grid-template-columns:1fr; }
-          .status-row, .metrics { grid-template-columns:1fr 1fr; }
-          .table-head, .table-row { grid-template-columns:1fr; }
+        @media(max-width:620px) {
+          .topbar { height:auto; padding:16px 18px; align-items:flex-start; }
+          .brand-copy { font-size:9px; }
+          .login-link { padding:9px 10px; font-size:11px; }
+          .hero-wrap,.section,.cta { width:min(100% - 28px,1220px); }
+          .hero-wrap { padding:38px 0 38px; gap:30px; }
+          h1 { font-size:42px; }
+          .lead { font-size:15px; }
+          .trust-strip { grid-template-columns:1fr; }
+          .capability-grid { grid-template-columns:1fr; }
+          .section { padding:46px 0; }
+          .workflow-card { padding:22px; }
+          .workflow-card h2 { font-size:24px; }
+          .section-heading h2,.how-heading h2,.cta h2 { font-size:27px; }
+          footer { flex-direction:column; padding:20px 18px; }
         }
       `}</style>
-    </div>
-  );
-}
-
-function GuideRow({ label, text }: { label: string; text: string }) {
-  return (
-    <div className="guide-row">
-      <strong>{label}</strong>
-      <span>{text}</span>
-    </div>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="metric">
-      <span style={{display:'block', color:'#777', fontSize:10, textTransform:'uppercase', fontWeight:800}}>{label}</span>
-      <strong style={{display:'block', marginTop:4, color:'white', fontSize:20}}>{value}</strong>
-    </div>
+    </main>
   );
 }

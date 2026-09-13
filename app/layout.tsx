@@ -19,6 +19,7 @@ import PlannerAttendancePanel from './planner-attendance-panel';
 import AttendanceFinalizationAlert from './attendance-finalization-alert';
 import SchoolActiveTodayEmployees from './school-active-today-employees';
 import UsageTracker from './usage-tracker';
+import DemoSessionGuard from './demo-session-guard';
 import './styles.css';
 import './agenda/agenda.css';
 import './desktop-layout-fix.css';
@@ -47,6 +48,7 @@ export default function RootLayout({
   const pathname = usePathname();
   const [navOpen, setNavOpen] = useState(false);
   const isMarketingRoute = pathname === '/';
+  const isDemoRoute = pathname.startsWith('/demo');
   const isStudentJoin = pathname.startsWith('/join/');
   const isStudentDisplay = pathname.startsWith('/student-display/');
   const isTrainingRoute = pathname.startsWith('/training');
@@ -64,8 +66,8 @@ export default function RootLayout({
     pathname === '/planner' || pathname === '/dashboard' || pathname === '/agenda';
 
   const hideWorkspaceNav =
-    isMarketingRoute || isAuthRoute || isStudentJoin || isStudentDisplay;
-  const useNightShift = !isStudentJoin && !isMarketingRoute;
+    isMarketingRoute || isDemoRoute || isAuthRoute || isStudentJoin || isStudentDisplay;
+  const useNightShift = !isStudentJoin && !isMarketingRoute && !isDemoRoute;
   const isSecondaryRoute =
     useNightShift &&
     !isAuthRoute &&
@@ -80,6 +82,7 @@ export default function RootLayout({
   const bodyClassName = [
     useNightShift ? 'night-shift-shell' : '',
     isMarketingRoute ? 'ltg-marketing-route' : '',
+    isDemoRoute ? 'ltg-demo-route' : '',
     isAuthRoute ? 'ltg-auth-route' : '',
     isTrainingRoute ? 'ltg-training-route' : '',
     isSecondaryRoute ? 'ltg-secondary-route' : '',
@@ -99,6 +102,7 @@ export default function RootLayout({
       </head>
       <body className={bodyClassName || undefined}>
         <ThemeProvider>
+          <DemoSessionGuard />
           {IS_STAGING && (
             <div
               role="status"
@@ -121,7 +125,7 @@ export default function RootLayout({
               STAGING · NO LIVE DATA
             </div>
           )}
-          {!isMarketingRoute && <UsageTracker pathname={pathname} />}
+          {!isMarketingRoute && !isDemoRoute && <UsageTracker pathname={pathname} />}
           <div className="app-container">
             {!hideWorkspaceNav && (
               <nav
@@ -236,14 +240,18 @@ export default function RootLayout({
             )}
 
             <div className={hideWorkspaceNav ? 'ltg-public-content' : 'ltg-main-content'}>
-              {pathname === '/dashboard' && <DashboardHero />}
-              <DashboardPunchClock pathname={pathname} />
-              <SchoolActiveTodayEmployees pathname={pathname} />
-              {!isStudentDisplay && <CohortWorkspaceBar pathname={pathname} />}
-              {!isStudentDisplay && <TeacherIdentityBar pathname={pathname} />}
-              <AttendanceFinalizationAlert pathname={pathname} />
-              <PlannerAttendancePanel pathname={pathname} />
-              {!isStudentDisplay && <AgendaNotePolicyBanner pathname={pathname} />}
+              {!isDemoRoute && (
+                <>
+                  {pathname === '/dashboard' && <DashboardHero />}
+                  <DashboardPunchClock pathname={pathname} />
+                  <SchoolActiveTodayEmployees pathname={pathname} />
+                  {!isStudentDisplay && <CohortWorkspaceBar pathname={pathname} />}
+                  {!isStudentDisplay && <TeacherIdentityBar pathname={pathname} />}
+                  <AttendanceFinalizationAlert pathname={pathname} />
+                  <PlannerAttendancePanel pathname={pathname} />
+                  {!isStudentDisplay && <AgendaNotePolicyBanner pathname={pathname} />}
+                </>
+              )}
               {children}
             </div>
           </div>
