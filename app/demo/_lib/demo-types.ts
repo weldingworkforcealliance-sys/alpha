@@ -115,6 +115,15 @@ export type DemoCohort = {
   students: string[];
 };
 
+export type DemoImplementation = {
+  id: string;
+  name: string;
+  schoolName: string;
+  description?: string;
+  cohorts: DemoCohort[];
+  defaultRole?: DemoRole;
+};
+
 export type DemoProgram = {
   id: string;
   name: string;
