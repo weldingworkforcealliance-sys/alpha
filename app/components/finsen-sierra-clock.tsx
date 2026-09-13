@@ -19,9 +19,10 @@ type FinsenSierraClockProps = {
   backgroundImage?: string;
 };
 
-const APPROVED_SKIN_PARTS = Array.from({ length: 10 }, (_, index) =>
-  `/finsen-sierra/approved/clock-${String(index + 1).padStart(2, '0')}.txt`
+const APPROVED_SKIN_PARTS = Array.from({ length: 9 }, (_, index) =>
+  `/finsen-sierra/approved-bronze/clock-${String(index + 1).padStart(2, '0')}.txt`
 );
+const APPROVED_SKIN_BASE64_LENGTH = 48_180;
 
 function initials(name: string) {
   return name
@@ -69,7 +70,14 @@ export default function FinsenSierraClock({
       })
     )
       .then((parts) => {
-        if (!cancelled) setSourceSkin(`data:image/webp;base64,${parts.join('').replace(/\s+/g, '')}`);
+        const encoded = parts.join('').replace(/\s+/g, '');
+        if (encoded.length !== APPROVED_SKIN_BASE64_LENGTH) {
+          throw new Error('approved clock artwork is incomplete');
+        }
+        if (!cancelled) {
+          setSkinError(false);
+          setSourceSkin(`data:image/avif;base64,${encoded}`);
+        }
       })
       .catch(() => {
         if (!cancelled) setSkinError(true);
