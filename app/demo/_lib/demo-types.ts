@@ -4,9 +4,13 @@ export type DemoModule =
   | 'resources'
   | 'classroom'
   | 'attendance'
+  | 'review'
   | 'timeclock'
   | 'reports'
+  | 'training'
   | 'school';
+
+export type DemoRole = 'instructor' | 'lead_instructor' | 'program_lead' | 'school_admin';
 
 export type DemoPlanRow = {
   id: string;
@@ -80,6 +84,36 @@ export type DemoCourse = {
   days: DemoCourseDay[];
 };
 
+export type DemoSectionConfig = {
+  courseCode: string;
+  sectionName: string;
+  sectionCode: string;
+  plannedInstructionalDays: number;
+  plannedMinutesPerDay: number;
+  isAttendancePrimary: boolean;
+  isAttendanceCompletion: boolean;
+};
+
+export type DemoAttendancePairConfig = {
+  pairName: string;
+  mode: 'standard' | 'pvhs';
+  reportDelayMinutes: number;
+  reportingEnabled: boolean;
+  recipientLabel: string;
+};
+
+export type DemoCohort = {
+  id: string;
+  name: string;
+  code: string;
+  dailyStartTime: string;
+  dailyEndTime: string;
+  plannedInstructionalDays: number;
+  sections: DemoSectionConfig[];
+  attendance: DemoAttendancePairConfig;
+  students: string[];
+};
+
 export type DemoProgram = {
   id: string;
   name: string;
@@ -89,4 +123,6 @@ export type DemoProgram = {
   description: string;
   courses: DemoCourse[];
   students: string[];
+  cohorts?: DemoCohort[];
+  defaultRole?: DemoRole;
 };
