@@ -1,0 +1,308 @@
+.page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top right, rgba(240, 100, 29, .07), transparent 30%),
+    #0d1b26;
+  padding: 14px;
+  color: #f1f4f6;
+}
+
+.demoBar {
+  width: min(1500px, 100%);
+  margin: 0 auto 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 12px;
+  border: 1px solid #415668;
+  border-left: 4px solid #f0641d;
+  border-radius: 10px;
+  background: #172b3a;
+  box-shadow: 0 12px 30px rgba(0,0,0,.18);
+}
+
+.demoBar > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.demoBar strong {
+  color: #ffb184;
+  font-size: 12px;
+  letter-spacing: .08em;
+}
+
+.demoBar span {
+  color: #b4bec6;
+  font-size: 11px;
+}
+
+.demoActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  justify-content: flex-end;
+}
+
+.demoActions button,
+.controlPanel button,
+.controlPanel select,
+.controlPanel textarea,
+.evidencePanel select {
+  font: inherit;
+}
+
+.demoActions button,
+.attendanceHead button {
+  border: 1px solid #415668;
+  background: #233948;
+  color: #f1f4f6;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.demoActions button:hover,
+.attendanceHead button:hover {
+  border-color: #f0641d;
+  color: #ffb184;
+}
+
+.controlPanel,
+.evidencePanel {
+  border: 1px solid #415668;
+  background: #172b3a;
+  border-radius: 12px;
+  padding: 14px;
+  color: #f1f4f6;
+}
+
+.controlHead,
+.evidenceHead,
+.attendanceHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+}
+
+.controlHead > div:first-child,
+.evidenceHead > div:first-child,
+.attendanceHead > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.controlHead span,
+.evidenceHead span,
+.attendanceHead span,
+.noteGrid > label > span,
+.evidenceGrid label > span {
+  color: #f0641d;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.controlHead strong,
+.evidenceHead strong,
+.attendanceHead strong {
+  font-size: 17px;
+  color: #f1f4f6;
+}
+
+.controlButtons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.startButton,
+.completeButton {
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.startButton {
+  border: 1px solid #f0641d;
+  background: #e95d18;
+  color: #fff;
+}
+
+.completeButton {
+  border: 1px solid #4fa66c;
+  background: #123c2a;
+  color: #74eba0;
+}
+
+.startButton:disabled,
+.completeButton:disabled {
+  opacity: .42;
+  cursor: not-allowed;
+}
+
+.notice,
+.warning,
+.dataBoundary {
+  margin-top: 10px;
+  border-radius: 8px;
+  padding: 9px 11px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.notice {
+  border: 1px solid #6a9aae;
+  background: rgba(106,154,174,.13);
+  color: #b9e2f1;
+}
+
+.warning {
+  border: 1px solid #f0641d;
+  background: rgba(240,100,29,.13);
+  color: #ffb184;
+}
+
+.attendanceHead {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #314657;
+}
+
+.roster {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.roster label,
+.evidenceGrid label {
+  display: grid;
+  gap: 6px;
+  border: 1px solid #314657;
+  background: #1d3242;
+  border-radius: 9px;
+  padding: 9px;
+}
+
+.roster label > span {
+  color: #b4bec6;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.roster select,
+.evidenceGrid select {
+  width: 100%;
+  border: 1px solid #415668;
+  background: #142736;
+  color: #f1f4f6;
+  border-radius: 7px;
+  padding: 7px 8px;
+}
+
+.noteGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(260px, .8fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.noteGrid > label {
+  display: grid;
+  gap: 6px;
+}
+
+.noteGrid textarea {
+  min-height: 95px;
+  width: 100%;
+  resize: vertical;
+  border: 1px solid #415668;
+  background: #142736;
+  color: #f1f4f6;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.followUpBox {
+  border: 1px solid #314657;
+  background: #1d3242;
+  border-radius: 9px;
+  padding: 11px;
+}
+
+.followUpBox label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 900;
+  color: #f1f4f6;
+}
+
+.followUpBox p {
+  color: #b4bec6;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.followUpBox strong {
+  color: #74eba0;
+  font-size: 11px;
+}
+
+.evidenceHead p {
+  max-width: 600px;
+  margin: 0;
+  color: #b4bec6;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.evidenceGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.evidenceGrid label > span {
+  color: #b9e2f1;
+  line-height: 1.35;
+}
+
+.dataBoundary {
+  border: 1px solid #6a9aae;
+  background: rgba(106,154,174,.08);
+  color: #b4bec6;
+}
+
+@media (max-width: 1100px) {
+  .roster { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .evidenceGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .noteGrid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 720px) {
+  .page { padding: 7px; }
+  .demoBar,
+  .controlHead,
+  .evidenceHead,
+  .attendanceHead {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .demoActions,
+  .controlButtons {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .roster,
+  .evidenceGrid { grid-template-columns: 1fr; }
+}

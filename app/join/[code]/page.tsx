@@ -52,6 +52,7 @@ export default function StudentAssessmentPage(){
       const payload=data as {session:SessionInfo;questions:Question[]};
       setInfo(payload.session);
       setQuestions(payload.questions);
+      if(payload.session.reference_body&&!payload.session.reference_image_url)setReferenceOpen(true);
       try{
         const saved=JSON.parse(localStorage.getItem(storageKey)??'{}');
         if(saved.name)setName(saved.name);
@@ -195,11 +196,11 @@ export default function StudentAssessmentPage(){
   if(result)return <main className="center">
     <div className="card result">
       <div className="check">✓</div>
-      <h1>{info.show_student_score?'Activity Submitted':'Readiness Check Submitted'}</h1>
-      {info.show_student_score&&<>
-        <div className="score">{result.score}/{result.possible_score}</div>
-        <strong>{result.percent}%</strong>
-      </>}
+      <h1>Activity Completed</h1>
+      <div className="answered">{questions.length}/{info.question_count} questions answered</div>
+      {info.show_student_score&&
+        <div className="result-score">Score: {result.score}/{result.possible_score} correct · {result.percent}%</div>
+      }
       <p>
         {info.show_student_score
           ? 'Your instructor received your results.'
@@ -212,7 +213,7 @@ export default function StudentAssessmentPage(){
   if(!started)return <main className="center">
     <div className="start-stack">
       <div className="card">
-        <div className="eyebrow">PCCC Welding · Living Teacher Guide</div>
+        <div className="eyebrow">{info.session_name} · Living Teacher Guide</div>
         <h1>{info.assessment_title}</h1>
         <p>{info.question_count} live-check items · Results are sent directly to your instructor.</p>
         {info.instructions&&<div className="instructions">{info.instructions}</div>}
@@ -224,7 +225,7 @@ export default function StudentAssessmentPage(){
             <input value={teamMembers} onChange={e=>setTeamMembers(e.target.value)} placeholder="Names of students working with you"/>
           </label>
         }
-        <button disabled={!name.trim()||!studentId.trim()} onClick={()=>{setReferenceOpen(false);setReferenceMaximized(false);setStarted(true);}}>Begin Live Activity</button>
+        <button disabled={!name.trim()||!studentId.trim()} onClick={()=>{setReferenceMaximized(false);if(info.reference_image_url)setReferenceOpen(false);setStarted(true);}}>Begin Live Activity</button>
         <p className="draft-note">Your answers are saved on this device until you submit.</p>
       </div>
       <ReferencePanel/>
@@ -294,8 +295,8 @@ button:disabled{opacity:.4}
 .error{width:min(720px,100%);box-sizing:border-box;margin:0 auto 14px;padding:12px;border:1px solid #713333;border-radius:7px;color:#ff9999;background:#1c0c0c}
 .result{text-align:center}
 .check{color:#9adf4b;font-size:56px}
-.score{margin:15px;color:white;font-size:54px;font-weight:900}
-.result>strong{color:#9adf4b;font-size:25px}
+.answered{margin:18px 0 10px;color:#fff;font-size:28px;font-weight:900}
+.result-score{margin:8px 0 18px;color:#9adf4b;font-size:22px;font-weight:900}
 .reference-card{border-color:#566b46;background:#10140d}
 .reference-head{display:flex;gap:14px;align-items:center;justify-content:space-between}
 .reference-kicker{color:#82966f;font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
@@ -315,5 +316,5 @@ button.reference-toggle{width:auto;flex:0 0 auto;margin:0;padding:9px 12px;font-
 .reference-overlay-canvas{min-height:0;overflow:auto;overscroll-behavior:contain;padding:14px;background:#111;border:1px solid #2c2c2c;border-radius:8px;margin-top:12px}
 .reference-overlay-image{display:block;min-width:0;max-width:none;height:auto;margin:0 auto;background:#fff;border-radius:5px}
 .reference-overlay-body{padding:10px 2px 0;color:#bbb;white-space:pre-line;line-height:1.45;font-size:12px}
-@media(max-width:600px){main{padding:14px}.card{padding:16px}.top{align-items:flex-start}.top h1{font-size:20px}.reference-head{align-items:flex-start;flex-direction:column}.reference-actions{width:100%;justify-content:stretch}.reference-actions button.reference-toggle{width:100%}.reference-content{max-height:64vh}.reference-image{max-height:50vh}.reference-overlay{padding:8px}.reference-overlay-toolbar{align-items:flex-start;flex-direction:column}.reference-overlay-controls{width:100%;justify-content:stretch}.reference-overlay-controls button{flex:1}.reference-overlay-controls .reference-exit{flex-basis:100%}.reference-overlay-canvas{padding:8px;margin-top:8px}}
+@media(max-width:600px){main{padding:14px}.card{padding:16px}.top{align-items:flex-start}.top h1{font-size:20px}.answered{font-size:23px}.result-score{font-size:19px}.reference-head{align-items:flex-start;flex-direction:column}.reference-actions{width:100%;justify-content:stretch}.reference-actions button.reference-toggle{width:100%}.reference-content{max-height:64vh}.reference-image{max-height:50vh}.reference-overlay{padding:8px}.reference-overlay-toolbar{align-items:flex-start;flex-direction:column}.reference-overlay-controls{width:100%;justify-content:stretch}.reference-overlay-controls button{flex:1}.reference-overlay-controls .reference-exit{flex-basis:100%}.reference-overlay-canvas{padding:8px;margin-top:8px}}
 `;
