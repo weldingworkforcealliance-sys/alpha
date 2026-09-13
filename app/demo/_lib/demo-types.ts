@@ -109,6 +109,7 @@ export type DemoCohort = {
   dailyStartTime: string;
   dailyEndTime: string;
   plannedInstructionalDays: number;
+  demoDates?: string[];
   sections: DemoSectionConfig[];
   attendance: DemoAttendancePairConfig;
   students: string[];
