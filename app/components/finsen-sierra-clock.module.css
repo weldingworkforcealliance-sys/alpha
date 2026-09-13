@@ -1,21 +1,24 @@
 .clock {
   position: relative;
-  width: min(88%, 860px);
+  width: min(100%, 640px);
   aspect-ratio: 4 / 3;
-  margin: 12px auto 4px;
+  margin: 10px auto 4px;
   overflow: visible;
   background: transparent;
   isolation: isolate;
+  color-scheme: dark;
 }
 
 .sourceSkin {
   position: absolute;
+  z-index: 1;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: contain;
   user-select: none;
   pointer-events: none;
+  filter: contrast(1.055) saturate(1.045) brightness(1.015) drop-shadow(0 14px 22px rgba(0,0,0,.34));
 }
 
 .skinLoading {
@@ -23,13 +26,31 @@
   inset: 19% 15% 20%;
   display: grid;
   place-items: center;
-  color: #8a6a42;
+  color: #9c7a4b;
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: 14px;
-  letter-spacing: .08em;
+  font-size: 13px;
+  letter-spacing: .06em;
+  text-align: center;
 }
 
-/* Only the lamp glass is dimmed. The physical bronze frame remains the approved artwork. */
+/* Optional school/department branding stays inside the clock glass only. */
+.screenBranding {
+  position: absolute;
+  z-index: 2;
+  left: 16.7%;
+  top: 24.5%;
+  width: 66.6%;
+  height: 26.4%;
+  overflow: hidden;
+  border-radius: 2.2%;
+  background:
+    linear-gradient(180deg, rgba(7,11,14,.26), rgba(5,8,10,.5)),
+    var(--finsen-brand-image) center / cover no-repeat;
+  box-shadow: inset 0 0 22px rgba(0,0,0,.58);
+  pointer-events: none;
+}
+
+/* The original artwork contains real glass and brass lamps. Only the glass is darkened. */
 .lampVeil {
   position: absolute;
   z-index: 3;
@@ -37,8 +58,10 @@
   width: 5.5%;
   height: 17.2%;
   border-radius: 45%;
-  background: rgba(8, 7, 5, .84);
-  box-shadow: inset 0 0 16px rgba(0, 0, 0, .96);
+  background: linear-gradient(90deg, rgba(6,5,4,.93), rgba(20,17,12,.77) 44%, rgba(7,6,4,.93));
+  box-shadow:
+    inset 0 0 14px rgba(0,0,0,.98),
+    0 0 4px rgba(0,0,0,.6);
   transition: opacity .18s ease;
   pointer-events: none;
 }
@@ -46,11 +69,37 @@
 .leftLampVeil { left: 5.25%; }
 .rightLampVeil { right: 5.25%; }
 .clock[data-clocked-in='true'] .leftLampVeil { opacity: 0; }
-.clock[data-clocked-in='true'] .rightLampVeil { opacity: .88; }
-.clock[data-clocked-in='false'] .leftLampVeil { opacity: .88; }
+.clock[data-clocked-in='true'] .rightLampVeil { opacity: .82; }
+.clock[data-clocked-in='false'] .leftLampVeil { opacity: .82; }
 .clock[data-clocked-in='false'] .rightLampVeil { opacity: 0; }
 
-/* Dynamic readouts cover only the baked sample data inside the glass screen. */
+/* Keep the physical outer medallion, but make the center the Finsen Sierra mountain mark, not LTG. */
+.crestInsert {
+  position: absolute;
+  z-index: 4;
+  left: 45.68%;
+  top: 5.12%;
+  width: 8.64%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 36% 28%, rgba(91,72,45,.2), transparent 28%),
+    repeating-linear-gradient(96deg, rgba(255,255,255,.018) 0 1px, rgba(0,0,0,.018) 1px 3px),
+    radial-gradient(circle at 50% 45%, #201c17 0 56%, #0e0d0b 74%, #080706 100%);
+  box-shadow: inset 0 0 9px rgba(0,0,0,.72), 0 0 0 1px rgba(221,170,88,.12);
+  color: #d1a15d;
+  pointer-events: none;
+}
+
+.crestInsert svg {
+  width: 68%;
+  height: 68%;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.8)) drop-shadow(0 0 4px rgba(198,142,70,.18));
+}
+
+/* Dynamic readouts replace the baked sample data inside the glass display. */
 .identityReadout,
 .dateReadout,
 .timeReadout,
@@ -68,10 +117,10 @@
   min-height: 9.8%;
   display: grid;
   align-content: center;
-  gap: .12vw;
-  padding: .55vw .9vw;
-  border-radius: .7vw;
-  background: rgba(12, 18, 18, .84);
+  gap: 1px;
+  padding: 4px 7px;
+  border-radius: 6px;
+  background: rgba(8, 14, 17, .83);
   backdrop-filter: blur(3px);
 }
 
@@ -80,13 +129,13 @@
 .dateReadout,
 .employeeReadout small {
   font-family: Arial, Helvetica, sans-serif;
-  font-size: clamp(7px, 1vw, 15px);
+  font-size: clamp(6px, 1.08vw, 13px);
 }
 
 .identityReadout strong {
   overflow: hidden;
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(13px, 2vw, 29px);
+  font-size: clamp(12px, 2.15vw, 26px);
   font-weight: 500;
   line-height: 1.02;
   text-overflow: ellipsis;
@@ -97,9 +146,9 @@
   right: 17.2%;
   top: 29.3%;
   max-width: 23%;
-  padding: .55vw .8vw;
-  border-radius: .65vw;
-  background: rgba(12, 18, 18, .84);
+  padding: 4px 6px;
+  border-radius: 5px;
+  background: rgba(8, 14, 17, .83);
   backdrop-filter: blur(3px);
   font-weight: 700;
   text-align: right;
@@ -113,23 +162,23 @@
   display: grid;
   place-items: center;
   align-content: center;
-  border-radius: .9vw;
-  background: rgba(12, 18, 18, .79);
+  border-radius: 8px;
+  background: rgba(8, 14, 17, .77);
   backdrop-filter: blur(2px);
 }
 
 .timeReadout strong {
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(27px, 5.4vw, 78px);
+  font-size: clamp(25px, 5.7vw, 61px);
   font-weight: 500;
   line-height: .88;
   white-space: nowrap;
 }
 
 .timeReadout span {
-  margin-top: .35vw;
+  margin-top: 3px;
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(5px, .72vw, 11px);
+  font-size: clamp(5px, .76vw, 9px);
   letter-spacing: .14em;
   white-space: nowrap;
 }
@@ -141,24 +190,25 @@
   height: 8.2%;
   display: grid;
   grid-template-columns: auto 1.55fr 1.2fr 1.05fr;
-  gap: 1vw;
+  gap: 7px;
   align-items: center;
-  padding: .42vw .7vw;
-  border-radius: .7vw 0 0 .7vw;
-  background: rgba(9, 20, 27, .94);
+  padding: 3px 6px;
+  border-radius: 6px 0 0 6px;
+  background: rgba(7, 17, 23, .94);
   backdrop-filter: blur(4px);
 }
 
 .avatar {
   display: grid;
   place-items: center;
-  width: clamp(25px, 3.6vw, 52px);
+  width: clamp(23px, 3.75vw, 42px);
   aspect-ratio: 1;
   border-radius: 50%;
-  background: #68778a;
+  background: linear-gradient(145deg, #7c8999, #566477);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.16);
   color: #fff;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: clamp(8px, 1.1vw, 16px);
+  font-size: clamp(8px, 1.15vw, 13px);
 }
 
 .employeeIdentity,
@@ -166,7 +216,7 @@
 .totalReadout {
   min-width: 0;
   display: grid;
-  gap: .08vw;
+  gap: 1px;
 }
 
 .employeeIdentity strong,
@@ -174,7 +224,7 @@
 .totalReadout strong {
   overflow: hidden;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: clamp(7px, 1vw, 15px);
+  font-size: clamp(7px, 1.05vw, 12px);
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -185,7 +235,7 @@
 .totalReadout small {
   overflow: hidden;
   color: rgba(238,242,245,.72);
-  font-size: clamp(5px, .67vw, 10px);
+  font-size: clamp(5px, .72vw, 9px);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -197,7 +247,7 @@
   margin-right: .3em;
   border-radius: 50%;
   background: currentColor;
-  box-shadow: 0 0 8px currentColor;
+  box-shadow: 0 0 7px currentColor;
 }
 
 .onSite { color: #16e5aa; }
@@ -213,16 +263,22 @@
   background: transparent;
   cursor: pointer;
   appearance: none;
+  transition: background .16s ease, box-shadow .16s ease;
 }
 
 .hotspot:disabled {
   cursor: default;
-  background: rgba(0,0,0,.18);
+  background: rgba(2,4,5,.38);
+  box-shadow: inset 0 0 16px rgba(0,0,0,.34);
+}
+
+.hotspot:not(:disabled):hover {
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.16), 0 0 14px rgba(218,167,88,.18);
 }
 
 .hotspot:focus-visible {
-  outline: 3px solid rgba(255,255,255,.92);
-  outline-offset: -3px;
+  outline: 2px solid rgba(255,255,255,.94);
+  outline-offset: -2px;
 }
 
 .clockInHotspot {
@@ -230,7 +286,7 @@
   top: 51.4%;
   width: 22.3%;
   height: 9.3%;
-  border-radius: 1vw;
+  border-radius: 8px;
 }
 
 .clockOutHotspot {
@@ -238,7 +294,7 @@
   top: 51.4%;
   width: 22.7%;
   height: 9.3%;
-  border-radius: 1vw;
+  border-radius: 8px;
 }
 
 .viewTimeHotspot {
@@ -246,7 +302,7 @@
   top: 63.6%;
   width: 14.3%;
   height: 6.9%;
-  border-radius: .7vw;
+  border-radius: 6px;
 }
 
 .srOnly {
@@ -262,13 +318,13 @@
 }
 
 @media (max-width: 900px) {
-  .clock { width: min(94%, 760px); }
+  .clock { width: min(100%, 600px); }
 }
 
 @media (max-width: 640px) {
   .clock {
     width: 100%;
-    margin: 8px auto 0;
+    margin: 6px auto 0;
   }
 
   .identityReadout small,
@@ -278,6 +334,6 @@
 
   .employeeReadout {
     grid-template-columns: auto 1.4fr 1fr 1fr;
-    gap: .45vw;
+    gap: 3px;
   }
 }
