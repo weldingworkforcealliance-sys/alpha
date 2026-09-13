@@ -1,0 +1,308 @@
+/* PCCC role portal dashboard. This file is dashboard-only and does not style the Finsen Sierra module. */
+html[data-ltg-skin='pccc-welding'] body.ltg-dashboard-route .ltg-dashboard-hero,
+html[data-ltg-skin='pccc-welding'] body.ltg-dashboard-route .ltg-punch-row,
+html[data-ltg-skin='pccc-welding'] body.ltg-dashboard-route section[aria-label='Class workspace selector'],
+html[data-ltg-skin='pccc-welding'] body.ltg-dashboard-route div[aria-label='Assigned instructor and selected class'],
+html[data-ltg-skin='pccc-welding'] body.ltg-dashboard-route #ltg-planner-attendance-slot,
+html[data-ltg-skin='pccc-welding'] body.ltg-dashboard-route .dashboard-container {
+  display:none !important;
+}
+
+.pccc-portal-dashboard {
+  margin:18px 20px 22px;
+  overflow:hidden;
+  border:1px solid var(--skin-role-metal-hi);
+  border-radius:14px;
+  background:var(--skin-surface);
+  color:var(--skin-text);
+  box-shadow:0 22px 54px rgba(0,0,0,.25);
+}
+
+.pccc-portal-dashboard__heading {
+  min-height:176px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:30px;
+  padding:30px 34px;
+  border-bottom:1px solid var(--skin-border);
+  background:
+    linear-gradient(100deg,color-mix(in srgb,var(--skin-canvas) 98%,transparent) 0 56%,color-mix(in srgb,var(--skin-canvas) 82%,transparent) 76%,color-mix(in srgb,var(--skin-canvas) 96%,transparent) 100%),
+    radial-gradient(circle at 87% 50%,var(--skin-accent-soft),transparent 19rem),
+    var(--skin-surface-2);
+}
+
+.pccc-portal-dashboard__eyebrow {
+  display:block;
+  margin-bottom:8px;
+  color:var(--skin-accent-strong);
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+}
+
+.pccc-portal-dashboard__heading h2 {
+  margin:0;
+  color:var(--skin-text);
+  font-size:clamp(31px,3.6vw,50px);
+  line-height:1;
+  letter-spacing:-.045em;
+}
+
+.pccc-portal-dashboard__heading p {
+  max-width:760px;
+  margin:12px 0 0;
+  color:var(--skin-muted);
+  font-size:15px;
+  line-height:1.55;
+}
+
+.pccc-portal-dashboard__badge {
+  min-width:188px;
+  padding:17px 20px;
+  border:1px solid var(--skin-role-metal-hi);
+  border-radius:9px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.015)),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,rgba(0,0,0,.03) 1px 3px),
+    linear-gradient(180deg,var(--skin-role-metal),var(--skin-role-metal-dark));
+  box-shadow:inset 0 1px rgba(255,255,255,.16),0 12px 28px rgba(0,0,0,.24);
+  text-align:center;
+}
+
+.pccc-portal-dashboard__badge span {
+  display:block;
+  color:#fff;
+  font-size:30px;
+  font-weight:950;
+  font-style:italic;
+  letter-spacing:-.065em;
+}
+
+.pccc-portal-dashboard__badge strong {
+  display:block;
+  margin-top:1px;
+  color:#fff;
+  font-size:14px;
+  font-style:italic;
+  letter-spacing:.13em;
+}
+
+.pccc-portal-dashboard__badge small {
+  display:block;
+  margin-top:7px;
+  color:rgba(255,255,255,.72);
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.16em;
+}
+
+.pccc-portal-dashboard__education-strip {
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  border-bottom:1px solid var(--skin-border-soft);
+  background:var(--skin-surface-2);
+}
+
+.pccc-portal-dashboard__education-strip span {
+  min-height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:9px 12px;
+  border-right:1px solid var(--skin-border-soft);
+  color:var(--skin-muted);
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+
+.pccc-portal-dashboard__education-strip span:last-child { border-right:0; }
+
+.pccc-portal-dashboard__actions {
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:10px;
+  padding:14px;
+  background:var(--skin-canvas);
+}
+
+.pccc-portal-dashboard__actions a {
+  min-height:118px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:14px;
+  border:1px solid var(--skin-border-soft);
+  border-radius:9px;
+  background:
+    linear-gradient(150deg,rgba(255,255,255,.035),transparent 42%),
+    var(--skin-surface);
+  color:var(--skin-text);
+  text-decoration:none;
+  box-shadow:inset 0 1px rgba(255,255,255,.04);
+  transition:transform .15s ease,border-color .15s ease,background .15s ease,box-shadow .15s ease;
+}
+
+.pccc-portal-dashboard__actions a:hover {
+  transform:translateY(-2px);
+  border-color:var(--skin-accent-strong);
+  background:color-mix(in srgb,var(--skin-surface) 88%,var(--skin-accent) 12%);
+  box-shadow:0 10px 24px rgba(0,0,0,.16);
+}
+
+.pccc-portal-dashboard__actions a > span {
+  margin-bottom:11px;
+  color:var(--skin-accent-strong);
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.13em;
+}
+
+.pccc-portal-dashboard__actions strong {
+  color:var(--skin-text);
+  font-size:13px;
+  line-height:1.25;
+}
+
+.pccc-portal-dashboard__actions small {
+  margin-top:6px;
+  color:var(--skin-muted);
+  font-size:10px;
+  line-height:1.35;
+}
+
+.pccc-portal-dashboard__lower {
+  display:grid;
+  grid-template-columns:minmax(0,2fr) minmax(280px,.8fr);
+  gap:12px;
+  padding:0 14px 14px;
+  background:var(--skin-canvas);
+}
+
+.pccc-portal-dashboard__schedule,
+.pccc-portal-dashboard__education {
+  overflow:hidden;
+  border:1px solid var(--skin-border-soft);
+  border-radius:10px;
+  background:var(--skin-surface);
+}
+
+.pccc-portal-dashboard__schedule header {
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:18px;
+  padding:15px 17px;
+  border-bottom:1px solid var(--skin-border-soft);
+  background:linear-gradient(180deg,var(--skin-surface-2),var(--skin-surface));
+}
+
+.pccc-portal-dashboard__schedule header span,
+.pccc-portal-dashboard__education > span {
+  color:var(--skin-accent-strong);
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.16em;
+}
+
+.pccc-portal-dashboard__schedule h3,
+.pccc-portal-dashboard__education h3 {
+  margin:4px 0 0;
+  color:var(--skin-text);
+  font-size:18px;
+}
+
+.pccc-portal-dashboard__schedule header a {
+  color:var(--skin-accent-strong);
+  font-size:11px;
+  font-weight:850;
+  text-decoration:none;
+}
+
+.pccc-portal-dashboard__section-list { padding:4px 0; }
+
+.pccc-portal-dashboard__section-row {
+  display:grid;
+  grid-template-columns:14px minmax(110px,1.2fr) minmax(120px,1fr) minmax(70px,.6fr) minmax(90px,.7fr);
+  align-items:center;
+  gap:10px;
+  min-height:50px;
+  padding:8px 15px;
+  border-bottom:1px solid var(--skin-border-soft);
+  color:var(--skin-muted);
+  font-size:11px;
+}
+
+.pccc-portal-dashboard__section-row:last-child { border-bottom:0; }
+.pccc-portal-dashboard__section-row strong { color:var(--skin-text); font-size:12px; }
+
+.pccc-portal-dashboard__status-dot {
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#59c887;
+  box-shadow:0 0 8px rgba(89,200,135,.45);
+}
+
+.pccc-portal-dashboard__education {
+  padding:20px;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.028),transparent 40%),
+    var(--skin-surface);
+}
+
+.pccc-portal-dashboard__education p {
+  margin:11px 0 22px;
+  color:var(--skin-muted);
+  font-size:12px;
+  line-height:1.58;
+}
+
+.pccc-portal-dashboard__education > div {
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  padding-top:15px;
+  border-top:1px solid var(--skin-border-soft);
+}
+
+.pccc-portal-dashboard__education > div strong {
+  color:var(--skin-text);
+  font-size:32px;
+  line-height:1;
+}
+
+.pccc-portal-dashboard__education > div small {
+  color:var(--skin-muted);
+  font-size:11px;
+}
+
+.pccc-portal-dashboard__empty {
+  min-height:88px;
+  display:flex;
+  align-items:center;
+  padding:17px;
+  color:var(--skin-muted);
+  font-size:12px;
+}
+
+@media (max-width:1180px) {
+  .pccc-portal-dashboard__actions { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .pccc-portal-dashboard__lower { grid-template-columns:1fr; }
+}
+
+@media (max-width:760px) {
+  .pccc-portal-dashboard { margin:10px; }
+  .pccc-portal-dashboard__heading { align-items:flex-start; padding:22px; min-height:0; }
+  .pccc-portal-dashboard__badge { display:none; }
+  .pccc-portal-dashboard__education-strip { grid-template-columns:1fr; }
+  .pccc-portal-dashboard__education-strip span { justify-content:flex-start; border-right:0; border-bottom:1px solid var(--skin-border-soft); }
+  .pccc-portal-dashboard__education-strip span:last-child { border-bottom:0; }
+  .pccc-portal-dashboard__actions { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .pccc-portal-dashboard__section-row { grid-template-columns:12px 1fr auto; gap:8px; }
+  .pccc-portal-dashboard__section-row span:nth-of-type(2),
+  .pccc-portal-dashboard__section-row span:nth-of-type(4) { display:none; }
+}

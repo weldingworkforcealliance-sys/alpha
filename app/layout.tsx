@@ -21,6 +21,7 @@ import SchoolActiveTodayEmployees from './school-active-today-employees';
 import UsageTracker from './usage-tracker';
 import DemoSessionGuard from './demo-session-guard';
 import SkinProvider from './skin-provider';
+import PcccPortalDashboard from './pccc-portal-dashboard';
 import './styles.css';
 import './agenda/agenda.css';
 import './desktop-layout-fix.css';
@@ -39,6 +40,7 @@ import './interaction-feedback.css';
 import './operational-status-panels.css';
 import './pccc-welding-skin.css';
 import './skin-contract.css';
+import './pccc-portal-dashboard.css';
 
 const THEME_BOOTSTRAP = `(function(){try{var t=localStorage.getItem('ltg_theme');if(t!=='light'&&t!=='dark')t='dark';document.documentElement.dataset.theme=t;document.documentElement.style.colorScheme=t;}catch(e){document.documentElement.dataset.theme='dark';document.documentElement.style.colorScheme='dark';}})();`;
 const SKIN_BOOTSTRAP = `(function(){try{var p=location.pathname;if(p.indexOf('/demo/welding')===0||p.indexOf('/demo/time-clock')===0){document.documentElement.dataset.ltgSkin='pccc-welding';document.documentElement.dataset.ltgAccess='demo';return;}if(p==='/'||p.indexOf('/login')===0||p.indexOf('/forgot-password')===0||p.indexOf('/reset-password')===0||p.indexOf('/demo')===0){return;}var raw=localStorage.getItem('ltg_skin_context_v1');if(!raw)return;var s=JSON.parse(raw);if(!s||!s.skinId||s.skinId==='default')return;document.documentElement.dataset.ltgSkin=s.skinId;if(s.accessMode)document.documentElement.dataset.ltgAccess=s.accessMode;}catch(e){}})();`;
@@ -249,6 +251,7 @@ export default function RootLayout({
                 {!isDemoRoute && (
                   <>
                     {pathname === '/dashboard' && <DashboardHero />}
+                    {pathname === '/dashboard' && <PcccPortalDashboard />}
                     <DashboardPunchClock pathname={pathname} />
                     <SchoolActiveTodayEmployees pathname={pathname} />
                     {!isStudentDisplay && <CohortWorkspaceBar pathname={pathname} />}
