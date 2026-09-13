@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getSupabase } from '@/lib/supabase-browser';
+import FinsenSierraClock from './components/finsen-sierra-clock';
 
 type Employee = {
   id: string;
@@ -174,18 +175,7 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
 
   return (
     <section className="ltg-punch-row" aria-label="Punch clock summary">
-      <div className="ltg-punch-card">
-        <div className="ltg-punch-card-heading">
-          <div>
-            <span className="ltg-punch-icon" aria-hidden="true">◷</span>
-            <div>
-              <h2>Punch Clock</h2>
-              <p>Track your work hours</p>
-            </div>
-          </div>
-          <Link href="/time-clock">View Time Clock →</Link>
-        </div>
-
+      <div style={{ minWidth: 0, background: 'transparent', border: 0, boxShadow: 'none', padding: 0 }}>
         {loading ? (
           <div className="ltg-punch-loading">Loading clock status…</div>
         ) : !employee ? (
@@ -197,25 +187,18 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
             <Link className="ltg-punch-primary" href="/time-clock">Open Time Clock</Link>
           </div>
         ) : (
-          <div className="ltg-punch-action-row">
-            <div className={`ltg-punch-status ${openEntry ? 'in' : 'out'}`}>
-              <span className="ltg-punch-dot" aria-hidden="true" />
-              <strong>{openEntry ? 'Clocked In' : 'Clocked Out'}</strong>
-              <span>
-                {openEntry
-                  ? `Since ${formatClockTime(openEntry.clock_in_at)}`
-                  : 'You are not currently on the clock.'}
-              </span>
-            </div>
-            <button
-              type="button"
-              className="ltg-punch-primary"
-              onClick={handlePunch}
-              disabled={busy || !employee.clocking_enabled}
-            >
-              {busy ? 'Working…' : openEntry ? 'Clock Out' : 'Clock In'}
-            </button>
-          </div>
+          <FinsenSierraClock
+            displayName={employee.display_name}
+            department="LTG Employee"
+            clockedIn={Boolean(openEntry)}
+            sinceLabel={openEntry ? formatClockTime(openEntry.clock_in_at) : null}
+            todayTotal={formatDuration(todayHours)}
+            busy={busy}
+            clockingEnabled={employee.clocking_enabled}
+            onClockIn={handlePunch}
+            onClockOut={handlePunch}
+            viewTimeHref="/time-clock"
+          />
         )}
         {error && <div className="ltg-punch-error">{error}</div>}
       </div>
