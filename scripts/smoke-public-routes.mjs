@@ -15,7 +15,7 @@ const publicRoutes = [
 const expectedPublicContent = new Map([
   ['/demo', 'Experience LTG as an operating system, not a slideshow.'],
   ['/demo/programs', 'One platform. Different programs.'],
-  ['/demo/welding', 'Welding Demo Workspace'],
+  ['/demo/welding', 'Launching isolated LTG demo workspace'],
 ]);
 
 const protectedRoutes = [
