@@ -14,7 +14,7 @@ const CAPABILITIES = [
 const WORKFLOW = [
   ['01', 'Choose a program', 'Open a demonstration built around a real instructional environment.'],
   ['02', 'Use the workflow', 'Move through the platform as an instructor or school user would.'],
-  ['03', 'Leave no footprint', 'The isolated demo session resets automatically after 30 minutes.'],
+  ['03', 'Leave no footprint', 'Temporary demo data is discarded after 30 minutes of inactivity.'],
 ];
 
 export default function DemoLandingPage() {
@@ -52,7 +52,7 @@ export default function DemoLandingPage() {
 
           <div className="trust-strip" aria-label="Public demo safeguards">
             <div><strong>Isolated</strong><span>Closed demo environment</span></div>
-            <div><strong>Temporary</strong><span>30-minute session</span></div>
+            <div><strong>Temporary</strong><span>Resets after 30 minutes of inactivity</span></div>
             <div><strong>Private</strong><span>No live school records</span></div>
             <div><strong>Disposable</strong><span>Demo changes are discarded</span></div>
           </div>
