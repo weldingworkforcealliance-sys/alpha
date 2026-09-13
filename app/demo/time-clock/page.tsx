@@ -21,6 +21,15 @@ function formatTime(value: number) {
   return new Date(value).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
+function PantherMark() {
+  return (
+    <svg viewBox="0 0 96 76" aria-hidden="true">
+      <path d="M14 61c9-4 15-12 18-22 2-9 7-17 15-23 9-7 20-8 31-4l-9 7 13 4-12 5 8 7-14 2-7 9-10-6-5 12-11-4-5 13H14Z" />
+      <path d="M56 24c5 1 9 4 12 8M45 34l8-2M59 31l2 1" className="detail" />
+    </svg>
+  );
+}
+
 export default function DemoTimeClockPage() {
   const router = useRouter();
   const [entries, setEntries] = useState<DemoEntry[]>([]);
@@ -65,23 +74,37 @@ export default function DemoTimeClockPage() {
     <main className="demo-clock-page">
       <div className="demo-banner">PUBLIC DEMO · TEMPORARY SESSION · NO LIVE SCHOOL DATA</div>
 
-      <header>
-        <div>
-          <div className="eyebrow">Optional Workforce Time Module</div>
+      <header className="portal-frame">
+        <div className="brand-lockup">
+          <div className="pccc-wordmark">PCCC</div>
+          <div>
+            <strong>WELDING</strong>
+            <span>Passaic County Community College</span>
+          </div>
+          <div className="panther"><PantherMark /></div>
+        </div>
+        <div className="module-title">
+          <span>WORKFORCE TIME · OPTIONAL MODULE</span>
           <h1>Finsen Sierra Time Clock</h1>
-          <p>The clock face stays the same in light or dark mode. School and department branding can change behind it.</p>
+          <p>Fine-timepiece character on the clock itself, with a cleaner school software environment around it.</p>
         </div>
         <div className="header-actions">
           <button type="button" onClick={reset}>Reset Clock</button>
-          <button type="button" onClick={() => router.push('/demo/programs')}>Program Demos</button>
-          <button type="button" onClick={() => router.push('/demo')}>Demo Home</button>
+          <button type="button" onClick={() => router.push('/demo/welding')}>Welding Demo</button>
+          <button type="button" onClick={() => router.push('/demo/programs')}>Programs</button>
         </div>
       </header>
 
+      <div className="academic-strip"><span>INSTRUCTOR TIME</span><span>SCHOOL REVIEW</span><span>PAYROLL READY</span><span>PROGRAM OPERATIONS</span></div>
+
       <section className="clock-stage">
+        <div className="stage-label">
+          <span>PCCC WELDING · INSTRUCTOR PORTAL</span>
+          <b>Time turns potential into progress.</b>
+        </div>
         <FinsenSierraClock
           displayName="Alex Carter"
-          department="Demo Operations"
+          department="PCCC Welding"
           employeeNumber="1047"
           clockedIn={clockedIn}
           sinceLabel={openEntry ? formatTime(openEntry.clockIn) : null}
@@ -94,29 +117,26 @@ export default function DemoTimeClockPage() {
 
       <section className="explain-grid">
         <article>
-          <span>1950s status lamps</span>
+          <span>Clear working status</span>
           <h2>Green means punched in. Red means punched out.</h2>
-          <p>The inactive lamp stays visible but unlit, preserving the physical timepiece effect.</p>
+          <p>The vintage lamps stay because they communicate status instantly without turning the entire interface into a machine shop prop.</p>
         </article>
         <article>
-          <span>Brandable module</span>
-          <h2>One clock, different school identity.</h2>
-          <p>The Finsen Sierra frame and controls remain fixed while a school can supply its own background image and department context.</p>
+          <span>School identity</span>
+          <h2>The department owns the surrounding experience.</h2>
+          <p>PCCC Welding branding, educational navigation, and school context frame the Finsen Sierra clock without changing the clock&apos;s signature face.</p>
         </article>
         <article>
-          <span>Closed demo data</span>
-          <h2>Try it without touching production.</h2>
-          <p>Punches on this page exist only in this temporary demo session and disappear when the session resets.</p>
+          <span>Operational record</span>
+          <h2>Time belongs to the education workflow.</h2>
+          <p>Instructor time can sit beside classes, attendance, planning, and reporting instead of living in a disconnected administrative corner.</p>
         </article>
       </section>
 
       {showHistory && (
         <section className="history" aria-live="polite">
           <div className="history-heading">
-            <div>
-              <span>Demo time record</span>
-              <h2>Today&apos;s simulated punches</h2>
-            </div>
+            <div><span>Demo time record</span><h2>Today&apos;s simulated punches</h2></div>
             <strong>{formatDuration(totalMs)}</strong>
           </div>
           {entries.length === 0 ? (
@@ -135,35 +155,50 @@ export default function DemoTimeClockPage() {
         </section>
       )}
 
+      <footer><span>PCCC WELDING · PEOPLE · SKILLS · OPPORTUNITY</span><span>Finsen Sierra Time Clock · Brandable workforce module</span></footer>
+
       <style jsx>{`
-        :global(body.ltg-demo-route) { margin:0; background:#0c1720; }
-        :global(body.ltg-demo-route .app-container),
-        :global(body.ltg-demo-route .ltg-public-content) { width:100%; max-width:none; margin:0; padding:0; display:block; }
-        .demo-clock-page { min-height:100vh; background:radial-gradient(circle at 50% 0,#1b2c38,#0d1b25 48%,#09141c 100%); color:#e8eef1; }
-        .demo-banner { position:sticky; top:0; z-index:20; padding:9px 14px; text-align:center; background:#0b79b7; color:white; font-size:11px; font-weight:900; letter-spacing:.08em; }
-        header { width:min(1180px,calc(100% - 32px)); margin:auto; padding:30px 0 18px; display:flex; align-items:flex-end; justify-content:space-between; gap:24px; border-bottom:1px solid rgba(255,255,255,.1); }
-        .eyebrow, article>span, .history-heading span { color:#f5b85c; font-size:10px; font-weight:900; letter-spacing:.13em; text-transform:uppercase; }
+        :global(body.pccc-demo-skin) { margin:0; }
+        .demo-clock-page { min-height:100vh; background:radial-gradient(circle at 72% 0,rgba(77,135,173,.12),transparent 28rem),linear-gradient(145deg,#071018,#0d1821 52%,#09131a); color:#e8eef1; }
+        .demo-banner { position:sticky; top:0; z-index:20; padding:8px 14px; text-align:center; background:#111b22; border-bottom:1px solid #36434d; color:#c7d2d9; font-size:10px; font-weight:900; letter-spacing:.13em; }
+        .portal-frame { width:min(1260px,calc(100% - 28px)); margin:18px auto 0; padding:16px 20px; display:grid; grid-template-columns:auto 1fr auto; gap:24px; align-items:center; border:1px solid #626d75; border-radius:13px; background:linear-gradient(90deg,rgba(255,255,255,.08),transparent 6%,transparent 94%,rgba(0,0,0,.16)),repeating-linear-gradient(0deg,rgba(255,255,255,.015) 0 1px,rgba(0,0,0,.025) 1px 3px),linear-gradient(180deg,#343e46,#151d23 46%,#0c141a); box-shadow:0 20px 45px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.10); }
+        .brand-lockup { display:flex; align-items:center; gap:10px; min-width:330px; }
+        .pccc-wordmark { font-size:36px; font-style:italic; font-weight:950; letter-spacing:-.07em; color:#f5f7f8; }
+        .brand-lockup>div:nth-child(2) { display:grid; gap:2px; padding-left:11px; border-left:1px solid rgba(255,255,255,.24); }
+        .brand-lockup strong { color:#fff; font-size:21px; font-style:italic; letter-spacing:.05em; }
+        .brand-lockup span { color:#bcc7cd; font-size:8px; font-weight:800; letter-spacing:.11em; text-transform:uppercase; }
+        .panther { width:50px; height:42px; }
+        .panther :global(svg) { width:100%; height:100%; }
+        .panther :global(path) { fill:none; stroke:#d4d9dc; stroke-width:4.5; stroke-linecap:round; stroke-linejoin:round; }
+        .panther :global(.detail) { stroke-width:3.8; }
+        .module-title span,article>span,.history-heading span,.stage-label span { color:#75b5dd; font-size:9px; font-weight:900; letter-spacing:.13em; text-transform:uppercase; }
         h1,h2,p { margin-top:0; }
-        h1 { margin:5px 0 8px; font-size:34px; color:white; }
-        header p { max-width:760px; margin:0; color:#9db0bb; font-size:13px; line-height:1.5; }
+        h1 { margin:4px 0 5px; font-size:24px; color:white; }
+        .module-title p { max-width:560px; margin:0; color:#9aabb4; font-size:11px; line-height:1.5; }
         .header-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; }
-        button { padding:10px 13px; border:1px solid #425866; border-radius:8px; background:#142531; color:#dfe8ec; font-weight:800; cursor:pointer; }
-        button:hover { border-color:#e7b85f; color:#f5cf86; }
-        .clock-stage { width:min(1100px,calc(100% - 32px)); margin:24px auto 0; padding:12px; border:1px solid rgba(255,255,255,.09); border-radius:18px; background:rgba(4,10,14,.35); box-shadow:0 20px 60px rgba(0,0,0,.24); }
-        .explain-grid { width:min(1100px,calc(100% - 32px)); margin:16px auto; display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
-        article { padding:18px; border:1px solid rgba(255,255,255,.1); border-radius:12px; background:rgba(17,31,41,.8); }
+        button { padding:10px 13px; border:1px solid #465660; border-radius:8px; background:linear-gradient(180deg,#1d2b35,#121e27); color:#dfe8ec; font-weight:800; cursor:pointer; }
+        button:hover { border-color:#75b5dd; color:#fff; }
+        .academic-strip { width:min(1180px,calc(100% - 32px)); margin:14px auto 0; display:grid; grid-template-columns:repeat(4,1fr); gap:1px; overflow:hidden; border:1px solid #2e3e48; border-radius:9px; background:#2e3e48; }
+        .academic-strip span { padding:10px; text-align:center; background:#101b23; color:#99aab4; font-size:9px; font-weight:900; letter-spacing:.1em; }
+        .clock-stage { width:min(1140px,calc(100% - 32px)); margin:18px auto 0; padding:14px; border:1px solid #48555e; border-radius:16px; background:linear-gradient(150deg,rgba(255,255,255,.025),transparent 36%),#0f1a22; box-shadow:0 20px 50px rgba(0,0,0,.25); }
+        .stage-label { display:flex; justify-content:space-between; gap:18px; align-items:center; padding:2px 4px 12px; }
+        .stage-label b { color:#d7dee2; font-size:11px; font-weight:750; letter-spacing:.03em; }
+        .explain-grid { width:min(1140px,calc(100% - 32px)); margin:14px auto; display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+        article { padding:18px; border:1px solid #34454f; border-radius:10px; background:#131f28; box-shadow:0 10px 24px rgba(0,0,0,.14); }
         article h2 { margin:7px 0 8px; color:#fff; font-size:16px; line-height:1.25; }
-        article p { margin:0; color:#91a4ae; font-size:12px; line-height:1.55; }
-        .history { width:min(1100px,calc(100% - 32px)); margin:16px auto 48px; padding:20px; border:1px solid rgba(245,184,92,.24); border-radius:12px; background:#111f29; }
+        article p { margin:0; color:#9aabb4; font-size:12px; line-height:1.55; }
+        .history { width:min(1140px,calc(100% - 32px)); margin:14px auto 40px; padding:20px; border:1px solid #3f5360; border-radius:11px; background:#111f29; }
         .history-heading { display:flex; justify-content:space-between; gap:20px; align-items:center; }
         .history-heading h2 { margin:4px 0 0; font-size:19px; }
-        .history-heading strong { font-size:24px; color:#f5cf86; }
+        .history-heading strong { font-size:24px; color:#a7d8f5; }
         .history>p { margin:16px 0 0; color:#91a4ae; }
         .history-list { display:grid; gap:8px; margin-top:16px; }
-        .history-list>div { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; padding:11px 12px; border-radius:8px; background:#0c1720; color:#b8c6cd; font-size:12px; }
+        .history-list>div { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; padding:11px 12px; border:1px solid #2c3c46; border-radius:8px; background:#0c1720; color:#b8c6cd; font-size:12px; }
         .history-list b { color:#fff; }
-        @media(max-width:800px) { header { align-items:flex-start; flex-direction:column; } .header-actions { justify-content:flex-start; } .explain-grid { grid-template-columns:1fr; } }
-        @media(max-width:520px) { h1 { font-size:27px; } .history-list>div { grid-template-columns:1fr; } }
+        footer { width:min(1140px,calc(100% - 32px)); margin:0 auto; padding:18px 0 26px; display:flex; justify-content:space-between; gap:20px; border-top:1px solid #2b3942; color:#7f909a; font-size:9px; font-weight:800; letter-spacing:.1em; }
+        @media(max-width:1080px) { .portal-frame { grid-template-columns:1fr auto; } .module-title { grid-column:1 / -1; grid-row:2; } .brand-lockup { min-width:0; } }
+        @media(max-width:800px) { .portal-frame { grid-template-columns:1fr; } .header-actions { justify-content:flex-start; } .academic-strip { grid-template-columns:1fr 1fr; } .explain-grid { grid-template-columns:1fr; } .stage-label { align-items:flex-start; flex-direction:column; } }
+        @media(max-width:520px) { .pccc-wordmark { font-size:29px; } .brand-lockup strong { font-size:17px; } .brand-lockup span { font-size:7px; } .panther { width:40px; } .academic-strip { grid-template-columns:1fr; } .history-list>div { grid-template-columns:1fr; } footer { flex-direction:column; } }
       `}</style>
     </main>
   );
