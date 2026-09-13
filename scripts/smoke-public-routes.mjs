@@ -7,7 +7,16 @@ const publicRoutes = [
   '/reset-password',
   '/training/login',
   '/demo',
+  '/demo/programs',
+  '/demo/welding',
+  '/demo/nursing',
 ];
+
+const expectedPublicContent = new Map([
+  ['/demo', 'Experience LTG as an operating system, not a slideshow.'],
+  ['/demo/programs', 'Program Demonstrations'],
+  ['/demo/welding', 'Welding Demo Workspace'],
+]);
 
 const protectedRoutes = [
   ['/dashboard', '/login'],
@@ -53,6 +62,11 @@ for (const route of publicRoutes) {
 
     if (body.length < 200) {
       failures.push(`${route}: response body was unexpectedly short (${body.length} bytes)`);
+    }
+
+    const expectedText = expectedPublicContent.get(route);
+    if (expectedText && !body.includes(expectedText)) {
+      failures.push(`${route}: expected rendered content was missing: ${expectedText}`);
     }
   } catch (error) {
     failures.push(`${route}: ${error instanceof Error ? error.message : String(error)}`);
@@ -102,5 +116,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `Runtime route smoke test passed: ${publicRoutes.length} public entry points returned HTTP 200 and ${protectedRoutes.length} protected routes redirected unauthenticated requests correctly.`
+  `Runtime route smoke test passed: ${publicRoutes.length} public entry points returned HTTP 200 with expected demo content and ${protectedRoutes.length} protected routes redirected unauthenticated requests correctly.`
 );
