@@ -24,6 +24,8 @@ const SCHOOL_CONTEXT_PREFIXES = [
   '/attendance/corrections',
 ];
 
+const SCHOOL_ACCESS_ROLES = new Set(['school_admin', 'program_lead', 'viewer']);
+
 function isPcccName(name: string | null | undefined) {
   const normalized = (name ?? '').trim().toLowerCase();
   return (
@@ -102,7 +104,11 @@ export default function PcccSkinController({ pathname }: { pathname: string }) {
         const pcccMembership = rows.find((row) => pcccSchoolIds.has(row.school_id));
         if (!pcccMembership || cancelled) return;
 
-        const schoolAccess = isSchoolContext(pathname);
+        const roleUsesSchoolPortal = Boolean(
+          pcccMembership.role && SCHOOL_ACCESS_ROLES.has(pcccMembership.role)
+        );
+        const schoolAccess = roleUsesSchoolPortal || isSchoolContext(pathname);
+
         document.body.classList.add(
           'pccc-welding-skin',
           schoolAccess ? 'pccc-school-skin' : 'pccc-instructor-skin'
