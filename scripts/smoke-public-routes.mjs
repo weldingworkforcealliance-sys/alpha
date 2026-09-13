@@ -9,7 +9,7 @@ const publicRoutes = [
   '/demo',
   '/demo/programs',
   '/demo/welding',
-  '/demo/welding/student-display?course=WLD%20105&day=1',
+  '/demo/welding/student-display?code=SMOKE',
   '/demo/nursing',
 ];
 
@@ -17,7 +17,7 @@ const expectedPublicContent = new Map([
   ['/demo', 'Experience LTG as an operating system, not a slideshow.'],
   ['/demo/programs', 'One platform. Different programs.'],
   ['/demo/welding', 'Launching isolated LTG demo workspace'],
-  ['/demo/welding/student-display?course=WLD%20105&day=1', 'Welcome to Welding + Welding Safety Video Day'],
+  ['/demo/welding/student-display?code=SMOKE', 'Opening demo activity'],
 ]);
 
 const protectedRoutes = [
