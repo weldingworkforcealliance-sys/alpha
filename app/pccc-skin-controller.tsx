@@ -14,6 +14,10 @@ const SCHOOL_CONTEXT_PREFIXES = [
 const SCHOOL_ACCESS_ROLES = new Set(['school_admin', 'program_lead', 'viewer']);
 const PCCC_SKIN_CLASSES = ['pccc-welding-skin', 'pccc-school-skin', 'pccc-instructor-skin', 'pccc-demo-skin'];
 
+// Stable production tenant id for Passaic County Community College in the live LTG database.
+// Keep the name fallback below so the skin still works if PCCC is ever migrated to a new school row.
+const KNOWN_PCCC_SCHOOL_IDS = new Set(['08ccb452-83ab-482f-bb28-5576e02741b2']);
+
 function isPcccName(name: string | null | undefined) {
   const normalized = (name ?? '').trim().toLowerCase();
   return (
@@ -22,6 +26,10 @@ function isPcccName(name: string | null | undefined) {
     normalized.includes('pccc welding') ||
     (normalized.includes('passaic') && normalized.includes('community college'))
   );
+}
+
+function isKnownPcccSchoolId(id: string | null | undefined) {
+  return Boolean(id && KNOWN_PCCC_SCHOOL_IDS.has(id));
 }
 
 function isSchoolContext(pathname: string) {
@@ -33,6 +41,14 @@ function skinClassForMode(mode: SkinMode) {
   if (mode === 'instructor') return 'pccc-instructor-skin';
   if (mode === 'demo') return 'pccc-demo-skin';
   return null;
+}
+
+function restoreSavedTheme() {
+  if (typeof window === 'undefined') return;
+  const saved = window.localStorage.getItem('ltg_theme');
+  const theme = saved === 'light' || saved === 'dark' ? saved : 'dark';
+  document.documentElement.dataset.theme = theme;
+  document.documentElement.style.colorScheme = theme;
 }
 
 function applyPcccClasses(mode: SkinMode) {
@@ -49,6 +65,22 @@ function applyPcccClasses(mode: SkinMode) {
       delete target.dataset.pcccAccess;
     }
   });
+
+  // The approved PCCC skin is a dark painted-steel interface. Do not allow a saved
+  // generic LTG light-theme preference to flatten the branded surfaces back to white.
+  if (mode) {
+    document.documentElement.dataset.theme = 'dark';
+    document.documentElement.style.colorScheme = 'dark';
+  } else {
+    restoreSavedTheme();
+  }
+}
+
+function modeForMembership(pathname: string, membership: Membership | null) {
+  const roleUsesSchoolPortal = Boolean(
+    membership?.role && SCHOOL_ACCESS_ROLES.has(membership.role)
+  );
+  return isSchoolContext(pathname) || roleUsesSchoolPortal ? 'school' : 'instructor';
 }
 
 export default function PcccSkinController({ pathname }: { pathname: string }) {
@@ -64,19 +96,21 @@ export default function PcccSkinController({ pathname }: { pathname: string }) {
       applyPcccClasses(mode);
     };
 
-    // RootLayout owns body.className and can rewrite it during client renders.
-    // Keep the tenant skin attached after those renders instead of allowing a partial skin flash/dropout.
+    // RootLayout and theme state can both touch document classes/theme after hydration.
+    // Re-assert the PCCC identity instead of letting the branded shell silently disappear.
     const observer = new MutationObserver(() => {
       if (!activeMode) return;
       const requiredClass = skinClassForMode(activeMode);
       if (
         !document.body.classList.contains('pccc-welding-skin') ||
-        (requiredClass && !document.body.classList.contains(requiredClass))
+        (requiredClass && !document.body.classList.contains(requiredClass)) ||
+        document.documentElement.dataset.theme !== 'dark'
       ) {
         applyPcccClasses(activeMode);
       }
     });
     observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme', 'style'] });
 
     const apply = async () => {
       setMode(null);
@@ -105,9 +139,18 @@ export default function PcccSkinController({ pathname }: { pathname: string }) {
         if (membershipResult.error && !isOwner) return;
 
         const rows = ((membershipResult.data ?? []) as Membership[]).filter((row) => row.school_id);
-        const schoolIds = Array.from(new Set(rows.map((row) => row.school_id)));
 
+        // Fast, deterministic production path. This removes the second tenant lookup as a
+        // prerequisite for users who already have an active PCCC membership.
+        const directPcccMembership = rows.find((row) => isKnownPcccSchoolId(row.school_id)) ?? null;
+        if (directPcccMembership) {
+          setMode(modeForMembership(pathname, directPcccMembership));
+          return;
+        }
+
+        const schoolIds = Array.from(new Set(rows.map((row) => row.school_id)));
         let schools: School[] = [];
+
         if (isOwner) {
           const schoolResult = await supabase
             .from('schools')
@@ -125,17 +168,17 @@ export default function PcccSkinController({ pathname }: { pathname: string }) {
           schools = (schoolResult.data ?? []) as School[];
         }
 
-        const pcccSchoolIds = new Set(schools.filter((school) => isPcccName(school.name)).map((school) => school.id));
+        const pcccSchoolIds = new Set(
+          schools
+            .filter((school) => isKnownPcccSchoolId(school.id) || isPcccName(school.name))
+            .map((school) => school.id)
+        );
         if (!pcccSchoolIds.size) return;
 
         const pcccMembership = rows.find((row) => pcccSchoolIds.has(row.school_id)) ?? null;
         if (!pcccMembership && !isOwner) return;
 
-        const roleUsesSchoolPortal = Boolean(
-          pcccMembership?.role && SCHOOL_ACCESS_ROLES.has(pcccMembership.role)
-        );
-        const schoolAccess = isSchoolContext(pathname) || roleUsesSchoolPortal;
-        setMode(schoolAccess ? 'school' : 'instructor');
+        setMode(modeForMembership(pathname, pcccMembership));
       } catch (error) {
         console.error('Unable to apply PCCC Welding skin:', error);
       }
