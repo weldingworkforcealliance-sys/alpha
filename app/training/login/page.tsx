@@ -30,7 +30,12 @@ export default function TrainingLoginPage() {
         password,
       });
       if (authError) throw authError;
-      await supabase.rpc('activate_my_invited_memberships');
+
+      const { error: activationError } = await supabase.rpc(
+        'activate_my_invited_memberships'
+      );
+      if (activationError) throw activationError;
+
       router.push('/training');
     } catch (err) {
       setError(formatError(err, 'Training sign in could not be completed.'));
