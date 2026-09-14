@@ -21,7 +21,7 @@ describe('LTG tenant skin rollback', () => {
     expect(getLtgSkinDefinition('not-a-real-skin').key).toBe(DEFAULT_LTG_SKIN_KEY);
   });
 
-  it('runs the application in the unskinned LTG default state', () => {
+  it('keeps the dormant compatibility provider in the repository only', () => {
     expect(provider).toContain('UNSKINNED_STATE');
     expect(provider).toContain("skinKey: DEFAULT_LTG_SKIN_KEY");
     expect(provider).toContain('branding: null');
@@ -29,18 +29,17 @@ describe('LTG tenant skin rollback', () => {
     expect(provider).not.toContain('subscribeSelectedSection');
   });
 
-  it('actively removes stale tenant and PCCC skin state from the DOM', () => {
-    expect(provider).toContain('clearSkinFromDom');
-    expect(provider).toContain("link[data-ltg-skin-stylesheet='true']");
-    expect(provider).toContain("target.classList.remove('ltg-tenant-skin')");
-    expect(provider).toContain("delete target.dataset.ltgSkin");
-    expect(provider).toContain("delete target.dataset.pcccAccess");
+  it('does not mount tenant skin runtime or skin CSS in the application shell', () => {
+    expect(layout).not.toContain('TenantSkinProvider');
+    expect(layout).not.toContain('TenantBrandLockup');
+    expect(layout).not.toContain("./pccc-welding-skin.css");
+    expect(layout).not.toContain("./pccc-automotive-skin.css");
+    expect(layout).not.toContain('PcccSkinController');
   });
 
-  it('keeps the provider mounted only as a compatibility boundary', () => {
-    expect(layout).toContain("import TenantSkinProvider from './tenant-skin-provider'");
-    expect(layout).toContain('<TenantSkinProvider pathname={pathname}>');
-    expect(layout).toContain('</TenantSkinProvider>');
-    expect(layout).not.toContain('PcccSkinController');
+  it('renders the stable default LTG brand directly in the shell', () => {
+    expect(layout).toContain('<span className="ltg-brand-mark">LTG</span>');
+    expect(layout).toContain('Education');
+    expect(layout).toContain('Operating System');
   });
 });
