@@ -13,6 +13,7 @@ const provider = readFileSync(
   join(process.cwd(), 'app/tenant-skin-provider.tsx'),
   'utf8'
 );
+const layout = readFileSync(join(process.cwd(), 'app/layout.tsx'), 'utf8');
 
 describe('LTG tenant skin registry', () => {
   it('registers default, welding, and non-welding skin packages', () => {
@@ -71,5 +72,12 @@ describe('LTG tenant skin resolution contract', () => {
   it('does not hard-code a PCCC school id or PCCC name in the generic provider', () => {
     expect(provider).not.toContain('08ccb452-83ab-482f-bb28-5576e02741b2');
     expect(provider).not.toMatch(/Passaic County Community College/i);
+  });
+
+  it('mounts the generic skin provider around the LTG application shell', () => {
+    expect(layout).toContain("import TenantSkinProvider from './tenant-skin-provider'");
+    expect(layout).toContain('<TenantSkinProvider pathname={pathname}>');
+    expect(layout).toContain('</TenantSkinProvider>');
+    expect(layout).not.toContain('PcccSkinController');
   });
 });
