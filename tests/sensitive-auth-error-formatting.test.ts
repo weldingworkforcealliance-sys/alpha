@@ -9,12 +9,14 @@ function read(path: string) {
 const accountSetup = read('app/account-setup/page.tsx');
 const resetPassword = read('app/reset-password/page.tsx');
 const trainingLogin = read('app/training/login/page.tsx');
+const liveLogin = read('app/login/page.tsx');
 
 describe('sensitive auth surfaces use sanitized user-facing errors', () => {
   for (const [name, source] of [
     ['account setup', accountSetup],
     ['password reset', resetPassword],
     ['training sign in', trainingLogin],
+    ['live sign in', liveLogin],
   ] as const) {
     it(`${name} uses the shared safe error formatter`, () => {
       expect(source).toContain("import { formatError } from '@/lib/format-error';");
@@ -27,10 +29,11 @@ describe('sensitive auth surfaces use sanitized user-facing errors', () => {
     expect(accountSetup).toContain('Account setup could not be completed.');
     expect(resetPassword).toContain('Password could not be updated.');
     expect(trainingLogin).toContain('Training sign in could not be completed.');
+    expect(liveLogin).toContain('Live sign in could not be completed.');
   });
 
   it('does not silently ignore invited-membership activation failures', () => {
-    for (const source of [resetPassword, trainingLogin]) {
+    for (const source of [resetPassword, trainingLogin, liveLogin]) {
       expect(source).toContain("const { error: activationError } = await supabase.rpc(");
       expect(source).toContain("'activate_my_invited_memberships'");
       expect(source).toContain('if (activationError) throw activationError;');

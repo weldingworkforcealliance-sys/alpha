@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
 import { safePostLoginRoute } from '@/lib/auth-routes';
+import { formatError } from '@/lib/format-error';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -29,18 +30,21 @@ export default function LoginPage() {
         setError(
           signInError.message === 'Invalid login credentials'
             ? 'Email/password not recognized. First-time users should complete account setup. Existing users can reset their password below.'
-            : signInError.message || 'Failed to sign in'
+            : formatError(signInError, 'Failed to sign in')
         );
         return;
       }
 
-      await supabase.rpc('activate_my_invited_memberships');
+      const { error: activationError } = await supabase.rpc(
+        'activate_my_invited_memberships'
+      );
+      if (activationError) throw activationError;
       const requestedRoute = new URLSearchParams(window.location.search).get('next');
       router.replace(safePostLoginRoute(requestedRoute));
       router.refresh();
     } catch (err) {
       console.error(err);
-      setError('An unexpected error occurred');
+      setError(formatError(err, 'Live sign in could not be completed.'));
     } finally {
       setIsLoading(false);
     }
