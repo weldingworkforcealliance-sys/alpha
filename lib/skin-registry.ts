@@ -24,10 +24,8 @@ const SKIN_REGISTRY: Record<string, LtgSkinDefinition> = {
     className: 'ltg-skin-pccc-welding',
     defaultBrandMark: 'PCCC',
     defaultBrandName: 'Welding',
-    stylesheetHrefs: [
-      '/pccc-portal-shell.css?v=20260913-2',
-      '/pccc-light-mode.css?v=20260913-1',
-    ],
+    // PCCC CSS is imported by the root layout so both the legacy compatibility
+    // layer and the automotive role/theme layer share one deterministic order.
     legacyBaseClasses: ['pccc-welding-skin'],
     legacyAccessClasses: {
       school: ['pccc-school-skin'],
