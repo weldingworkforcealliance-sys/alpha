@@ -3,6 +3,8 @@ export type LtgAccessMode = 'school' | 'instructor' | 'owner' | 'student' | 'dem
 export type LtgSkinDefinition = {
   key: string;
   className: string;
+  defaultBrandMark: string;
+  defaultBrandName: string;
   stylesheetHrefs?: string[];
   legacyBaseClasses?: string[];
   legacyAccessClasses?: Partial<Record<LtgAccessMode, string[]>>;
@@ -14,10 +16,14 @@ const SKIN_REGISTRY: Record<string, LtgSkinDefinition> = {
   'ltg-default': {
     key: 'ltg-default',
     className: 'ltg-skin-default',
+    defaultBrandMark: 'LTG',
+    defaultBrandName: 'Education Operating System',
   },
   'pccc-welding': {
     key: 'pccc-welding',
     className: 'ltg-skin-pccc-welding',
+    defaultBrandMark: 'PCCC',
+    defaultBrandName: 'Welding',
     stylesheetHrefs: [
       '/pccc-portal-shell.css?v=20260913-2',
       '/pccc-light-mode.css?v=20260913-1',
@@ -33,6 +39,8 @@ const SKIN_REGISTRY: Record<string, LtgSkinDefinition> = {
   'clinical-learning': {
     key: 'clinical-learning',
     className: 'ltg-skin-clinical-learning',
+    defaultBrandMark: 'CL',
+    defaultBrandName: 'Clinical Learning',
     stylesheetHrefs: ['/skins/clinical-learning.css?v=20260914-1'],
   },
 };
