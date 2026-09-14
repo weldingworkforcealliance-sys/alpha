@@ -59,17 +59,24 @@ export default function AttendanceFinalizationAlert({ pathname }: { pathname: st
   useEffect(() => {
     if (pathname !== '/dashboard') return;
 
+    const refreshIfVisible = () => {
+      if (document.visibilityState !== 'hidden') void refresh();
+    };
+
     void refresh();
-    const interval = window.setInterval(() => void refresh(), 30_000);
+    const interval = window.setInterval(refreshIfVisible, 120_000);
     const onFocus = () => void refresh();
+    const onVisibilityChange = () => refreshIfVisible();
     const onAttendanceFinalized = () => void refresh();
 
     window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisibilityChange);
     window.addEventListener('ltg:attendance-finalized', onAttendanceFinalized);
 
     return () => {
       window.clearInterval(interval);
       window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
       window.removeEventListener('ltg:attendance-finalized', onAttendanceFinalized);
     };
   }, [pathname, refresh]);
