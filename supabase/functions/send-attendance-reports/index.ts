@@ -42,6 +42,9 @@ type WorkerConfig = {
   attendance_from_email: string | null;
 };
 
+const MAX_REPORT_RECIPIENTS = 20;
+const RESEND_TIMEOUT_MS = 15_000;
+
 function escapeHtml(value: unknown) {
   return String(value ?? '')
     .replaceAll('&', '&amp;')
@@ -93,6 +96,9 @@ function parseRecipients(value: string) {
   );
 
   if (!recipients.length) throw new Error('Attendance report has no recipient email');
+  if (recipients.length > MAX_REPORT_RECIPIENTS) {
+    throw new Error(`Attendance report exceeds the ${MAX_REPORT_RECIPIENTS}-recipient safety limit`);
+  }
 
   const invalid = recipients.find((email) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
   if (invalid) throw new Error(`Invalid attendance report recipient: ${invalid}`);
@@ -178,6 +184,7 @@ async function sendResendEmail(args: {
       subject: args.subject,
       html: args.html,
     }),
+    signal: AbortSignal.timeout(RESEND_TIMEOUT_MS),
   });
 
   const body = await response.text();
@@ -276,16 +283,18 @@ Deno.serve(async (req) => {
 
       const html = buildEmailHtml({ pair, session, records, students });
       const recipients = parseRecipients(queue.recipient_email);
-      for (const [index, recipient] of recipients.entries()) {
-        await sendResendEmail({
-          apiKey: resendApiKey,
-          from: attendanceFromEmail,
-          to: [recipient],
-          subject: `PVHS Attendance Report · ${pair.pair_name} · ${session.attendance_date}`,
-          html,
-          idempotencyKey: `attendance-report/${queue.queue_id}/g${queue.delivery_generation}/r${index}`,
-        });
-      }
+      await Promise.all(
+        recipients.map((recipient, index) =>
+          sendResendEmail({
+            apiKey: resendApiKey,
+            from: attendanceFromEmail,
+            to: [recipient],
+            subject: `PVHS Attendance Report · ${pair.pair_name} · ${session.attendance_date}`,
+            html,
+            idempotencyKey: `attendance-report/${queue.queue_id}/g${queue.delivery_generation}/r${index}`,
+          })
+        )
+      );
 
       const { error: sentError } = await supabase
         .from('attendance_report_queue')
