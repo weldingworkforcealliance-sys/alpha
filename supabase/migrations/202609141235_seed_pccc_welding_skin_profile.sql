@@ -25,6 +25,19 @@ from target_program tp
 where bp.school_id = tp.school_id
   and bp.program_id = tp.program_id;
 
+with target_program as (
+  select
+    s.id as school_id,
+    p.id as program_id
+  from public.schools s
+  join public.programs p on p.school_id = s.id
+  where p.status = 'active'
+    and (
+      lower(s.name) = 'passaic county community college'
+      or lower(s.name) like '%passaic%community college%'
+    )
+    and lower(p.name) like '%weld%'
+)
 insert into public.branding_profiles (
   school_id,
   program_id,
