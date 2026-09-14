@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
 import { createClient } from '@supabase/supabase-js';
+import { formatError } from '@/lib/format-error';
 
 interface School {
   id: string;
@@ -182,7 +183,7 @@ export default function AccountManagementPage() {
     ].find(Boolean);
 
     if (firstError) {
-      throw new Error(firstError?.message ?? 'Account management failed to load.');
+      throw firstError;
     }
 
     const owner = Boolean(ownerResult.data);
@@ -224,7 +225,7 @@ export default function AccountManagementPage() {
   useEffect(() => {
     load()
       .catch((err) =>
-        setError(err instanceof Error ? err.message : String(err))
+        setError(formatError(err, 'Account management failed to load.'))
       )
       .finally(() => setLoading(false));
   }, []);
@@ -327,7 +328,7 @@ export default function AccountManagementPage() {
 
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(formatError(err, 'Invitation could not be created.'));
     } finally {
       setBusy(false);
     }
@@ -358,7 +359,7 @@ export default function AccountManagementPage() {
 
       setLookupResult((data ?? {}) as Record<string, unknown>);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(formatError(err, 'Existing user could not be looked up.'));
     } finally {
       setBusy(false);
     }
@@ -403,7 +404,7 @@ export default function AccountManagementPage() {
       setLookupResult(null);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(formatError(err, 'User could not be added to the school.'));
     } finally {
       setBusy(false);
     }
@@ -457,7 +458,7 @@ export default function AccountManagementPage() {
 
       setNotice(`Setup email resent to ${email}.`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(formatError(err, 'Account setup email could not be resent.'));
     } finally {
       setBusy(false);
     }

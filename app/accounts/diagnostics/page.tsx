@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
 import { createClient } from '@supabase/supabase-js';
+import { formatError } from '@/lib/format-error';
 
 interface School {
   id: string;
@@ -114,7 +115,7 @@ export default function InvitationDiagnosticsPage() {
       ].find(Boolean);
 
       if (firstError) {
-        throw new Error(firstError?.message ?? 'Diagnostics failed to load.');
+        throw firstError;
       }
 
       const owner = Boolean(ownerResult.data);
@@ -145,7 +146,7 @@ export default function InvitationDiagnosticsPage() {
     };
 
     load()
-      .catch((err) => setError(err instanceof Error ? err.message : String(err)))
+      .catch((err) => setError(formatError(err, 'Invitation diagnostics could not be loaded.')))
       .finally(() => setLoading(false));
   }, [router, supabase]);
 
@@ -179,7 +180,7 @@ export default function InvitationDiagnosticsPage() {
     try {
       await queryDiagnostic(email);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(formatError(err, 'Invitation status could not be checked.'));
     } finally {
       setBusy(false);
     }
@@ -223,7 +224,7 @@ export default function InvitationDiagnosticsPage() {
       );
       await queryDiagnostic(normalized);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(formatError(err, 'Account setup email could not be resent.'));
     } finally {
       setBusy(false);
     }
@@ -261,7 +262,7 @@ export default function InvitationDiagnosticsPage() {
         `Password-recovery email requested for ${normalized}. The Reset Password page also accepts the recovery code from the email.`
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(formatError(err, 'Password recovery email could not be sent.'));
     } finally {
       setBusy(false);
     }
