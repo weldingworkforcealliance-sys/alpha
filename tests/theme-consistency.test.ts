@@ -85,16 +85,15 @@ describe('LTG visual theme consistency', () => {
     expect(display).not.toContain('#06100f');
   });
 
-  it('allows PCCC accounts to keep the saved LTG light or dark preference', () => {
+  it('keeps light and dark mode while disabling PCCC tenant skins', () => {
     const controller = read('app/pccc-skin-controller.tsx');
-    const lightCss = read('public/pccc-light-mode.css');
 
-    expect(controller).toContain("const LIGHT_MODE_HREF = '/pccc-light-mode.css");
-    expect(controller).toContain('restoreSavedTheme();');
-    expect(controller).not.toContain("document.documentElement.dataset.theme !== 'dark'");
-    expect(lightCss).toContain("html[data-theme='light'] body.pccc-welding-skin");
-    expect(lightCss).toContain('--ltg-canvas:#dce3e7');
-    expect(lightCss).toContain("body.pccc-welding-skin.ltg-secondary-route :where(.shell,.loading)");
-    expect(lightCss).toContain("body.pccc-welding-skin.ltg-secondary-route header");
+    expect(controller).toContain('clearPcccSkin');
+    expect(controller).toContain("'pccc-welding-skin'");
+    expect(controller).toContain("'pccc-school-skin'");
+    expect(controller).toContain("'pccc-instructor-skin'");
+    expect(controller).toContain('PCCC_STYLESHEET_IDS');
+    expect(controller).not.toContain('ensurePcccStyles');
+    expect(controller).not.toContain('getSupabase');
   });
 });
