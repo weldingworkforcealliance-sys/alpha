@@ -9,34 +9,25 @@ const automotive = readFileSync(
 const layout = readFileSync(join(process.cwd(), 'app/layout.tsx'), 'utf8');
 const registry = readFileSync(join(process.cwd(), 'lib/skin-registry.ts'), 'utf8');
 
-describe('PCCC Welding automotive skin', () => {
-  it('loads after the legacy PCCC compatibility skin', () => {
-    const legacy = "import './pccc-welding-skin.css';";
-    const automotiveImport = "import './pccc-automotive-skin.css';";
-    expect(layout).toContain(legacy);
-    expect(layout).toContain(automotiveImport);
-    expect(layout.indexOf(automotiveImport)).toBeGreaterThan(layout.indexOf(legacy));
+describe('archived PCCC Welding automotive skin', () => {
+  it('keeps all PCCC skin CSS outside the live application shell', () => {
+    expect(layout).not.toContain("import './pccc-welding-skin.css';");
+    expect(layout).not.toContain("import './pccc-automotive-skin.css';");
+    expect(layout).not.toContain('TenantSkinProvider');
+    expect(layout).not.toContain('PcccSkinController');
   });
 
-  it('keeps school/admin red and instructor blue as independent role identities', () => {
+  it('retains the historical school/admin and instructor assets for rollback only', () => {
     expect(automotive).toContain('body.pccc-school-skin');
     expect(automotive).toContain('--pccc-auto-frame-main: var(--pccc-auto-red)');
     expect(automotive).toContain('body.pccc-instructor-skin');
     expect(automotive).toContain('--pccc-auto-frame-main: var(--pccc-auto-blue)');
   });
 
-  it('supports both dark and light modes without changing role identity', () => {
+  it('retains historical light and dark rules without activating them', () => {
     expect(automotive).toContain("html[data-theme='dark'] body.pccc-welding-skin");
     expect(automotive).toContain("html[data-theme='light'] body.pccc-welding-skin");
-    expect(automotive).toContain("html[data-theme='light'] body.pccc-school-skin");
-    expect(automotive).toContain("html[data-theme='light'] body.pccc-instructor-skin");
-  });
-
-  it('uses a clear-coat painted steel shell and selected-state highlight', () => {
-    expect(automotive).toContain('.app-container::before');
-    expect(automotive).toContain('repeating-linear-gradient');
-    expect(automotive).toContain('var(--pccc-auto-frame-glow)');
-    expect(automotive).toContain("a[aria-current='page']");
+    expect(layout).not.toContain('pccc-welding-skin');
   });
 
   it('does not request the retired missing PCCC stylesheet URLs', () => {
