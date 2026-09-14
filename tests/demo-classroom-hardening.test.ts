@@ -9,6 +9,13 @@ const migration = readFileSync(
   ),
   'utf8'
 );
+const helperMigration = readFileSync(
+  join(
+    process.cwd(),
+    'supabase/migrations/20260914234500_harden_demo_cleanup_helper.sql'
+  ),
+  'utf8'
+);
 
 describe('anonymous demo classroom hardening', () => {
   it('moves all intentional anonymous demo SECURITY DEFINER RPCs to an empty search path', () => {
@@ -22,6 +29,17 @@ describe('anonymous demo classroom hardening', () => {
       expect(migration).toContain(`alter function public.${signature}`);
     }
     expect(migration.match(/set search_path = ''/g)?.length ?? 0).toBeGreaterThanOrEqual(7);
+  });
+
+  it('hardens the privileged cleanup helper and keeps it off the public RPC surface', () => {
+    expect(helperMigration).toContain(
+      'alter function public.cleanup_demo_classroom_sessions()'
+    );
+    expect(helperMigration).toContain("set search_path = ''");
+    expect(helperMigration).toContain(
+      'revoke all on function public.cleanup_demo_classroom_sessions()'
+    );
+    expect(helperMigration).toContain('from public, anon, authenticated;');
   });
 
   it('bounds anonymous demo participant growth', () => {
