@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2300" viewBox="0 0 1500 2300">
+<rect width="1500" height="2300" fill="#fff"/>
+<rect x="24" y="24" width="1452" height="2252" rx="16" fill="none" stroke="#222" stroke-width="3"/>
+<g font-family="Arial, Helvetica, sans-serif" fill="#111">
+<text x="60" y="82" font-size="38" font-weight="700">BLUEPRINT READING — DAY 4</text>
+<text x="60" y="122" font-size="23">Fillet Welds, Groove Welds + Full Review • LTG Training Board</text>
+<text x="60" y="154" font-size="17" fill="#555">LTG training drawings only. They support review skills and do not replace an approved production print or welding standard.</text>
+</g>
+
+<!-- Fillet vs groove -->
+<rect x="55" y="195" width="1390" height="520" rx="14" fill="#f7f7f7" stroke="#555" stroke-width="2"/>
+<text x="82" y="238" font-family="Arial" font-size="28" font-weight="700">1 · FILLET VS. GROOVE</text>
+<text x="82" y="272" font-family="Arial" font-size="18">Match the symbol to the actual joint and preparation before welding.</text>
+
+<rect x="90" y="315" width="625" height="330" rx="12" fill="#fff" stroke="#777" stroke-width="2"/>
+<text x="120" y="355" font-family="Arial" font-size="23" font-weight="700">FILLET WELD</text>
+<rect x="175" y="510" width="250" height="34" fill="#d8d8d8" stroke="#111" stroke-width="3"/>
+<rect x="285" y="425" width="34" height="119" fill="#ececec" stroke="#111" stroke-width="3"/>
+<polygon points="320,510 370,510 320,460" fill="#aaa" stroke="#111" stroke-width="2"/>
+<line x1="470" y1="485" x2="645" y2="485" stroke="#111" stroke-width="4"/>
+<line x1="470" y1="485" x2="440" y2="525" stroke="#111" stroke-width="4"/>
+<polygon points="530,485 560,485 545,515" fill="none" stroke="#111" stroke-width="4"/>
+<text x="120" y="600" font-family="Arial" font-size="18">Common on tee/corner/lap relationships.</text>
+
+<rect x="785" y="315" width="625" height="330" rx="12" fill="#fff" stroke="#777" stroke-width="2"/>
+<text x="815" y="355" font-family="Arial" font-size="23" font-weight="700">GROOVE WELD</text>
+<polygon points="900,510 1035,510 995,440 940,440" fill="#d8d8d8" stroke="#111" stroke-width="3"/>
+<polygon points="1045,510 1180,510 1140,440 1085,440" fill="#ececec" stroke="#111" stroke-width="3"/>
+<line x1="1220" y1="485" x2="1370" y2="485" stroke="#111" stroke-width="4"/>
+<line x1="1220" y1="485" x2="1190" y2="525" stroke="#111" stroke-width="4"/>
+<path d="M1270 485 L1290 515 L1310 485" fill="none" stroke="#111" stroke-width="4"/>
+<text x="815" y="600" font-family="Arial" font-size="18">Often includes joint-preparation details; arrow may identify the member to prepare.</text>
+
+<!-- Motor adaptor bracket training print -->
+<rect x="55" y="755" width="1390" height="650" rx="14" fill="#f7f7f7" stroke="#555" stroke-width="2"/>
+<text x="82" y="798" font-family="Arial" font-size="28" font-weight="700">2 · LTG TRAINING PRINT — MOTOR ADAPTOR BRACKET</text>
+<text x="82" y="832" font-family="Arial" font-size="18">Use this print to review sectioning, tolerances, reference dimensions, holes, tapped holes, and notes.</text>
+
+<rect x="120" y="900" width="620" height="380" fill="#fff" stroke="#111" stroke-width="3"/>
+<rect x="225" y="975" width="410" height="230" fill="none" stroke="#111" stroke-width="4"/>
+<circle cx="430" cy="1090" r="78" fill="none" stroke="#111" stroke-width="4"/>
+<circle cx="300" cy="1020" r="18" fill="none" stroke="#111" stroke-width="3"/>
+<circle cx="560" cy="1020" r="18" fill="none" stroke="#111" stroke-width="3"/>
+<circle cx="300" cy="1160" r="18" fill="none" stroke="#111" stroke-width="3"/>
+<circle cx="560" cy="1160" r="18" fill="none" stroke="#111" stroke-width="3"/>
+<line x1="180" y1="1090" x2="680" y2="1090" stroke="#777" stroke-width="2" stroke-dasharray="9 7"/>
+<text x="245" y="945" font-family="Arial" font-size="18">TOP VIEW</text>
+<text x="775" y="930" font-family="Arial" font-size="19" font-weight="700">PRINT NOTES / CALLOUTS</text>
+<text x="790" y="975" font-family="Arial" font-size="18">(4.00 REF) → reference dimension</text>
+<text x="790" y="1015" font-family="Arial" font-size="18">2.500 ± .010 → allowable variation</text>
+<text x="790" y="1055" font-family="Arial" font-size="18">4X Ø .375 THRU → four through holes</text>
+<text x="790" y="1095" font-family="Arial" font-size="18">2X 3/8-16 UNC-2B TAP → tapped holes</text>
+<text x="790" y="1135" font-family="Arial" font-size="18">SECTION A-A → reveals interior features</text>
+<text x="790" y="1175" font-family="Arial" font-size="18">TYP → applies at similar locations</text>
+<text x="790" y="1215" font-family="Arial" font-size="18">Break line → shortened view, not a failed part</text>
+
+<!-- section view -->
+<rect x="170" y="1305" width="1110" height="60" fill="#fff" stroke="#777" stroke-width="2"/>
+<text x="195" y="1343" font-family="Arial" font-size="18" font-weight="700">SECTION A-A:</text>
+<line x1="365" y1="1335" x2="455" y2="1335" stroke="#111" stroke-width="12"/>
+<line x1="490" y1="1335" x2="580" y2="1335" stroke="#111" stroke-width="12"/>
+<line x1="615" y1="1335" x2="705" y2="1335" stroke="#111" stroke-width="12"/>
+<text x="760" y="1343" font-family="Arial" font-size="17">Interior geometry becomes visible in section.</text>
+
+<!-- Robot table training print -->
+<rect x="55" y="1445" width="1390" height="700" rx="14" fill="#f7f7f7" stroke="#555" stroke-width="2"/>
+<text x="82" y="1488" font-family="Arial" font-size="28" font-weight="700">3 · LTG TRAINING PRINT — ROBOT TABLE</text>
+<text x="82" y="1522" font-family="Arial" font-size="18">Full review: views, relationships, weld symbols, dimensions, notes, contour, and multiple instructions.</text>
+
+<!-- table drawing -->
+<rect x="120" y="1580" width="760" height="420" fill="#fff" stroke="#111" stroke-width="3"/>
+<rect x="210" y="1650" width="580" height="250" fill="none" stroke="#111" stroke-width="5"/>
+<line x1="210" y1="1775" x2="790" y2="1775" stroke="#111" stroke-width="3" stroke-dasharray="10 7"/>
+<line x1="500" y1="1650" x2="500" y2="1900" stroke="#111" stroke-width="3" stroke-dasharray="10 7"/>
+<text x="235" y="1625" font-family="Arial" font-size="18">TOP VIEW — FRAME / MEMBER RELATIONSHIPS</text>
+<text x="235" y="1940" font-family="Arial" font-size="17">2 PLACES TYP</text>
+
+<!-- symbol examples -->
+<text x="930" y="1585" font-family="Arial" font-size="20" font-weight="700">BOTH-SIDES FILLET</text>
+<line x1="955" y1="1645" x2="1335" y2="1645" stroke="#111" stroke-width="4"/>
+<line x1="955" y1="1645" x2="920" y2="1685" stroke="#111" stroke-width="4"/>
+<polygon points="1040,1645 1070,1645 1055,1675" fill="none" stroke="#111" stroke-width="4"/>
+<polygon points="1040,1645 1070,1645 1055,1615" fill="none" stroke="#111" stroke-width="4"/>
+<text x="930" y="1735" font-family="Arial" font-size="20" font-weight="700">CONTOUR SYMBOL</text>
+<line x1="955" y1="1795" x2="1335" y2="1795" stroke="#111" stroke-width="4"/>
+<path d="M1080 1770 Q1110 1745 1140 1770" fill="none" stroke="#111" stroke-width="4"/>
+<text x="930" y="1845" font-family="Arial" font-size="17">Contour communicates desired finished weld-face shape.</text>
+<text x="930" y="1905" font-family="Arial" font-size="20" font-weight="700">MULTIPLE REFERENCE LINES</text>
+<line x1="955" y1="1965" x2="1335" y2="1965" stroke="#111" stroke-width="4"/>
+<line x1="1000" y1="1995" x2="1335" y2="1995" stroke="#111" stroke-width="4"/>
+<line x1="955" y1="1965" x2="920" y2="2005" stroke="#111" stroke-width="4"/>
+<text x="930" y="2050" font-family="Arial" font-size="17">Watch for sequence or multiple welding instructions.</text>
+
+<rect x="55" y="2180" width="1390" height="70" rx="12" fill="#111"/>
+<text x="82" y="2224" font-family="Arial" font-size="20" font-weight="700" fill="#fff">REVIEW HABIT: return to the print, identify the evidence, then justify the answer.</text>
+</svg>
