@@ -1,0 +1,448 @@
+/* PCCC Welding automotive finish layer
+   School/Admin = red painted steel. Instructor = blue painted steel.
+   Theme controls working-surface luminance; role controls identity color.
+   Imported after pccc-welding-skin.css so this file is the final visual authority. */
+
+body.pccc-welding-skin {
+  --pccc-auto-red: #a9071a;
+  --pccc-auto-red-mid: #d42035;
+  --pccc-auto-red-hi: #ff5f6f;
+  --pccc-auto-red-deep: #41030b;
+  --pccc-auto-blue: #0061a8;
+  --pccc-auto-blue-mid: #087fd3;
+  --pccc-auto-blue-hi: #50baff;
+  --pccc-auto-blue-deep: #032c4c;
+  --pccc-auto-steel: #aeb9c1;
+  --pccc-auto-steel-hi: #f7fbfd;
+  --pccc-auto-steel-deep: #3b464e;
+  --pccc-auto-clearcoat: rgba(255,255,255,.24);
+  --pccc-auto-shadow: rgba(0,0,0,.42);
+  --pccc-auto-frame-main: var(--pccc-auto-blue);
+  --pccc-auto-frame-mid: var(--pccc-auto-blue-mid);
+  --pccc-auto-frame-hi: var(--pccc-auto-blue-hi);
+  --pccc-auto-frame-deep: var(--pccc-auto-blue-deep);
+  --pccc-auto-frame-glow: rgba(44,162,235,.28);
+  --pccc-auto-rivet: #dce4e8;
+}
+
+body.pccc-school-skin {
+  --pccc-auto-frame-main: var(--pccc-auto-red);
+  --pccc-auto-frame-mid: var(--pccc-auto-red-mid);
+  --pccc-auto-frame-hi: var(--pccc-auto-red-hi);
+  --pccc-auto-frame-deep: var(--pccc-auto-red-deep);
+  --pccc-auto-frame-glow: rgba(220,32,53,.25);
+}
+
+body.pccc-instructor-skin {
+  --pccc-auto-frame-main: var(--pccc-auto-blue);
+  --pccc-auto-frame-mid: var(--pccc-auto-blue-mid);
+  --pccc-auto-frame-hi: var(--pccc-auto-blue-hi);
+  --pccc-auto-frame-deep: var(--pccc-auto-blue-deep);
+  --pccc-auto-frame-glow: rgba(44,162,235,.26);
+}
+
+/* Real-material shell: metallic base, color coat, clear coat and micro-flake grain. */
+body.pccc-welding-skin:not(.pccc-demo-skin) .app-container {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+}
+
+body.pccc-welding-skin:not(.pccc-demo-skin) .app-container::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  padding: 7px;
+  background:
+    linear-gradient(105deg,
+      rgba(255,255,255,.42) 0%,
+      rgba(255,255,255,.08) 4%,
+      transparent 17%,
+      rgba(255,255,255,.03) 38%,
+      rgba(255,255,255,.24) 54%,
+      transparent 67%,
+      rgba(0,0,0,.28) 100%),
+    repeating-linear-gradient(17deg,
+      rgba(255,255,255,.028) 0 1px,
+      rgba(0,0,0,.024) 1px 2px,
+      transparent 2px 5px),
+    linear-gradient(180deg,
+      var(--pccc-auto-frame-hi) 0%,
+      var(--pccc-auto-frame-mid) 7%,
+      var(--pccc-auto-frame-main) 48%,
+      var(--pccc-auto-frame-deep) 100%);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.34),
+    inset 0 0 0 3px rgba(0,0,0,.18),
+    0 0 26px var(--pccc-auto-frame-glow);
+}
+
+/* Painted steel navigation rail. */
+body.pccc-welding-skin:not(.pccc-demo-skin) nav[aria-label='Planner workspace navigation'] {
+  border-right: 1px solid color-mix(in srgb, var(--pccc-auto-frame-hi) 48%, #111 52%) !important;
+  background:
+    linear-gradient(98deg,
+      rgba(255,255,255,.32) 0%,
+      rgba(255,255,255,.06) 5%,
+      transparent 17%,
+      rgba(255,255,255,.025) 52%,
+      rgba(0,0,0,.22) 100%),
+    radial-gradient(circle at 18% 8%, rgba(255,255,255,.24), transparent 14rem),
+    repeating-linear-gradient(12deg,
+      rgba(255,255,255,.024) 0 1px,
+      rgba(0,0,0,.022) 1px 2px,
+      transparent 2px 6px),
+    linear-gradient(180deg,
+      var(--pccc-auto-frame-mid) 0%,
+      var(--pccc-auto-frame-main) 32%,
+      var(--pccc-auto-frame-deep) 100%) !important;
+  box-shadow:
+    inset -1px 0 rgba(255,255,255,.24),
+    inset 8px 0 18px rgba(255,255,255,.045),
+    inset -12px 0 26px rgba(0,0,0,.24),
+    12px 0 30px rgba(0,0,0,.24) !important;
+}
+
+/* A polished steel seam separates paint from the working surface. */
+body.pccc-welding-skin:not(.pccc-demo-skin) nav[aria-label='Planner workspace navigation']::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -2px;
+  width: 3px;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(90deg, #303941, #eef4f7 48%, #4a555d 52%, #151b20);
+  opacity: .72;
+}
+
+body.pccc-welding-skin .ltg-brand {
+  border-bottom-color: rgba(255,255,255,.32) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.13), transparent 22%, rgba(0,0,0,.16)),
+    rgba(0,0,0,.16) !important;
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.18),
+    inset 0 -1px rgba(0,0,0,.38) !important;
+}
+
+/* Navigation is painted steel, while links remain readable instrument inserts. */
+body.pccc-welding-skin nav[aria-label='Planner workspace navigation'] a {
+  border: 1px solid rgba(255,255,255,.13) !important;
+  color: #f5f8fa !important;
+  background:
+    linear-gradient(180deg, rgba(10,17,22,.82), rgba(5,10,14,.91)) !important;
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.06),
+    0 2px 7px rgba(0,0,0,.15) !important;
+}
+
+body.pccc-welding-skin nav[aria-label='Planner workspace navigation'] a:hover:not(.active) {
+  border-color: rgba(255,255,255,.28) !important;
+  background: linear-gradient(180deg, rgba(25,34,40,.88), rgba(7,13,18,.94)) !important;
+  color: #fff !important;
+}
+
+/* Only selected controls receive the luminous paint highlight. */
+body.pccc-welding-skin nav[aria-label='Planner workspace navigation'] a.active,
+body.pccc-welding-skin nav[aria-label='Planner workspace navigation'] a[aria-current='page'] {
+  border-color: color-mix(in srgb, var(--pccc-auto-frame-hi) 72%, white 28%) !important;
+  color: #fff !important;
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--pccc-auto-frame-hi) 45%, white 4%) 0%,
+      var(--pccc-auto-frame-mid) 38%,
+      var(--pccc-auto-frame-main) 72%,
+      var(--pccc-auto-frame-deep) 100%) !important;
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.38),
+    inset 0 -2px rgba(0,0,0,.26),
+    0 0 14px var(--pccc-auto-frame-glow) !important;
+  text-shadow: 0 1px 1px rgba(0,0,0,.55);
+}
+
+/* Role-colored automotive header strips on major administrative/instructor surfaces. */
+body.pccc-welding-skin :where(.topbar, .ltg-dashboard-hero) {
+  position: relative;
+}
+
+body.pccc-school-skin :where(.school-shell,.owner-shell) .topbar,
+body.pccc-school-skin.ltg-secondary-route header,
+body.pccc-school-skin .ltg-dashboard-hero {
+  border-color: color-mix(in srgb, var(--pccc-auto-frame-hi) 48%, #4a1118 52%) !important;
+}
+
+body.pccc-instructor-skin .ltg-dashboard-hero {
+  border-color: color-mix(in srgb, var(--pccc-auto-frame-hi) 46%, #123c58 54%) !important;
+}
+
+/* Brand accents replace legacy neon-green presentation accents. Functional success remains green. */
+body.pccc-welding-skin :where(.eyebrow,.section-eyebrow,.status-label,.label) {
+  color: var(--ltg-accent-strong) !important;
+}
+
+body.pccc-welding-skin :where(.guide-browser-button,.back-current-button):hover:not(:disabled) {
+  border-color: var(--ltg-accent) !important;
+  color: var(--ltg-accent-strong) !important;
+}
+
+body.pccc-welding-skin :where(input,select,textarea):focus {
+  outline: none !important;
+  border-color: var(--ltg-accent) !important;
+  box-shadow: 0 0 0 3px var(--ltg-accent-soft) !important;
+}
+
+/* ------------------------- DARK MODE ------------------------- */
+html[data-theme='dark'] body.pccc-welding-skin {
+  --ltg-canvas: #070d12;
+  --ltg-surface: #111a21;
+  --ltg-surface-2: #17232c;
+  --ltg-surface-3: #1d2b35;
+  --ltg-input: #0a141b;
+  --ltg-text: #f3f6f8;
+  --ltg-muted: #b8c3ca;
+  --ltg-faint: #82919a;
+  --ltg-border: #465762;
+  --ltg-border-soft: #2d3c46;
+  color: var(--ltg-text) !important;
+  background: #070d12 !important;
+}
+
+html[data-theme='dark'] body.pccc-welding-skin:not(.pccc-demo-skin) .app-container {
+  background:
+    radial-gradient(circle at 76% 0, color-mix(in srgb, var(--pccc-auto-frame-main) 10%, transparent), transparent 34rem),
+    linear-gradient(rgba(255,255,255,.011) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.011) 1px, transparent 1px),
+    #080f15 !important;
+  background-size: auto, 42px 42px, 42px 42px, auto !important;
+}
+
+html[data-theme='dark'] body.pccc-welding-skin .ltg-main-content {
+  background:
+    radial-gradient(circle at 82% 4%, color-mix(in srgb, var(--pccc-auto-frame-main) 7%, transparent), transparent 30rem),
+    #080f15 !important;
+}
+
+html[data-theme='dark'] body.pccc-welding-skin :where(
+  .panel,.card,.metric,.session,.table-card,.queue-card,.summary-card,
+  .setup-card,.control-card,.results-card,.report-card,.action-card,.danger-zone
+) {
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.032), transparent 34%),
+    var(--ltg-surface) !important;
+  border-color: var(--ltg-border-soft) !important;
+  color: var(--ltg-text) !important;
+}
+
+html[data-theme='dark'] body.pccc-welding-skin table,
+html[data-theme='dark'] body.pccc-welding-skin .fake-table,
+html[data-theme='dark'] body.pccc-welding-skin .table {
+  background: #0e181f !important;
+  color: var(--ltg-text) !important;
+}
+
+html[data-theme='dark'] body.pccc-welding-skin thead,
+html[data-theme='dark'] body.pccc-welding-skin .table-head,
+html[data-theme='dark'] body.pccc-welding-skin .thead {
+  background: #172631 !important;
+  color: #d4dde2 !important;
+}
+
+/* ------------------------- LIGHT MODE ------------------------- */
+html[data-theme='light'] body.pccc-welding-skin {
+  --ltg-canvas: #e8edf0;
+  --ltg-surface: #f8fafb;
+  --ltg-surface-2: #edf2f5;
+  --ltg-surface-3: #e2e8ec;
+  --ltg-input: #ffffff;
+  --ltg-text: #1b252c;
+  --ltg-muted: #53636d;
+  --ltg-faint: #78858d;
+  --ltg-border: #aeb9c0;
+  --ltg-border-soft: #cbd3d8;
+  --ltg-shadow: 0 12px 30px rgba(28,39,46,.13);
+  --ltg-success-bg: #dff3e7;
+  --ltg-success-text: #17683e;
+  --ltg-danger-bg: #f8e2e5;
+  --ltg-danger-text: #922436;
+  --ltg-warning-bg: #f7efd9;
+  --ltg-warning-text: #755516;
+  color: var(--ltg-text) !important;
+  background: #dfe5e9 !important;
+}
+
+html[data-theme='light'] body.pccc-school-skin {
+  --ltg-accent: #a60b1c;
+  --ltg-accent-strong: #c4162b;
+  --ltg-accent-soft: rgba(166,11,28,.12);
+  --ltg-accent-text: #7d101f;
+}
+
+html[data-theme='light'] body.pccc-instructor-skin {
+  --ltg-accent: #075b96;
+  --ltg-accent-strong: #0876bd;
+  --ltg-accent-soft: rgba(7,91,150,.12);
+  --ltg-accent-text: #074b78;
+}
+
+html[data-theme='light'] body.pccc-welding-skin:not(.pccc-demo-skin) .app-container {
+  background:
+    radial-gradient(circle at 76% 0, color-mix(in srgb, var(--pccc-auto-frame-main) 8%, transparent), transparent 34rem),
+    linear-gradient(rgba(65,78,87,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(65,78,87,.045) 1px, transparent 1px),
+    linear-gradient(145deg, #f3f6f8, #e4eaee 54%, #eef2f4) !important;
+  background-size: auto, 42px 42px, 42px 42px, auto !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin .ltg-main-content {
+  color: var(--ltg-text) !important;
+  background:
+    radial-gradient(circle at 84% 0, color-mix(in srgb, var(--pccc-auto-frame-main) 6%, transparent), transparent 28rem),
+    linear-gradient(145deg, rgba(255,255,255,.78), rgba(232,237,240,.90)) !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin .ltg-dashboard-hero {
+  background:
+    linear-gradient(110deg, rgba(255,255,255,.97), rgba(236,241,244,.94) 68%, rgba(221,228,232,.96)),
+    #eef2f4 !important;
+  border-color: color-mix(in srgb, var(--pccc-auto-frame-main) 44%, #aab4bb 56%) !important;
+  box-shadow:
+    0 14px 30px rgba(38,48,55,.14),
+    inset 0 1px rgba(255,255,255,.94),
+    inset 0 -1px rgba(105,118,126,.12) !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin .ltg-dashboard-hero h1 {
+  color: #17232a !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin .ltg-dashboard-hero p,
+html[data-theme='light'] body.pccc-welding-skin .ltg-dashboard-hero::after {
+  color: #5a6871 !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin :where(
+  .panel,.card,.metric,.session,.table-card,.queue-card,.summary-card,
+  .setup-card,.control-card,.results-card,.report-card,.action-card,.danger-zone
+) {
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.96), rgba(240,244,246,.95)) !important;
+  border-color: #c5ced3 !important;
+  color: #1b252c !important;
+  box-shadow:
+    0 8px 22px rgba(38,49,56,.10),
+    inset 0 1px rgba(255,255,255,.96) !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin :where(
+  h1,h2,h3,h4,h5,h6,strong,.title,.heading
+) {
+  color: #17232a !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin :where(p,.muted,.subtitle,.description,.help,.hint) {
+  color: #596871 !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin table,
+html[data-theme='light'] body.pccc-welding-skin .fake-table,
+html[data-theme='light'] body.pccc-welding-skin .table {
+  background: #fbfcfd !important;
+  color: #1f2a31 !important;
+  border-color: #c8d1d6 !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin thead,
+html[data-theme='light'] body.pccc-welding-skin .table-head,
+html[data-theme='light'] body.pccc-welding-skin .thead {
+  background: #e4eaee !important;
+  color: #33424b !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin tbody tr:nth-child(even),
+html[data-theme='light'] body.pccc-welding-skin .table-row:nth-child(even),
+html[data-theme='light'] body.pccc-welding-skin .trow:nth-child(even) {
+  background: rgba(50,68,79,.035) !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin:not(.pccc-demo-skin) :where(button,a.button) {
+  border-color: #b4bfc6 !important;
+  background: linear-gradient(180deg, #ffffff, #e8edf0) !important;
+  color: #27343c !important;
+  box-shadow: inset 0 1px #fff, 0 2px 5px rgba(35,45,52,.07) !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin:not(.pccc-demo-skin) :where(button,a.button):hover:not(:disabled) {
+  border-color: var(--ltg-accent) !important;
+  color: var(--ltg-accent) !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin:not(.pccc-demo-skin) :where(button.primary,a.primary) {
+  border-color: var(--pccc-auto-frame-deep) !important;
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--pccc-auto-frame-hi) 34%, white 10%),
+      var(--pccc-auto-frame-mid) 42%,
+      var(--pccc-auto-frame-main)) !important;
+  color: #fff !important;
+  text-shadow: 0 1px 1px rgba(0,0,0,.45);
+}
+
+html[data-theme='light'] body.pccc-welding-skin:not(.pccc-demo-skin) :where(input,select,textarea) {
+  background: #ffffff !important;
+  border-color: #aebac1 !important;
+  color: #18242b !important;
+}
+
+html[data-theme='light'] body.pccc-welding-skin section[aria-label='Class workspace selector'] {
+  background: linear-gradient(180deg, #f8fafb, #e9eef1) !important;
+  border-color: #bdc7cd !important;
+  color: #1d2930 !important;
+}
+
+/* Light mode keeps the painted rail dark enough to preserve the PCCC identity. */
+html[data-theme='light'] body.pccc-welding-skin nav[aria-label='Planner workspace navigation'] {
+  color-scheme: dark;
+}
+
+html[data-theme='light'] body.pccc-welding-skin nav[aria-label='Planner workspace navigation'] :where(.ltg-brand-copy,.ltg-brand-name,.ltg-brand-subline) {
+  color: #f5f8fa !important;
+}
+
+/* Keep functional colors semantic. Brand paint never turns absence/errors red by accident. */
+body.pccc-welding-skin :where(.success,.present,.dot.on) {
+  color: var(--ltg-success) !important;
+}
+
+body.pccc-welding-skin :where(.error,.danger,.absent) {
+  accent-color: var(--ltg-danger);
+}
+
+@media (max-width: 979px) {
+  body.pccc-welding-skin:not(.pccc-demo-skin) .app-container::before {
+    padding: 4px;
+  }
+
+  body.pccc-welding-skin:not(.pccc-demo-skin) nav[aria-label='Planner workspace navigation'] {
+    box-shadow:
+      inset 0 -1px rgba(255,255,255,.18),
+      inset 0 -12px 24px rgba(0,0,0,.20),
+      0 10px 24px rgba(0,0,0,.18) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.pccc-welding-skin *,
+  body.pccc-welding-skin *::before,
+  body.pccc-welding-skin *::after {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}
