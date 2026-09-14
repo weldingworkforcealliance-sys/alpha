@@ -21,6 +21,7 @@ import SchoolActiveTodayEmployees from './school-active-today-employees';
 import UsageTracker from './usage-tracker';
 import DemoSessionGuard from './demo-session-guard';
 import TenantSkinProvider from './tenant-skin-provider';
+import TenantBrandLockup from './tenant-brand-lockup';
 import './styles.css';
 import './agenda/agenda.css';
 import './desktop-layout-fix.css';
@@ -136,14 +137,7 @@ export default function RootLayout({
                   className={navOpen ? 'ltg-sidebar mobile-open' : 'ltg-sidebar'}
                 >
                   <div className="ltg-sidebar-header">
-                    <div className="ltg-brand">
-                      <span className="ltg-brand-mark">LTG</span>
-                      <span className="ltg-brand-copy">
-                        Education
-                        <br />
-                        Operating System
-                      </span>
-                    </div>
+                    <TenantBrandLockup />
                     <button
                       type="button"
                       className="ltg-mobile-menu-button"
