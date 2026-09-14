@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="2100" viewBox="0 0 1400 2100">
+<rect width="1400" height="2100" fill="#ffffff"/>
+<rect x="24" y="24" width="1352" height="2052" rx="16" fill="none" stroke="#222" stroke-width="3"/>
+<g font-family="Arial, Helvetica, sans-serif" fill="#111">
+<text x="60" y="82" font-size="38" font-weight="700">BLUEPRINT READING — DAY 3</text>
+<text x="60" y="122" font-size="23">Welding Symbols + Basic Joints • LTG Training Board</text>
+<text x="60" y="154" font-size="17" fill="#555">Training graphics support the lesson. Authorized welding-symbol references remain controlling.</text>
+
+<rect x="55" y="195" width="1290" height="480" rx="14" fill="#f7f7f7" stroke="#555" stroke-width="2"/>
+<text x="82" y="238" font-size="28" font-weight="700">1 · ANATOMY OF A WELDING SYMBOL</text>
+<text x="82" y="272" font-size="18">Read the whole symbol before making a fit-up or tack decision.</text>
+</g>
+
+<!-- main symbol anatomy -->
+<line x1="235" y1="410" x2="1030" y2="410" stroke="#111" stroke-width="5"/>
+<line x1="235" y1="410" x2="135" y2="520" stroke="#111" stroke-width="5"/>
+<polygon points="135,520 153,486 170,505" fill="#111"/>
+<line x1="1030" y1="410" x2="1130" y2="350" stroke="#111" stroke-width="4"/>
+<line x1="1030" y1="410" x2="1130" y2="470" stroke="#111" stroke-width="4"/>
+<polygon points="525,410 565,410 545,450" fill="none" stroke="#111" stroke-width="4"/>
+<circle cx="235" cy="410" r="24" fill="none" stroke="#111" stroke-width="4"/>
+<line x1="235" y1="410" x2="235" y2="340" stroke="#111" stroke-width="4"/>
+<polygon points="235,340 285,360 235,380" fill="none" stroke="#111" stroke-width="4"/>
+<text x="610" y="368" font-family="Arial" font-size="19">REFERENCE LINE</text>
+<line x1="690" y1="374" x2="690" y2="402" stroke="#555" stroke-width="2"/>
+<text x="85" y="560" font-family="Arial" font-size="19">ARROW → points to the joint/member</text>
+<text x="1010" y="515" font-family="Arial" font-size="19">TAIL → process / spec / reference when needed</text>
+<text x="300" y="352" font-family="Arial" font-size="18">ALL-AROUND CIRCLE</text>
+<text x="300" y="382" font-family="Arial" font-size="18">FIELD-WELD FLAG</text>
+<text x="500" y="500" font-family="Arial" font-size="18">Basic symbol sits on reference line</text>
+
+<g font-family="Arial, Helvetica, sans-serif" fill="#111">
+<rect x="55" y="710" width="1290" height="500" rx="14" fill="#f7f7f7" stroke="#555" stroke-width="2"/>
+<text x="82" y="753" font-size="28" font-weight="700">2 · SIDE, SIZE, LENGTH, AND PITCH</text>
+<text x="82" y="786" font-size="18">Below the line = arrow side. Above the line = other side.</text>
+</g>
+
+<!-- arrow side -->
+<rect x="85" y="835" width="365" height="300" rx="12" fill="#fff" stroke="#777" stroke-width="2"/>
+<text x="110" y="872" font-family="Arial" font-size="21" font-weight="700">ARROW SIDE</text>
+<line x1="145" y1="975" x2="385" y2="975" stroke="#111" stroke-width="4"/>
+<line x1="145" y1="975" x2="110" y2="1020" stroke="#111" stroke-width="4"/>
+<polygon points="235,975 265,975 250,1007" fill="none" stroke="#111" stroke-width="4"/>
+<text x="135" y="1080" font-family="Arial" font-size="18">Symbol BELOW reference line</text>
+
+<!-- other side -->
+<rect x="515" y="835" width="365" height="300" rx="12" fill="#fff" stroke="#777" stroke-width="2"/>
+<text x="540" y="872" font-family="Arial" font-size="21" font-weight="700">OTHER SIDE</text>
+<line x1="575" y1="975" x2="815" y2="975" stroke="#111" stroke-width="4"/>
+<line x1="575" y1="975" x2="540" y2="1020" stroke="#111" stroke-width="4"/>
+<polygon points="665,975 695,975 680,943" fill="none" stroke="#111" stroke-width="4"/>
+<text x="565" y="1080" font-family="Arial" font-size="18">Symbol ABOVE reference line</text>
+
+<!-- size length pitch -->
+<rect x="945" y="835" width="365" height="300" rx="12" fill="#fff" stroke="#777" stroke-width="2"/>
+<text x="970" y="872" font-family="Arial" font-size="21" font-weight="700">SIZE / LENGTH / PITCH</text>
+<line x1="1000" y1="975" x2="1255" y2="975" stroke="#111" stroke-width="4"/>
+<line x1="1000" y1="975" x2="965" y2="1020" stroke="#111" stroke-width="4"/>
+<text x="1015" y="1035" font-family="Arial" font-size="28">1/4</text>
+<polygon points="1095,975 1125,975 1110,1007" fill="none" stroke="#111" stroke-width="4"/>
+<text x="1150" y="1035" font-family="Arial" font-size="28">2-6</text>
+<text x="985" y="1090" font-family="Arial" font-size="17">LEFT = weld size</text>
+<text x="1140" y="1090" font-family="Arial" font-size="17">RIGHT = length-pitch</text>
+
+<g font-family="Arial, Helvetica, sans-serif" fill="#111">
+<rect x="55" y="1245" width="1290" height="680" rx="14" fill="#f7f7f7" stroke="#555" stroke-width="2"/>
+<text x="82" y="1288" font-size="28" font-weight="700">3 · FIVE BASIC JOINT TYPES</text>
+<text x="82" y="1320" font-size="18">Name the joint before deciding what weld belongs there.</text>
+</g>
+
+<!-- Joint boxes -->
+<g stroke="#777" stroke-width="2" fill="#fff">
+<rect x="85" y="1360" width="375" height="210" rx="12"/>
+<rect x="512" y="1360" width="375" height="210" rx="12"/>
+<rect x="940" y="1360" width="375" height="210" rx="12"/>
+<rect x="300" y="1615" width="375" height="210" rx="12"/>
+<rect x="725" y="1615" width="375" height="210" rx="12"/>
+</g>
+<g font-family="Arial" fill="#111">
+<text x="110" y="1400" font-size="22" font-weight="700">BUTT JOINT</text>
+<text x="537" y="1400" font-size="22" font-weight="700">LAP JOINT</text>
+<text x="965" y="1400" font-size="22" font-weight="700">TEE JOINT</text>
+<text x="325" y="1655" font-size="22" font-weight="700">CORNER JOINT</text>
+<text x="750" y="1655" font-size="22" font-weight="700">EDGE JOINT</text>
+</g>
+<rect x="135" y="1470" width="120" height="35" fill="#d8d8d8" stroke="#111" stroke-width="3"/>
+<rect x="265" y="1470" width="120" height="35" fill="#ececec" stroke="#111" stroke-width="3"/>
+<rect x="585" y="1480" width="175" height="35" fill="#d8d8d8" stroke="#111" stroke-width="3"/>
+<rect x="650" y="1450" width="175" height="35" fill="#ececec" stroke="#111" stroke-width="3"/>
+<rect x="1010" y="1490" width="220" height="32" fill="#d8d8d8" stroke="#111" stroke-width="3"/>
+<rect x="1100" y="1435" width="32" height="87" fill="#ececec" stroke="#111" stroke-width="3"/>
+<rect x="365" y="1745" width="180" height="32" fill="#d8d8d8" stroke="#111" stroke-width="3"/>
+<rect x="515" y="1690" width="32" height="87" fill="#ececec" stroke="#111" stroke-width="3"/>
+<rect x="855" y="1695" width="32" height="82" fill="#d8d8d8" stroke="#111" stroke-width="3"/>
+<rect x="900" y="1695" width="32" height="82" fill="#ececec" stroke="#111" stroke-width="3"/>
+
+<!-- Multiple reference line cue -->
+<rect x="55" y="1955" width="1290" height="90" rx="12" fill="#111"/>
+<text x="82" y="1993" font-family="Arial" font-size="22" font-weight="700" fill="#fff">MULTIPLE REFERENCE LINES = watch for sequence or multiple welding instructions.</text>
+<text x="82" y="2027" font-family="Arial" font-size="18" fill="#fff">Strong habit: match symbol details to the actual joint before welding.</text>
+</svg>
