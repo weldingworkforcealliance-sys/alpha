@@ -21,6 +21,8 @@ const PORTAL_SHELL_LINK_ID = 'pccc-portal-shell-css';
 const PORTAL_SHELL_HREF = '/pccc-portal-shell.css?v=20260913-2';
 const LIGHT_MODE_LINK_ID = 'pccc-light-mode-css';
 const LIGHT_MODE_HREF = '/pccc-light-mode.css?v=20260913-1';
+const AUTOMOTIVE_LINK_ID = 'pccc-automotive-final-css';
+const AUTOMOTIVE_HREF = '/pccc-automotive-final.css?v=20260914-1';
 
 function isPcccName(name: string | null | undefined) {
   const normalized = (name ?? '').trim().toLowerCase();
@@ -56,6 +58,10 @@ function ensurePcccStyles() {
   // Loaded after the structural portal shell so light-mode tokens and surfaces can
   // override the dark painted-steel defaults without removing PCCC branding.
   ensureStylesheet(LIGHT_MODE_LINK_ID, LIGHT_MODE_HREF);
+  // Final authority layer. This intentionally loads last so the red School/Admin
+  // and blue Instructor automotive steel finishes survive legacy shell rules in
+  // both dark and light mode.
+  ensureStylesheet(AUTOMOTIVE_LINK_ID, AUTOMOTIVE_HREF);
 }
 
 function isSchoolContext(pathname: string) {
