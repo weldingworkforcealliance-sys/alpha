@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
+import { formatError } from '@/lib/format-error';
 
 export default function AccountSetupPage() {
   const router = useRouter();
@@ -121,9 +122,10 @@ export default function AccountSetupPage() {
         }
       } catch (err) {
         setError(
-          err instanceof Error
-            ? err.message
-            : 'This invitation link could not be verified. Request a new invitation.'
+          formatError(
+            err,
+            'This invitation link could not be verified. Request a new invitation.'
+          )
         );
       }
     };
@@ -159,11 +161,7 @@ export default function AccountSetupPage() {
       setReady(true);
       setMessage('Email verified. Create your password below.');
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'The verification code could not be verified.'
-      );
+      setError(formatError(err, 'The verification code could not be verified.'));
     } finally {
       setBusy(false);
     }
@@ -207,7 +205,7 @@ export default function AccountSetupPage() {
         router.push('/dashboard');
       }, 1300);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(formatError(err, 'Account setup could not be completed.'));
     } finally {
       setBusy(false);
     }
