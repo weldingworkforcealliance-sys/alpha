@@ -28,4 +28,12 @@ describe('sensitive auth surfaces use sanitized user-facing errors', () => {
     expect(resetPassword).toContain('Password could not be updated.');
     expect(trainingLogin).toContain('Training sign in could not be completed.');
   });
+
+  it('does not silently ignore invited-membership activation failures', () => {
+    for (const source of [resetPassword, trainingLogin]) {
+      expect(source).toContain("const { error: activationError } = await supabase.rpc(");
+      expect(source).toContain("'activate_my_invited_memberships'");
+      expect(source).toContain('if (activationError) throw activationError;');
+    }
+  });
 });
