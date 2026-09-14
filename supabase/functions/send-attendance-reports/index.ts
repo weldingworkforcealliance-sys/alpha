@@ -275,14 +275,17 @@ Deno.serve(async (req) => {
       }
 
       const html = buildEmailHtml({ pair, session, records, students });
-      await sendResendEmail({
-        apiKey: resendApiKey,
-        from: attendanceFromEmail,
-        to: parseRecipients(queue.recipient_email),
-        subject: `PVHS Attendance Report · ${pair.pair_name} · ${session.attendance_date}`,
-        html,
-        idempotencyKey: `attendance-report/${queue.queue_id}/g${queue.delivery_generation}`,
-      });
+      const recipients = parseRecipients(queue.recipient_email);
+      for (const [index, recipient] of recipients.entries()) {
+        await sendResendEmail({
+          apiKey: resendApiKey,
+          from: attendanceFromEmail,
+          to: [recipient],
+          subject: `PVHS Attendance Report · ${pair.pair_name} · ${session.attendance_date}`,
+          html,
+          idempotencyKey: `attendance-report/${queue.queue_id}/g${queue.delivery_generation}/r${index}`,
+        });
+      }
 
       const { error: sentError } = await supabase
         .from('attendance_report_queue')
