@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
+import { formatError } from '@/lib/format-error';
 
 export default function TrainingLoginPage() {
   const router = useRouter();
@@ -32,7 +33,7 @@ export default function TrainingLoginPage() {
       await supabase.rpc('activate_my_invited_memberships');
       router.push('/training');
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(formatError(err, 'Training sign in could not be completed.'));
     } finally {
       setBusy(false);
     }
