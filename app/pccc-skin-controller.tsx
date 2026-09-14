@@ -23,6 +23,8 @@ const LIGHT_MODE_LINK_ID = 'pccc-light-mode-css';
 const LIGHT_MODE_HREF = '/pccc-light-mode.css?v=20260913-1';
 const AUTOMOTIVE_LINK_ID = 'pccc-automotive-final-css';
 const AUTOMOTIVE_HREF = '/pccc-automotive-final.css?v=20260914-1';
+const MODERN_SHELL_LINK_ID = 'pccc-modern-shell-css';
+const MODERN_SHELL_HREF = '/pccc-modern-shell.css?v=20260914-1';
 
 function isPcccName(name: string | null | undefined) {
   const normalized = (name ?? '').trim().toLowerCase();
@@ -55,13 +57,11 @@ function ensureStylesheet(id: string, href: string) {
 
 function ensurePcccStyles() {
   ensureStylesheet(PORTAL_SHELL_LINK_ID, PORTAL_SHELL_HREF);
-  // Loaded after the structural portal shell so light-mode tokens and surfaces can
-  // override the dark painted-steel defaults without removing PCCC branding.
   ensureStylesheet(LIGHT_MODE_LINK_ID, LIGHT_MODE_HREF);
-  // Final authority layer. This intentionally loads last so the red School/Admin
-  // and blue Instructor automotive steel finishes survive legacy shell rules in
-  // both dark and light mode.
   ensureStylesheet(AUTOMOTIVE_LINK_ID, AUTOMOTIVE_HREF);
+  // Final correction layer: preserve real painted steel on structural housings while
+  // removing the overbuilt full-browser frame so the work area stays modern and calm.
+  ensureStylesheet(MODERN_SHELL_LINK_ID, MODERN_SHELL_HREF);
 }
 
 function isSchoolContext(pathname: string) {
@@ -100,8 +100,6 @@ function applyPcccClasses(mode: SkinMode) {
     }
   });
 
-  // PCCC branding follows the account's normal LTG theme preference. The tenant
-  // skin must never overwrite the light/dark choice made by the user.
   restoreSavedTheme();
 }
 
@@ -127,8 +125,6 @@ export default function PcccSkinController({ pathname }: { pathname: string }) {
       applyPcccClasses(mode);
     };
 
-    // RootLayout can rewrite document classes during client renders. Re-assert only
-    // tenant identity; the ThemeProvider remains the sole owner of light/dark state.
     const observer = new MutationObserver(() => {
       if (!activeMode) return;
       const requiredClass = skinClassForMode(activeMode);
