@@ -24,7 +24,7 @@ const LIGHT_MODE_HREF = '/pccc-light-mode.css?v=20260913-1';
 const AUTOMOTIVE_LINK_ID = 'pccc-automotive-final-css';
 const AUTOMOTIVE_HREF = '/pccc-automotive-final.css?v=20260914-1';
 const MODERN_SHELL_LINK_ID = 'pccc-modern-shell-css';
-const MODERN_SHELL_HREF = '/pccc-modern-shell.css?v=20260914-1';
+const MODERN_SHELL_HREF = '/pccc-modern-shell.css?v=20260914-2';
 
 function isPcccName(name: string | null | undefined) {
   const normalized = (name ?? '').trim().toLowerCase();
@@ -60,7 +60,7 @@ function ensurePcccStyles() {
   ensureStylesheet(LIGHT_MODE_LINK_ID, LIGHT_MODE_HREF);
   ensureStylesheet(AUTOMOTIVE_LINK_ID, AUTOMOTIVE_HREF);
   // Final correction layer: preserve real painted steel on structural housings while
-  // removing the overbuilt full-browser frame so the work area stays modern and calm.
+  // keeping large surfaces planar, architectural, and software-first.
   ensureStylesheet(MODERN_SHELL_LINK_ID, MODERN_SHELL_HREF);
 }
 
