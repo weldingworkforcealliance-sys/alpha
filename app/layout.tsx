@@ -39,6 +39,7 @@ import './theme-component-overrides.css';
 import './interaction-feedback.css';
 import './operational-status-panels.css';
 import './pccc-welding-skin.css';
+import './pccc-automotive-skin.css';
 
 const THEME_BOOTSTRAP = `(function(){try{var t=localStorage.getItem('ltg_theme');if(t!=='light'&&t!=='dark')t='dark';document.documentElement.dataset.theme=t;document.documentElement.style.colorScheme=t;}catch(e){document.documentElement.dataset.theme='dark';document.documentElement.style.colorScheme='dark';}})();`;
 const IS_STAGING = process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging';
