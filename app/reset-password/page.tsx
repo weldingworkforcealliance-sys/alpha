@@ -124,7 +124,10 @@ export default function ResetPasswordPage() {
       const { error: updateError } = await supabase.auth.updateUser({ password });
       if (updateError) throw updateError;
 
-      await supabase.rpc('activate_my_invited_memberships');
+      const { error: activationError } = await supabase.rpc(
+        'activate_my_invited_memberships'
+      );
+      if (activationError) throw activationError;
 
       setMessage('Password updated successfully. Opening your dashboard…');
       window.setTimeout(() => router.push('/dashboard'), 1200);
