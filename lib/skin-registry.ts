@@ -33,6 +33,7 @@ const SKIN_REGISTRY: Record<string, LtgSkinDefinition> = {
   'clinical-learning': {
     key: 'clinical-learning',
     className: 'ltg-skin-clinical-learning',
+    stylesheetHrefs: ['/skins/clinical-learning.css?v=20260914-1'],
   },
 };
 
