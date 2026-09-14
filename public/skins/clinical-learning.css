@@ -1,0 +1,129 @@
+/* LTG skin package: Clinical Learning
+   Presentation only. No permissions, curriculum, planner, attendance, grading,
+   reporting, or time-clock behavior is changed here. */
+
+body.ltg-skin-clinical-learning {
+  --ltg-accent: var(--ltg-brand-accent, #48a3bd);
+  --ltg-accent-strong: #2f87a4;
+  --ltg-accent-soft: rgba(72, 163, 189, .14);
+  --ltg-accent-text: #d9f6ff;
+  --ltg-info: #5f93a8;
+  --ltg-info-soft: rgba(95, 147, 168, .14);
+  --ltg-success: #4d9d7c;
+  --ns-copper: var(--ltg-accent);
+  --ns-copper-bright: var(--ltg-accent-strong);
+  --ns-copper-soft: var(--ltg-accent-soft);
+  --ns-teal: #6fa7b9;
+  --ns-teal-deep: #274b5a;
+  --ns-teal-soft: rgba(111, 167, 185, .13);
+}
+
+html[data-theme='dark'] body.ltg-skin-clinical-learning {
+  --ltg-canvas: #0d1920;
+  --ltg-surface: #142630;
+  --ltg-surface-2: #19303b;
+  --ltg-surface-3: #203b47;
+  --ltg-input: #10232c;
+  --ltg-text: #f0f7f9;
+  --ltg-muted: #b5c7cd;
+  --ltg-faint: #829aa3;
+  --ltg-border: #48616b;
+  --ltg-border-soft: #314b55;
+  background: linear-gradient(145deg, #0b171d, #10222a 52%, #0d1b22) !important;
+}
+
+html[data-theme='light'] body.ltg-skin-clinical-learning {
+  --ltg-canvas: #eaf2f5;
+  --ltg-surface: #ffffff;
+  --ltg-surface-2: #f4f8fa;
+  --ltg-surface-3: #e7f1f4;
+  --ltg-input: #ffffff;
+  --ltg-text: #17313d;
+  --ltg-muted: #526d78;
+  --ltg-faint: #738a94;
+  --ltg-border: #9bb4bd;
+  --ltg-border-soft: #cbd9de;
+  --ltg-accent-text: #174e61;
+  background: linear-gradient(145deg, #eef6f8, #e5f0f3 52%, #edf5f7) !important;
+}
+
+body.ltg-skin-clinical-learning .app-container {
+  background:
+    radial-gradient(circle at 82% 5%, rgba(72, 163, 189, .09), transparent 28rem),
+    linear-gradient(rgba(255,255,255,.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.012) 1px, transparent 1px),
+    var(--ltg-canvas) !important;
+  background-size: auto, 46px 46px, 46px 46px, auto !important;
+}
+
+body.ltg-skin-clinical-learning nav[aria-label='Planner workspace navigation'] {
+  border-right: 1px solid var(--ltg-border) !important;
+  background:
+    linear-gradient(180deg, rgba(72,163,189,.15), transparent 160px),
+    linear-gradient(180deg, #16303a, #10242d 58%, #0d1c23) !important;
+  box-shadow: 10px 0 30px rgba(0,0,0,.14) !important;
+}
+
+html[data-theme='light'] body.ltg-skin-clinical-learning nav[aria-label='Planner workspace navigation'] {
+  background:
+    linear-gradient(180deg, rgba(72,163,189,.14), transparent 170px),
+    linear-gradient(180deg, #f7fbfc, #eef5f7 62%, #e7f0f3) !important;
+}
+
+body.ltg-skin-clinical-learning .ltg-brand-mark {
+  border-color: var(--ltg-accent) !important;
+  color: var(--ltg-accent-text) !important;
+  background: linear-gradient(145deg, rgba(72,163,189,.18), rgba(72,163,189,.04)) !important;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.03), 0 8px 20px rgba(0,0,0,.10) !important;
+}
+
+body.ltg-skin-clinical-learning .ltg-brand-copy {
+  letter-spacing: .01em !important;
+  text-transform: none !important;
+}
+
+body.ltg-skin-clinical-learning .ltg-nav-section-label {
+  color: var(--ltg-muted) !important;
+  letter-spacing: .14em !important;
+}
+
+body.ltg-skin-clinical-learning nav[aria-label='Planner workspace navigation'] a.active,
+body.ltg-skin-clinical-learning nav[aria-label='Planner workspace navigation'] a[aria-current='page'] {
+  border-color: rgba(72,163,189,.46) !important;
+  background: linear-gradient(90deg, rgba(72,163,189,.18), rgba(72,163,189,.06)) !important;
+  color: var(--ltg-text) !important;
+  box-shadow: inset 3px 0 var(--ltg-accent), 0 8px 18px rgba(0,0,0,.08) !important;
+}
+
+body.ltg-skin-clinical-learning :where(
+  .panel,.card,.metric,.session,.table-card,.queue-card,.summary-card,.setup-card,
+  .control-card,.results-card,.report-card,.action-card,.danger-zone
+) {
+  border-radius: 14px !important;
+  border-color: var(--ltg-border-soft) !important;
+  background: linear-gradient(150deg, rgba(255,255,255,.025), transparent 36%), var(--ltg-surface) !important;
+  box-shadow: 0 9px 24px rgba(0,0,0,.10) !important;
+}
+
+body.ltg-skin-clinical-learning :where(button,a.button) {
+  border-radius: 10px !important;
+}
+
+body.ltg-skin-clinical-learning :where(.eyebrow,.section-eyebrow,.label,.status-label) {
+  color: var(--ltg-accent-strong) !important;
+}
+
+body.ltg-skin-clinical-learning .ltg-dashboard-hero {
+  border-radius: 16px !important;
+  border-color: rgba(72,163,189,.34) !important;
+  background:
+    radial-gradient(circle at 88% 28%, rgba(72,163,189,.16), transparent 22rem),
+    var(--ltg-surface) !important;
+}
+
+body.ltg-skin-clinical-learning input:focus,
+body.ltg-skin-clinical-learning select:focus,
+body.ltg-skin-clinical-learning textarea:focus {
+  border-color: var(--ltg-accent) !important;
+  box-shadow: 0 0 0 3px var(--ltg-accent-soft) !important;
+}
