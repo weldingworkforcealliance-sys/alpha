@@ -4,26 +4,27 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Finsen Sierra Time Clock Lab</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=lab-v2" />
+  <link rel="stylesheet" href="approved-frame.css?v=approved-20260914" />
 </head>
 <body>
   <main class="lab-shell">
     <section class="stage" aria-label="Finsen Sierra Time Clock laboratory">
-      <div class="clock-wrap" id="clockWrap">
-        <img id="frameImage" class="frame" alt="Finsen Sierra bronze time clock frame" draggable="false" />
+      <div class="clock-wrap" id="clockWrap" data-frame-ready="loading">
+        <img id="frameImage" class="frame" alt="Approved Finsen Sierra brass time clock frame" draggable="false" />
 
-        <section class="live-screen" aria-label="Live LTG employee time clock">
+        <section class="live-screen" aria-label="Live Finsen Sierra employee time clock">
           <div class="screen-top">
             <div class="identity-block">
-              <span id="greeting">Good evening,</span>
-              <strong id="employeeName">Richard Genco</strong>
-              <small><span id="department">Operations</span> &nbsp;|&nbsp; <span id="employeeNumber">#1047</span></small>
-              <small id="role">Instructor / Admin</small>
+              <span id="greeting">Good morning,</span>
+              <strong id="employeeName">Alex Carter</strong>
+              <small><span id="department">PCCC Welding</span> &nbsp;|&nbsp; <span id="employeeNumber">0350510</span></small>
+              <small id="role">Welding Instructor</small>
             </div>
 
             <div class="time-block" aria-live="off">
-              <div class="time-line"><strong id="liveTime">6:31</strong><span id="ampm">PM</span></div>
-              <div id="liveDate" class="date-line">Sun, Sep 13, 2026</div>
+              <div class="time-line"><strong id="liveTime">7:31</strong><span id="ampm">AM</span></div>
+              <div id="liveDate" class="date-line">Thu, Apr 24, 2025</div>
             </div>
 
             <div class="brand-block" aria-label="Passaic County Community College Welding">
@@ -47,17 +48,17 @@
 
           <div class="status-bar">
             <div class="employee-card">
-              <span class="avatar" id="avatar">RG</span>
+              <span class="avatar" id="avatar">AC</span>
               <div>
-                <strong id="footerName">Richard Genco</strong>
-                <small id="footerDepartment">Operations</small>
-                <small id="footerRole">Instructor / Admin</small>
-                <small id="footerEmployee">#1047</small>
+                <strong id="footerName">Alex Carter</strong>
+                <small id="footerDepartment">PCCC Welding</small>
+                <small id="footerRole">Welding Instructor</small>
+                <small id="footerEmployee">0350510</small>
               </div>
             </div>
             <div class="status-card">
               <small>Status</small>
-              <strong id="statusValue"><i></i> Off Site</strong>
+              <strong id="statusValue"><i></i> Clocked Out</strong>
               <span id="statusSince">Not currently punched in</span>
             </div>
             <div class="total-card">
@@ -80,7 +81,7 @@
       <div>
         <span class="lab-kicker">ISOLATED TEST ENVIRONMENT</span>
         <h1>Finsen Sierra Clock Lab</h1>
-        <p>No LTG production payroll or attendance data is touched. Punches persist only in this browser's local sandbox.</p>
+        <p>The approved brass clock face is now the physical shell. Punches persist only in this browser's local sandbox and do not touch LTG production payroll or attendance data.</p>
       </div>
       <div class="lab-actions">
         <button id="scenarioOut" type="button">Scenario: Clocked Out</button>
@@ -90,7 +91,7 @@
       <div class="qa-grid">
         <div><span>State</span><strong id="qaState">CLOCKED OUT</strong></div>
         <div><span>Entries Today</span><strong id="qaEntries">0</strong></div>
-        <div><span>Persistence</span><strong>LOCAL ONLY</strong></div>
+        <div><span>Frame</span><strong id="qaFrame">LOADING APPROVED FRAME</strong></div>
         <div><span>LTG Production</span><strong>DISCONNECTED</strong></div>
       </div>
     </section>
@@ -105,6 +106,6 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js"></script>
+  <script src="app.js?v=approved-20260914"></script>
 </body>
 </html>
