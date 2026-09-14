@@ -5,31 +5,27 @@ import { getLtgSkinDefinition } from '../lib/skin-registry';
 
 const css = readFileSync(join(process.cwd(), 'public/pccc-real-painted-steel.css'), 'utf8');
 const texture = readFileSync(join(process.cwd(), 'public/skins/pccc-metalflake-texture.svg'), 'utf8');
+const layout = readFileSync(join(process.cwd(), 'app/layout.tsx'), 'utf8');
 
-describe('PCCC real painted-steel skin', () => {
-  it('loads as the final PCCC runtime skin asset', () => {
+describe('archived PCCC real painted-steel assets', () => {
+  it('keeps the historical registry entry without mounting the skin runtime', () => {
     expect(getLtgSkinDefinition('pccc-welding').stylesheetHrefs).toContain(
       '/pccc-real-painted-steel.css?v=20260914-1'
     );
+    expect(layout).not.toContain('TenantSkinProvider');
+    expect(layout).not.toContain('TenantBrandLockup');
   });
 
-  it('uses real reusable metallic flake texture', () => {
+  it('retains reusable texture assets for rollback or future design reference only', () => {
     expect(css).toContain("url('/skins/pccc-metalflake-texture.svg')");
     expect(texture).toContain('feTurbulence');
     expect(texture).toContain('feSpecularLighting');
   });
 
-  it('keeps school and instructor paint identities distinct', () => {
+  it('keeps archived school and instructor rules isolated from the live shell', () => {
     expect(css).toContain('body.pccc-school-skin');
-    expect(css).toContain('#a70b1d');
     expect(css).toContain('body.pccc-instructor-skin');
-    expect(css).toContain('#075f9e');
-  });
-
-  it('keeps the same physical frame in light and dark mode', () => {
-    expect(css).toContain("html[data-theme='light'] body.pccc-welding-skin");
-    expect(css).toContain("html[data-theme='dark'] body.pccc-welding-skin");
-    expect(css).toContain('.app-container::before');
-    expect(css).toContain('.app-container::after');
+    expect(layout).not.toContain("./pccc-welding-skin.css");
+    expect(layout).not.toContain("./pccc-automotive-skin.css");
   });
 });
