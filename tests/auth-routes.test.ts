@@ -21,9 +21,19 @@ describe('server route protection', () => {
   });
 
   it('allows safe protected return targets only', () => {
-    expect(safePostLoginRoute('/planner?day=3')).toBe('/planner?day=3');
+    expect(safePostLoginRoute('/planner?day=3#notes')).toBe('/planner?day=3#notes');
     expect(safePostLoginRoute('https://attacker.example')).toBe('/dashboard');
     expect(safePostLoginRoute('//attacker.example')).toBe('/dashboard');
     expect(safePostLoginRoute('/login')).toBe('/dashboard');
+    expect(safePostLoginRoute('/login?next=/planner')).toBe('/dashboard');
+  });
+
+  it('rejects encoded, backslash, and control-character redirect tricks', () => {
+    expect(safePostLoginRoute('/\\attacker.example')).toBe('/dashboard');
+    expect(safePostLoginRoute('/%5C%5Cattacker.example')).toBe('/dashboard');
+    expect(safePostLoginRoute('/%2F%2Fattacker.example')).toBe('/dashboard');
+    expect(safePostLoginRoute('/%252F%252Fattacker.example')).toBe('/dashboard');
+    expect(safePostLoginRoute('/planner\n/unsafe')).toBe('/dashboard');
+    expect(safePostLoginRoute('/planner%')).toBe('/dashboard');
   });
 });
