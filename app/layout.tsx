@@ -20,7 +20,7 @@ import AttendanceFinalizationAlert from './attendance-finalization-alert';
 import SchoolActiveTodayEmployees from './school-active-today-employees';
 import UsageTracker from './usage-tracker';
 import DemoSessionGuard from './demo-session-guard';
-import PcccSkinController from './pccc-skin-controller';
+import TenantSkinProvider from './tenant-skin-provider';
 import './styles.css';
 import './agenda/agenda.css';
 import './desktop-layout-fix.css';
@@ -104,160 +104,161 @@ export default function RootLayout({
       </head>
       <body className={bodyClassName || undefined}>
         <ThemeProvider>
-          <PcccSkinController pathname={pathname} />
-          <DemoSessionGuard />
-          {IS_STAGING && (
-            <div
-              role="status"
-              aria-label="Staging environment"
-              style={{
-                position: 'sticky',
-                top: 0,
-                zIndex: 10000,
-                width: '100%',
-                padding: '7px 12px',
-                textAlign: 'center',
-                fontSize: '12px',
-                fontWeight: 800,
-                letterSpacing: '0.12em',
-                background: '#f5c542',
-                color: '#171717',
-                borderBottom: '2px solid #171717',
-              }}
-            >
-              STAGING · NO LIVE DATA
-            </div>
-          )}
-          {!isMarketingRoute && !isDemoRoute && <UsageTracker pathname={pathname} />}
-          <div className="app-container">
-            {!hideWorkspaceNav && (
-              <nav
-                aria-label="Planner workspace navigation"
-                className={navOpen ? 'ltg-sidebar mobile-open' : 'ltg-sidebar'}
+          <TenantSkinProvider pathname={pathname}>
+            <DemoSessionGuard />
+            {IS_STAGING && (
+              <div
+                role="status"
+                aria-label="Staging environment"
+                style={{
+                  position: 'sticky',
+                  top: 0,
+                  zIndex: 10000,
+                  width: '100%',
+                  padding: '7px 12px',
+                  textAlign: 'center',
+                  fontSize: '12px',
+                  fontWeight: 800,
+                  letterSpacing: '0.12em',
+                  background: '#f5c542',
+                  color: '#171717',
+                  borderBottom: '2px solid #171717',
+                }}
               >
-                <div className="ltg-sidebar-header">
-                  <div className="ltg-brand">
-                    <span className="ltg-brand-mark">LTG</span>
-                    <span className="ltg-brand-copy">
-                      Education
-                      <br />
-                      Operating System
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    className="ltg-mobile-menu-button"
-                    aria-expanded={navOpen}
-                    aria-controls="ltg-sidebar-menu"
-                    onClick={() => setNavOpen((open) => !open)}
-                  >
-                    <span aria-hidden="true">☰</span>
-                    Menu
-                  </button>
-                </div>
-
-                <div id="ltg-sidebar-menu" className="ltg-sidebar-menu">
-                  <div className="ltg-nav-section-label">Teaching</div>
-                  <Link
-                    href="/dashboard"
-                    className={`ltg-nav-link ${
-                      pathname === '/dashboard' || pathname === '/planner' ? 'active' : ''
-                    }`}
-                  >
-                    Planner
-                  </Link>
-                  <Link
-                    href="/agenda"
-                    className={`ltg-nav-link ${pathname === '/agenda' ? 'active' : ''}`}
-                  >
-                    Agenda Workspace
-                  </Link>
-                  <Link
-                    href="/resources"
-                    className={`ltg-nav-link ${isResourcesRoute ? 'active' : ''}`}
-                  >
-                    Content &amp; Resources
-                  </Link>
-                  <Link
-                    href="/classroom"
-                    className={`ltg-nav-link ${pathname.startsWith('/classroom') ? 'active' : ''}`}
-                  >
-                    Live Classroom
-                  </Link>
-
-                  <div className="ltg-nav-section-label">Classroom Tools</div>
-                  <Link
-                    href="/attendance"
-                    className={`ltg-nav-link ${isAttendanceRoute ? 'active' : ''}`}
-                  >
-                    Student Attendance
-                  </Link>
-                  <ReviewQueueLink />
-                  <Link
-                    href="/time-clock"
-                    className={`ltg-nav-link ${
-                      pathname === '/time-clock' ? 'active' : ''
-                    }`}
-                  >
-                    Employee Time Clock
-                  </Link>
-
-                  <div className="ltg-nav-section-label">Reports</div>
-                  <Link
-                    href="/reports"
-                    className={`ltg-nav-link ${isReportsRoute ? 'active' : ''}`}
-                  >
-                    Reporting &amp; Analytics
-                  </Link>
-                  <PayrollNavLink />
-
-                  <div className="ltg-nav-section-label">Admin</div>
-                  <PlannerUtilityNavLinks />
-
-                  {isAccountRoute && (
-                    <>
-                      <div className="ltg-nav-section-label">Account Tools</div>
-                      <Link
-                        href="/accounts"
-                        className={`ltg-nav-link ${pathname === '/accounts' ? 'active' : ''}`}
-                      >
-                        Account Management
-                      </Link>
-                      <Link
-                        href="/accounts/diagnostics"
-                        className={`ltg-nav-link ${
-                          pathname === '/accounts/diagnostics' ? 'active' : ''
-                        }`}
-                      >
-                        Invitation Diagnostics
-                      </Link>
-                    </>
-                  )}
-
-                  <div className="ltg-sidebar-footer">
-                    <ThemeToggle />
-                    <SidebarSignOut />
-                  </div>
-                </div>
-              </nav>
+                STAGING · NO LIVE DATA
+              </div>
             )}
+            {!isMarketingRoute && !isDemoRoute && <UsageTracker pathname={pathname} />}
+            <div className="app-container">
+              {!hideWorkspaceNav && (
+                <nav
+                  aria-label="Planner workspace navigation"
+                  className={navOpen ? 'ltg-sidebar mobile-open' : 'ltg-sidebar'}
+                >
+                  <div className="ltg-sidebar-header">
+                    <div className="ltg-brand">
+                      <span className="ltg-brand-mark">LTG</span>
+                      <span className="ltg-brand-copy">
+                        Education
+                        <br />
+                        Operating System
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      className="ltg-mobile-menu-button"
+                      aria-expanded={navOpen}
+                      aria-controls="ltg-sidebar-menu"
+                      onClick={() => setNavOpen((open) => !open)}
+                    >
+                      <span aria-hidden="true">☰</span>
+                      Menu
+                    </button>
+                  </div>
 
-            <div className={hideWorkspaceNav ? 'ltg-public-content' : 'ltg-main-content'}>
-              {!isDemoRoute && (
-                <>
-                  {pathname === '/dashboard' && <DashboardHero />}
-                  <DashboardPunchClock pathname={pathname} />
-                  <SchoolActiveTodayEmployees pathname={pathname} />
-                  {!isStudentDisplay && <CohortWorkspaceBar pathname={pathname} />}
-                  {!isStudentDisplay && <TeacherIdentityBar pathname={pathname} />}
-                  <AttendanceFinalizationAlert pathname={pathname} />
-                  <PlannerAttendancePanel pathname={pathname} />
-                  {!isStudentDisplay && <AgendaNotePolicyBanner pathname={pathname} />}
-                </>
+                  <div id="ltg-sidebar-menu" className="ltg-sidebar-menu">
+                    <div className="ltg-nav-section-label">Teaching</div>
+                    <Link
+                      href="/dashboard"
+                      className={`ltg-nav-link ${
+                        pathname === '/dashboard' || pathname === '/planner' ? 'active' : ''
+                      }`}
+                    >
+                      Planner
+                    </Link>
+                    <Link
+                      href="/agenda"
+                      className={`ltg-nav-link ${pathname === '/agenda' ? 'active' : ''}`}
+                    >
+                      Agenda Workspace
+                    </Link>
+                    <Link
+                      href="/resources"
+                      className={`ltg-nav-link ${isResourcesRoute ? 'active' : ''}`}
+                    >
+                      Content &amp; Resources
+                    </Link>
+                    <Link
+                      href="/classroom"
+                      className={`ltg-nav-link ${pathname.startsWith('/classroom') ? 'active' : ''}`}
+                    >
+                      Live Classroom
+                    </Link>
+
+                    <div className="ltg-nav-section-label">Classroom Tools</div>
+                    <Link
+                      href="/attendance"
+                      className={`ltg-nav-link ${isAttendanceRoute ? 'active' : ''}`}
+                    >
+                      Student Attendance
+                    </Link>
+                    <ReviewQueueLink />
+                    <Link
+                      href="/time-clock"
+                      className={`ltg-nav-link ${
+                        pathname === '/time-clock' ? 'active' : ''
+                      }`}
+                    >
+                      Employee Time Clock
+                    </Link>
+
+                    <div className="ltg-nav-section-label">Reports</div>
+                    <Link
+                      href="/reports"
+                      className={`ltg-nav-link ${isReportsRoute ? 'active' : ''}`}
+                    >
+                      Reporting &amp; Analytics
+                    </Link>
+                    <PayrollNavLink />
+
+                    <div className="ltg-nav-section-label">Admin</div>
+                    <PlannerUtilityNavLinks />
+
+                    {isAccountRoute && (
+                      <>
+                        <div className="ltg-nav-section-label">Account Tools</div>
+                        <Link
+                          href="/accounts"
+                          className={`ltg-nav-link ${pathname === '/accounts' ? 'active' : ''}`}
+                        >
+                          Account Management
+                        </Link>
+                        <Link
+                          href="/accounts/diagnostics"
+                          className={`ltg-nav-link ${
+                            pathname === '/accounts/diagnostics' ? 'active' : ''
+                          }`}
+                        >
+                          Invitation Diagnostics
+                        </Link>
+                      </>
+                    )}
+
+                    <div className="ltg-sidebar-footer">
+                      <ThemeToggle />
+                      <SidebarSignOut />
+                    </div>
+                  </div>
+                </nav>
               )}
-              {children}
+
+              <div className={hideWorkspaceNav ? 'ltg-public-content' : 'ltg-main-content'}>
+                {!isDemoRoute && (
+                  <>
+                    {pathname === '/dashboard' && <DashboardHero />}
+                    <DashboardPunchClock pathname={pathname} />
+                    <SchoolActiveTodayEmployees pathname={pathname} />
+                    {!isStudentDisplay && <CohortWorkspaceBar pathname={pathname} />}
+                    {!isStudentDisplay && <TeacherIdentityBar pathname={pathname} />}
+                    <AttendanceFinalizationAlert pathname={pathname} />
+                    <PlannerAttendancePanel pathname={pathname} />
+                    {!isStudentDisplay && <AgendaNotePolicyBanner pathname={pathname} />}
+                  </>
+                )}
+                {children}
+              </div>
             </div>
-          </div>
+          </TenantSkinProvider>
         </ThemeProvider>
       </body>
     </html>
