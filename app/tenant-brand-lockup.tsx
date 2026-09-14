@@ -14,17 +14,30 @@ export default function TenantBrandLockup() {
   return (
     <div className="ltg-brand" data-ltg-brand-key={skin.key}>
       {logoUrl ? (
-        <span className="ltg-brand-mark ltg-brand-mark-has-logo" aria-hidden="true">
-          <img className="ltg-brand-logo" src={logoUrl} alt="" />
+        <span
+          className="ltg-brand-mark ltg-brand-mark-has-logo"
+          aria-hidden="true"
+          style={{ overflow: 'hidden' }}
+        >
+          <img
+            className="ltg-brand-logo"
+            src={logoUrl}
+            alt=""
+            style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+          />
         </span>
       ) : (
         <span className="ltg-brand-mark" aria-hidden="true">
           {brandMark}
         </span>
       )}
-      <span className="ltg-brand-copy">
+      <span className="ltg-brand-copy" style={{ display: 'grid', gap: 2 }}>
         <span className="ltg-brand-name">{brandName}</span>
-        {brandSubline && <span className="ltg-brand-subline">{brandSubline}</span>}
+        {brandSubline && (
+          <span className="ltg-brand-subline" style={{ fontSize: '0.72em', opacity: 0.72 }}>
+            {brandSubline}
+          </span>
+        )}
       </span>
     </div>
   );
