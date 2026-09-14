@@ -24,7 +24,10 @@ const SKIN_REGISTRY: Record<string, LtgSkinDefinition> = {
     className: 'ltg-skin-pccc-welding',
     defaultBrandMark: 'PCCC',
     defaultBrandName: 'Welding',
-    stylesheetHrefs: ['/pccc-real-painted-steel.css?v=20260914-1'],
+    stylesheetHrefs: [
+      '/pccc-real-painted-steel.css?v=20260914-1',
+      '/pccc-modern-shell.css?v=20260914-1',
+    ],
     legacyBaseClasses: ['pccc-welding-skin'],
     legacyAccessClasses: {
       school: ['pccc-school-skin'],
