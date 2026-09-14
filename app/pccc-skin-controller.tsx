@@ -106,7 +106,7 @@ function modeForMembership(pathname: string, membership: Membership | null) {
   return isSchoolContext(pathname) || roleUsesSchoolPortal ? 'school' : 'instructor';
 }
 
-export default function PcccSkinController({ pathname }: { pathname: string }) {
+export default function PcccSkinController({ pathname, onModeChange }: { pathname: string; onModeChange?: (mode: SkinMode) => void }) {
   const [supabase] = useState(getSupabase);
 
   useEffect(() => {
@@ -118,6 +118,7 @@ export default function PcccSkinController({ pathname }: { pathname: string }) {
     const setMode = (mode: SkinMode) => {
       if (cancelled) return;
       activeMode = mode;
+      onModeChange?.(mode);
       applyPcccClasses(mode);
     };
 
@@ -216,7 +217,7 @@ export default function PcccSkinController({ pathname }: { pathname: string }) {
       authListener.subscription.unsubscribe();
       applyPcccClasses(null);
     };
-  }, [pathname, supabase]);
+  }, [pathname, supabase, onModeChange]);
 
   return null;
 }

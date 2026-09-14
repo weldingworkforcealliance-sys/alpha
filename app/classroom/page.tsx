@@ -31,7 +31,7 @@ function formatError(value: unknown) {
     const record=value as Record<string,unknown>;
     const details=[record.message,record.details,record.hint,record.code]
       .filter((part):part is string=>typeof part==='string'&&part.trim().length>0);
-    if(details.length)return [...new Set(details)].join(' · ');
+    if(details.length)return Array.from(new Set(details)).join(' · ');
     try{return JSON.stringify(value);}catch{return 'Unexpected classroom error.';}
   }
   return 'Unexpected classroom error.';

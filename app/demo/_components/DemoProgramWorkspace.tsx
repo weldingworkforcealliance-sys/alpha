@@ -7,6 +7,8 @@ import PlannerTeachingConsole, {
   type PlannerPlanRow,
   type PlannerSupportItem,
 } from '@/app/components/planner/PlannerTeachingConsole';
+import FinsenSierraClock from '@/app/components/finsen-sierra-clock';
+import { PcccBrand, PcccPortalHeader, PcccLearningHub } from '@/app/components/pccc-portal';
 import type { DemoCourseDay, DemoModule, DemoProgram, DemoResource } from '../_lib/demo-types';
 
 type AttendanceStatus = 'Present' | 'Late' | 'Absent' | 'Not recorded';
@@ -402,12 +404,13 @@ export default function DemoProgramWorkspace({ program }: { program: DemoProgram
   }
 
   return (
-    <div className="demo-app">
+    <div className={`demo-app${program.id === 'welding' ? ' pccc-component-demo' : ''}`} data-portal-mode={state.activeModule === 'school' ? 'school' : 'instructor'}>
       <aside className="sidebar">
-        <div className="brand-block">
+        {program.id === 'welding' ? <PcccBrand /> : <div className="brand-block">
           <div className="brand-mark">LTG</div>
           <div><strong>Education</strong><span>Operating System</span></div>
         </div>
+        }
         <div className="demo-chip">PUBLIC DEMO · TEMPORARY DATA</div>
         <div className="school-context">
           <small>{program.schoolName}</small>
@@ -454,6 +457,12 @@ export default function DemoProgramWorkspace({ program }: { program: DemoProgram
       </aside>
 
       <main className="workspace">
+        {program.id === 'welding' && <PcccPortalHeader mode={state.activeModule === 'school' ? 'school' : 'instructor'} title={MODULES.find(([id]) => id === state.activeModule)?.[1] ?? 'Planner'} demo onNavigate={id => { if (isDemoModule(id)) update({ activeModule: id }); }} />}
+        {program.id === 'welding' && (state.activeModule === 'planner' || state.activeModule === 'school') && <PcccLearningHub mode={state.activeModule === 'school' ? 'school' : 'instructor'} demo onNavigate={id => { if (isDemoModule(id)) update({ activeModule: id }); }} />}
+        {program.id === 'welding' && state.activeModule === 'planner' && <section className="pccc-demo-dashboard-clock" aria-label="Finsen Sierra dashboard time clock">
+          <FinsenSierraClock displayName={program.instructorName} department="PCCC Welding · Instructor" employeeNumber="DEMO" clockedIn={Boolean(state.clockedInAt)} sinceLabel={state.clockedInAt ? new Date(state.clockedInAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : null} todayTotal={formatDuration(clockSeconds)} onClockIn={punchClock} onClockOut={punchClock} onViewTime={() => update({ activeModule: 'timeclock' })} />
+          <div className="pccc-demo-clock-summary"><span>FINSEN SIERRA TIME CLOCK</span><h2>Your time. Clearly recorded.</h2><p>{state.clockedInAt ? 'Your demo clock session is running.' : 'Ready when your teaching day begins.'}</p><strong>{formatDuration(clockSeconds)}</strong><small>Temporary demo time</small></div>
+        </section>}
         <div className="banner">
           <span>PUBLIC DEMO · CLOSED SYSTEM · NO LIVE SCHOOL RECORDS</span>
           <span>Demo activity is forgotten after 30 minutes of inactivity</span>
