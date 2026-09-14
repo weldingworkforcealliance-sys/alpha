@@ -1,12 +1,13 @@
-const STORAGE_KEY = 'finsen-clock-lab-v1';
-const FRAME_SOURCE = '/finsen-sierra/source-material-clock.b64.txt';
+const STORAGE_KEY = 'finsen-clock-lab-v2';
+const FRAME_SOURCE = '/finsen-clock-lab/assets/frame-exact.b64.txt?v=approved-20260914';
+const FRAME_MIME = 'image/avif';
 
 const defaultState = () => ({
   employee: {
-    name: 'Richard Genco',
-    department: 'Operations',
-    role: 'Instructor / Admin',
-    number: '1047'
+    name: 'Alex Carter',
+    department: 'PCCC Welding',
+    role: 'Welding Instructor',
+    number: '0350510'
   },
   entries: []
 });
@@ -23,13 +24,26 @@ let now = new Date();
 
 async function loadFrame() {
   try {
-    const response = await fetch(FRAME_SOURCE, { cache: 'force-cache' });
-    if (!response.ok) throw new Error('Frame artwork unavailable');
-    const encoded = (await response.text()).trim();
-    if (encoded.length < 10000) throw new Error('Frame artwork incomplete');
-    el('frameImage').src = `data:image/webp;base64,${encoded}`;
+    const response = await fetch(FRAME_SOURCE, { cache: 'no-store' });
+    if (!response.ok) throw new Error('Approved brass frame artwork unavailable');
+    const encoded = (await response.text()).replace(/\s+/g, '');
+    if (encoded.length < 10000) throw new Error('Approved brass frame artwork incomplete');
+
+    const frame = el('frameImage');
+    frame.onload = () => {
+      clockWrap.dataset.frameReady = 'true';
+      el('qaFrame').textContent = 'APPROVED BRASS FRAME';
+    };
+    frame.onerror = () => {
+      clockWrap.dataset.frameReady = 'false';
+      el('qaFrame').textContent = 'FRAME LOAD ERROR';
+      showToast('Approved brass frame could not be decoded.');
+    };
+    frame.src = `data:${FRAME_MIME};base64,${encoded}`;
   } catch (error) {
-    showToast(error instanceof Error ? error.message : 'Unable to load clock frame');
+    clockWrap.dataset.frameReady = 'false';
+    el('qaFrame').textContent = 'FRAME LOAD ERROR';
+    showToast(error instanceof Error ? error.message : 'Unable to load approved brass frame');
   }
 }
 
@@ -99,7 +113,7 @@ function renderClock() {
   el('greeting').textContent = `${hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'},`;
   el('employeeName').textContent = state.employee.name;
   el('department').textContent = state.employee.department;
-  el('employeeNumber').textContent = `#${state.employee.number}`;
+  el('employeeNumber').textContent = state.employee.number;
   el('role').textContent = state.employee.role;
   el('liveTime').textContent = timeParts[0];
   el('ampm').textContent = timeParts[1] || '';
@@ -109,12 +123,12 @@ function renderClock() {
   el('footerName').textContent = state.employee.name;
   el('footerDepartment').textContent = state.employee.department;
   el('footerRole').textContent = state.employee.role;
-  el('footerEmployee').textContent = `#${state.employee.number}`;
+  el('footerEmployee').textContent = state.employee.number;
 
   const statusValue = el('statusValue');
   clockWrap.dataset.clockedIn = active ? 'true' : 'false';
   statusValue.classList.toggle('on-site', Boolean(active));
-  statusValue.innerHTML = `<i></i>${active ? 'On Site' : 'Off Site'}`;
+  statusValue.innerHTML = `<i></i>${active ? 'Clocked In' : 'Clocked Out'}`;
   el('statusSince').textContent = active ? `Since ${formatClock(active.in)}` : 'Not currently punched in';
   el('todayTotal').textContent = formatDuration(totalMsToday());
   el('totalNote').textContent = active ? 'Time is running' : 'Recorded time today';
