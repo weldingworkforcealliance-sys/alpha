@@ -94,6 +94,7 @@ describe('LTG visual theme consistency', () => {
     expect(controller).not.toContain("document.documentElement.dataset.theme !== 'dark'");
     expect(lightCss).toContain("html[data-theme='light'] body.pccc-welding-skin");
     expect(lightCss).toContain('--ltg-canvas:#dce3e7');
-    expect(lightCss).toContain('Connected Classroom');
+    expect(lightCss).toContain("body.pccc-welding-skin.ltg-secondary-route :where(.shell,.loading)");
+    expect(lightCss).toContain("body.pccc-welding-skin.ltg-secondary-route header");
   });
 });
