@@ -40,7 +40,14 @@ describe('attendance finalization safeguard', () => {
     expect(alert).toContain('PVHS email');
     expect(alert).toContain('/attendance?section=');
     expect(alert).toContain('Review &amp; Finalize');
-    expect(alert).toContain("window.setInterval(() => void refresh(), 30_000)");
     expect(layout).toContain('<AttendanceFinalizationAlert pathname={pathname} />');
+  });
+
+  it('uses a low-frequency visibility-aware safety poll while preserving immediate event refresh', () => {
+    expect(alert).toContain('window.setInterval(refreshIfVisible, 120_000)');
+    expect(alert).toContain("document.visibilityState !== 'hidden'");
+    expect(alert).toContain("window.addEventListener('focus', onFocus)");
+    expect(alert).toContain("document.addEventListener('visibilitychange', onVisibilityChange)");
+    expect(alert).toContain("window.addEventListener('ltg:attendance-finalized', onAttendanceFinalized)");
   });
 });
