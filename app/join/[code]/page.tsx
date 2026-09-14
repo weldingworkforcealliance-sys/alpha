@@ -224,7 +224,7 @@ export default function StudentAssessmentPage(){
             <input value={teamMembers} onChange={e=>setTeamMembers(e.target.value)} placeholder="Names of students working with you"/>
           </label>
         }
-        <button disabled={!name.trim()||!studentId.trim()} onClick={()=>{setReferenceOpen(false);setReferenceMaximized(false);setStarted(true);}}>Begin Live Activity</button>
+        <button disabled={!name.trim()||!studentId.trim()} onClick={()=>{setReferenceOpen(Boolean(info.reference_image_url||info.reference_body));setReferenceMaximized(false);setStarted(true);}}>Begin Live Activity</button>
         <p className="draft-note">Your answers are saved on this device until you submit.</p>
       </div>
       <ReferencePanel/>
