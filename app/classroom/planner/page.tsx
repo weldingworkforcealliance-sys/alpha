@@ -35,6 +35,12 @@ type Assessment = {
   allow_team_members: boolean;
 };
 
+type ClassReference = {
+  title: string | null;
+  imageUrl: string | null;
+  body: string | null;
+};
+
 type Session = ClassroomSession;
 
 type Submission = ClassroomSubmission;
@@ -53,6 +59,8 @@ export default function PlannerAssessmentLauncher() {
   const [expectedStudents, setExpectedStudents] = useState(MAX_WELDING_CLASS_CAPACITY);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [qr, setQr] = useState('');
+  const [reference, setReference] = useState<ClassReference | null>(null);
+  const [referenceMaximized, setReferenceMaximized] = useState(false);
 
   const joinUrl = useMemo(() => {
     if (!session || session.status !== 'active' || typeof window === 'undefined') return '';
@@ -61,7 +69,7 @@ export default function PlannerAssessmentLauncher() {
 
   const submitted = submissions.length;
   const remaining = Math.max((session?.expected_students ?? expectedStudents) - submitted, 0);
-
+  const hasReference = Boolean(reference?.title || reference?.imageUrl || reference?.body);
 
   useEffect(() => {
     let alive = true;
@@ -161,12 +169,59 @@ export default function PlannerAssessmentLauncher() {
     );
   }, [joinUrl, session?.id, session?.status, supabase]);
 
+  useEffect(() => {
+    if (!session || session.status !== 'active') return;
+    let alive = true;
+
+    const loadReference = async () => {
+      const { data, error: referenceError } = await supabase.rpc('get_classroom_assessment', {
+        p_join_code: session.join_code,
+      });
+
+      if (referenceError) {
+        if (alive) setError(referenceError.message);
+        return;
+      }
+
+      const payload = data as {
+        session?: {
+          reference_title?: string | null;
+          reference_image_url?: string | null;
+          reference_body?: string | null;
+        };
+      };
+
+      if (!alive) return;
+      setReference({
+        title: payload.session?.reference_title ?? null,
+        imageUrl: payload.session?.reference_image_url ?? null,
+        body: payload.session?.reference_body ?? null,
+      });
+    };
+
+    loadReference();
+    return () => {
+      alive = false;
+    };
+  }, [session?.join_code, session?.status, supabase]);
+
+  useEffect(() => {
+    if (!referenceMaximized) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setReferenceMaximized(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [referenceMaximized]);
+
   const startAssessment = async () => {
     if (!section || !assessment) return;
 
     setBusy(true);
     setError('');
     setNotice('');
+    setReference(null);
+    setReferenceMaximized(false);
 
     try {
       const created = await createClassroomSession(supabase, {
@@ -290,7 +345,18 @@ export default function PlannerAssessmentLauncher() {
                     <button className="danger" disabled={busy} onClick={endAssessment}>End Session</button>
                   )}
                   {session.status === 'ended' && (
-                    <button className="start" onClick={() => { setSession(null); setSubmissions([]); setNotice(''); }}>Start New Session</button>
+                    <button
+                      className="start"
+                      onClick={() => {
+                        setSession(null);
+                        setSubmissions([]);
+                        setNotice('');
+                        setReference(null);
+                        setReferenceMaximized(false);
+                      }}
+                    >
+                      Start New Session
+                    </button>
                   )}
                 </div>
               </div>
@@ -301,6 +367,24 @@ export default function PlannerAssessmentLauncher() {
                 )}
               </div>
             </section>
+
+            {hasReference && (
+              <section className="panel reference-panel">
+                <div className="reference-head">
+                  <div>
+                    <div className="eyebrow">Class Reference / Visual</div>
+                    <h2>{reference?.title ?? `${assessment.title} Reference`}</h2>
+                  </div>
+                  <button onClick={() => setReferenceMaximized(true)}>Maximize Reference</button>
+                </div>
+                {reference?.imageUrl && (
+                  <div className="reference-image-wrap">
+                    <img src={reference.imageUrl} alt={reference.title ?? `${assessment.title} class reference`} />
+                  </div>
+                )}
+                {reference?.body && <div className="reference-body">{reference.body}</div>}
+              </section>
+            )}
 
             <section className="panel">
               <div className="results-head">
@@ -334,6 +418,24 @@ export default function PlannerAssessmentLauncher() {
         )}
       </main>
 
+      {referenceMaximized && hasReference && (
+        <div className="reference-overlay" role="dialog" aria-modal="true" aria-label="Maximized class reference">
+          <div className="reference-overlay-head">
+            <div>
+              <div className="eyebrow">Class Reference / Visual</div>
+              <h2>{reference?.title ?? `${assessment?.title ?? 'Live Classroom'} Reference`}</h2>
+            </div>
+            <button onClick={() => setReferenceMaximized(false)}>Close Reference</button>
+          </div>
+          <div className="reference-overlay-content">
+            {reference?.imageUrl && (
+              <img src={reference.imageUrl} alt={reference.title ?? 'Class reference'} />
+            )}
+            {reference?.body && <div className="reference-body">{reference.body}</div>}
+          </div>
+        </div>
+      )}
+
       <style jsx>{`
         .locked-shell{min-height:100vh;background:#080808;color:#ddd}
         .locked-loading{min-height:100vh;display:grid;place-items:center;background:#080808;color:#aaa}
@@ -366,12 +468,22 @@ export default function PlannerAssessmentLauncher() {
         .actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}
         .danger{border-color:#7b3333;color:#ff9696}
         .qr{text-align:center}.qr img{width:min(100%,360px);border-radius:9px;background:#fff}
+        .reference-panel{border-color:#405333;background:#10140d}
+        .reference-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:16px}
+        .reference-image-wrap{display:grid;place-items:center;padding:14px;border:1px solid #2f3a29;border-radius:9px;background:#080a07;overflow:auto}
+        .reference-image-wrap img{display:block;max-width:100%;max-height:560px;object-fit:contain;border-radius:6px;background:#fff}
+        .reference-body{white-space:pre-line;color:#c8c8c8;line-height:1.6;margin-top:16px}
+        .reference-overlay{position:fixed;inset:0;z-index:1000;display:grid;grid-template-rows:auto minmax(0,1fr);padding:18px;background:rgba(4,4,4,.98);color:#ddd}
+        .reference-overlay-head{display:flex;justify-content:space-between;align-items:center;gap:18px;padding-bottom:14px;border-bottom:1px solid #303030}
+        .reference-overlay-content{min-height:0;overflow:auto;display:grid;place-items:start center;align-content:start;gap:12px;padding:18px}
+        .reference-overlay-content img{display:block;max-width:100%;height:auto;max-height:calc(100vh - 180px);object-fit:contain;border-radius:8px;background:#fff}
+        .reference-overlay-content .reference-body{width:min(1000px,100%);margin:0}
         .results-head{display:flex;justify-content:space-between;align-items:center;gap:15px}
         .table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;margin-top:14px}
         th,td{padding:11px;border-bottom:1px solid #292929;text-align:left}
         th{color:#777;font-size:10px;text-transform:uppercase}td small{display:block;margin-top:3px;color:#888}
         .empty{text-align:center;padding:34px;color:#666}
-        @media(max-width:760px){header{align-items:flex-start;flex-direction:column}.facts,.live-grid{grid-template-columns:1fr}.qr{order:-1}.code{font-size:36px}input{width:100%}}
+        @media(max-width:760px){header{align-items:flex-start;flex-direction:column}.facts,.live-grid{grid-template-columns:1fr}.qr{order:-1}.code{font-size:36px}input{width:100%}.reference-head,.reference-overlay-head{align-items:flex-start;flex-direction:column}.reference-head button,.reference-overlay-head button{width:100%}.reference-overlay{padding:10px}}
       `}</style>
     </div>
   );
