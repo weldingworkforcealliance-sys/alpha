@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
+import { formatError } from '@/lib/format-error';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -65,7 +66,7 @@ export default function ResetPasswordPage() {
       setCodeSent(true);
       setMessage('Reset code sent. Check your email, then enter the code below.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not send reset code.');
+      setError(formatError(err, 'Could not send reset code.'));
     } finally {
       setSaving(false);
     }
@@ -98,11 +99,7 @@ export default function ResetPasswordPage() {
       setReady(true);
       setMessage('Code verified. Create your new password below.');
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'The verification code could not be verified.'
-      );
+      setError(formatError(err, 'The verification code could not be verified.'));
     } finally {
       setSaving(false);
     }
@@ -132,7 +129,7 @@ export default function ResetPasswordPage() {
       setMessage('Password updated successfully. Opening your dashboard…');
       window.setTimeout(() => router.push('/dashboard'), 1200);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(formatError(err, 'Password could not be updated.'));
     } finally {
       setSaving(false);
     }
