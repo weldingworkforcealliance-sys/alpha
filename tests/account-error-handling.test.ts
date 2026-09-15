@@ -108,7 +108,8 @@ describe('account and invitation downstream operations', () => {
     await h.handler();
     expect(h.signUp).toHaveBeenCalledOnce();
     expect(h.rpc).toHaveBeenCalledTimes(2);
-    expect(h.setError).toHaveBeenLastCalledWith('That record already exists.');
+    expect(h.setError).toHaveBeenLastCalledWith(expect.stringContaining('The login account exists, but the school invitation could not be confirmed.'));
+    expect(h.setError).toHaveBeenLastCalledWith(expect.stringContaining('That record already exists.'));
     expect(h.load).not.toHaveBeenCalled();
     expect(h.setBusy).toHaveBeenLastCalledWith(false);
   });
@@ -190,6 +191,96 @@ describe.each([
   });
 });
 
+
+describe('partial account operations', () => {
+  it('reuses an existing account with no school membership and prepares an invitation', async () => {
+    const h = harness(accounts, 'inviteNewUser');
+    h.rpc.mockResolvedValueOnce({ data: { exists: true, membership_exists: false, user_id: 'existing-user' }, error: null })
+      .mockResolvedValueOnce({ error: null });
+    await h.handler();
+    expect(h.signUp).not.toHaveBeenCalled();
+    expect(h.rpc).toHaveBeenNthCalledWith(2, 'admin_prepare_invited_user', {
+      p_school_id: 'school', p_user_id: 'existing-user', p_email: 'teacher@example.com',
+      p_display_name: 'Teacher', p_role: 'instructor', p_reason: 'Invitation',
+    });
+    expect(h.rpc).not.toHaveBeenCalledWith('admin_add_existing_user_to_school', expect.anything());
+    expect(h.setNotice).toHaveBeenLastCalledWith(expect.stringContaining('remains INVITED'));
+    expect(h.setError).toHaveBeenCalledExactlyOnceWith('');
+    expect(h.load).toHaveBeenCalledOnce();
+  });
+
+  it.each([true, undefined])('does not overwrite an existing or unknown membership (%s)', async (membershipExists) => {
+    const h = harness(accounts, 'inviteNewUser');
+    h.rpc.mockResolvedValue({ data: { exists: true, membership_exists: membershipExists, user_id: 'existing-user' }, error: null });
+    await h.handler();
+    expect(h.signUp).not.toHaveBeenCalled();
+    expect(h.rpc).toHaveBeenCalledOnce();
+    expect(h.setNotice).toHaveBeenCalledExactlyOnceWith('');
+    expect(h.setError).toHaveBeenLastCalledWith(expect.stringContaining('An account already exists'));
+  });
+
+  it('requires the existing account ID before resuming an invitation', async () => {
+    const h = harness(accounts, 'inviteNewUser');
+    h.rpc.mockResolvedValue({ data: { exists: true, membership_exists: false }, error: null });
+    await h.handler();
+    expect(h.signUp).not.toHaveBeenCalled();
+    expect(h.rpc).toHaveBeenCalledOnce();
+    expect(h.setError).toHaveBeenLastCalledWith(expect.stringContaining('could not be identified'));
+  });
+
+  it('reports a lost preparation response without claiming the account was not created', async () => {
+    const h = harness(accounts, 'inviteNewUser');
+    h.rpc.mockResolvedValueOnce({ data: { exists: false }, error: null })
+      .mockRejectedValueOnce(technicalError);
+    await h.handler();
+    expect(h.signUp).toHaveBeenCalledOnce();
+    expect(h.setError).toHaveBeenLastCalledWith(expect.stringContaining('school invitation could not be confirmed'));
+    expect(h.setError.mock.lastCall?.[0]).not.toContain('private.');
+    expect(h.setError.mock.lastCall?.[0]).not.toContain('secret');
+    expect(h.load).not.toHaveBeenCalled();
+    expect(h.setBusy).toHaveBeenLastCalledWith(false);
+  });
+
+  it.each([
+    ['inviteNewUser', 'Invitation created, but the account list could not be refreshed.'],
+    ['addExisting', 'School access was updated, but the account list could not be refreshed.'],
+  ])('preserves a successful %s when refresh fails', async (name, expected) => {
+    const h = harness(accounts, name);
+    h.load.mockRejectedValue(technicalError);
+    await h.handler();
+    expect(h.setNotice).toHaveBeenCalledTimes(2);
+    expect(h.setNotice.mock.lastCall?.[0]).not.toBe('');
+    expect(h.setError).toHaveBeenLastCalledWith(expect.stringContaining(expected));
+    expect(h.setError.mock.lastCall?.[0]).not.toContain('private.');
+    expect(h.setError.mock.lastCall?.[0]).not.toContain('secret');
+    expect(h.load).toHaveBeenCalledOnce();
+    expect(h.rpc).toHaveBeenCalledTimes(name === 'inviteNewUser' ? 2 : 1);
+    expect(h.setBusy).toHaveBeenLastCalledWith(false);
+  });
+
+  it('does not report accepted setup mail as failed when diagnostic refresh fails', async () => {
+    const h = harness(diagnostics, 'resendSetup');
+    // The first lookup must succeed; only the post-send refresh fails.
+    h.queryDiagnostic.mockReset().mockResolvedValueOnce({ exists: true, membership_status: 'invited' })
+      .mockRejectedValueOnce(technicalError);
+    await h.handler();
+    expect(h.resend).toHaveBeenCalledOnce();
+    expect(h.queryDiagnostic).toHaveBeenCalledTimes(2);
+    expect(h.setNotice).toHaveBeenLastCalledWith(expect.stringContaining('accepted a new setup-email request'));
+    expect(h.setError).toHaveBeenLastCalledWith(expect.stringContaining('request was accepted, but invitation status could not be refreshed'));
+    expect(h.setError.mock.lastCall?.[0]).not.toContain('private.');
+    expect(h.setBusy).toHaveBeenLastCalledWith(false);
+  });
+
+  it('describes provider acceptance without promising mail delivery', async () => {
+    const h = harness(accounts, 'resendSetupEmail');
+    h.rpc.mockResolvedValue({ data: { exists: true, membership_status: 'invited' }, error: null });
+    await h.handler();
+    expect(h.resend).toHaveBeenCalledOnce();
+    expect(h.setNotice).toHaveBeenLastCalledWith(expect.stringContaining('Setup-email request accepted'));
+  });
+});
+
 describe('account error formatter wiring', () => {
   it.each([accounts, diagnostics])('%s imports the shared formatter without raw error coercion', (path) => {
     const source = readFileSync(path, 'utf8');
@@ -199,4 +290,3 @@ describe('account error formatter wiring', () => {
     expect(source).not.toContain('firstError?.message');
   });
 });
-

@@ -13,6 +13,7 @@ const TECHNICAL_MESSAGE_PATTERNS = [
   /schema .* does not exist/i,
   /operator does not exist/i,
   /sqlstate/i,
+  /pkce.*code verifier/i,
 ];
 
 function safeMessage(value: unknown, fallback: string) {

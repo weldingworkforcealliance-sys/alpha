@@ -223,7 +223,11 @@ export default function InvitationDiagnosticsPage() {
       setNotice(
         `Supabase accepted a new setup-email request for ${normalized}. Delivery beyond the mail provider still depends on the recipient's email system.`
       );
-      await queryDiagnostic(normalized);
+      try {
+        await queryDiagnostic(normalized);
+      } catch (refreshError) {
+        setError(`The setup-email request was accepted, but invitation status could not be refreshed. Check status before requesting another email. ${formatError(refreshError, 'Invitation status refresh failed.')}`);
+      }
     } catch (err) {
       setError(formatError(err, 'Account setup email could not be resent.'));
     } finally {

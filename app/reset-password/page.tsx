@@ -28,16 +28,17 @@ export default function ResetPasswordPage() {
         if (code) {
           const { error: exchangeError } =
             await supabase.auth.exchangeCodeForSession(code);
-          if (!exchangeError) {
-            setReady(true);
-            return;
-          }
+          if (exchangeError) throw exchangeError;
+          window.history.replaceState({}, '', window.location.pathname);
+          setReady(true);
+          return;
         }
 
-        const { data } = await supabase.auth.getSession();
+        const { data, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
         if (data.session) setReady(true);
       } catch (err) {
-        console.error(err);
+        setError(formatError(err, 'This recovery link could not be verified. Request a new recovery email.'));
       }
     };
 
@@ -120,9 +121,11 @@ export default function ResetPasswordPage() {
     }
 
     setSaving(true);
+    let passwordUpdated = false;
     try {
       const { error: updateError } = await supabase.auth.updateUser({ password });
       if (updateError) throw updateError;
+      passwordUpdated = true;
 
       const { error: activationError } = await supabase.rpc(
         'activate_my_invited_memberships'
@@ -132,7 +135,10 @@ export default function ResetPasswordPage() {
       setMessage('Password updated successfully. Opening your dashboard…');
       window.setTimeout(() => router.push('/dashboard'), 1200);
     } catch (err) {
-      setError(formatError(err, 'Password could not be updated.'));
+      const safeError = formatError(err, 'School access could not be activated.');
+      setError(passwordUpdated
+        ? `Your password was saved, but school access could not be activated. Sign in with your new password to retry activation. ${safeError}`
+        : formatError(err, 'Password could not be updated.'));
     } finally {
       setSaving(false);
     }

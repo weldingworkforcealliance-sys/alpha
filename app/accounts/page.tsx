@@ -255,6 +255,7 @@ export default function AccountManagementPage() {
     }
 
     setBusy(true);
+    let accountExists = false;
 
     try {
       const email = newEmail.trim().toLowerCase();
@@ -274,42 +275,52 @@ export default function AccountManagementPage() {
 
       const lookup = (lookupData ?? {}) as Record<string, unknown>;
 
-      if (lookup.exists) {
+      if (lookup.exists && lookup.membership_exists !== false) {
         setLookupResult(lookup);
         throw new Error(
           'An account already exists for this email. Use Add Existing User instead.'
         );
       }
 
-      const temporaryPassword = makeTemporaryPassword();
+      let invitedUserId: string;
+      if (lookup.exists) {
+        if (typeof lookup.user_id !== 'string' || !lookup.user_id) {
+          throw new Error('The existing account could not be identified. Check Invitation Diagnostics.');
+        }
+        invitedUserId = lookup.user_id;
+      } else {
+        const temporaryPassword = makeTemporaryPassword();
 
-      const { data: signupData, error: signupError } =
-        await signupClient.auth.signUp({
-          email,
-          password: temporaryPassword,
-          options: {
-            emailRedirectTo: `${window.location.origin}/account-setup`,
-            data: {
-              display_name: newName.trim(),
+        const { data: signupData, error: signupError } =
+          await signupClient.auth.signUp({
+            email,
+            password: temporaryPassword,
+            options: {
+              emailRedirectTo: `${window.location.origin}/account-setup`,
+              data: {
+                display_name: newName.trim(),
+              },
             },
-          },
-        });
+          });
 
-      if (signupError) throw signupError;
+        if (signupError) throw signupError;
 
-      if (!signupData.user?.id) {
-        throw new Error('Supabase did not return the new user account ID.');
+        if (!signupData.user?.id) {
+          throw new Error('Supabase did not return the new user account ID.');
+        }
+        invitedUserId = signupData.user.id;
       }
+      accountExists = true;
 
       /*
-        The admin session now associates the newly created Auth account
+        The admin session now associates the new or recovered Auth account
         with the school as INVITED.
       */
       const { error: prepareError } = await supabase.rpc(
         'admin_prepare_invited_user',
         {
           p_school_id: schoolId,
-          p_user_id: signupData.user.id,
+          p_user_id: invitedUserId,
           p_email: email,
           p_display_name: newName.trim(),
           p_role: newRole,
@@ -327,9 +338,16 @@ export default function AccountManagementPage() {
       setNewEmail('');
       setLookupResult(null);
 
-      await load();
+      try {
+        await load();
+      } catch (refreshError) {
+        setError(`Invitation created, but the account list could not be refreshed. Refresh this page before retrying. ${formatError(refreshError, 'Account list refresh failed.')}`);
+      }
     } catch (err) {
-      setError(formatError(err, 'Invitation could not be created.'));
+      const safeError = formatError(err, 'Invitation could not be created.');
+      setError(accountExists
+        ? `The login account exists, but the school invitation could not be confirmed. Check Invitation Diagnostics, then retry Invite New User if no school membership exists. ${safeError}`
+        : safeError);
     } finally {
       setBusy(false);
     }
@@ -403,7 +421,11 @@ export default function AccountManagementPage() {
 
       setExistingEmail('');
       setLookupResult(null);
-      await load();
+      try {
+        await load();
+      } catch (refreshError) {
+        setError(`School access was updated, but the account list could not be refreshed. Refresh this page before retrying. ${formatError(refreshError, 'Account list refresh failed.')}`);
+      }
     } catch (err) {
       setError(formatError(err, 'User could not be added to the school.'));
     } finally {
@@ -457,7 +479,7 @@ export default function AccountManagementPage() {
 
       if (resendError) throw resendError;
 
-      setNotice(`Setup email resent to ${email}.`);
+      setNotice(`Setup-email request accepted for ${email}. Check the recipient's inbox or spam folder for delivery.`);
     } catch (err) {
       setError(formatError(err, 'Account setup email could not be resent.'));
     } finally {
@@ -526,7 +548,8 @@ export default function AccountManagementPage() {
             <div className="eyebrow">New Account</div>
             <h2>Invite New User</h2>
             <p>
-              Creates a new Supabase login account and an INVITED school membership.
+              Creates a login account when needed and an INVITED school membership.
+              If an earlier attempt created the login only, retrying reuses it.
               The user completes setup from the email link and chooses their own password.
             </p>
 

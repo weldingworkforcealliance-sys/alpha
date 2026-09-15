@@ -99,19 +99,20 @@ export default function AccountSetupPage() {
           const { error: exchangeError } =
             await supabase.auth.exchangeCodeForSession(code);
 
-          if (!exchangeError) {
-            const { data: userData } = await supabase.auth.getUser();
-            if (userData.user?.email) {
-              setEmail(userData.user.email);
-            }
-            window.history.replaceState({}, '', window.location.pathname);
-            setReady(true);
-            setMessage('Invitation link verified. Create your password below.');
-            return;
+          if (exchangeError) throw exchangeError;
+          const { data: userData, error: userError } = await supabase.auth.getUser();
+          if (userError) throw userError;
+          if (userData.user?.email) {
+            setEmail(userData.user.email);
           }
+          window.history.replaceState({}, '', window.location.pathname);
+          setReady(true);
+          setMessage('Invitation link verified. Create your password below.');
+          return;
         }
 
-        const { data } = await supabase.auth.getSession();
+        const { data, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
 
         if (data.session) {
           if (data.session.user.email) {
@@ -182,6 +183,7 @@ export default function AccountSetupPage() {
     }
 
     setBusy(true);
+    let passwordUpdated = false;
 
     try {
       const { error: passwordError } = await supabase.auth.updateUser({
@@ -189,6 +191,7 @@ export default function AccountSetupPage() {
       });
 
       if (passwordError) throw passwordError;
+      passwordUpdated = true;
 
       const { data: activatedCount, error: activateError } =
         await supabase.rpc('activate_my_invited_memberships');
@@ -205,7 +208,10 @@ export default function AccountSetupPage() {
         router.push('/dashboard');
       }, 1300);
     } catch (err) {
-      setError(formatError(err, 'Account setup could not be completed.'));
+      const safeError = formatError(err, 'Account setup could not be completed.');
+      setError(passwordUpdated
+        ? `Your password was saved, but school access could not be activated. Sign in with your new password to retry activation. ${safeError}`
+        : safeError);
     } finally {
       setBusy(false);
     }

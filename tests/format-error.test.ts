@@ -2,6 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { formatError } from '../lib/format-error';
 
 describe('formatError', () => {
+  it('suppresses PKCE implementation guidance from invalid auth links', () => {
+    const message = 'PKCE code verifier not found in storage. Use @supabase/ssr on the server and client.';
+    for (const error of [message, { message }, new Error(message)]) {
+      expect(formatError(error, 'Request a new invitation.')).toBe('Request a new invitation.');
+    }
+  });
   it('preserves intentional application messages', () => {
     expect(formatError({ message: 'This class code is invalid or has expired' })).toBe(
       'This class code is invalid or has expired'
