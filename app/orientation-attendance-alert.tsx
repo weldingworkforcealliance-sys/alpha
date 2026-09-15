@@ -107,7 +107,7 @@ export default function OrientationAttendanceAlert() {
               marginBottom: 4,
             }}
           >
-            Tonight · Non-Instructional
+            Tonight · Orientation · Non-Instructional
           </div>
           <div style={{ fontSize: 20, fontWeight: 800 }}>Night Level 1 Orientation Attendance</div>
           <div style={{ marginTop: 4, opacity: 0.82 }}>
