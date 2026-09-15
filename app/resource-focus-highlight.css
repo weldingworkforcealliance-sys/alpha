@@ -17,6 +17,14 @@
     0 9px 24px rgba(86, 48, 18, 0.12) !important;
 }
 
+/* Preserve exact raster blueprint linework when the Live Classroom reference is enlarged. */
+.reference-image,
+.reference-overlay-image {
+  image-rendering: -moz-crisp-edges !important;
+  image-rendering: crisp-edges !important;
+  image-rendering: pixelated !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .guide-side-column > .guide-info-card:first-child {
     transition: none;
