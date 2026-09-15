@@ -176,7 +176,7 @@ with follow_days as (
   select d.id,d.school_id,d.course_id,d.planner_day_number
   from public.course_guide_days d
   join public.course_guides g on g.id=d.guide_id
-  wher g.guide_name='WLD 105 Master Instructor Guide - PVHS'
+  where g.guide_name='WLD 105 Master Instructor Guide - PVHS'
     and d.planner_day_number between 32 and 35
 )
 insert into public.course_guide_day_resources(
