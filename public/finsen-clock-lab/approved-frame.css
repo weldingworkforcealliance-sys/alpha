@@ -33,15 +33,15 @@
 /* Side lamps remain physically present in the approved artwork.
    Only the inactive glass is dimmed. */
 .lamp-dimmer {
-  top: 26.2%;
-  width: 5.85%;
-  height: 20.3%;
+  top: 25.8%;
+  width: 6.8%;
+  height: 21.5%;
   border-radius: 44%;
   background:
     linear-gradient(90deg, rgba(3,3,3,.92), rgba(15,13,10,.76) 45%, rgba(3,3,3,.92));
   box-shadow: inset 0 0 18px #000, 0 0 5px rgba(0,0,0,.72);
 }
-.lamp-left { left: 6.0%; }
+.lamp-left { left: 6.05%; }
 .lamp-right { right: 6.05%; }
 .clock-wrap[data-clocked-in="true"] .lamp-left { opacity: 0; }
 .clock-wrap[data-clocked-in="true"] .lamp-right { opacity: .90; }
@@ -79,5 +79,5 @@
     height: 46.8%;
     padding: 2.5% 2.6% 1.65%;
   }
-  .lamp-dimmer { top: 26.1%; height: 20.5%; }
+  .lamp-dimmer { top: 25.8%; height: 21.5%; }
 }

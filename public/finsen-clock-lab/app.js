@@ -1,6 +1,5 @@
 const STORAGE_KEY = 'finsen-clock-lab-v2';
-const FRAME_SOURCE = '/finsen-clock-lab/assets/frame-exact.b64.txt?v=approved-20260914';
-const FRAME_MIME = 'image/avif';
+const FRAME_SOURCE = '/finsen-clock-lab/assets/finsen-sierra-approved-clock.png?v=approved-20260914-2344';
 
 const defaultState = () => ({
   employee: {
@@ -24,11 +23,6 @@ let now = new Date();
 
 async function loadFrame() {
   try {
-    const response = await fetch(FRAME_SOURCE, { cache: 'no-store' });
-    if (!response.ok) throw new Error('Approved brass frame artwork unavailable');
-    const encoded = (await response.text()).replace(/\s+/g, '');
-    if (encoded.length < 10000) throw new Error('Approved brass frame artwork incomplete');
-
     const frame = el('frameImage');
     frame.onload = () => {
       clockWrap.dataset.frameReady = 'true';
@@ -39,7 +33,7 @@ async function loadFrame() {
       el('qaFrame').textContent = 'FRAME LOAD ERROR';
       showToast('Approved brass frame could not be decoded.');
     };
-    frame.src = `data:${FRAME_MIME};base64,${encoded}`;
+    frame.src = FRAME_SOURCE;
   } catch (error) {
     clockWrap.dataset.frameReady = 'false';
     el('qaFrame').textContent = 'FRAME LOAD ERROR';
