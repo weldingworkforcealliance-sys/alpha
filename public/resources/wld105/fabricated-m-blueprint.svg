@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1448 1086" role="img" aria-labelledby="title desc">
+  <title id="title">WLD 105 Fabricated M Approved Blueprint</title>
+  <desc id="desc">Approved Project M blueprint. Steel, quantity one, not drawn to scale. Left hole diameter one quarter inch, right hole diameter three eighth inch. Drill all holes as specified.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="6" refY="6" orient="auto-start-reverse" markerUnits="strokeWidth"><path d="M1,6 L11,1 L11,11 Z" fill="#003d99"/></marker>
+    <style>
+      .b{fill:none;stroke:#003d99;stroke-width:4;stroke-linecap:square;stroke-linejoin:miter}
+      .d{fill:none;stroke:#003d99;stroke-width:2.5;stroke-dasharray:14 10}
+      .dim{fill:none;stroke:#003d99;stroke-width:2.5;marker-start:url(#arrow);marker-end:url(#arrow)}
+      .ext{fill:none;stroke:#003d99;stroke-width:2.5}
+      .txt{fill:#003d99;font-family:Arial,Helvetica,sans-serif;font-size:34px;font-weight:600}
+      .sm{fill:#003d99;font-family:Arial,Helvetica,sans-serif;font-size:29px;font-weight:600}
+      .note{fill:#003d99;font-family:Arial,Helvetica,sans-serif;font-size:28px;font-weight:700;letter-spacing:1px}
+    </style>
+  </defs>
+  <rect x="8" y="8" width="1432" height="1070" class="b"/>
+  <rect x="713" y="8" width="727" height="160" class="b"/>
+  <line x1="713" y1="67" x2="1440" y2="67" class="b"/>
+  <line x1="713" y1="116" x2="1440" y2="116" class="b"/>
+  <line x1="1049" y1="8" x2="1049" y2="67" class="b"/>
+  <line x1="1239" y1="8" x2="1239" y2="116" class="b"/>
+  <text x="739" y="51" class="txt">Project “M”</text>
+  <text x="1080" y="51" class="txt">9/15/26</text>
+  <text x="1271" y="51" class="txt">VR #1</text>
+  <text x="739" y="105" class="txt">Steel</text>
+  <text x="1271" y="105" class="txt">Qty 1</text>
+  <text x="739" y="156" class="txt">Not Drawn to Scale.</text>
+  <text x="877" y="209" class="note">NOTE: DRILL ALL HOLES AS SPECIFIED.</text>
+  <path d="M285 297 H560 V400 H859 V297 H1134 V688 H839 L707 492 L574 688 H285 Z" class="b"/>
+  <line x1="284" y1="492" x2="1135" y2="492" class="d"/>
+  <circle cx="438" cy="492" r="42" class="b"/>
+  <line x1="438" y1="432" x2="438" y2="552" class="d"/>
+  <line x1="378" y1="492" x2="498" y2="492" class="d"/>
+  <line x1="438" y1="534" x2="438" y2="758" class="d"/>
+  <circle cx="975" cy="492" r="42" class="b"/>
+  <line x1="975" y1="432" x2="975" y2="552" class="d"/>
+  <line x1="915" y1="492" x2="1035" y2="492" class="d"/>
+  <line x1="975" y1="534" x2="975" y2="758" class="d"/>
+  <line x1="505" y1="431" x2="469" y2="465" class="ext" marker-end="url(#arrow)"/>
+  <text x="513" y="443" class="sm">Ø 1/4&quot; HOLE</text>
+  <line x1="920" y1="431" x2="948" y2="463" class="ext" marker-end="url(#arrow)"/>
+  <text x="753" y="443" class="sm">Ø 3/8&quot; HOLE</text>
+  <line x1="285" y1="224" x2="285" y2="285" class="ext"/>
+  <line x1="707" y1="224" x2="707" y2="386" class="ext"/>
+  <line x1="300" y1="246" x2="692" y2="246" class="dim"/>
+  <text x="486" y="264" class="txt">3&quot;</text>
+  <line x1="166" y1="297" x2="275" y2="297" class="ext"/>
+  <line x1="166" y1="492" x2="275" y2="492" class="ext"/>
+  <line x1="208" y1="312" x2="208" y2="477" class="dim"/>
+  <text x="159" y="407" class="txt">1 1/2&quot;</text>
+  <line x1="1145" y1="297" x2="1253" y2="297" class="ext"/>
+  <line x1="1145" y1="688" x2="1253" y2="688" class="ext"/>
+  <line x1="1218" y1="312" x2="1218" y2="673" class="dim"/>
+  <text x="1216" y="515" class="txt">3&quot;</text>
+  <line x1="285" y1="730" x2="285" y2="762" class="ext"/>
+  <line x1="438" y1="730" x2="438" y2="762" class="ext"/>
+  <line x1="300" y1="742" x2="423" y2="742" class="dim"/>
+  <text x="348" y="754" class="sm">1&quot;</text>
+  <line x1="975" y1="730" x2="975" y2="762" class="ext"/>
+  <line x1="1134" y1="730" x2="1134" y2="762" class="ext"/>
+  <line x1="990" y1="742" x2="1119" y2="742" class="dim"/>
+  <text x="994" y="754" class="sm">1.3125&quot;</text>
+  <rect x="285" y="835" width="849" height="46" class="b"/>
+  <line x1="402" y1="835" x2="402" y2="881" class="d"/>
+  <line x1="475" y1="835" x2="475" y2="881" class="d"/>
+  <line x1="560" y1="835" x2="560" y2="881" class="b"/>
+  <line x1="707" y1="835" x2="707" y2="881" class="b"/>
+  <line x1="854" y1="835" x2="854" y2="881" class="b"/>
+  <line x1="938" y1="835" x2="938" y2="881" class="d"/>
+  <line x1="1011" y1="835" x2="1011" y2="881" class="d"/>
+  <line x1="1146" y1="835" x2="1227" y2="835" class="ext"/>
+  <line x1="1146" y1="881" x2="1227" y2="881" class="ext"/>
+  <line x1="1207" y1="820" x2="1207" y2="896" class="dim"/>
+  <text x="1222" y="870" class="sm">.25&quot;</text>
+  <line x1="285" y1="900" x2="285" y2="945" class="ext"/>
+  <line x1="560" y1="900" x2="560" y2="945" class="ext"/>
+  <line x1="300" y1="925" x2="545" y2="925" class="dim"/>
+  <text x="411" y="942" class="txt">2&quot;</text>
+  <line x1="854" y1="900" x2="854" y2="945" class="ext"/>
+  <line x1="1134" y1="900" x2="1134" y2="945" class="ext"/>
+  <line x1="869" y1="925" x2="1119" y2="925" class="dim"/>
+  <text x="976" y="942" class="txt">2&quot;</text>
+  <line x1="285" y1="950" x2="285" y2="1005" class="ext"/>
+  <line x1="1134" y1="950" x2="1134" y2="1005" class="ext"/>
+  <line x1="300" y1="984" x2="1119" y2="984" class="dim"/>
+  <text x="686" y="1003" class="txt">6&quot;</text>
+</svg>
