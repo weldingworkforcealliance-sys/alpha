@@ -151,7 +151,8 @@ export default function AccountManagementPage() {
   const load = async () => {
     setError('');
 
-    const { data: authData } = await supabase.auth.getSession();
+    const { data: authData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) throw sessionError;
 
     if (!authData.session) {
       router.replace('/login');
@@ -472,8 +473,13 @@ export default function AccountManagementPage() {
     return (
       <main className="loading">
         <div>
-          <h1>Access denied</h1>
-          <p>Account management requires Platform Owner, School Admin, or Program Lead access.</p>
+          <h1>{error ? 'Account management could not be loaded' : 'Access denied'}</h1>
+          {error ? (
+            <p role="alert">{error}</p>
+          ) : (
+            <p>Account management requires Platform Owner, School Admin, or Program Lead access.</p>
+          )}
+          {error && <button onClick={() => window.location.reload()}>Retry</button>}
           <button onClick={() => router.push('/dashboard')}>Return to Dashboard</button>
         </div>
       </main>
