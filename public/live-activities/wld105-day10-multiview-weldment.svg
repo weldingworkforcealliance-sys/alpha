@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1280" viewBox="0 0 1800 1280" role="img" aria-labelledby="title desc">
+<title id="title">WLD 105 Day 10 Multi-View Weldment Training Print</title>
+<desc id="desc">Training weldment drawing with front, top, and right-side views, dimensions, two through holes, fillet weld information, material notes, tolerance, inspection notes, and title block.</desc>
+<style>
+text{font-family:Arial,Helvetica,sans-serif;fill:#111}.h1{font-size:38px;font-weight:700}.h2{font-size:25px;font-weight:700}.t{font-size:20px}.s{font-size:17px}.xs{font-size:15px}.ln{stroke:#111;stroke-width:4;fill:none}.thin{stroke:#111;stroke-width:2;fill:none}.dim{stroke:#333;stroke-width:2;fill:none}.center{stroke:#666;stroke-width:1.8;stroke-dasharray:18 8 4 8;fill:none}.hidden{stroke:#777;stroke-width:1.6;stroke-dasharray:10 8;fill:none}.fill{fill:#f7f7f7;stroke:#111;stroke-width:3}.note{fill:#fbfbfb;stroke:#555;stroke-width:2}.weld{stroke:#111;stroke-width:3;fill:none}
+</style>
+<defs>
+<marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#111"/></marker>
+<marker id="dimA" markerWidth="9" markerHeight="9" refX="4.5" refY="4.5" orient="auto-start-reverse"><path d="M0,4.5 L9,0 L9,9 z" fill="#333"/></marker>
+</defs>
+<rect width="1800" height="1280" fill="#fff"/>
+<rect x="18" y="18" width="1764" height="1244" fill="none" stroke="#111" stroke-width="4"/>
+<text x="55" y="70" class="h1">WLD 105 — DAY 10 MULTI-VIEW WELDMENT TRAINING PRINT</text>
+<text x="55" y="108" class="t">Read all views, dimensions, notes, tolerance, and weld information together before making fabrication decisions.</text>
+<text x="85" y="165" class="h2">FRONT VIEW</text>
+<rect x="105" y="470" width="620" height="38" class="fill"/>
+<rect x="180" y="240" width="470" height="230" class="fill"/>
+<line x1="415" y1="210" x2="415" y2="535" class="center"/>
+<line x1="105" y1="550" x2="725" y2="550" class="dim" marker-start="url(#dimA)" marker-end="url(#dimA)"/>
+<line x1="105" y1="510" x2="105" y2="570" class="thin"/><line x1="725" y1="510" x2="725" y2="570" class="thin"/>
+<rect x="350" y="528" width="132" height="32" fill="#fff"/><text x="367" y="551" class="t">8.00 ± .03</text>
+<line x1="180" y1="200" x2="650" y2="200" class="dim" marker-start="url(#dimA)" marker-end="url(#dimA)"/>
+<line x1="180" y1="205" x2="180" y2="238" class="thin"/><line x1="650" y1="205" x2="650" y2="238" class="thin"/>
+<rect x="359" y="180" width="112" height="30" fill="#fff"/><text x="374" y="202" class="t">6.00</text>
+<line x1="145" y1="240" x2="145" y2="470" class="dim" marker-start="url(#dimA)" marker-end="url(#dimA)"/>
+<line x1="150" y1="240" x2="178" y2="240" class="thin"/><line x1="150" y1="470" x2="178" y2="470" class="thin"/>
+<rect x="103" y="340" width="82" height="30" fill="#fff"/><text x="112" y="362" class="t">3.00</text>
+<line x1="105" y1="595" x2="180" y2="595" class="dim" marker-start="url(#dimA)" marker-end="url(#dimA)"/>
+<line x1="650" y1="595" x2="725" y2="595" class="dim" marker-start="url(#dimA)" marker-end="url(#dimA)"/>
+<text x="117" y="625" class="s">1.00</text><text x="662" y="625" class="s">1.00</text>
+<line x1="520" y1="445" x2="815" y2="325" class="weld" marker-start="url(#arrow)"/>
+<line x1="815" y1="325" x2="1090" y2="325" class="weld"/>
+<path d="M880 325 L905 300 L930 325 Z" class="weld"/>
+<path d="M880 325 L905 350 L930 325 Z" class="weld"/>
+<text x="838" y="318" class="t">1/4</text><text x="944" y="318" class="t">6.00</text>
+<text x="810" y="285" class="s">1/4 FILLET, BOTH SIDES, CONTINUOUS 6.00</text>
+<text x="85" y="700" class="h2">TOP VIEW</text>
+<rect x="105" y="735" width="620" height="390" class="fill"/>
+<rect x="180" y="922" width="470" height="20" class="fill"/>
+<line x1="415" y1="715" x2="415" y2="1145" class="center"/>
+<line x1="85" y1="930" x2="745" y2="930" class="center"/>
+<circle cx="180" cy="815" r="26" class="ln"/><circle cx="650" cy="815" r="26" class="ln"/>
+<line x1="145" y1="815" x2="215" y2="815" class="center"/><line x1="180" y1="780" x2="180" y2="850" class="center"/>
+<line x1="615" y1="815" x2="685" y2="815" class="center"/><line x1="650" y1="780" x2="650" y2="850" class="center"/>
+<line x1="770" y1="735" x2="770" y2="1125" class="dim" marker-start="url(#dimA)" marker-end="url(#dimA)"/>
+<line x1="728" y1="735" x2="790" y2="735" class="thin"/><line x1="728" y1="1125" x2="790" y2="1125" class="thin"/>
+<rect x="748" y="915" width="75" height="30" fill="#fff"/><text x="755" y="937" class="t">5.00</text>
+<line x1="105" y1="1165" x2="180" y2="1165" class="dim" marker-start="url(#dimA)" marker-end="url(#dimA)"/>
+<line x1="180" y1="1165" x2="650" y2="1165" class="dim" marker-start="url(#dimA)" marker-end="url(#dimA)"/>
+<line x1="650" y1="1165" x2="725" y2="1165" class="dim" marker-start="url(#dimA)" marker-end="url(#dimA)"/>
+<text x="120" y="1200" class="s">1.00</text><text x="392" y="1200" class="s">6.00</text><text x="665" y="1200" class="s">1.00</text>
+<line x1="820" y1="735" x2="820" y2="815" class="dim" marker-start="url(#dimA)" marker-end="url(#dimA)"/>
+<text x="835" y="780" class="s">1.00</text>
+<text x="235" y="790" class="t">2X Ø .375 THRU</text>
+<text x="930" y="700" class="h2">RIGHT SIDE VIEW</text>
+<rect x="950" y="1087" width="390" height="38" class="fill"/>
+<rect x="1135" y="855" width="20" height="232" class="fill"/>
+<line x1="1145" y1="825" x2="1145" y2="1148" class="center"/>
+<line x1="930" y1="930" x2="1360" y2="930" class="center"/>
+<line x1="950" y1="805" x2="1340" y2="805" class="dim" marker-start="url(#dimA)" marker-end="url(#dimA)"/>
+<line x1="950" y1="810" x2="950" y2="1085" class="thin"/><line x1="1340" y1="810" x2="1340" y2="1085" class="thin"/>
+<rect x="1102" y="785" width="82" height="30" fill="#fff"/><text x="1110" y="807" class="t">5.00</text>
+<line x1="1090" y1="855" x2="1090" y2="1087" class="dim" marker-start="url(#dimA)" marker-end="url(#dimA)"/>
+<text x="1040" y="980" class="s">3.00</text>
+<text x="1180" y="875" class="s">VERTICAL PLATE CENTERED</text><text x="1180" y="901" class="s">ON BASE DEPTH</text>
+<rect x="1120" y="150" width="620" height="420" rx="8" class="note"/>
+<text x="1150" y="192" class="h2">NOTES / FABRICATION REQUIREMENTS</text>
+<text x="1150" y="235" class="t">1. MATERIAL: ASTM A36 STEEL.</text>
+<text x="1150" y="272" class="t">2. BASE PLATE: 8.00 × 5.00 × 1/4.</text>
+<text x="1150" y="309" class="t">3. VERTICAL PLATE: 6.00 × 3.00 × 1/4.</text>
+<text x="1150" y="346" class="t">4. 2X Ø .375 THRU IN BASE PLATE.</text>
+<text x="1150" y="383" class="t">5. DEBURR CUT EDGES AND HOLES.</text>
+<text x="1150" y="420" class="t">6. FILLET WELD BOTH SIDES AS SHOWN.</text>
+<text x="1150" y="457" class="t">7. VERIFY BASE SIZE, HOLE LOCATION,</text>
+<text x="1176" y="486" class="t">PLATE CENTERING, AND FIT-UP BEFORE WELDING.</text>
+<text x="1150" y="530" class="t">8. UNLESS OTHERWISE SHOWN: ± .03 IN.</text>
+<rect x="930" y="1160" width="810" height="82" class="thin"/>
+<line x1="1190" y1="1160" x2="1190" y2="1242" class="thin"/><line x1="1445" y1="1160" x2="1445" y2="1242" class="thin"/>
+<text x="945" y="1190" class="xs">DRAWING</text><text x="945" y="1220" class="s">DAY10-WELDMENT-01</text>
+<text x="1205" y="1190" class="xs">TITLE</text><text x="1205" y="1220" class="s">MULTI-VIEW TRAINING WELDMENT</text>
+<text x="1460" y="1190" class="xs">UNITS / SCALE</text><text x="1460" y="1220" class="s">INCHES / NTS</text>
+</svg>
