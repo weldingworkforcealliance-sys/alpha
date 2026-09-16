@@ -2,7 +2,7 @@
 <title id="title">WLD 105 Day 10 Multi-View Weldment Training Print</title>
 <desc id="desc">Training weldment drawing with front, top, and right-side views, dimensions, two through holes, fillet weld information, material notes, tolerance, inspection notes, and title block.</desc>
 <style>
-text{font-family:Arial,Helvetica,sans-serif;fill:#111}.h1{font-size:38px;font-weight:700}.h2{font-size:25px;font-weight:700}.t{font-size:20px}.s{font-size:17px}.xs{font-size:15px}.ln{stroke:#111;stroke-width:4;fill:none}.thin{stroke:#111;stroke-width:2;fill:none}.dim{stroke:#333;stroke-width:2;fill:none}.center{stroke:#666;stroke-width:1.8;stroke-dasharray:18 8 4 8;fill:none}.hidden{stroke:#777;stroke-width:1.6;stroke-dasharray:10 8;fill:none}.fill{fill:#f7f7f7;stroke:#111;stroke-width:3}.note{fill:#fbfbfb;stroke:#555;stroke-width:2}.weld{stroke:#111;stroke-width:3;fill:none}
+text{font-family:Arial,Helvetica,sans-serif;fill:#111}.h1{font-size:38px;font-weight:700}.h2{font-size:25px;font-weight:700}.t{font-size:20px}.s{font-size:17px}.xs{font-size:15px}.ln{stroke:#111;stroke-width:4;fill:none}.thin{stroke:#111;stroke-width:2;fill:none}.dim{stroke:#333;stroke-width:2;fill:none}.center{stroke:#666;stroke-width:1.8;stroke-dasharray:18 8 4 8;fill:none}.fill{fill:#f7f7f7;stroke:#111;stroke-width:3}.note{fill:#fbfbfb;stroke:#555;stroke-width:2}.weld{stroke:#111;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}
 </style>
 <defs>
 <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#111"/></marker>
@@ -28,12 +28,12 @@ text{font-family:Arial,Helvetica,sans-serif;fill:#111}.h1{font-size:38px;font-we
 <line x1="105" y1="595" x2="180" y2="595" class="dim" marker-start="url(#dimA)" marker-end="url(#dimA)"/>
 <line x1="650" y1="595" x2="725" y2="595" class="dim" marker-start="url(#dimA)" marker-end="url(#dimA)"/>
 <text x="117" y="625" class="s">1.00</text><text x="662" y="625" class="s">1.00</text>
-<line x1="520" y1="445" x2="815" y2="325" class="weld" marker-start="url(#arrow)"/>
+<line x1="815" y1="325" x2="520" y2="445" class="weld" marker-end="url(#arrow)"/>
 <line x1="815" y1="325" x2="1090" y2="325" class="weld"/>
-<path d="M880 325 L905 300 L930 325 Z" class="weld"/>
-<path d="M880 325 L905 350 L930 325 Z" class="weld"/>
+<path d="M880 325 L880 295 L910 325" class="weld"/>
+<path d="M880 325 L880 355 L910 325" class="weld"/>
 <text x="838" y="318" class="t">1/4</text><text x="944" y="318" class="t">6.00</text>
-<text x="810" y="285" class="s">1/4 FILLET, BOTH SIDES, CONTINUOUS 6.00</text>
+<text x="810" y="278" class="s">1/4 FILLET, BOTH SIDES, CONTINUOUS 6.00</text>
 <text x="85" y="700" class="h2">TOP VIEW</text>
 <rect x="105" y="735" width="620" height="390" class="fill"/>
 <rect x="180" y="922" width="470" height="20" class="fill"/>
