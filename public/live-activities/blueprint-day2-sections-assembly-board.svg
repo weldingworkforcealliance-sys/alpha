@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1200" viewBox="0 0 1800 1200">
+<rect width="1800" height="1200" fill="white"/><rect x="18" y="18" width="1764" height="1164" fill="none" stroke="#111" stroke-width="4"/>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#111}.h1{font-size:42px;font-weight:700}.h2{font-size:28px;font-weight:700}.t{font-size:22px}.s{font-size:18px}.ln{stroke:#111;stroke-width:4;fill:none}.thin{stroke:#111;stroke-width:2;fill:none}.dash{stroke:#666;stroke-width:2;stroke-dasharray:14 10;fill:none}.cut{stroke:#b00020;stroke-width:5;stroke-dasharray:16 10;fill:none}.box{fill:#f8f8f8;stroke:#444;stroke-width:2}</style>
+<text x="55" y="78" class="h1">BLUEPRINT READING — DAY 2: SECTIONS, DETAILS &amp; ASSEMBLY PRINTS</text>
+<text x="55" y="118" class="t">Training reference • vector format • use the evidence on the board before answering</text>
+<rect x="55" y="155" width="810" height="455" rx="12" class="box"/><text x="85" y="198" class="h2">A. MULTIPLE VIEWS READ TOGETHER</text>
+<text x="105" y="245" class="t">FRONT</text><rect x="100" y="270" width="230" height="180" class="ln"/><circle cx="215" cy="360" r="42" class="ln"/><line x1="215" y1="285" x2="215" y2="435" class="dash"/><line x1="120" y1="360" x2="310" y2="360" class="dash"/>
+<text x="390" y="245" class="t">TOP</text><rect x="380" y="270" width="230" height="180" class="ln"/><rect x="455" y="315" width="80" height="90" class="ln"/><line x1="495" y1="285" x2="495" y2="435" class="dash"/>
+<text x="665" y="245" class="t">RIGHT</text><rect x="655" y="270" width="150" height="180" class="ln"/><line x1="655" y1="360" x2="805" y2="360" class="dash"/>
+<text x="90" y="500" class="t">Aligned views transfer shape and feature locations. One view rarely tells the whole story.</text>
+<text x="90" y="542" class="s">Read the same feature across views before assuming size, depth, or position.</text>
+<rect x="900" y="155" width="845" height="455" rx="12" class="box"/><text x="930" y="198" class="h2">B. SECTION VIEW</text>
+<rect x="950" y="255" width="260" height="190" class="ln"/><circle cx="1080" cy="350" r="50" class="dash"/><line x1="910" y1="350" x2="1250" y2="350" class="cut"/><polygon points="910,350 935,337 935,363" fill="#b00020"/><polygon points="1250,350 1225,337 1225,363" fill="#b00020"/><text x="1034" y="330" class="t">A</text><text x="1110" y="330" class="t">A</text>
+<text x="1310" y="245" class="t">SECTION A-A</text><rect x="1300" y="270" width="330" height="180" class="ln"/>
+<path d="M1310 280 l55 55 M1340 270 l70 70 M1390 270 l70 70 M1440 270 l70 70 M1490 270 l70 70 M1540 270 l70 70 M1590 270 l30 30" class="thin"/><rect x="1415" y="310" width="100" height="100" fill="white" stroke="#111" stroke-width="4"/>
+<text x="935" y="500" class="t">Cutting plane shows where the object is imagined cut.</text><text x="935" y="540" class="t">Hatch lines show material cut by the plane; open areas reveal interior features.</text>
+<rect x="55" y="645" width="810" height="470" rx="12" class="box"/><text x="85" y="688" class="h2">C. DETAIL / BROKEN-OUT SECTION</text>
+<rect x="105" y="750" width="300" height="210" class="ln"/><circle cx="330" cy="800" r="48" class="dash"/><circle cx="330" cy="800" r="78" class="thin"/><text x="315" y="805" class="t">A</text><line x1="385" y1="755" x2="520" y2="710" class="thin"/>
+<circle cx="650" cy="840" r="145" class="ln"/><circle cx="650" cy="840" r="55" class="ln"/><text x="570" y="1040" class="t">DETAIL A — enlarged for clarity</text>
+<path d="M135 1010 q55 -60 110 0 q55 -60 110 0" class="ln"/><path d="M145 985 l30 30 M175 970 l45 45 M215 970 l45 45 M255 970 l45 45" class="thin"/>
+<text x="90" y="1080" class="s">Broken-out section: reveal only the local interior area needed. Detail view: enlarge a small area and trace it back to the parent view.</text>
+<rect x="900" y="645" width="845" height="470" rx="12" class="box"/><text x="930" y="688" class="h2">D. ASSEMBLY PRINT + BILL OF MATERIALS</text>
+<rect x="955" y="755" width="210" height="120" class="ln"/><rect x="1210" y="775" width="210" height="80" class="ln"/><line x1="1165" y1="815" x2="1210" y2="815" class="dash"/><text x="1025" y="825" class="t">ITEM 1</text><text x="1270" y="825" class="t">ITEM 2</text>
+<rect x="955" y="920" width="700" height="145" class="thin"/><line x1="955" y1="965" x2="1655" y2="965" class="thin"/><line x1="1060" y1="920" x2="1060" y2="1065" class="thin"/><line x1="1260" y1="920" x2="1260" y2="1065" class="thin"/><line x1="1450" y1="920" x2="1450" y2="1065" class="thin"/>
+<text x="972" y="950" class="s">ITEM</text><text x="1090" y="950" class="s">DESCRIPTION</text><text x="1290" y="950" class="s">MATERIAL</text><text x="1490" y="950" class="s">QTY</text>
+<text x="990" y="1005" class="s">1</text><text x="1090" y="1005" class="s">BASE PLATE</text><text x="1290" y="1005" class="s">STEEL</text><text x="1510" y="1005" class="s">1</text>
+<text x="990" y="1045" class="s">2</text><text x="1090" y="1045" class="s">BRACKET</text><text x="1290" y="1045" class="s">STEEL</text><text x="1510" y="1045" class="s">2</text>
+<text x="930" y="1100" class="s">Assembly prints show part relationships. Item numbers must be checked against the BOM before assuming similar-looking parts are identical.</text>
+</svg>
