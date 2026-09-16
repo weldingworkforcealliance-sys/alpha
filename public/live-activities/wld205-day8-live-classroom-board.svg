@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="2500" viewBox="0 0 1800 2500" role="img" aria-labelledby="title desc">
+<title id="title">WLD 205 PVHS Day 8 Live Classroom — Heat, HAZ and Observable Change</title>
+<desc id="desc">Combined Day 8 Live Classroom board with weld, HAZ and base-metal retrieval, observation scenarios, heat-effect map, and observation/source-control response frame.</desc>
+<style>
+text{font-family:Arial,Helvetica,sans-serif;fill:#111}.h1{font-size:44px;font-weight:700}.h2{font-size:31px;font-weight:700}.h3{font-size:25px;font-weight:700}.t{font-size:23px}.s{font-size:19px}.xs{font-size:17px}.box{fill:#fafafa;stroke:#555;stroke-width:2}.soft{fill:#f1f1f1;stroke:#777;stroke-width:2}.line{stroke:#111;stroke-width:3;fill:none}.dash{stroke:#777;stroke-width:2;stroke-dasharray:10 8;fill:none}.center{stroke:#666;stroke-width:2;stroke-dasharray:18 8 4 8;fill:none}
+</style>
+<rect width="1800" height="2500" fill="#fff"/><rect x="20" y="20" width="1760" height="2460" fill="none" stroke="#111" stroke-width="4"/>
+<text x="60" y="82" class="h1">WLD 205 PVHS — DAY 8 LIVE CLASSROOM</text>
+<text x="60" y="127" class="h2">Heat, HAZ + Observable Change</text>
+<text x="60" y="168" class="t">Use this one board for the full 60-minute lesson and connected 12-question check.</text>
+<rect x="55" y="205" width="1690" height="88" rx="10" class="soft"/><text x="85" y="244" class="h3">Standing Rule</text><text x="300" y="244" class="t">IDENTIFY / OBSERVE → CHECK SOURCE → STATE ONLY WHAT THE EVIDENCE SUPPORTS</text><text x="85" y="278" class="s">Appearance alone does not prove exact hardness, microstructure, cause, grade/alloy, procedure value, or acceptance requirement.</text>
+
+<!-- STEP 1 -->
+<rect x="55" y="330" width="1690" height="570" rx="12" class="box"/><text x="85" y="380" class="h2">STEP 1 · 0–8 MIN — Identify the Region</text><text x="85" y="420" class="t">Label A, B and C before Questions 1–3.</text>
+<rect x="220" y="575" width="980" height="170" fill="#ededed" stroke="#111" stroke-width="3"/>
+<path d="M520 575 Q710 370 900 575 Z" fill="#d9d9d9" stroke="#111" stroke-width="4"/>
+<path d="M490 575 L520 575 Q580 655 625 745 L475 745 Z" fill="#fff" stroke="#777" stroke-width="2" stroke-dasharray="10 8"/>
+<path d="M900 575 L930 575 L945 745 L795 745 Q840 655 900 575 Z" fill="#fff" stroke="#777" stroke-width="2" stroke-dasharray="10 8"/>
+<line x1="520" y1="575" x2="625" y2="745" class="dash"/><line x1="900" y1="575" x2="795" y2="745" class="dash"/>
+<circle cx="710" cy="500" r="34" fill="#fff" stroke="#111" stroke-width="2"/><text x="699" y="511" class="h2">A</text>
+<circle cx="565" cy="660" r="34" fill="#fff" stroke="#111" stroke-width="2"/><text x="554" y="671" class="h2">B</text>
+<circle cx="360" cy="660" r="34" fill="#fff" stroke="#111" stroke-width="2"/><text x="349" y="671" class="h2">C</text>
+<rect x="1260" y="485" width="410" height="270" rx="10" class="soft"/><text x="1290" y="528" class="h3">Choose from:</text><text x="1290" y="575" class="t">• Weld metal</text><text x="1290" y="615" class="t">• Heat-affected zone</text><text x="1315" y="647" class="s">(HAZ)</text><text x="1290" y="690" class="t">• Unaffected base metal</text>
+<text x="85" y="825" class="t">Key idea: the HAZ is <tspan font-weight="700">unmelted base metal</tspan> changed by the welding thermal cycle.</text><text x="85" y="862" class="s">Save formal transformation metallurgy for the later Level II metallurgy block.</text>
+
+<!-- STEP 2/3 CARDS -->
+<rect x="55" y="940" width="1690" height="665" rx="12" class="box"/><text x="85" y="990" class="h2">STEP 2–3 · 8–52 MIN — Observe, Reason, Check the Source</text><text x="85" y="1030" class="t">Use these scenarios with Questions 4–9. For every answer: What is observed? What is supported? What still requires an authorized source?</text>
+<rect x="85" y="1080" width="515" height="390" rx="10" class="soft"/><text x="115" y="1125" class="h3">CARD 1 — Visible HAZ</text><text x="115" y="1170" class="t">A visible heat-affected</text><text x="115" y="1202" class="t">region appears beside the weld.</text><text x="115" y="1260" class="s">State what you can observe.</text><line x1="115" y1="1285" x2="565" y2="1285" stroke="#999"/><text x="115" y="1330" class="s">What can you NOT determine</text><text x="115" y="1360" class="s">from appearance alone?</text><text x="115" y="1415" class="xs">Do not claim exact hardness or</text><text x="115" y="1442" class="xs">microstructure without evidence.</text>
+<rect x="642" y="1080" width="515" height="390" rx="10" class="soft"/><text x="672" y="1125" class="h3">CARD 2 — Restrained Joint</text><text x="672" y="1170" class="t">A highly restrained joint</text><text x="672" y="1202" class="t">shows angular movement.</text><text x="672" y="1260" class="s">Evaluate possible concerns:</text><text x="692" y="1298" class="s">• residual stress</text><text x="692" y="1330" class="s">• distortion</text><text x="692" y="1362" class="s">• cracking risk</text><text x="672" y="1415" class="xs">Exact cause/control still requires</text><text x="672" y="1442" class="xs">the material, joint and WPS source.</text>
+<rect x="1199" y="1080" width="515" height="390" rx="10" class="soft"/><text x="1229" y="1125" class="h3">CARD 3 — Thickness</text><text x="1229" y="1170" class="t">Same documented alloy,</text><text x="1229" y="1202" class="t">different section thickness.</text><text x="1229" y="1260" class="s">Cooling behavior may differ</text><text x="1229" y="1292" class="s">because geometry affects heat flow.</text><text x="1229" y="1350" class="s">Do not invent procedure values.</text><text x="1229" y="1415" class="xs">Check the approved source/WPS for</text><text x="1229" y="1442" class="xs">material-specific requirements.</text>
+<rect x="85" y="1510" width="1629" height="58" rx="8" class="soft"/><text x="115" y="1548" class="t" font-weight="700">Response frame: OBSERVATION → POSSIBLE CONCERN → CONTROLLING SOURCE → WHAT I CANNOT CLAIM</text>
+
+<!-- HEAT EFFECT MAP -->
+<rect x="55" y="1645" width="1690" height="550" rx="12" class="box"/><text x="85" y="1695" class="h2">Heat-Effect Cause / Consequence Map</text>
+<rect x="85" y="1735" width="1629" height="72" class="soft"/><text x="110" y="1779" class="h3">CONDITION / INPUT</text><text x="590" y="1779" class="h3">SUPPORTED CONCERN / EFFECT</text><text x="1240" y="1779" class="h3">CHECK</text>
+<rect x="85" y="1807" width="1629" height="115" class="box"/><text x="110" y="1850" class="t" font-weight="700">Higher restraint</text><text x="590" y="1850" class="t">Residual stress, distortion, cracking concerns</text><text x="1240" y="1848" class="s">Material / joint / thickness /</text><text x="1240" y="1878" class="s">approved WPS / requirements</text>
+<rect x="85" y="1922" width="1629" height="115" class="box"/><text x="110" y="1965" class="t" font-weight="700">Higher thermal conductivity</text><text x="590" y="1965" class="t">Heat may be carried away more rapidly</text><text x="1240" y="1963" class="s">Material-specific procedure</text><text x="1240" y="1993" class="s">implications from source/WPS</text>
+<rect x="85" y="2037" width="1629" height="115" class="box"/><text x="110" y="2080" class="t" font-weight="700">Uncontrolled heat input / sequence</text><text x="590" y="2080" class="t">Distortion and HAZ/property concerns</text><text x="1240" y="2078" class="s">Approved procedure, sequence,</text><text x="1240" y="2108" class="s">joint, restraint, material</text>
+<text x="110" y="2177" class="s">Do not invent heat-input limits, distortion-control values, exact causes, or acceptance criteria.</text>
+
+<!-- EXIT / OBSERVATION -->
+<rect x="55" y="2235" width="1690" height="190" rx="12" class="box"/><text x="85" y="2285" class="h2">STEP 4 · 52–60 MIN — Independent Exit Check</text><text x="85" y="2328" class="t">Questions 10–12: no coaching. Record only the unresolved domain.</text><text x="85" y="2370" class="s">If using a real sample/coupon/photo: record (1) direct observation, (2) possible concern to investigate, (3) authorized source/test/procedure needed next, and (4) what cannot be concluded from appearance alone.</text>
+<rect x="55" y="2440" width="1690" height="35" fill="#f1f1f1"/><text x="85" y="2465" class="xs" font-weight="700">Day 8 boundary: prerequisite readiness only. Formal transformation metallurgy remains in the later Level II metallurgy sequence.</text>
+</svg>
