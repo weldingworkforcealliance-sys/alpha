@@ -193,6 +193,14 @@ export default function RootLayout({
                   >
                     Student Attendance
                   </Link>
+                  {process.env.NEXT_PUBLIC_GRADEBOOK_ENABLED === 'true' && (
+                    <Link
+                      href="/gradebook"
+                      className={`ltg-nav-link ${pathname.startsWith('/gradebook') ? 'active' : ''}`}
+                    >
+                      Course Gradebooks
+                    </Link>
+                  )}
                   <ReviewQueueLink />
                   <Link
                     href="/time-clock"
