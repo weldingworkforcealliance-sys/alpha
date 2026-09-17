@@ -2,7 +2,7 @@
 
 ## Production database rollout — September 17, 2026
 
-All three gradebook migrations have been applied successfully to production (`qsmvgyyaemjmklceyikr`). Verified ten separate WLD gradebooks with Level I/II Semester 1 mappings. Initial authorized owner refresh imported all 20 existing student-linked theory submissions (6 PVHS B, 1 PVHS C, 13 PVHS A), with zero unresolved submissions and no lab imports. Active roster sizes per linked course are Night 11, PVHS B 6, PVHS C 7, PVHS A 4, and Day Level II 1 after the new enrollment, matching the enrollment source. Attendance and classroom submission routines were not changed. Netlify production and preview builds enable the gradebook via `NEXT_PUBLIC_GRADEBOOK_ENABLED=true`.
+The gradebook database migrations are deployed. Netlify production and preview builds enable the gradebook via `NEXT_PUBLIC_GRADEBOOK_ENABLED=true`. Preview builds continue to use an isolated staging database.
 
 Implemented September 16, 2026 in the existing `living-teacher-planner` Next.js/Supabase checkout and ported onto production commit `dada3be39f48f30018d8a6e4349ebba87e35337e` for deployment September 17.
 
@@ -25,7 +25,7 @@ Apply in this order:
 2. `20260916174550_gradebook_catalog_management.sql`
 3. `20260916175204_gradebook_current_enrollment_guard.sql`
 
-These exact versions are applied to isolated Gltg staging (`ezlvivmeneefiiwqwgqd`). Production (`qsmvgyyaemjmklceyikr`, beta genco) recorded the same migration names/content under service-generated versions `20260917121337`, `20260917121349`, and `20260917121403`, respectively. Reconcile migration history before any future CLI database push; do not reapply these migrations under their local timestamps. Frontend deployment does not run database migrations.
+Production recorded these migrations under service-generated versions `20260917121337`, `20260917121349`, and `20260917121403`, respectively. Staging uses the local versions above. Reconcile migration history before any future CLI database push; do not reapply an existing named migration under a different timestamp. Frontend deployment does not run database migrations.
 
 The base migration creates nine tables, protected read views, narrowly authorized RPCs, and an initialization trigger on section insert/status activation. The second adds catalog-management RPCs, immediate roster reads, and academic mapping guards. The third rechecks current enrollment at manual-attempt insertion, preventing a stale open roster from accepting a new grade for a withdrawn student. Historical imports and corrections remain possible.
 
@@ -47,7 +47,7 @@ Advisory references: https://supabase.com/docs/guides/database/database-linter?l
 2. Both target databases already contain the gradebook migrations. Inspect migration history before future database changes; see version mapping above.
 3. `netlify.toml` enables the gradebook in production and deploy previews. Preview Supabase settings remain isolated to staging. No test login or student credentials were created.
 4. Opening a gradebook or choosing Refresh automatically synchronizes its roster and imports new theory submissions. This foundation deliberately has no background importer and no trigger on live submissions or attendance writes. A sync failure cannot fail a classroom submission or attendance transaction.
-5. The 29 unlinked owner test submissions were removed as explicitly requested; all 20 student-linked submissions were retained and imported. No name-based or external-ID guesses were applied.
+5. Theory imports require a verified student UUID; no name-based or external-ID guesses are applied.
 6. Sections without current enrollment-source pairs have empty rosters until their existing class enrollment is configured. Ambiguous curriculum mappings remain unassigned and must be explicitly assigned by a school manager. Future pair/semester setup is exposed through the authorized RPCs below; there is no separate academic-catalog editor screen in this foundation.
 7. Keep section academic identity stable after grading begins; new delivery terms/course identities should use new sections. Changing an existing section's course/cohort/term is outside this foundation's enrollment workflow. Once attempts exist, gradebook course-pair reassignment is rejected. Official grade calculation, lab rubrics, publication/finalization and external transcript export remain separate future work.
 
@@ -60,7 +60,3 @@ Use the existing authenticated Supabase client as an authorized school manager:
 - `refresh_gradebook(p_gradebook_id)` returns imported and unresolved counts.
 
 Rollback of the UI is simply disabling the feature flag and rebuilding. Preserve gradebook tables and migrations once grades exist; do not drop them as a rollback because they contain student history.
-
-## Follow-up — owner test submissions resolved
-
-The user identified the 29 unlinked submissions as their own testing data. They and their 29 linked submission-analytics events were deleted from production on September 16, 2026. All 20 linked student submissions were retained. Future signed-in submissions from Grimmdriver@gmail.com and rgenco@pccc.edu are discarded by a database rule tested first in staging. See OWNER_TEST_SUBMISSIONS.md.
