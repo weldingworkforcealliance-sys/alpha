@@ -168,6 +168,148 @@ const DEFAULT_ASSIGNMENTS = [
   ...CUTTING_PROJECTS
 ];
 
+const COURSE_CATALOG = [
+  {id:"wld105",code:"WLD 105",level:"Level I",semester:1,role:"theory",label:"Theory / Projects",pairedCourse:"WLD 110"},
+  {id:"wld110",code:"WLD 110",level:"Level I",semester:1,role:"shop",label:"Shop / Certifications",pairedCourse:"WLD 105"},
+  {id:"wld205",code:"WLD 205",level:"Level II",semester:1,role:"theory",label:"Theory / Projects",pairedCourse:"WLD 210"},
+  {id:"wld210",code:"WLD 210",level:"Level II",semester:1,role:"shop",label:"Shop / Certifications",pairedCourse:"WLD 205"}
+];
+
+const PLANNER_PROJECT_SEED = [
+  {id:"steel-dice",title:"Steel Dice Fabrication Project",category:"Fabrication Projects",source:"WLD 105 planner"},
+  {id:"fabricated-m",title:"Fabricated M Fabrication Project",category:"Fabrication Projects",source:"WLD 105 planner"}
+];
+
+function blankCourseRecords(){
+  return {
+    wld105:{
+      finalization:{status:"Open",officialFinal:null,finalizedAt:"",revisions:[]},
+      items:[
+        {id:"theory-live-classroom",title:"Live Classroom Assessments",category:"Theory Assessments",source:"Existing theory gradebook",status:"Imported by gradebook",score:null,possible:null},
+        {id:"theory-math",title:"Welding Math Assessments",category:"Theory Assessments",source:"Existing theory gradebook",status:"Imported by gradebook",score:null,possible:null},
+        ...PLANNER_PROJECT_SEED.map(item=>({...item,status:"Planner-linked",score:null,possible:null}))
+      ]
+    },
+    wld110:{finalization:{status:"Open",officialFinal:null,finalizedAt:"",revisions:[]},items:[]},
+    wld205:{
+      finalization:{status:"Open",officialFinal:null,finalizedAt:"",revisions:[]},
+      items:[
+        {id:"level2-live-classroom",title:"Live Classroom Assessments",category:"Theory Assessments",source:"Existing theory gradebook",status:"Imported by gradebook",score:null,possible:null}
+      ]
+    },
+    wld210:{finalization:{status:"Open",officialFinal:null,finalizedAt:"",revisions:[]},items:[]}
+  };
+}
+
+function ensurePermanentRecordState(targetState){
+  if(!Number.isFinite(Number(targetState.destructiveTestCounter))||Number(targetState.destructiveTestCounter)<1) targetState.destructiveTestCounter=1;
+  targetState.students.forEach(student=>{
+    if(!student.courseRecords) student.courseRecords=blankCourseRecords();
+    COURSE_CATALOG.forEach(course=>{
+      if(!student.courseRecords[course.id]) student.courseRecords[course.id]=blankCourseRecords()[course.id];
+      if(!student.courseRecords[course.id].finalization) student.courseRecords[course.id].finalization={status:"Open",officialFinal:null,finalizedAt:"",revisions:[]};
+    });
+    if(!Array.isArray(student.destructiveTests)) student.destructiveTests=[];
+  });
+  if(!targetState.ui) targetState.ui={};
+  if(!targetState.ui.courseId) targetState.ui.courseId="wld105";
+  if(!targetState.ui.destructiveProcessId) targetState.ui.destructiveProcessId="smaw";
+  if(!targetState.ui.destructiveFamily) targetState.ui.destructiveFamily="Groove";
+  if(!targetState.ui.destructiveBacking) targetState.ui.destructiveBacking="Backing";
+  if(!targetState.ui.destructivePosition) targetState.ui.destructivePosition="2G";
+  return targetState;
+}
+
+function courseById(id){return COURSE_CATALOG.find(course=>course.id===id)||COURSE_CATALOG[0];}
+
+function shopAcademicItems(student,courseId){
+  if(courseId!=="wld110") return [];
+  return state.assignments.filter(a=>a.rubricType==="weld").map(a=>{
+    const result=officialLabResult(student,a.id);
+    return {
+      id:a.id,title:a.name,category:a.family==="Groove"?"Groove Welds":"Fillet Welds",
+      source:"Shop Grade Tower",status:result.status,score:result.numeric,possible:result.numeric===null?null:100,
+      attempt:result.attempt,display:result.display
+    };
+  }).filter(item=>item.display!=="—");
+}
+
+function courseItemsFor(student,courseId){
+  const course=courseById(courseId);
+  if(course.role==="shop") return shopAcademicItems(student,courseId);
+  return student.courseRecords?.[courseId]?.items||[];
+}
+
+function nextDestructiveTestId(targetState){
+  const id="DT-"+String(targetState.destructiveTestCounter).padStart(6,"0");
+  targetState.destructiveTestCounter+=1;
+  return id;
+}
+
+function certificateIdForTest(test){return "CERT-"+test.id.replace("DT-","");}
+
+function destructiveRule(processId){
+  return LEVEL1_PROCESS_RULES.find(rule=>rule.id===processId)||LEVEL1_PROCESS_RULES[0];
+}
+
+function selectedDestructivePosition(){
+  const rule=destructiveRule(state.ui.destructiveProcessId);
+  const family=state.ui.destructiveFamily==="Fillet"?"Fillet":"Groove";
+  const allowed=family==="Fillet"?rule.fillet:rule.groove;
+  if(!allowed.includes(state.ui.destructivePosition)) state.ui.destructivePosition=allowed[0];
+  return state.ui.destructivePosition;
+}
+
+function recordDestructiveTest(student,payload){
+  const test={
+    id:nextDestructiveTestId(state),
+    weldTestId:student.weldTestId,
+    studentName:student.name,
+    courseCode:payload.courseCode||"WLD 110",
+    processId:payload.processId,
+    process:payload.process,
+    material:payload.material,
+    family:payload.family,
+    backing:payload.family==="Groove"?payload.backing:"N/A",
+    position:payload.position,
+    testMethod:payload.testMethod,
+    result:payload.result,
+    testDate:payload.testDate,
+    inspector:payload.inspector,
+    notes:payload.notes||"",
+    recordedAt:new Date().toISOString(),
+    certificate:null,
+    revisions:[]
+  };
+  student.destructiveTests.push(test);
+  return test;
+}
+
+function createCertificateRecord(student,test){
+  if(!test||test.result!=="Pass"||test.certificate) return test?.certificate||null;
+  test.certificate={
+    id:certificateIdForTest(test),
+    version:1,
+    issuedAt:new Date().toISOString(),
+    snapshot:{
+      studentName:student.name,
+      weldTestId:student.weldTestId,
+      destructiveTestId:test.id,
+      courseCode:test.courseCode,
+      process:test.process,
+      material:test.material,
+      family:test.family,
+      backing:test.backing,
+      position:test.position,
+      testMethod:test.testMethod,
+      result:test.result,
+      testDate:test.testDate,
+      inspector:test.inspector
+    }
+  };
+  return test.certificate;
+}
+
 const WELD_TEST_ID_PATTERN = /^\d{4}$/;
 
 function formatWeldTestId(value){
@@ -239,7 +381,7 @@ function blankStudent(name,studentId){
   return {
     id:uid("student"),name,studentId,email:"",cohort:"Level 1 Test Cohort",weldTestId:"",
     aws:{registrationStatus:"Not registered",candidateId:"",enrollmentDate:"",submissionStatus:"Not submitted"},
-    competencies,exams,qualifications,positionQualifications,lab:{}
+    competencies,exams,qualifications,positionQualifications,lab:{},courseRecords:blankCourseRecords(),destructiveTests:[]
   };
 }
 
@@ -251,15 +393,17 @@ function makeDemoState(){
   students[0].competencies.m4[4].status="Practicing";
   students[1].competencies.m4[4].status="Introduced";
   const demoState={
-    schemaVersion:4,
+    schemaVersion:5,
     program:{name:"PCCC Welding — AWS SENSE Level I Tower Lab",standardBasis:"AWS QC10:2017 / AWS EG2.0:2017 / Supplement"},
     assignments:JSON.parse(JSON.stringify(DEFAULT_ASSIGNMENTS)),
     students,
     activeStudentId:students[0].id,
     testIdRegistry:[],
-    ui:{view:"home",labAssignmentId:"smaw-fillet-3F",labIndex:0,labAttempt:"attempt1",moduleId:"m4",competencyIndex:4,competencyIndexStudent:0,examModuleId:"m2",examStudentIndex:0,qualificationProcessId:"smaw",qualificationFamily:"Groove",qualificationBacking:"Backing",qualificationPosition:"1G",qualificationStudentIndex:0}
+    destructiveTestCounter:1,
+    ui:{view:"home",courseId:"wld105",labAssignmentId:"smaw-fillet-3F",labIndex:0,labAttempt:"attempt1",moduleId:"m4",competencyIndex:4,competencyIndexStudent:0,examModuleId:"m2",examStudentIndex:0,qualificationProcessId:"smaw",qualificationFamily:"Groove",qualificationBacking:"Backing",qualificationPosition:"1G",qualificationStudentIndex:0,destructiveProcessId:"smaw",destructiveFamily:"Groove",destructiveBacking:"Backing",destructivePosition:"2G",certificatePreviewId:""}
   };
   ensureStudentWeldTestIds(demoState);
+  ensurePermanentRecordState(demoState);
   return demoState;
 }
 
@@ -268,9 +412,10 @@ function loadState(){
     const raw=localStorage.getItem(STORAGE_KEY);
     if(!raw) return makeDemoState();
     const parsed=JSON.parse(raw);
-    if(!parsed||![3,4].includes(parsed.schemaVersion)||!Array.isArray(parsed.students)) return makeDemoState();
-    parsed.schemaVersion=4;
+    if(!parsed||![3,4,5].includes(parsed.schemaVersion)||!Array.isArray(parsed.students)) return makeDemoState();
+    parsed.schemaVersion=5;
     ensureStudentWeldTestIds(parsed);
+    ensurePermanentRecordState(parsed);
     return parsed;
   }catch{return makeDemoState();}
 }
@@ -278,6 +423,7 @@ let state=loadState();
 
 function saveState(){
   ensureStudentWeldTestIds(state);
+  ensurePermanentRecordState(state);
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
   renderStudentSelect();
 }
@@ -401,7 +547,7 @@ function renderStudentSelect(){
   el.innerHTML=state.students.map(s=>'<option value="'+escapeHtml(s.id)+'" '+(s.id===state.activeStudentId?"selected":"")+'>'+escapeHtml(s.name)+" · "+escapeHtml(s.studentId)+"</option>").join("");
 }
 function viewTitle(){
-  return {home:"Tower Home",lab:"Lab Grade Tower",competencies:"SENSE Competency Tower",exams:"Knowledge Exam Tower",qualifications:"Performance Qualification Tower",passport:"Student Passport",admin:"Admin / AWS Readiness"}[state.ui.view]||"AWS SENSE Tower";
+  return {home:"Tower Home",lab:"Lab Grade Tower",courses:"Course Records",competencies:"SENSE Competency Tower",exams:"Knowledge Exam Tower",qualifications:"Performance Qualification Tower",destructive:"Destructive Test Records",passport:"Student Passport",admin:"Admin / AWS Readiness"}[state.ui.view]||"Welding Record Tower";
 }
 
 function renderHome(){
@@ -417,9 +563,11 @@ function renderHome(){
   '<div class="section-head"><div><h3>One tower, one instructor pattern</h3><div class="muted small">Choose the thing once, work student-to-student, tap the result, move on.</div></div></div>'+
   '<div class="grid cols-3">'+
     towerCard("Lab Grade Tower","Five taps for a normal weld. Attempt logic, critical defects, math and replacement rules happen automatically.","lab","Grade welds")+
+    towerCard("Course Records","WLD 105 and 110 remain separate grades. Same for WLD 205/210 and future pairs. Theory/projects and shop grades meet here without being averaged together.","courses","Open course records")+
     towerCard("Competency Tower","Choose one AWS competency, then move down the class with the same fast queue.","competencies","Verify competencies")+
     towerCard("Knowledge Exam Tower","Choose one exam, enter the result, move to the next student. Attempt limits stay underneath.","exams","Enter exam results")+
-    towerCard("Qualification Tower","Choose one SENSE performance test and mark each student Pass/Fail without reopening forms.","qualifications","Record qualifications")+
+    towerCard("Qualification Tower","Qualification and certification evidence is Pass/Fail only and never changes the numeric shop-course grade.","qualifications","Record qualifications")+
+    towerCard("Destructive Tests","Keep permanent destructive-test records under the student's immutable Weld Test ID and create certificate records from passing tests.","destructive","Open destructive tests")+
     towerCard("Student Passport","See academic lab evidence and SENSE evidence together without mixing the two records.","passport","Open passport")+
     towerCard("Admin / Readiness","AWS registration fields, test assignments and prototype controls live away from the daily instructor workflow.","admin","Open admin")+
   '</div>'+
@@ -494,6 +642,80 @@ function renderGradebookOverview(selectedAssignmentId){
   state.students.map((s,si)=>'<tr><td><strong>'+escapeHtml(s.name)+'</strong><div class="muted tiny">'+escapeHtml(s.studentId)+'</div></td>'+
     siblings.map(a=>{const r=officialLabResult(s,a.id);return '<td class="clickable" data-open-grade="'+si+'|'+a.id+'">'+(r.display==="—"?badge("Needs grading","gray"):badge((r.attempt===2?"A2 ":"")+r.display,r.status==="Retest"?"red":r.attempt===2?"blue":"green"))+'</td>';}).join("")+
   '</tr>').join("")+'</tbody></table></div></div>';
+}
+
+function renderCourseRecords(){
+  const student=activeStudent();
+  const course=courseById(state.ui.courseId);
+  const record=student.courseRecords[course.id];
+  const items=courseItemsFor(student,course.id);
+  const graded=items.filter(item=>Number.isFinite(Number(item.score))&&Number.isFinite(Number(item.possible))&&Number(item.possible)>0);
+  const finalization=record.finalization;
+  const linked=COURSE_CATALOG.find(c=>c.code===course.pairedCourse);
+
+  return '<div class="card"><div class="section-head"><div><h3>Academic Course Records</h3><div class="muted small">Each course keeps its own permanent grade. Linked course pairs are shown together for context only; they are never averaged into one semester grade.</div></div></div>'+
+    '<div class="queue-toolbar"><label>Course<select id="courseRecordSelect">'+COURSE_CATALOG.map(c=>'<option value="'+c.id+'" '+(c.id===course.id?"selected":"")+'>'+escapeHtml(c.code+" · "+c.label)+'</option>').join("")+'</select></label>'+
+    '<div>'+badge(course.level+" · Semester "+course.semester,"blue")+' '+badge(course.role==="theory"?"Theory / Projects":"Shop / Certifications",course.role==="theory"?"yellow":"green")+'</div></div></div>'+
+    '<div class="grid cols-2"><div class="card"><div class="student-banner"><div><div class="eyebrow">'+escapeHtml(course.code)+' permanent academic record</div><h3>'+escapeHtml(student.name)+'</h3><div class="student-meta">'+escapeHtml(student.studentId)+' · Weld Test ID '+escapeHtml(student.weldTestId)+'</div></div><div>'+badge(finalization.status,finalization.status==="Finalized"?"green":"yellow")+'</div></div>'+
+      '<div class="section-head"><div><h3>'+escapeHtml(course.code)+' grade evidence</h3><div class="muted small">'+(course.role==="theory"?"Existing theory gradebook assessments plus planner-linked fabrication projects.":"Numeric academic shop grades from the Lab Grade Tower only.")+'</div></div></div>'+
+      '<div class="table-wrap"><table><thead><tr><th>Category</th><th>Item</th><th>Source</th><th>Grade / status</th></tr></thead><tbody>'+
+      (items.length?items.map(item=>'<tr><td>'+escapeHtml(item.category||"")+'</td><td>'+escapeHtml(item.title)+'</td><td>'+escapeHtml(item.source||"")+'</td><td>'+(Number.isFinite(Number(item.score))&&Number.isFinite(Number(item.possible))&&Number(item.possible)>0?badge((Math.round(Number(item.score)/Number(item.possible)*1000)/10)+"%","green"):badge(item.status||"Not graded","gray"))+'</td></tr>').join(""):'<tr><td colspan="4" class="muted">No academic grade evidence recorded yet.</td></tr>')+
+      '</tbody></table></div>'+
+      '<div class="alert blue"><strong>Permanent-record rule:</strong> Attempts and corrections append history. Existing evidence is not overwritten. Final course-grade calculation remains course-specific and is not invented by this prototype.</div>'+
+    '</div>'+
+    '<div class="card"><h3>Linked course</h3><div class="stat" style="font-size:28px">'+escapeHtml(linked?.code||course.pairedCourse)+'</div><div class="stat-label">'+escapeHtml(linked?.label||"Linked course")+'</div>'+
+      '<div class="alert"><strong>No combined grade.</strong> '+escapeHtml(course.code)+' and '+escapeHtml(course.pairedCourse)+' each produce their own final course grade.</div>'+
+      (course.role==="shop"?'<h3 style="margin-top:16px">Qualification / certification status</h3><p class="muted small">Pass/Fail records are retained alongside the shop course but do not add or subtract numeric grade points.</p>'+
+        '<div class="status-row">'+badge("Position qualifications: Pass / Fail","blue")+badge("Destructive tests: Pass / Fail","blue")+badge("Certificates: Record only","gray")+'</div>':
+        '<h3 style="margin-top:16px">Planner fabrication projects</h3><p class="muted small">WLD 105/205 can receive planner-linked fabrication project grade items without moving them into the shop-course grade.</p>')+
+      '<h3 style="margin-top:16px">Final course grade</h3><div class="stat" style="font-size:30px">'+(finalization.officialFinal===null?"—":escapeHtml(finalization.officialFinal)+"%")+'</div><div class="stat-label">'+(finalization.status==="Finalized"?"Permanent final":"Not finalized · course grading rules still control calculation")+'</div>'+
+    '</div></div>';
+}
+
+function renderDestructiveTests(){
+  const student=activeStudent();
+  ensurePermanentRecordState(state);
+  const rule=destructiveRule(state.ui.destructiveProcessId);
+  const family=state.ui.destructiveFamily==="Fillet"?"Fillet":"Groove";
+  state.ui.destructiveFamily=family;
+  const positions=family==="Fillet"?rule.fillet:rule.groove;
+  const position=selectedDestructivePosition();
+  const backing=family==="Groove"?(state.ui.destructiveBacking||"Backing"):"N/A";
+  state.ui.destructiveBacking=backing;
+  const tests=student.destructiveTests||[];
+  const previewTest=tests.find(t=>t.certificate?.id===state.ui.certificatePreviewId);
+
+  return '<div class="card"><div class="student-banner"><div><div class="eyebrow">Permanent destructive-test ledger</div><h3>'+escapeHtml(student.name)+'</h3><div class="student-meta">'+escapeHtml(student.studentId)+' · Weld Test ID '+escapeHtml(student.weldTestId)+'</div></div><div>'+badge(tests.length+" test record"+(tests.length===1?"":"s"),tests.length?"blue":"gray")+'</div></div>'+
+    '<div class="alert blue"><strong>Record rule:</strong> Destructive tests are Pass/Fail permanent records. They do not change the numeric WLD 110/210 grade. Once recorded, this prototype provides no edit or delete action.</div></div>'+
+    '<div class="card"><div class="section-head"><div><h3>Record destructive test</h3><div class="muted small">The test record is tied to the student\'s immutable four-digit Weld Test ID. Test method stays free-text until the program approves the final destructive-testing catalog.</div></div></div>'+
+      '<div class="form-grid">'+
+        '<label>Shop course<select id="destructiveCourse"><option>WLD 110</option><option>WLD 210</option></select></label>'+
+        '<label>Process / material<select id="destructiveProcessSelect">'+LEVEL1_PROCESS_RULES.map(x=>'<option value="'+x.id+'" '+(x.id===rule.id?"selected":"")+'>'+escapeHtml(x.label+" · "+x.material)+'</option>').join("")+'</select></label>'+
+        '<label>Joint category<select id="destructiveFamilySelect"><option '+(family==="Fillet"?"selected":"")+'>Fillet</option><option '+(family==="Groove"?"selected":"")+'>Groove</option></select></label>'+
+        (family==="Groove"?'<label>Backing<select id="destructiveBackingSelect"><option '+(backing==="Backing"?"selected":"")+'>Backing</option><option '+(backing==="No Backing"?"selected":"")+'>No Backing</option></select></label>':"")+
+        '<label>Position<select id="destructivePositionSelect">'+positions.map(p=>'<option '+(p===position?"selected":"")+'>'+p+'</option>').join("")+'</select></label>'+
+        '<label>Test date<input id="destructiveDate" type="date" /></label>'+
+        '<label>Test method<input id="destructiveMethod" placeholder="e.g. approved destructive test method" /></label>'+
+        '<label>Inspector<input id="destructiveInspector" placeholder="Instructor / inspector" /></label>'+
+        '<label>Result<select id="destructiveResult"><option value="">Choose result</option><option>Pass</option><option>Fail</option></select></label>'+
+        '<label style="grid-column:1/-1">Notes<input id="destructiveNotes" placeholder="Optional record note" /></label>'+
+      '</div><div class="modal-actions"><button class="primary-btn" id="recordDestructiveTestBtn">Record permanent test</button></div>'+
+    '</div>'+
+    '<div class="card"><div class="section-head"><div><h3>Destructive-test history</h3><div class="muted small">Certificate records can only be created from passing tests.</div></div></div>'+
+      '<div class="table-wrap"><table><thead><tr><th>Record</th><th>Date</th><th>Test</th><th>Method</th><th>Result</th><th>Certificate</th></tr></thead><tbody>'+
+      (tests.length?tests.map(test=>'<tr><td><strong>'+escapeHtml(test.id)+'</strong><div class="muted tiny">Weld ID '+escapeHtml(test.weldTestId)+'</div></td><td>'+escapeHtml(test.testDate||"—")+'</td><td>'+escapeHtml(test.process+" "+test.position+(test.family==="Groove"?" · "+test.backing:""))+'</td><td>'+escapeHtml(test.testMethod||"—")+'</td><td>'+badge(test.result,test.result==="Pass"?"green":"red")+'</td><td>'+(test.certificate?'<button class="secondary-btn" data-preview-certificate="'+escapeHtml(test.certificate.id)+'">'+escapeHtml(test.certificate.id)+'</button>':test.result==="Pass"?'<button class="primary-btn" data-create-certificate="'+escapeHtml(test.id)+'">Create certificate record</button>':badge("Not eligible","gray"))+'</td></tr>').join(""):'<tr><td colspan="6" class="muted">No destructive-test records yet.</td></tr>')+
+      '</tbody></table></div></div>'+
+    (previewTest?renderCertificatePreview(previewTest):"");
+}
+
+function renderCertificatePreview(test){
+  const cert=test.certificate;
+  const s=cert.snapshot;
+  return '<div class="card"><div class="section-head"><div><div class="eyebrow">Certificate record preview</div><h3>'+escapeHtml(cert.id)+'</h3><div class="muted small">Version '+cert.version+' · generated from immutable test record '+escapeHtml(test.id)+'</div></div>'+badge("Certificate record created","green")+'</div>'+
+    '<div class="grid cols-2"><div><p><strong>Student:</strong> '+escapeHtml(s.studentName)+'</p><p><strong>Weld Test ID:</strong> '+escapeHtml(s.weldTestId)+'</p><p><strong>Course:</strong> '+escapeHtml(s.courseCode)+'</p><p><strong>Destructive Test:</strong> '+escapeHtml(s.destructiveTestId)+'</p></div>'+
+    '<div><p><strong>Process:</strong> '+escapeHtml(s.process)+'</p><p><strong>Position:</strong> '+escapeHtml(s.position)+'</p><p><strong>Backing:</strong> '+escapeHtml(s.backing)+'</p><p><strong>Result:</strong> '+escapeHtml(s.result)+'</p></div></div>'+
+    '<p><strong>Test method:</strong> '+escapeHtml(s.testMethod||"—")+' · <strong>Test date:</strong> '+escapeHtml(s.testDate||"—")+' · <strong>Inspector:</strong> '+escapeHtml(s.inspector||"—")+'</p>'+
+    '<div class="alert">This is the certificate-record data source, not the final designed certificate/PDF. Future certificate rendering must use this stored snapshot so later record changes cannot silently alter an already-issued certificate.</div></div>';
 }
 
 function renderCompetencies(){
@@ -582,7 +804,7 @@ function renderPassport(){
   const sum=credentialSummary(student);
   return '<div class="card"><div class="student-banner"><div><div class="eyebrow">Student Passport</div><h3>'+escapeHtml(student.name)+'</h3><div class="student-meta">'+escapeHtml(student.studentId)+' · '+escapeHtml(student.cohort)+' · Weld Test ID '+escapeHtml(student.weldTestId)+'</div></div><div>'+badge(sum.full?"Full completion eligible":sum.partial?"Partial completion eligible":"In progress",sum.full?"green":sum.partial?"blue":"yellow")+'</div></div></div>'+
     '<div class="grid cols-2" style="margin-top:14px"><div class="card"><h3>AWS SENSE progress</h3><div class="module-progress">'+MODULES.map(m=>{const p=moduleProgress(student,m.id);return '<div class="module-line"><span>'+escapeHtml(m.name)+'</span><div class="progress-track"><div class="progress-fill" style="width:'+p+'%"></div></div><b>'+p+'%</b></div>';}).join("")+'</div></div>'+
-    '<div class="card"><h3>Academic lab grades</h3><div class="table-wrap"><table><thead><tr><th>Assignment</th><th>Official</th><th>Attempt</th></tr></thead><tbody>'+state.assignments.map(a=>{const r=officialLabResult(student,a.id);return '<tr><td>'+escapeHtml(a.name)+'</td><td>'+escapeHtml(r.display)+'</td><td>'+r.attempt+'</td></tr>';}).join("")+'</tbody></table></div></div></div>'+
+    '<div class="card"><h3>Academic course records</h3><div class="table-wrap"><table><thead><tr><th>Course</th><th>Role</th><th>Final</th></tr></thead><tbody>'+COURSE_CATALOG.map(c=>{const f=student.courseRecords[c.id].finalization;return '<tr><td>'+escapeHtml(c.code)+'</td><td>'+escapeHtml(c.label)+'</td><td>'+(f.officialFinal===null?badge("Not finalized","gray"):badge(f.officialFinal+"%","green"))+'</td></tr>';}).join("")+'</tbody></table></div><div class="alert blue" style="margin-top:12px"><strong>'+student.destructiveTests.length+'</strong> destructive-test record(s) · Weld Test ID '+escapeHtml(student.weldTestId)+'</div></div></div>'+
     '<div class="card"><div class="alert blue"><strong>Important:</strong> The Passport shows both records together for convenience. It does not treat a PCCC academic grade as automatic AWS SENSE verification.</div></div>';
 }
 
@@ -604,7 +826,7 @@ function render(){
   renderStudentSelect();
   const content=document.getElementById("appContent");
   const view=state.ui.view;
-  content.innerHTML=view==="home"?renderHome():view==="lab"?renderLab():view==="competencies"?renderCompetencies():view==="exams"?renderExams():view==="qualifications"?renderQualifications():view==="passport"?renderPassport():renderAdmin();
+  content.innerHTML=view==="home"?renderHome():view==="lab"?renderLab():view==="courses"?renderCourseRecords():view==="competencies"?renderCompetencies():view==="exams"?renderExams():view==="qualifications"?renderQualifications():view==="destructive"?renderDestructiveTests():view==="passport"?renderPassport():renderAdmin();
   saveState();
 }
 
@@ -686,6 +908,37 @@ document.getElementById("appContent").addEventListener("click",e=>{
     saveState();render();return;
   }
 
+  if(e.target.id==="recordDestructiveTestBtn"){
+    const student=activeStudent();
+    const rule=destructiveRule(state.ui.destructiveProcessId);
+    const family=state.ui.destructiveFamily==="Fillet"?"Fillet":"Groove";
+    const method=String(document.getElementById("destructiveMethod")?.value||"").trim();
+    const result=String(document.getElementById("destructiveResult")?.value||"").trim();
+    const testDate=String(document.getElementById("destructiveDate")?.value||"").trim();
+    const inspector=String(document.getElementById("destructiveInspector")?.value||"").trim();
+    if(!method||!result||!testDate||!inspector){alert("Enter the test date, test method, inspector, and Pass/Fail result.");return;}
+    const test=recordDestructiveTest(student,{
+      courseCode:String(document.getElementById("destructiveCourse")?.value||"WLD 110"),
+      processId:rule.id,process:rule.label,material:rule.material,family,
+      backing:family==="Groove"?state.ui.destructiveBacking:"N/A",
+      position:selectedDestructivePosition(),testMethod:method,result,testDate,inspector,
+      notes:String(document.getElementById("destructiveNotes")?.value||"").trim()
+    });
+    state.ui.certificatePreviewId="";
+    saveState();render();return;
+  }
+
+  const createCert=e.target.closest("[data-create-certificate]");
+  if(createCert){
+    const student=activeStudent(),test=student.destructiveTests.find(t=>t.id===createCert.dataset.createCertificate);
+    const cert=createCertificateRecord(student,test);
+    if(cert) state.ui.certificatePreviewId=cert.id;
+    saveState();render();return;
+  }
+
+  const previewCert=e.target.closest("[data-preview-certificate]");
+  if(previewCert){state.ui.certificatePreviewId=previewCert.dataset.previewCertificate;render();return;}
+
   if(e.target.id==="recordExamBtn"){
     const input=document.getElementById("examScoreInput"),score=Number(input.value),s=studentAt(state.ui.examStudentIndex),exam=s.exams[state.ui.examModuleId];
     if(!Number.isFinite(score)||score<0||score>100){alert("Enter a score from 0 to 100.");return;}
@@ -698,6 +951,11 @@ document.getElementById("appContent").addEventListener("click",e=>{
 });
 
 document.getElementById("appContent").addEventListener("change",e=>{
+  if(e.target.id==="courseRecordSelect"){state.ui.courseId=e.target.value;render();}
+  if(e.target.id==="destructiveProcessSelect"){state.ui.destructiveProcessId=e.target.value;state.ui.destructivePosition="";render();}
+  if(e.target.id==="destructiveFamilySelect"){state.ui.destructiveFamily=e.target.value;state.ui.destructiveBacking=e.target.value==="Groove"?"Backing":"N/A";state.ui.destructivePosition="";render();}
+  if(e.target.id==="destructiveBackingSelect"){state.ui.destructiveBacking=e.target.value;render();}
+  if(e.target.id==="destructivePositionSelect"){state.ui.destructivePosition=e.target.value;saveState();}
   if(e.target.id==="labAssignmentSelect"){state.ui.labAssignmentId=e.target.value;state.ui.labIndex=0;state.ui.labAttempt="attempt1";render();}
   if(e.target.id==="moduleSelect"){state.ui.moduleId=e.target.value;state.ui.competencyIndex=0;state.ui.competencyIndexStudent=0;render();}
   if(e.target.id==="competencySelect"){state.ui.competencyIndex=Number(e.target.value);state.ui.competencyIndexStudent=0;render();}
@@ -730,11 +988,11 @@ document.getElementById("createAssignmentBtn").addEventListener("click",e=>{
 
 document.getElementById("exportBtn").addEventListener("click",()=>{
   const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);a.download="aws-sense-tower-lab-v4.json";a.click();URL.revokeObjectURL(a.href);
+  a.href=URL.createObjectURL(blob);a.download="pccc-welding-record-tower-lab-v5.json";a.click();URL.revokeObjectURL(a.href);
 });
 document.getElementById("importInput").addEventListener("change",e=>{
   const file=e.target.files[0];if(!file)return;const reader=new FileReader();
-  reader.onload=()=>{try{const parsed=JSON.parse(reader.result);if(![3,4].includes(parsed.schemaVersion))throw new Error();parsed.schemaVersion=4;ensureStudentWeldTestIds(parsed);state=parsed;saveState();render();}catch{alert("That file is not a valid Tower Lab v4 export.");}};
+  reader.onload=()=>{try{const parsed=JSON.parse(reader.result);if(![3,4,5].includes(parsed.schemaVersion))throw new Error();parsed.schemaVersion=5;ensureStudentWeldTestIds(parsed);ensurePermanentRecordState(parsed);state=parsed;saveState();render();}catch{alert("That file is not a valid Welding Record Tower v5 export.");}};
   reader.readAsText(file);
 });
 document.getElementById("resetBtn").addEventListener("click",()=>{if(confirm("Reset all standalone test data?")){localStorage.removeItem(STORAGE_KEY);state=makeDemoState();render();}});
