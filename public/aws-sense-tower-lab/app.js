@@ -206,7 +206,7 @@ function makeDemoState(){
     assignments:JSON.parse(JSON.stringify(DEFAULT_ASSIGNMENTS)),
     students,
     activeStudentId:students[0].id,
-    ui:{view:"home",labAssignmentId:"a3",labIndex:0,labAttempt:"attempt1",moduleId:"m4",competencyIndex:4,competencyIndexStudent:0,examModuleId:"m2",examStudentIndex:0,qualificationProcessId:"smaw",qualificationFamily:"Groove",qualificationBacking:"Backing",qualificationPosition:"1G",qualificationStudentIndex:0}
+    ui:{view:"home",labAssignmentId:"smaw-fillet-3F",labIndex:0,labAttempt:"attempt1",moduleId:"m4",competencyIndex:4,competencyIndexStudent:0,examModuleId:"m2",examStudentIndex:0,qualificationProcessId:"smaw",qualificationFamily:"Groove",qualificationBacking:"Backing",qualificationPosition:"1G",qualificationStudentIndex:0}
   };
 }
 
