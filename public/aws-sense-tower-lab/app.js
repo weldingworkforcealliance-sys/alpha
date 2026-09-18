@@ -121,6 +121,7 @@ const CUTTING_PROJECTS = [
 
 const POSITION_QUALIFICATIONS = LEVEL1_WELDING_PROJECTS.map(project=>({
   id:"pq-"+project.id,
+  courseId:"wld110",
   projectId:project.id,
   processId:project.processId,
   process:project.process,
@@ -220,6 +221,10 @@ function ensurePermanentRecordState(targetState){
     targetState.courseCatalog=JSON.parse(JSON.stringify(DEFAULT_COURSE_CATALOG));
   }
   if(!Number.isFinite(Number(targetState.destructiveTestCounter))||Number(targetState.destructiveTestCounter)<1) targetState.destructiveTestCounter=1;
+  if(!Array.isArray(targetState.assignments)) targetState.assignments=JSON.parse(JSON.stringify(DEFAULT_ASSIGNMENTS));
+  targetState.assignments.forEach(assignment=>{
+    if(assignment.rubricType==="weld"&&!assignment.courseId) assignment.courseId="wld110";
+  });
   targetState.students.forEach(student=>{
     if(!student.ltgStudentId) student.ltgStudentId=student.id;
     if(!student.courseRecords) student.courseRecords=blankCourseRecords(targetState.courseCatalog);
@@ -283,6 +288,7 @@ function recordDestructiveTest(student,payload){
     studentRecordId:student.ltgStudentId,
     weldTestId:student.weldTestId,
     studentName:student.name,
+    courseId:payload.courseId||"wld110",
     courseCode:payload.courseCode||"WLD 110",
     processId:payload.processId,
     process:payload.process,
@@ -314,6 +320,7 @@ function createCertificateRecord(student,test){
       studentName:student.name,
       weldTestId:student.weldTestId,
       destructiveTestId:test.id,
+      courseId:test.courseId,
       courseCode:test.courseCode,
       process:test.process,
       material:test.material,
@@ -721,6 +728,7 @@ function buildLtgIntegrationSnapshot(targetState=state){
         const definition=POSITION_QUALIFICATIONS.find(q=>q.id===qualificationId);
         return [{
           studentId:student.ltgStudentId,weldTestId:student.weldTestId,
+          courseId:definition?.courseId||"wld110",
           qualificationId,result:record.status,date:record.date,notes:record.notes,
           process:definition?.process||"",material:definition?.material||"",
           family:definition?.family||"",backing:definition?.backing||"",position:definition?.position||""
@@ -781,7 +789,7 @@ function renderDestructiveTests(){
     '<div class="alert blue"><strong>Record rule:</strong> Destructive tests are Pass/Fail permanent records. They do not change the numeric WLD 110/210 grade. Once recorded, this prototype provides no edit or delete action.</div></div>'+
     '<div class="card"><div class="section-head"><div><h3>Record destructive test</h3><div class="muted small">The test record is tied to the student\'s immutable four-digit Weld Test ID. Test method stays free-text until the program approves the final destructive-testing catalog.</div></div></div>'+
       '<div class="form-grid">'+
-        '<label>Shop course<select id="destructiveCourse"><option>WLD 110</option><option>WLD 210</option></select></label>'+
+        '<label>Shop course<select id="destructiveCourse">'+courseCatalog().filter(c=>c.role==="shop").map(c=>'<option value="'+escapeHtml(c.id)+'">'+escapeHtml(c.code)+'</option>').join("")+'</select></label>'+
         '<label>Process / material<select id="destructiveProcessSelect">'+LEVEL1_PROCESS_RULES.map(x=>'<option value="'+x.id+'" '+(x.id===rule.id?"selected":"")+'>'+escapeHtml(x.label+" · "+x.material)+'</option>').join("")+'</select></label>'+
         '<label>Joint category<select id="destructiveFamilySelect"><option '+(family==="Fillet"?"selected":"")+'>Fillet</option><option '+(family==="Groove"?"selected":"")+'>Groove</option></select></label>'+
         (family==="Groove"?'<label>Backing<select id="destructiveBackingSelect"><option '+(backing==="Backing"?"selected":"")+'>Backing</option><option '+(backing==="No Backing"?"selected":"")+'>No Backing</option></select></label>':"")+
@@ -1010,8 +1018,10 @@ document.getElementById("appContent").addEventListener("click",e=>{
     const testDate=String(document.getElementById("destructiveDate")?.value||"").trim();
     const inspector=String(document.getElementById("destructiveInspector")?.value||"").trim();
     if(!method||!result||!testDate||!inspector){alert("Enter the test date, test method, inspector, and Pass/Fail result.");return;}
+    const selectedCourseId=String(document.getElementById("destructiveCourse")?.value||"wld110");
+    const selectedCourse=courseById(selectedCourseId);
     const test=recordDestructiveTest(student,{
-      courseCode:String(document.getElementById("destructiveCourse")?.value||"WLD 110"),
+      courseId:selectedCourse.id,courseCode:selectedCourse.code,
       processId:rule.id,process:rule.label,material:rule.material,family,
       backing:family==="Groove"?state.ui.destructiveBacking:"N/A",
       position:selectedDestructivePosition(),testMethod:method,result,testDate,inspector,
