@@ -3,83 +3,88 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AWS SENSE Level I Passport Lab</title>
+  <title>AWS SENSE Tower Lab v2</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="brand-block">
+      <div class="brand">
         <div class="brand-mark">S1</div>
         <div>
-          <div class="eyebrow">Standalone prototype</div>
-          <h1>SENSE Passport Lab</h1>
+          <div class="eyebrow">Standalone test lab</div>
+          <h1>AWS SENSE Tower</h1>
         </div>
       </div>
 
-      <nav class="nav-stack" aria-label="Primary">
-        <button class="nav-btn active" data-view="dashboard">Dashboard</button>
-        <button class="nav-btn" data-view="students">Students</button>
-        <button class="nav-btn" data-view="passport">SENSE Passport</button>
-        <button class="nav-btn" data-view="exams">Knowledge Exams</button>
-        <button class="nav-btn" data-view="qualifications">Performance Qualifications</button>
-        <button class="nav-btn" data-view="admin">Admin / AWS Readiness</button>
+      <nav class="nav-stack">
+        <button class="nav-btn active" data-view="home">Tower Home</button>
+        <button class="nav-btn" data-view="lab">Lab Grade Tower</button>
+        <button class="nav-btn" data-view="competencies">Competency Tower</button>
+        <button class="nav-btn" data-view="exams">Knowledge Exam Tower</button>
+        <button class="nav-btn" data-view="qualifications">Qualification Tower</button>
+        <button class="nav-btn" data-view="passport">Student Passport</button>
+        <button class="nav-btn" data-view="admin">Admin / Readiness</button>
       </nav>
 
+      <div class="sidebar-note">
+        <strong>Prototype rule</strong>
+        <span>Fast instructor entry first. Complexity stays underneath.</span>
+      </div>
+
       <div class="sidebar-footer">
-        <div class="tiny-label">Prototype storage</div>
-        <div class="storage-state">Browser localStorage only</div>
-        <button id="exportJsonBtn" class="secondary-btn full">Export JSON</button>
-        <label class="secondary-btn full file-btn">
-          Import JSON
-          <input id="importJsonInput" type="file" accept="application/json" hidden />
+        <button id="exportBtn" class="secondary-btn full">Export test data</button>
+        <label class="secondary-btn full file-btn">Import test data
+          <input id="importInput" type="file" accept="application/json" hidden />
         </label>
-        <button id="resetDemoBtn" class="danger-btn full">Reset demo data</button>
+        <button id="resetBtn" class="danger-btn full">Reset demo</button>
       </div>
     </aside>
 
     <main class="main-panel">
       <header class="topbar">
         <div>
-          <div class="eyebrow">AWS SENSE Level I · Entry Welder</div>
-          <h2 id="viewTitle">Program Dashboard</h2>
+          <div class="eyebrow">AWS SENSE Level I · PCCC prototype</div>
+          <h2 id="viewTitle">Tower Home</h2>
         </div>
         <div class="topbar-actions">
-          <label class="field-inline">
-            Active student
+          <label class="field-inline">Student
             <select id="activeStudentSelect"></select>
           </label>
-          <button id="addStudentBtn" class="primary-btn">+ Add test student</button>
         </div>
       </header>
-
       <section id="appContent" class="content"></section>
     </main>
   </div>
 
-  <dialog id="studentDialog" class="modal">
-    <form method="dialog" id="studentForm">
+  <dialog id="assignmentDialog" class="modal">
+    <form method="dialog" id="assignmentForm">
       <div class="modal-head">
         <div>
-          <div class="eyebrow">Prototype record</div>
-          <h3>Add test student</h3>
+          <div class="eyebrow">Prototype setup</div>
+          <h3>Add grading assignment</h3>
         </div>
         <button value="cancel" class="icon-btn" aria-label="Close">×</button>
       </div>
       <div class="form-grid">
-        <label>Student name<input name="name" required /></label>
-        <label>School ID<input name="studentId" required /></label>
-        <label>Email<input name="email" type="email" /></label>
-        <label>Cohort<input name="cohort" placeholder="e.g. PVHS Level 1 B" /></label>
+        <label>Name<input name="name" required placeholder="e.g. SMAW 3F Fillet Weld" /></label>
+        <label>Process<input name="process" required placeholder="SMAW" /></label>
+        <label>Position<input name="position" placeholder="3F" /></label>
+        <label>Electrode<input name="electrode" placeholder='1/8" E7018' /></label>
+        <label>Type
+          <select name="type">
+            <option value="position">Weld position</option>
+            <option value="project">Lab project</option>
+          </select>
+        </label>
       </div>
       <div class="modal-actions">
         <button value="cancel" class="secondary-btn">Cancel</button>
-        <button value="default" class="primary-btn" id="saveStudentBtn">Create student</button>
+        <button value="default" class="primary-btn" id="createAssignmentBtn">Create</button>
       </div>
     </form>
   </dialog>
 
   <script src="./app.js"></script>
-  <script src="./standards-fixes.js"></script>
 </body>
 </html>
