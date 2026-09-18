@@ -53,7 +53,7 @@ const EXAMS = {
   m9:{label:"Welding Inspection and Testing",pass:75}
 };
 
-const QUALIFICATIONS = [
+const AWS_QUALIFICATIONS = [
   {id:"q1",moduleId:"m5",name:"Test 1 — GMAW-S",detail:"Workmanship qualification",swps:"B2.1-1-004"},
   {id:"q2",moduleId:"m5",name:"Test 2 — GMAW Spray",detail:"Workmanship qualification",swps:"B2.1-1-235"},
   {id:"q3",moduleId:"m6",name:"Test 3 — FCAW-G",detail:"Workmanship qualification",swps:"B2.1-1-019 / B2.1-1-020"},
@@ -66,6 +66,70 @@ const QUALIFICATIONS = [
 ];
 
 const STATUS_OPTIONS = ["Not Started","Introduced","Practicing","Competent","Verified"];
+
+const LEVEL1_PROCESS_RULES = [
+  {id:"smaw",label:"SMAW",material:"Carbon Steel",fillet:["1F","2F","3F","4F"],groove:["1G","2G","3G","4G"]},
+  {id:"gmaw-s",label:"GMAW-S",material:"Carbon Steel",fillet:["1F","2F","3F","4F"],groove:["1G","2G","3G","4G"]},
+  {id:"gmaw-spray",label:"GMAW Spray",material:"Carbon Steel",fillet:["1F","2F"],groove:["1G"]},
+  {id:"fcaw-g",label:"FCAW-G",material:"Carbon Steel",fillet:["1F","2F","3F","4F"],groove:["1G","2G","3G","4G"]},
+  {id:"fcaw-s",label:"FCAW-S",material:"Carbon Steel",fillet:["1F","2F","3F","4F"],groove:["1G","2G","3G","4G"]},
+  {id:"gtaw-carbon",label:"GTAW",material:"Carbon Steel",fillet:["1F","2F","3F","4F"],groove:["1G","2G","3G","4G"]},
+  {id:"gtaw-stainless",label:"GTAW",material:"Stainless Steel",fillet:["1F","2F","3F"],groove:["1G","2G","3G","4G"]},
+  {id:"gtaw-aluminum",label:"GTAW",material:"Aluminum",fillet:["1F","2F"],groove:["1G"]}
+];
+
+function projectId(rule, family, position, backing=""){
+  return [rule.id,family,backing,position].filter(Boolean).join("-");
+}
+
+function buildLevel1WeldingProjects(){
+  const out=[];
+  LEVEL1_PROCESS_RULES.forEach(rule=>{
+    rule.fillet.forEach(position=>out.push({
+      id:projectId(rule,"fillet",position),
+      processId:rule.id,process:rule.label,material:rule.material,
+      family:"Fillet",backing:"N/A",position,
+      name:`${rule.label} ${rule.material} ${position} Fillet Weld`,
+      electrode: rule.id==="smaw" ? '1/8" electrode' : "",
+      type:"position"
+    }));
+    ["Backing","No Backing"].forEach(backing=>{
+      rule.groove.forEach(position=>out.push({
+        id:projectId(rule,"groove",position,backing==="Backing"?"backing":"no-backing"),
+        processId:rule.id,process:rule.label,material:rule.material,
+        family:"Groove",backing,position,
+        name:`${rule.label} ${rule.material} ${position} Groove — ${backing}`,
+        electrode: rule.id==="smaw" ? '1/8" electrode' : "",
+        type:"position"
+      }));
+    });
+  });
+  return out;
+}
+
+const LEVEL1_WELDING_PROJECTS = buildLevel1WeldingProjects();
+
+const CUTTING_PROJECTS = [
+  {id:"ofc-straight-square",processId:"ofc",process:"OFC",material:"Carbon Steel",family:"Cutting",backing:"N/A",position:"Flat / Horizontal",name:"OFC Straight Square-Edge Cutting",rubricType:"pending"},
+  {id:"ofc-shape-square",processId:"ofc",process:"OFC",material:"Carbon Steel",family:"Cutting",backing:"N/A",position:"Flat / Horizontal",name:"OFC Shape Square-Edge Cutting",rubricType:"pending"},
+  {id:"ofc-straight-bevel",processId:"ofc",process:"OFC",material:"Carbon Steel",family:"Cutting",backing:"N/A",position:"Flat / Horizontal",name:"OFC Straight Bevel-Edge Cutting",rubricType:"pending"},
+  {id:"ofc-scarf-gouge",processId:"ofc",process:"OFC",material:"Carbon Steel",family:"Cutting",backing:"N/A",position:"Flat / Horizontal",name:"OFC Scarfing / Gouging",rubricType:"pending"},
+  {id:"pac-straight-square",processId:"pac",process:"PAC",material:"Carbon / Stainless / Aluminum",family:"Cutting",backing:"N/A",position:"Flat / Horizontal",name:"PAC Straight Square-Edge Cutting",rubricType:"pending"},
+  {id:"pac-shape-square",processId:"pac",process:"PAC",material:"Carbon / Stainless / Aluminum",family:"Cutting",backing:"N/A",position:"Flat / Horizontal",name:"PAC Shape Square-Edge Cutting",rubricType:"pending"},
+  {id:"caca-scarf-gouge",processId:"cac-a",process:"CAC-A",material:"Carbon Steel",family:"Cutting",backing:"N/A",position:"Flat / Horizontal",name:"CAC-A Scarfing / Gouging",rubricType:"pending"}
+];
+
+const POSITION_QUALIFICATIONS = LEVEL1_WELDING_PROJECTS.map(project=>({
+  id:"pq-"+project.id,
+  projectId:project.id,
+  processId:project.processId,
+  process:project.process,
+  material:project.material,
+  family:project.family,
+  backing:project.backing,
+  position:project.position,
+  name:project.name
+}));
 
 const RUBRIC = [
   {id:"consistency",name:"Consistency",help:"Straightness, even width, even profile",choices:[
@@ -100,11 +164,8 @@ const COMMENT_TAGS = [
 ];
 
 const DEFAULT_ASSIGNMENTS = [
-  {id:"a1",name:"SMAW 1F Fillet Weld",process:"SMAW",position:"1F",electrode:'1/8" electrode',type:"position"},
-  {id:"a2",name:"SMAW 2F Fillet Weld",process:"SMAW",position:"2F",electrode:'1/8" electrode',type:"position"},
-  {id:"a3",name:"SMAW 3F Fillet Weld",process:"SMAW",position:"3F",electrode:'1/8" electrode',type:"position"},
-  {id:"a4",name:"SMAW 4F Fillet Weld",process:"SMAW",position:"4F",electrode:'1/8" electrode',type:"position"},
-  {id:"a5",name:"Level I Lab Project 1",process:"SMAW",position:"Project",electrode:'1/8" electrode',type:"project"}
+  ...LEVEL1_WELDING_PROJECTS.map(project=>({...project,rubricType:"weld"})),
+  ...CUTTING_PROJECTS
 ];
 
 function uid(prefix="id"){
@@ -122,11 +183,13 @@ function blankStudent(name,studentId){
   const exams={};
   Object.keys(EXAMS).forEach(id=>exams[id]={attempts:[],retrainingConfirmed:false});
   const qualifications={};
-  QUALIFICATIONS.forEach(q=>qualifications[q.id]={status:"Not Started",date:"",notes:""});
+  AWS_QUALIFICATIONS.forEach(q=>qualifications[q.id]={status:"Not Started",date:"",notes:""});
+  const positionQualifications={};
+  POSITION_QUALIFICATIONS.forEach(q=>positionQualifications[q.id]={status:"Not Started",date:"",notes:""});
   return {
     id:uid("student"),name,studentId,email:"",cohort:"Level 1 Test Cohort",
     aws:{registrationStatus:"Not registered",candidateId:"",enrollmentDate:"",submissionStatus:"Not submitted"},
-    competencies,exams,qualifications,lab:{}
+    competencies,exams,qualifications,positionQualifications,lab:{}
   };
 }
 
@@ -138,12 +201,12 @@ function makeDemoState(){
   students[0].competencies.m4[4].status="Practicing";
   students[1].competencies.m4[4].status="Introduced";
   return {
-    schemaVersion:2,
+    schemaVersion:3,
     program:{name:"PCCC Welding — AWS SENSE Level I Tower Lab",standardBasis:"AWS QC10:2017 / AWS EG2.0:2017 / Supplement"},
     assignments:JSON.parse(JSON.stringify(DEFAULT_ASSIGNMENTS)),
     students,
     activeStudentId:students[0].id,
-    ui:{view:"home",labAssignmentId:"a3",labIndex:0,labAttempt:"attempt1",moduleId:"m4",competencyIndex:4,competencyIndexStudent:0,examModuleId:"m2",examStudentIndex:0,qualificationId:"q8",qualificationStudentIndex:0}
+    ui:{view:"home",labAssignmentId:"a3",labIndex:0,labAttempt:"attempt1",moduleId:"m4",competencyIndex:4,competencyIndexStudent:0,examModuleId:"m2",examStudentIndex:0,qualificationProcessId:"smaw",qualificationFamily:"Groove",qualificationBacking:"Backing",qualificationPosition:"1G",qualificationStudentIndex:0}
   };
 }
 
@@ -152,7 +215,7 @@ function loadState(){
     const raw=localStorage.getItem(STORAGE_KEY);
     if(!raw) return makeDemoState();
     const parsed=JSON.parse(raw);
-    if(parsed?.schemaVersion!==2 || !Array.isArray(parsed.students)) return makeDemoState();
+    if(parsed?.schemaVersion!==3 || !Array.isArray(parsed.students)) return makeDemoState();
     return parsed;
   }catch{return makeDemoState();}
 }
@@ -170,7 +233,21 @@ function activeStudent(){return state.students.find(s=>s.id===state.activeStuden
 function studentAt(i){return state.students[Math.max(0,Math.min(i,state.students.length-1))]||null;}
 function moduleById(id){return MODULES.find(m=>m.id===id);}
 function assignmentById(id){return state.assignments.find(a=>a.id===id);}
-function qualificationById(id){return QUALIFICATIONS.find(q=>q.id===id);}
+function qualificationById(id){return AWS_QUALIFICATIONS.find(q=>q.id===id);}
+function qualificationRulesForProcess(processId){
+  return LEVEL1_PROCESS_RULES.find(r=>r.id===processId)||LEVEL1_PROCESS_RULES[0];
+}
+function selectedPositionQualification(){
+  const processId=state.ui.qualificationProcessId||LEVEL1_PROCESS_RULES[0].id;
+  const family=state.ui.qualificationFamily||"Groove";
+  const backing=family==="Groove"?(state.ui.qualificationBacking||"Backing"):"N/A";
+  const rule=qualificationRulesForProcess(processId);
+  const allowed=family==="Groove"?rule.groove:rule.fillet;
+  const position=allowed.includes(state.ui.qualificationPosition)?state.ui.qualificationPosition:allowed[0];
+  state.ui.qualificationPosition=position;
+  return POSITION_QUALIFICATIONS.find(q=>q.processId===processId&&q.family===family&&q.backing===backing&&q.position===position);
+}
+function projectGroupKey(a){return [a.processId||a.process,a.material,a.family,a.backing].join("|");}
 function tone(status){
   if(["Verified","Pass","Registered","Complete"].includes(status)) return "green";
   if(["Competent","Attempt 2"].includes(status)) return "blue";
@@ -226,7 +303,7 @@ function examPassed(student,moduleId){
   return student.exams[moduleId].attempts.some(a=>Number(a.score)>=rule.pass);
 }
 function qualificationPassed(student,moduleId){
-  const qs=QUALIFICATIONS.filter(q=>q.moduleId===moduleId);
+  const qs=AWS_QUALIFICATIONS.filter(q=>q.moduleId===moduleId);
   return !qs.length || qs.every(q=>student.qualifications[q.id].status==="Pass");
 }
 function requiredCompetencies(student,moduleId){
@@ -247,7 +324,7 @@ function moduleProgress(student,moduleId){
   const comp=comps.length?comps.reduce((n,c)=>n+(weights[c.status]||0),0)/comps.length:0;
   const pieces=[comp];
   if(EXAMS[moduleId]) pieces.push(examPassed(student,moduleId)?1:0);
-  if(QUALIFICATIONS.some(q=>q.moduleId===moduleId)) pieces.push(qualificationPassed(student,moduleId)?1:0);
+  if(AWS_QUALIFICATIONS.some(q=>q.moduleId===moduleId)) pieces.push(qualificationPassed(student,moduleId)?1:0);
   return Math.round(pieces.reduce((a,b)=>a+b,0)/pieces.length*100);
 }
 function credentialSummary(student){
@@ -316,7 +393,10 @@ function renderLab(){
 
   return '<div class="card">'+
     '<div class="queue-toolbar"><label>Grade one assignment for the whole class<select id="labAssignmentSelect">'+
-      state.assignments.map(a=>'<option value="'+a.id+'" '+(a.id===assignment.id?"selected":"")+'>'+escapeHtml(a.name)+'</option>').join("")+
+      LEVEL1_PROCESS_RULES.map(rule=>{
+        const items=state.assignments.filter(a=>a.rubricType==="weld"&&a.processId===rule.id);
+        return '<optgroup label="'+escapeHtml(rule.label+" · "+rule.material)+'">'+items.map(a=>'<option value="'+a.id+'" '+(a.id===assignment.id?"selected":"")+'>'+escapeHtml(a.family+(a.family==="Groove"?" · "+a.backing:"")+" · "+a.position)+'</option>').join("")+'</optgroup>';
+      }).join("")+
     '</select></label><div class="muted small">'+escapeHtml(assignment.process)+" · "+escapeHtml(assignment.position)+" · "+escapeHtml(assignment.electrode)+'</div></div>'+
     '<div class="queue-status"><div style="flex:1"><div class="small muted">'+done+' of '+state.students.length+' students graded</div><div class="progress-track"><div class="progress-fill" style="width:'+pct+'%"></div></div></div>'+
     '<div class="queue-nav"><button class="secondary-btn" data-lab-nav="-1">← Previous</button><button class="primary-btn" data-lab-nav="1">Next student →</button></div></div>'+
@@ -350,10 +430,13 @@ function renderRubricRow(c,attempt,attemptNumber,critical){
 }
 
 function renderGradebookOverview(selectedAssignmentId){
-  return '<div class="card"><div class="section-head"><div><h3>Class gradebook overview</h3><div class="muted small">Click any grade to jump directly to that student and assignment.</div></div></div>'+
-  '<div class="table-wrap"><table><thead><tr><th>Student</th>'+state.assignments.map(a=>'<th>'+escapeHtml(a.position||a.name)+'</th>').join("")+'</tr></thead><tbody>'+
+  const selected=assignmentById(selectedAssignmentId);
+  const siblings=selected?state.assignments.filter(a=>a.rubricType==="weld"&&projectGroupKey(a)===projectGroupKey(selected)):state.assignments.filter(a=>a.rubricType==="weld").slice(0,4);
+  const title=selected?`${selected.process} ${selected.material} · ${selected.family}${selected.family==="Groove"?" · "+selected.backing:""}`:"Current project group";
+  return '<div class="card"><div class="section-head"><div><h3>Class gradebook overview</h3><div class="muted small">'+escapeHtml(title)+' · only the current project group is shown so the gradebook stays usable.</div></div></div>'+
+  '<div class="table-wrap"><table><thead><tr><th>Student</th>'+siblings.map(a=>'<th>'+escapeHtml(a.position||a.name)+'</th>').join("")+'</tr></thead><tbody>'+
   state.students.map((s,si)=>'<tr><td><strong>'+escapeHtml(s.name)+'</strong><div class="muted tiny">'+escapeHtml(s.studentId)+'</div></td>'+
-    state.assignments.map(a=>{const r=officialLabResult(s,a.id);return '<td class="clickable" data-open-grade="'+si+'|'+a.id+'">'+(r.display==="—"?badge("Needs grading","gray"):badge((r.attempt===2?"A2 ":"")+r.display,r.status==="Retest"?"red":r.attempt===2?"blue":"green"))+'</td>';}).join("")+
+    siblings.map(a=>{const r=officialLabResult(s,a.id);return '<td class="clickable" data-open-grade="'+si+'|'+a.id+'">'+(r.display==="—"?badge("Needs grading","gray"):badge((r.attempt===2?"A2 ":"")+r.display,r.status==="Retest"?"red":r.attempt===2?"blue":"green"))+'</td>';}).join("")+
   '</tr>').join("")+'</tbody></table></div></div>';
 }
 
@@ -397,18 +480,42 @@ function renderExams(){
 }
 
 function renderQualifications(){
-  const q=qualificationById(state.ui.qualificationId)||QUALIFICATIONS[7];
-  state.ui.qualificationId=q.id;
+  const rule=qualificationRulesForProcess(state.ui.qualificationProcessId||"smaw");
+  state.ui.qualificationProcessId=rule.id;
+  const family=state.ui.qualificationFamily==="Fillet"?"Fillet":"Groove";
+  state.ui.qualificationFamily=family;
+  const backing=family==="Groove"?(state.ui.qualificationBacking||"Backing"):"N/A";
+  state.ui.qualificationBacking=backing;
+  const positions=family==="Groove"?rule.groove:rule.fillet;
+  if(!positions.includes(state.ui.qualificationPosition)) state.ui.qualificationPosition=positions[0];
   state.ui.qualificationStudentIndex=Math.max(0,Math.min(state.ui.qualificationStudentIndex,state.students.length-1));
+  const q=selectedPositionQualification();
   const student=studentAt(state.ui.qualificationStudentIndex); state.activeStudentId=student.id;
-  const rec=student.qualifications[q.id];
-  const passed=state.students.filter(s=>s.qualifications[q.id].status==="Pass").length;
-  return '<div class="card"><div class="queue-toolbar"><label>Performance test<select id="qualificationSelect">'+QUALIFICATIONS.map(x=>'<option value="'+x.id+'" '+(x.id===q.id?"selected":"")+'>'+escapeHtml(x.name)+'</option>').join("")+'</select></label><div class="muted small">'+escapeHtml(q.detail)+' · SWPS '+escapeHtml(q.swps)+'</div></div>'+
-    '<div class="queue-status"><div style="flex:1"><div class="small muted">'+passed+' of '+state.students.length+' marked Pass</div><div class="progress-track"><div class="progress-fill" style="width:'+Math.round(passed/state.students.length*100)+'%"></div></div></div><div class="queue-nav"><button class="secondary-btn" data-qualification-nav="-1">← Previous</button><button class="primary-btn" data-qualification-nav="1">Next student →</button></div></div></div>'+
+  const rec=student.positionQualifications[q.id];
+  const passed=state.students.filter(s=>s.positionQualifications[q.id]?.status==="Pass").length;
+  const officialTests=AWS_QUALIFICATIONS.filter(x=>{
+    if(rule.id==="smaw") return x.moduleId==="m4";
+    if(rule.id.startsWith("gmaw")) return x.moduleId==="m5";
+    if(rule.id.startsWith("fcaw")) return x.moduleId==="m6";
+    if(rule.id.startsWith("gtaw")) return x.moduleId==="m7";
+    return false;
+  });
+
+  return '<div class="card"><div class="section-head"><div><h3>Position Qualification Tower</h3><div class="muted small">PCCC position tracking. Groove welds are split into Backing and No Backing as separate qualification categories.</div></div></div>'+
+    '<div class="queue-toolbar">'+
+      '<label>Process / material<select id="qualificationProcessSelect">'+LEVEL1_PROCESS_RULES.map(x=>'<option value="'+x.id+'" '+(x.id===rule.id?"selected":"")+'>'+escapeHtml(x.label+" · "+x.material)+'</option>').join("")+'</select></label>'+
+      '<label>Joint category<select id="qualificationFamilySelect"><option value="Fillet" '+(family==="Fillet"?"selected":"")+'>Fillet Welds</option><option value="Groove" '+(family==="Groove"?"selected":"")+'>Groove Welds</option></select></label>'+
+      (family==="Groove"?'<label>Groove category<select id="qualificationBackingSelect"><option '+(backing==="Backing"?"selected":"")+'>Backing</option><option '+(backing==="No Backing"?"selected":"")+'>No Backing</option></select></label>':"")+
+      '<label>Position<select id="qualificationPositionSelect">'+positions.map(p=>'<option '+(p===state.ui.qualificationPosition?"selected":"")+'>'+p+'</option>').join("")+'</select></label>'+
+    '</div>'+
+    '<div class="queue-status"><div style="flex:1"><div class="small muted">'+passed+' of '+state.students.length+' marked Pass · '+escapeHtml(q.name)+'</div><div class="progress-track"><div class="progress-fill" style="width:'+Math.round(passed/state.students.length*100)+'%"></div></div></div><div class="queue-nav"><button class="secondary-btn" data-qualification-nav="-1">← Previous</button><button class="primary-btn" data-qualification-nav="1">Next student →</button></div></div></div>'+
     '<div class="card"><div class="student-banner"><div><div class="eyebrow">Student '+(state.ui.qualificationStudentIndex+1)+' of '+state.students.length+'</div><h3>'+escapeHtml(student.name)+'</h3><div class="student-meta">'+escapeHtml(q.name)+'</div></div><div>'+badge(rec.status,tone(rec.status))+'</div></div>'+
-    '<div class="section-head"><div><h3>Tap the result</h3><div class="muted small">Qualification evidence stays separate from the academic lab grade.</div></div></div>'+
-    '<div class="status-row">'+["Not Started","Pass","Fail"].map(s=>'<button class="status-btn '+(s==="Pass"?"verify ":"")+(rec.status===s?"selected":"")+'" data-qualification-status="'+s+'">'+s+'</button>').join("")+'</div>'+
-    '<div class="queue-toolbar" style="margin-top:14px"><label>Date<input id="qualificationDate" type="date" value="'+escapeHtml(rec.date||"")+'" /></label><label style="flex:1">Optional note<input id="qualificationNote" value="'+escapeHtml(rec.notes||"")+'" placeholder="Short note only if needed" /></label></div>'+
+    '<div class="section-head"><div><h3>Tap the result</h3><div class="muted small">This is position-level PCCC qualification readiness. It does not automatically mark an official AWS SENSE performance test Pass.</div></div></div>'+
+    '<div class="status-row">'+["Not Started","Pass","Fail"].map(s=>'<button class="status-btn '+(s==="Pass"?"verify ":"")+(rec.status===s?"selected":"")+'" data-position-qualification-status="'+s+'">'+s+'</button>').join("")+'</div>'+
+    '<div class="queue-toolbar" style="margin-top:14px"><label>Date<input id="positionQualificationDate" type="date" value="'+escapeHtml(rec.date||"")+'" /></label><label style="flex:1">Optional note<input id="positionQualificationNote" value="'+escapeHtml(rec.notes||"")+'" placeholder="Short note only if needed" /></label></div>'+
+    '</div>'+
+    '<div class="card"><div class="section-head"><div><h3>Official AWS SENSE tests for this process</h3><div class="muted small">Preserved separately from the PCCC position matrix.</div></div></div>'+
+    (officialTests.length?'<div class="table-wrap"><table><thead><tr><th>AWS Test</th><th>SWPS</th><th>Active student status</th></tr></thead><tbody>'+officialTests.map(x=>'<tr><td>'+escapeHtml(x.name)+'</td><td>'+escapeHtml(x.swps)+'</td><td>'+badge(student.qualifications[x.id]?.status||"Not Started",tone(student.qualifications[x.id]?.status||"Not Started"))+'</td></tr>').join("")+'</tbody></table></div>':'<div class="muted small">No official test definition mapped in the supplied Level I test list for this process/material variation.</div>')+
     '</div>';
 }
 
@@ -425,7 +532,7 @@ function renderPassport(){
 function renderAdmin(){
   const student=activeStudent();
   return '<div class="grid cols-2"><div class="card"><h3>Prototype assignment setup</h3><p class="muted small">Daily instructors should not configure this. Setup lives here so the grading screen stays clean.</p>'+
-    '<button class="primary-btn" id="openAssignmentDialog">+ Add test assignment</button><div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Name</th><th>Process</th><th>Position</th><th>Electrode</th></tr></thead><tbody>'+state.assignments.map(a=>'<tr><td>'+escapeHtml(a.name)+'</td><td>'+escapeHtml(a.process)+'</td><td>'+escapeHtml(a.position)+'</td><td>'+escapeHtml(a.electrode)+'</td></tr>').join("")+'</tbody></table></div></div>'+
+    '<button class="primary-btn" id="openAssignmentDialog">+ Add test assignment</button><div class="alert blue"><strong>Level I build:</strong> '+LEVEL1_WELDING_PROJECTS.length+' welding-position projects are loaded from the Level I position requirements. Cutting projects are listed separately until their grading rubric is defined.</div><div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Name</th><th>Process</th><th>Joint</th><th>Position</th></tr></thead><tbody>'+state.assignments.map(a=>'<tr><td>'+escapeHtml(a.name)+'</td><td>'+escapeHtml(a.process)+'</td><td>'+escapeHtml(a.family+(a.family==="Groove"?" · "+a.backing:""))+'</td><td>'+escapeHtml(a.position)+'</td></tr>').join("")+'</tbody></table></div></div>'+
     '<div class="card"><h3>AWS administrative record</h3><p class="muted small">For the active test student only.</p>'+
       '<div class="form-grid"><label>Registration status<select id="awsRegistration"><option '+(student.aws.registrationStatus==="Not registered"?"selected":"")+'>Not registered</option><option '+(student.aws.registrationStatus==="Pending"?"selected":"")+'>Pending</option><option '+(student.aws.registrationStatus==="Registered"?"selected":"")+'>Registered</option></select></label>'+
       '<label>Candidate / trainee ID<input id="awsCandidateId" value="'+escapeHtml(student.aws.candidateId||"")+'" /></label>'+
@@ -515,10 +622,10 @@ document.getElementById("appContent").addEventListener("click",e=>{
     saveState();render();return;
   }
 
-  const qs=e.target.closest("[data-qualification-status]");
-  if(qs){
-    const s=studentAt(state.ui.qualificationStudentIndex),rec=s.qualifications[state.ui.qualificationId];
-    rec.status=qs.dataset.qualificationStatus;if(rec.status!=="Not Started"&&!rec.date)rec.date=new Date().toISOString().slice(0,10);
+  const pqs=e.target.closest("[data-position-qualification-status]");
+  if(pqs){
+    const s=studentAt(state.ui.qualificationStudentIndex),q=selectedPositionQualification(),rec=s.positionQualifications[q.id];
+    rec.status=pqs.dataset.positionQualificationStatus;if(rec.status!=="Not Started"&&!rec.date)rec.date=new Date().toISOString().slice(0,10);
     saveState();render();return;
   }
 
@@ -539,15 +646,18 @@ document.getElementById("appContent").addEventListener("change",e=>{
   if(e.target.id==="competencySelect"){state.ui.competencyIndex=Number(e.target.value);state.ui.competencyIndexStudent=0;render();}
   if(e.target.id==="examSelect"){state.ui.examModuleId=e.target.value;state.ui.examStudentIndex=0;render();}
   if(e.target.id==="retrainingCheck"){studentAt(state.ui.examStudentIndex).exams[state.ui.examModuleId].retrainingConfirmed=e.target.checked;saveState();}
-  if(e.target.id==="qualificationSelect"){state.ui.qualificationId=e.target.value;state.ui.qualificationStudentIndex=0;render();}
-  if(e.target.id==="qualificationDate"){studentAt(state.ui.qualificationStudentIndex).qualifications[state.ui.qualificationId].date=e.target.value;saveState();}
+  if(e.target.id==="qualificationProcessSelect"){state.ui.qualificationProcessId=e.target.value;state.ui.qualificationPosition="";state.ui.qualificationStudentIndex=0;render();}
+  if(e.target.id==="qualificationFamilySelect"){state.ui.qualificationFamily=e.target.value;state.ui.qualificationBacking=e.target.value==="Groove"?"Backing":"N/A";state.ui.qualificationPosition="";state.ui.qualificationStudentIndex=0;render();}
+  if(e.target.id==="qualificationBackingSelect"){state.ui.qualificationBacking=e.target.value;state.ui.qualificationPosition="";state.ui.qualificationStudentIndex=0;render();}
+  if(e.target.id==="qualificationPositionSelect"){state.ui.qualificationPosition=e.target.value;state.ui.qualificationStudentIndex=0;render();}
+  if(e.target.id==="positionQualificationDate"){const s=studentAt(state.ui.qualificationStudentIndex),q=selectedPositionQualification();s.positionQualifications[q.id].date=e.target.value;saveState();}
   if(e.target.id==="awsRegistration"){activeStudent().aws.registrationStatus=e.target.value;saveState();}
   if(e.target.id==="awsEnrollmentDate"){activeStudent().aws.enrollmentDate=e.target.value;saveState();}
   if(e.target.id==="awsSubmission"){activeStudent().aws.submissionStatus=e.target.value;saveState();}
 });
 
 document.getElementById("appContent").addEventListener("input",e=>{
-  if(e.target.id==="qualificationNote"){studentAt(state.ui.qualificationStudentIndex).qualifications[state.ui.qualificationId].notes=e.target.value;saveState();}
+  if(e.target.id==="positionQualificationNote"){const s=studentAt(state.ui.qualificationStudentIndex),q=selectedPositionQualification();s.positionQualifications[q.id].notes=e.target.value;saveState();}
   if(e.target.id==="awsCandidateId"){activeStudent().aws.candidateId=e.target.value;saveState();}
 });
 
@@ -563,11 +673,11 @@ document.getElementById("createAssignmentBtn").addEventListener("click",e=>{
 
 document.getElementById("exportBtn").addEventListener("click",()=>{
   const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);a.download="aws-sense-tower-lab-v2.json";a.click();URL.revokeObjectURL(a.href);
+  a.href=URL.createObjectURL(blob);a.download="aws-sense-tower-lab-v3.json";a.click();URL.revokeObjectURL(a.href);
 });
 document.getElementById("importInput").addEventListener("change",e=>{
   const file=e.target.files[0];if(!file)return;const reader=new FileReader();
-  reader.onload=()=>{try{const parsed=JSON.parse(reader.result);if(parsed.schemaVersion!==2)throw new Error();state=parsed;saveState();render();}catch{alert("That file is not a valid Tower Lab v2 export.");}};
+  reader.onload=()=>{try{const parsed=JSON.parse(reader.result);if(parsed.schemaVersion!==3)throw new Error();state=parsed;saveState();render();}catch{alert("That file is not a valid Tower Lab v3 export.");}};
   reader.readAsText(file);
 });
 document.getElementById("resetBtn").addEventListener("click",()=>{if(confirm("Reset all standalone v2 test data?")){localStorage.removeItem(STORAGE_KEY);state=makeDemoState();render();}});
