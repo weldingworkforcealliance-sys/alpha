@@ -116,6 +116,6 @@ Rules:
 2. IDs are stored as four-character strings so leading zeroes are preserved.
 3. No two students may hold the same ID.
 4. Once an ID has been issued, it is reserved and cannot be reassigned to another student.
-5. Instructors may edit the ID only to another unused four-digit value.
+5. Once the system assigns the ID to a student, it is immutable. Instructors and administrators cannot edit or replace it through the normal application workflow.
 6. The identifier is student-level, not qualification-position-level, so the same ID follows the student across groove positions, backing/no-backing categories, and future destructive-test certificate generation.
 7. This ID is an internal PCCC/LTG testing identifier and must not be represented as an AWS-issued credential number.
