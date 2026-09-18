@@ -170,10 +170,28 @@ const DEFAULT_ASSIGNMENTS = [
 ];
 
 const DEFAULT_COURSE_CATALOG = [
-  {id:"wld105",code:"WLD 105",level:"Level I",semester:1,role:"theory",label:"Theory / Projects",pairedCourse:"WLD 110"},
-  {id:"wld110",code:"WLD 110",level:"Level I",semester:1,role:"shop",label:"Shop / Certifications",pairedCourse:"WLD 105"},
-  {id:"wld205",code:"WLD 205",level:"Level II",semester:1,role:"theory",label:"Theory / Projects",pairedCourse:"WLD 210"},
-  {id:"wld210",code:"WLD 210",level:"Level II",semester:1,role:"shop",label:"Shop / Certifications",pairedCourse:"WLD 205"}
+  {id:"wld105",code:"WLD 105",level:"Level I",semester:1,role:"theory",label:"Theory / Projects",pairedCourse:"WLD 110",
+    gradingPolicy:{version:"pccc-theory-v1",passingScore:65,categories:[
+      {code:"theory_assessments",label:"Theory / Assessments",weight:50},
+      {code:"fabrication_projects",label:"Fabrication Projects",weight:25},
+      {code:"homework",label:"Homework",weight:25}
+    ]}},
+  {id:"wld110",code:"WLD 110",level:"Level I",semester:1,role:"shop",label:"Shop / Certifications",pairedCourse:"WLD 105",
+    gradingPolicy:{version:"pccc-shop-v1",passingScore:65,categories:[
+      {code:"weld_performance",label:"Weld Performance",weight:75},
+      {code:"shop_projects",label:"Shop Projects",weight:25}
+    ],passFailOutsideGrade:["Qualifications","Destructive Tests","Certificates"]}},
+  {id:"wld205",code:"WLD 205",level:"Level II",semester:1,role:"theory",label:"Theory / Projects",pairedCourse:"WLD 210",
+    gradingPolicy:{version:"pccc-theory-v1",passingScore:65,categories:[
+      {code:"theory_assessments",label:"Theory / Assessments",weight:50},
+      {code:"fabrication_projects",label:"Fabrication Projects",weight:25},
+      {code:"homework",label:"Homework",weight:25}
+    ]}},
+  {id:"wld210",code:"WLD 210",level:"Level II",semester:1,role:"shop",label:"Shop / Certifications",pairedCourse:"WLD 205",
+    gradingPolicy:{version:"pccc-shop-v1",passingScore:65,categories:[
+      {code:"weld_performance",label:"Weld Performance",weight:75},
+      {code:"shop_projects",label:"Shop Projects",weight:25}
+    ],passFailOutsideGrade:["Qualifications","Destructive Tests","Certificates"]}}
 ];
 
 const PLANNER_PROJECT_SEED = [
@@ -191,6 +209,14 @@ function blankCourseRecord(course){
       category:"Theory Assessments",
       source:"Existing theory gradebook",
       status:"Imported by gradebook",score:null,possible:null
+    });
+    record.items.push({
+      id:course.id+"-homework-category",
+      courseId:course.id,
+      title:"Homework",
+      category:"Homework",
+      source:"Instructor / planner",
+      status:"No homework graded yet",score:null,possible:null
     });
     if(course.id==="wld105"){
       record.items.push({
@@ -219,7 +245,17 @@ function courseCatalog(targetState=state){
 function ensurePermanentRecordState(targetState){
   if(!Array.isArray(targetState.courseCatalog)||!targetState.courseCatalog.length){
     targetState.courseCatalog=JSON.parse(JSON.stringify(DEFAULT_COURSE_CATALOG));
+  }else{
+    const defaults=JSON.parse(JSON.stringify(DEFAULT_COURSE_CATALOG));
+    targetState.courseCatalog.forEach(course=>{
+      const fallback=defaults.find(x=>x.id===course.id);
+      if(fallback&&!course.gradingPolicy) course.gradingPolicy=fallback.gradingPolicy;
+    });
   }
+  if(!targetState.program) targetState.program={};
+  if(!targetState.program.instructorEmail) targetState.program.instructorEmail="demo.instructor@example.test";
+  if(!targetState.program.certificatePrintEmail) targetState.program.certificatePrintEmail="jhconnolly@pccc.edu";
+  if(!targetState.program.certificatePrintNote) targetState.program.certificatePrintNote="ASAP print on thick paper.";
   if(!Number.isFinite(Number(targetState.destructiveTestCounter))||Number(targetState.destructiveTestCounter)<1) targetState.destructiveTestCounter=1;
   if(!Array.isArray(targetState.assignments)) targetState.assignments=JSON.parse(JSON.stringify(DEFAULT_ASSIGNMENTS));
   targetState.assignments.forEach(assignment=>{
@@ -245,11 +281,54 @@ function ensurePermanentRecordState(targetState){
 
 function courseById(id){const catalog=courseCatalog();return catalog.find(course=>course.id===id)||catalog[0];}
 
+function itemCategoryCode(item,course){
+  if(course.role==="shop"){
+    return item.category==="Shop Projects" ? "shop_projects" : "weld_performance";
+  }
+  if(item.category==="Fabrication Projects") return "fabrication_projects";
+  if(item.category==="Homework") return "homework";
+  return "theory_assessments";
+}
+
+function categoryAverage(items){
+  const graded=items.filter(item=>Number.isFinite(Number(item.score))&&Number.isFinite(Number(item.possible))&&Number(item.possible)>0);
+  if(!graded.length) return null;
+  const earned=graded.reduce((sum,item)=>sum+Number(item.score),0);
+  const possible=graded.reduce((sum,item)=>sum+Number(item.possible),0);
+  return possible>0 ? earned/possible*100 : null;
+}
+
+function courseGradePreview(student,courseId){
+  const course=courseById(courseId);
+  const policy=course.gradingPolicy;
+  if(!policy) return {ready:false,final:null,categories:[]};
+  const items=courseItemsFor(student,courseId);
+  let weighted=0;
+  let ready=true;
+  const categories=policy.categories.map(cat=>{
+    const rows=items.filter(item=>itemCategoryCode(item,course)===cat.code);
+    const average=categoryAverage(rows);
+    if(average===null) ready=false;
+    else weighted+=average*(cat.weight/100);
+    return {...cat,average,itemCount:rows.length};
+  });
+  return {ready,final:ready?Math.round(weighted*10)/10:null,categories,passingScore:policy.passingScore,version:policy.version};
+}
+
+function courseGradingPolicyHtml(course,student){
+  const preview=courseGradePreview(student,course.id);
+  const rows=preview.categories.map(cat=>'<tr><td>'+escapeHtml(cat.label)+'</td><td>'+cat.weight+'%</td><td>'+(cat.average===null?badge("No graded items","gray"):badge((Math.round(cat.average*10)/10)+"%","blue"))+'</td></tr>').join("");
+  return '<div class="table-wrap"><table><thead><tr><th>Grade category</th><th>Weight</th><th>Current category grade</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+    '<div class="alert blue"><strong>Course policy:</strong> Passing is '+preview.passingScore+'% or higher. '+(course.role==="theory"?"Homework is 25% of the final grade.":"Qualifications, destructive tests and certificates remain Pass/Fail records outside the numeric grade.")+'</div>'+
+    '<div class="grade-summary"><div class="final"><span>Calculated course preview</span><strong>'+(preview.ready?preview.final.toFixed(1)+"%":"—")+'</strong></div></div>';
+}
+
+
 function shopAcademicItems(student,courseId){
   return state.assignments.filter(a=>a.rubricType==="weld"&&a.courseId===courseId).map(a=>{
     const result=officialLabResult(student,a.id);
     return {
-      id:a.id,title:a.name,category:a.family==="Groove"?"Groove Welds":"Fillet Welds",
+      id:a.id,title:a.name,category:a.type==="project"?"Shop Projects":"Weld Performance",
       source:"Shop Grade Tower",status:result.status,score:result.numeric,possible:result.numeric===null?null:100,
       attempt:result.attempt,display:result.display
     };
@@ -315,6 +394,8 @@ function createCertificateRecord(student,test){
     id:certificateIdForTest(test),
     version:1,
     issuedAt:new Date().toISOString(),
+    renderedFileReference:"",
+    deliveries:[],
     snapshot:{
       studentRecordId:student.ltgStudentId,
       studentName:student.name,
@@ -335,6 +416,62 @@ function createCertificateRecord(student,test){
   };
   return test.certificate;
 }
+
+function buildCertificateEmailPacket(student,test){
+  if(!test?.certificate) return null;
+  const instructorEmail=String(state.program?.instructorEmail||"").trim();
+  const printEmail=String(state.program?.certificatePrintEmail||"jhconnolly@pccc.edu").trim();
+  const studentEmail=String(student.email||"").trim();
+  const recipients=[
+    {role:"Student",email:studentEmail},
+    {role:"Instructor",email:instructorEmail},
+    {role:"Print / Dean",email:printEmail}
+  ];
+  const subject="PCCC Welding Certificate — "+student.name+" — "+test.process+" "+test.position+" — "+test.certificate.id;
+  const printNote=String(state.program?.certificatePrintNote||"ASAP print on thick paper.").trim();
+  const body=[
+    "Attached is the PCCC welding qualification certificate for "+student.name+".",
+    "Weld Test ID: "+student.weldTestId,
+    "Certificate: "+test.certificate.id,
+    "Destructive Test: "+test.id,
+    "Process / Position: "+test.process+" "+test.position+(test.family==="Groove"?" · "+test.backing:""),
+    "",
+    "For jhconnolly@pccc.edu: "+printNote
+  ].join("\n");
+  return {
+    recipients,
+    subject,
+    body,
+    printNote,
+    attachmentReference:test.certificate.renderedFileReference||test.certificate.id+".pdf"
+  };
+}
+
+function queueCertificateEmail(student,test){
+  if(!test?.certificate||test.result!=="Pass") return null;
+  const packet=buildCertificateEmailPacket(student,test);
+  if(!packet||packet.recipients.some(recipient=>!recipient.email)) return null;
+  if(!Array.isArray(test.certificate.deliveries)) test.certificate.deliveries=[];
+  const existing=test.certificate.deliveries.find(delivery=>delivery.version===test.certificate.version&&["Queued","Sent"].includes(delivery.status));
+  if(existing) return existing;
+  const delivery={
+    id:"MAIL-"+test.certificate.id+"-V"+test.certificate.version,
+    version:test.certificate.version,
+    status:"Queued",
+    queuedAt:new Date().toISOString(),
+    sentAt:"",
+    recipients:packet.recipients,
+    subject:packet.subject,
+    body:packet.body,
+    printNote:packet.printNote,
+    attachmentReference:packet.attachmentReference,
+    providerMessageId:"",
+    error:""
+  };
+  test.certificate.deliveries.push(delivery);
+  return delivery;
+}
+
 
 const WELD_TEST_ID_PATTERN = /^\d{4}$/;
 
@@ -415,13 +552,14 @@ function blankStudent(name,studentId){
 function makeDemoState(){
   const names=["Demo Student A","Demo Student B","Demo Student C","Demo Student D","Demo Student E","Demo Student F","Demo Student G","Demo Student H"];
   const students=names.map((n,i)=>blankStudent(n,"TEST-"+String(i+1).padStart(3,"0")));
+  students.forEach((student,i)=>{student.email="demo.student"+String(i+1)+"@example.test";});
   students[0].aws.registrationStatus="Registered";
   students[0].exams.m2.attempts=[{score:100,date:"2026-09-10"}];
   students[0].competencies.m4[4].status="Practicing";
   students[1].competencies.m4[4].status="Introduced";
   const demoState={
-    schemaVersion:5,
-    program:{name:"PCCC Welding — AWS SENSE Level I Tower Lab",standardBasis:"AWS QC10:2017 / AWS EG2.0:2017 / Supplement"},
+    schemaVersion:6,
+    program:{name:"PCCC Welding — AWS SENSE Level I Tower Lab",standardBasis:"AWS QC10:2017 / AWS EG2.0:2017 / Supplement",instructorEmail:"demo.instructor@example.test",certificatePrintEmail:"jhconnolly@pccc.edu",certificatePrintNote:"ASAP print on thick paper."},
     assignments:JSON.parse(JSON.stringify(DEFAULT_ASSIGNMENTS)),
     courseCatalog:JSON.parse(JSON.stringify(DEFAULT_COURSE_CATALOG)),
     students,
@@ -440,8 +578,8 @@ function loadState(){
     const raw=localStorage.getItem(STORAGE_KEY);
     if(!raw) return makeDemoState();
     const parsed=JSON.parse(raw);
-    if(!parsed||![3,4,5].includes(parsed.schemaVersion)||!Array.isArray(parsed.students)) return makeDemoState();
-    parsed.schemaVersion=5;
+    if(!parsed||![3,4,5,6].includes(parsed.schemaVersion)||!Array.isArray(parsed.students)) return makeDemoState();
+    parsed.schemaVersion=6;
     ensureStudentWeldTestIds(parsed);
     ensurePermanentRecordState(parsed);
     return parsed;
@@ -687,6 +825,7 @@ function buildLtgIntegrationSnapshot(targetState=state){
       weldTestId:student.weldTestId
     })),
     courseCatalog:catalog.map(course=>({...course})),
+    gradingPolicies:catalog.map(course=>({courseId:course.id,courseCode:course.code,gradingPolicy:course.gradingPolicy||null})),
     academicShopGrades:targetState.students.flatMap(student=>
       targetState.assignments.filter(a=>a.rubricType==="weld"&&a.courseId).flatMap(assignment=>{
         const result=officialLabResult(student,assignment.id);
@@ -759,11 +898,12 @@ function renderCourseRecords(){
     '<div class="queue-toolbar"><label>Course<select id="courseRecordSelect">'+courseCatalog().map(c=>'<option value="'+c.id+'" '+(c.id===course.id?"selected":"")+'>'+escapeHtml(c.code+" · "+c.label)+'</option>').join("")+'</select></label>'+
     '<div>'+badge(course.level+" · Semester "+course.semester,"blue")+' '+badge(course.role==="theory"?"Theory / Projects":"Shop / Certifications",course.role==="theory"?"yellow":"green")+'</div></div></div>'+
     '<div class="grid cols-2"><div class="card"><div class="student-banner"><div><div class="eyebrow">'+escapeHtml(course.code)+' permanent academic record</div><h3>'+escapeHtml(student.name)+'</h3><div class="student-meta">'+escapeHtml(student.studentId)+' · Weld Test ID '+escapeHtml(student.weldTestId)+'</div></div><div>'+badge(finalization.status,finalization.status==="Finalized"?"green":"yellow")+'</div></div>'+
-      '<div class="section-head"><div><h3>'+escapeHtml(course.code)+' grade evidence</h3><div class="muted small">'+(course.role==="theory"?"Existing theory gradebook assessments plus planner-linked fabrication projects.":"Numeric academic shop grades from the Lab Grade Tower only.")+'</div></div></div>'+
+      '<div class="section-head"><div><h3>'+escapeHtml(course.code)+' grade evidence</h3><div class="muted small">'+(course.role==="theory"?"Existing theory gradebook assessments plus planner-linked fabrication projects and Homework (25%).":"Numeric academic shop grades from the Lab Grade Tower only.")+'</div></div></div>'+
       '<div class="table-wrap"><table><thead><tr><th>Category</th><th>Item</th><th>Source</th><th>Grade / status</th></tr></thead><tbody>'+
       (items.length?items.map(item=>'<tr><td>'+escapeHtml(item.category||"")+'</td><td>'+escapeHtml(item.title)+'</td><td>'+escapeHtml(item.source||"")+'</td><td>'+(Number.isFinite(Number(item.score))&&Number.isFinite(Number(item.possible))&&Number(item.possible)>0?badge((Math.round(Number(item.score)/Number(item.possible)*1000)/10)+"%","green"):badge(item.status||"Not graded","gray"))+'</td></tr>').join(""):'<tr><td colspan="4" class="muted">No academic grade evidence recorded yet.</td></tr>')+
       '</tbody></table></div>'+
-      '<div class="alert blue"><strong>Permanent-record rule:</strong> Attempts and corrections append history. Existing evidence is not overwritten. Final course-grade calculation remains course-specific and is not invented by this prototype.</div>'+
+      courseGradingPolicyHtml(course,student)+
+      '<div class="alert blue"><strong>Permanent-record rule:</strong> Attempts and corrections append history. Existing evidence is not overwritten. The current approved prototype weights are stored with the course policy version.</div>'+
     '</div>'+
     '<div class="card"><h3>Linked course</h3><div class="stat" style="font-size:28px">'+escapeHtml(linked?.code||course.pairedCourse)+'</div><div class="stat-label">'+escapeHtml(linked?.label||"Linked course")+'</div>'+
       '<div class="alert"><strong>No combined grade.</strong> '+escapeHtml(course.code)+' and '+escapeHtml(course.pairedCourse)+' each produce their own final course grade.</div>'+
@@ -817,7 +957,11 @@ function renderCertificatePreview(test){
     '<div class="grid cols-2"><div><p><strong>Student:</strong> '+escapeHtml(s.studentName)+'</p><p><strong>Weld Test ID:</strong> '+escapeHtml(s.weldTestId)+'</p><p><strong>Course:</strong> '+escapeHtml(s.courseCode)+'</p><p><strong>Destructive Test:</strong> '+escapeHtml(s.destructiveTestId)+'</p></div>'+
     '<div><p><strong>Process:</strong> '+escapeHtml(s.process)+'</p><p><strong>Position:</strong> '+escapeHtml(s.position)+'</p><p><strong>Backing:</strong> '+escapeHtml(s.backing)+'</p><p><strong>Result:</strong> '+escapeHtml(s.result)+'</p></div></div>'+
     '<p><strong>Test method:</strong> '+escapeHtml(s.testMethod||"—")+' · <strong>Test date:</strong> '+escapeHtml(s.testDate||"—")+' · <strong>Inspector:</strong> '+escapeHtml(s.inspector||"—")+'</p>'+
-    '<div class="alert">This is the certificate-record data source, not the final designed certificate/PDF. Future certificate rendering must use this stored snapshot so later record changes cannot silently alter an already-issued certificate.</div></div>';
+    '<div class="section-head"><div><h3>Certificate email distribution</h3><div class="muted small">Student + section instructor + jhconnolly@pccc.edu. The print recipient receives the standing note: ASAP print on thick paper.</div></div></div>'+
+    ((cert.deliveries||[]).length
+      ? '<div class="table-wrap"><table><thead><tr><th>Status</th><th>Recipients</th><th>Attachment</th></tr></thead><tbody>'+cert.deliveries.map(delivery=>'<tr><td>'+badge(delivery.status,delivery.status==="Sent"?"green":"yellow")+'</td><td>'+delivery.recipients.map(r=>escapeHtml(r.role+": "+r.email)).join("<br>")+'</td><td>'+escapeHtml(delivery.attachmentReference)+'</td></tr>').join("")+'</tbody></table></div>'
+      : '<button class="primary-btn" data-queue-certificate-email="'+escapeHtml(test.id)+'">Queue certificate email</button>')+
+    '<div class="alert">This is the certificate-record data source, not the final designed certificate/PDF. The final certificate keeps the approved PCCC certificate layout and is emailed only after its rendered PDF is attached.</div></div>';
 }
 
 function renderCompetencies(){
@@ -921,6 +1065,7 @@ function renderAdmin(){
       '<label>Completion submission<select id="awsSubmission"><option '+(student.aws.submissionStatus==="Not submitted"?"selected":"")+'>Not submitted</option><option '+(student.aws.submissionStatus==="Pending"?"selected":"")+'>Pending</option><option '+(student.aws.submissionStatus==="Submitted"?"selected":"")+'>Submitted</option></select></label></div>'+
     '</div></div>'+
     '<div class="card"><h3>LTG integration bridge</h3><p class="muted small">The prototype now exposes a normalized bridge snapshot keyed by stable LTG student identity, course ID, source system, and source key. Production integration should map these records into the existing append-only gradebook and new permanent welding-record tables.</p><button class="secondary-btn" id="exportLtgBridgeBtn">Export LTG bridge snapshot</button></div>'+
+    '<div class="card"><h3>Certificate email routing</h3><p class="muted small">Production routing: student email + section instructor email + <strong>jhconnolly@pccc.edu</strong>. Standing print note: <strong>ASAP print on thick paper.</strong></p></div>'+
     '<div class="card"><h3>Prototype boundaries</h3><div class="alert">No LTG authentication, no production Supabase, no attendance linkage, no AWS submission, no real student PII, and no production write from this standalone build.</div></div>';
 }
 
@@ -1044,6 +1189,14 @@ document.getElementById("appContent").addEventListener("click",e=>{
   const previewCert=e.target.closest("[data-preview-certificate]");
   if(previewCert){state.ui.certificatePreviewId=previewCert.dataset.previewCertificate;render();return;}
 
+  const queueCertEmail=e.target.closest("[data-queue-certificate-email]");
+  if(queueCertEmail){
+    const student=activeStudent(),test=student.destructiveTests.find(t=>t.id===queueCertEmail.dataset.queueCertificateEmail);
+    const delivery=queueCertificateEmail(student,test);
+    if(!delivery){alert("Certificate email cannot be queued until the certificate exists and student/instructor recipient emails are available.");return;}
+    saveState();render();return;
+  }
+
   if(e.target.id==="recordExamBtn"){
     const input=document.getElementById("examScoreInput"),score=Number(input.value),s=studentAt(state.ui.examStudentIndex),exam=s.exams[state.ui.examModuleId];
     if(!Number.isFinite(score)||score<0||score>100){alert("Enter a score from 0 to 100.");return;}
@@ -1098,11 +1251,11 @@ document.getElementById("createAssignmentBtn").addEventListener("click",e=>{
 
 document.getElementById("exportBtn").addEventListener("click",()=>{
   const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);a.download="pccc-welding-record-tower-lab-v5.json";a.click();URL.revokeObjectURL(a.href);
+  a.href=URL.createObjectURL(blob);a.download="pccc-welding-record-tower-lab-v6.json";a.click();URL.revokeObjectURL(a.href);
 });
 document.getElementById("importInput").addEventListener("change",e=>{
   const file=e.target.files[0];if(!file)return;const reader=new FileReader();
-  reader.onload=()=>{try{const parsed=JSON.parse(reader.result);if(![3,4,5].includes(parsed.schemaVersion))throw new Error();parsed.schemaVersion=5;ensureStudentWeldTestIds(parsed);ensurePermanentRecordState(parsed);state=parsed;saveState();render();}catch{alert("That file is not a valid Welding Record Tower v5 export.");}};
+  reader.onload=()=>{try{const parsed=JSON.parse(reader.result);if(![3,4,5].includes(parsed.schemaVersion))throw new Error();parsed.schemaVersion=5;ensureStudentWeldTestIds(parsed);ensurePermanentRecordState(parsed);state=parsed;saveState();render();}catch{alert("That file is not a valid Welding Record Tower v6 export.");}};
   reader.readAsText(file);
 });
 document.getElementById("resetBtn").addEventListener("click",()=>{if(confirm("Reset all standalone test data?")){localStorage.removeItem(STORAGE_KEY);state=makeDemoState();render();}});
