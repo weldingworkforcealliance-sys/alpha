@@ -96,3 +96,26 @@ Status progression:
 5. Academic grade never automatically creates AWS qualification Pass.
 6. AWS qualification Pass remains a deliberate instructor/test-supervisor action.
 7. Daily instructors should not have to configure assignments while grading.
+
+
+## Four-digit weld test identity
+
+Each student is assigned one persistent four-digit weld test ID for qualification and future destructive-test certificate records.
+
+```text
+student_weld_test_identity
+- student_id
+- weld_test_id CHAR(4) UNIQUE
+- issued_at
+- retired_at (nullable)
+```
+
+Rules:
+
+1. IDs begin at `0000` and increment to the next unused value.
+2. IDs are stored as four-character strings so leading zeroes are preserved.
+3. No two students may hold the same ID.
+4. Once an ID has been issued, it is reserved and cannot be reassigned to another student.
+5. Instructors may edit the ID only to another unused four-digit value.
+6. The identifier is student-level, not qualification-position-level, so the same ID follows the student across groove positions, backing/no-backing categories, and future destructive-test certificate generation.
+7. This ID is an internal PCCC/LTG testing identifier and must not be represented as an AWS-issued credential number.
