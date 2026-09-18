@@ -375,7 +375,12 @@ function recordDestructiveTest(student,payload){
     family:payload.family,
     backing:payload.family==="Groove"?payload.backing:"N/A",
     position:payload.position,
+    specification:payload.specification||"",
+    fillerMetal:payload.fillerMetal||"",
+    plate:payload.plate||"",
     testMethod:payload.testMethod,
+    faceBendResult:payload.faceBendResult||"",
+    rootBendResult:payload.rootBendResult||"",
     result:payload.result,
     testDate:payload.testDate,
     inspector:payload.inspector,
@@ -405,10 +410,15 @@ function createCertificateRecord(student,test){
       courseCode:test.courseCode,
       process:test.process,
       material:test.material,
+      specification:test.specification,
+      fillerMetal:test.fillerMetal,
+      plate:test.plate,
       family:test.family,
       backing:test.backing,
       position:test.position,
       testMethod:test.testMethod,
+      faceBendResult:test.faceBendResult,
+      rootBendResult:test.rootBendResult,
       result:test.result,
       testDate:test.testDate,
       inspector:test.inspector
@@ -435,6 +445,8 @@ function buildCertificateEmailPacket(student,test){
     "Certificate: "+test.certificate.id,
     "Destructive Test: "+test.id,
     "Process / Position: "+test.process+" "+test.position+(test.family==="Groove"?" · "+test.backing:""),
+    "Specification / Filler / Plate: "+(test.specification||"")+" / "+(test.fillerMetal||"")+" / "+(test.plate||""),
+    "Guided Bend: Face "+(test.faceBendResult||"")+" · Root "+(test.rootBendResult||""),
     "",
     "For jhconnolly@pccc.edu: "+printNote
   ].join("\n");
@@ -936,15 +948,20 @@ function renderDestructiveTests(){
         '<label>Joint category<select id="destructiveFamilySelect"><option '+(family==="Fillet"?"selected":"")+'>Fillet</option><option '+(family==="Groove"?"selected":"")+'>Groove</option></select></label>'+
         (family==="Groove"?'<label>Backing<select id="destructiveBackingSelect"><option '+(backing==="Backing"?"selected":"")+'>Backing</option><option '+(backing==="No Backing"?"selected":"")+'>No Backing</option></select></label>':"")+
         '<label>Position<select id="destructivePositionSelect">'+positions.map(p=>'<option '+(p===position?"selected":"")+'>'+p+'</option>').join("")+'</select></label>'+
+        '<label>Specification<input id="destructiveSpecification" value="AWS D1.1" /></label>'+
+        '<label>Filler Metal<input id="destructiveFiller" placeholder="e.g. E-7018" /></label>'+
+        '<label>Plate<input id="destructivePlate" placeholder="e.g. 3/8\"" /></label>'+
         '<label>Test date<input id="destructiveDate" type="date" /></label>'+
-        '<label>Test method<input id="destructiveMethod" placeholder="e.g. approved destructive test method" /></label>'+
+        '<label>Test method<input id="destructiveMethod" value="Guided Bend" /></label>'+
+        '<label>Face Bend<select id="destructiveFaceBend"><option value="">Choose result</option><option>Satisfactory</option><option>Unsatisfactory</option></select></label>'+
+        '<label>Root Bend<select id="destructiveRootBend"><option value="">Choose result</option><option>Satisfactory</option><option>Unsatisfactory</option></select></label>'+
         '<label>Inspector<input id="destructiveInspector" placeholder="Instructor / inspector" /></label>'+
-        '<label>Result<select id="destructiveResult"><option value="">Choose result</option><option>Pass</option><option>Fail</option></select></label>'+
+        '<label>Overall Result<select id="destructiveResult"><option value="">Choose result</option><option>Pass</option><option>Fail</option></select></label>'+
         '<label style="grid-column:1/-1">Notes<input id="destructiveNotes" placeholder="Optional record note" /></label>'+
       '</div><div class="modal-actions"><button class="primary-btn" id="recordDestructiveTestBtn">Record permanent test</button></div>'+
     '</div>'+
     '<div class="card"><div class="section-head"><div><h3>Destructive-test history</h3><div class="muted small">Certificate records can only be created from passing tests.</div></div></div>'+
-      '<div class="table-wrap"><table><thead><tr><th>Record</th><th>Date</th><th>Test</th><th>Method</th><th>Result</th><th>Certificate</th></tr></thead><tbody>'+
+      '<div class="table-wrap"><table><thead><tr><th>Record</th><th>Date</th><th>Test</th><th>Cert data</th><th>Result</th><th>Certificate</th></tr></thead><tbody>'+
       (tests.length?tests.map(test=>'<tr><td><strong>'+escapeHtml(test.id)+'</strong><div class="muted tiny">Weld ID '+escapeHtml(test.weldTestId)+'</div></td><td>'+escapeHtml(test.testDate||"—")+'</td><td>'+escapeHtml(test.process+" "+test.position+(test.family==="Groove"?" · "+test.backing:""))+'</td><td>'+escapeHtml(test.testMethod||"—")+'</td><td>'+badge(test.result,test.result==="Pass"?"green":"red")+'</td><td>'+(test.certificate?'<button class="secondary-btn" data-preview-certificate="'+escapeHtml(test.certificate.id)+'">'+escapeHtml(test.certificate.id)+'</button>':test.result==="Pass"?'<button class="primary-btn" data-create-certificate="'+escapeHtml(test.id)+'">Create certificate record</button>':badge("Not eligible","gray"))+'</td></tr>').join(""):'<tr><td colspan="6" class="muted">No destructive-test records yet.</td></tr>')+
       '</tbody></table></div></div>'+
     (previewTest?renderCertificatePreview(previewTest):"");
@@ -955,7 +972,7 @@ function renderCertificatePreview(test){
   const s=cert.snapshot;
   return '<div class="card"><div class="section-head"><div><div class="eyebrow">Certificate record preview</div><h3>'+escapeHtml(cert.id)+'</h3><div class="muted small">Version '+cert.version+' · generated from immutable test record '+escapeHtml(test.id)+'</div></div>'+badge("Certificate record created","green")+'</div>'+
     '<div class="grid cols-2"><div><p><strong>Student:</strong> '+escapeHtml(s.studentName)+'</p><p><strong>Weld Test ID:</strong> '+escapeHtml(s.weldTestId)+'</p><p><strong>Course:</strong> '+escapeHtml(s.courseCode)+'</p><p><strong>Destructive Test:</strong> '+escapeHtml(s.destructiveTestId)+'</p></div>'+
-    '<div><p><strong>Process:</strong> '+escapeHtml(s.process)+'</p><p><strong>Position:</strong> '+escapeHtml(s.position)+'</p><p><strong>Backing:</strong> '+escapeHtml(s.backing)+'</p><p><strong>Result:</strong> '+escapeHtml(s.result)+'</p></div></div>'+
+    '<div><p><strong>Process:</strong> '+escapeHtml(s.process)+'</p><p><strong>Specification:</strong> '+escapeHtml(s.specification||"—")+'</p><p><strong>Filler Metal:</strong> '+escapeHtml(s.fillerMetal||"—")+'</p><p><strong>Plate:</strong> '+escapeHtml(s.plate||"—")+'</p><p><strong>Position:</strong> '+escapeHtml(s.position)+'</p><p><strong>Backing:</strong> '+escapeHtml(s.backing)+'</p><p><strong>Face Bend:</strong> '+escapeHtml(s.faceBendResult||"—")+'</p><p><strong>Root Bend:</strong> '+escapeHtml(s.rootBendResult||"—")+'</p><p><strong>Result:</strong> '+escapeHtml(s.result)+'</p></div></div>'+
     '<p><strong>Test method:</strong> '+escapeHtml(s.testMethod||"—")+' · <strong>Test date:</strong> '+escapeHtml(s.testDate||"—")+' · <strong>Inspector:</strong> '+escapeHtml(s.inspector||"—")+'</p>'+
     '<div class="section-head"><div><h3>Certificate email distribution</h3><div class="muted small">Student + section instructor + jhconnolly@pccc.edu. The print recipient receives the standing note: ASAP print on thick paper.</div></div></div>'+
     ((cert.deliveries||[]).length
@@ -1160,18 +1177,25 @@ document.getElementById("appContent").addEventListener("click",e=>{
     const student=activeStudent();
     const rule=destructiveRule(state.ui.destructiveProcessId);
     const family=state.ui.destructiveFamily==="Fillet"?"Fillet":"Groove";
+    const specification=String(document.getElementById("destructiveSpecification")?.value||"").trim();
+    const fillerMetal=String(document.getElementById("destructiveFiller")?.value||"").trim();
+    const plate=String(document.getElementById("destructivePlate")?.value||"").trim();
     const method=String(document.getElementById("destructiveMethod")?.value||"").trim();
+    const faceBendResult=String(document.getElementById("destructiveFaceBend")?.value||"").trim();
+    const rootBendResult=String(document.getElementById("destructiveRootBend")?.value||"").trim();
     const result=String(document.getElementById("destructiveResult")?.value||"").trim();
     const testDate=String(document.getElementById("destructiveDate")?.value||"").trim();
     const inspector=String(document.getElementById("destructiveInspector")?.value||"").trim();
-    if(!method||!result||!testDate||!inspector){alert("Enter the test date, test method, inspector, and Pass/Fail result.");return;}
+    if(!specification||!fillerMetal||!plate||!method||!faceBendResult||!rootBendResult||!result||!testDate||!inspector){
+      alert("Enter specification, filler metal, plate, test date, method, face/root bend results, inspector, and overall Pass/Fail result.");return;
+    }
     const selectedCourseId=String(document.getElementById("destructiveCourse")?.value||"wld110");
     const selectedCourse=courseById(selectedCourseId);
     const test=recordDestructiveTest(student,{
       courseId:selectedCourse.id,courseCode:selectedCourse.code,
-      processId:rule.id,process:rule.label,material:rule.material,family,
+      processId:rule.id,process:rule.label,material:rule.material,specification,fillerMetal,plate,family,
       backing:family==="Groove"?state.ui.destructiveBacking:"N/A",
-      position:selectedDestructivePosition(),testMethod:method,result,testDate,inspector,
+      position:selectedDestructivePosition(),testMethod:method,faceBendResult,rootBendResult,result,testDate,inspector,
       notes:String(document.getElementById("destructiveNotes")?.value||"").trim()
     });
     state.ui.certificatePreviewId="";
