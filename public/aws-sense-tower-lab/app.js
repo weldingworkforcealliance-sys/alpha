@@ -168,6 +168,77 @@ const DEFAULT_ASSIGNMENTS = [
   ...CUTTING_PROJECTS
 ];
 
+const WELD_TEST_ID_PATTERN = /^\\d{4}$/;
+
+function formatWeldTestId(value){
+  return String(value).padStart(4,"0");
+}
+
+function nextAvailableWeldTestId(registry){
+  const used=new Set((registry||[]).filter(id=>WELD_TEST_ID_PATTERN.test(id)));
+  for(let n=0;n<=9999;n++){
+    const candidate=formatWeldTestId(n);
+    if(!used.has(candidate)) return candidate;
+  }
+  throw new Error("No 4-digit weld test IDs remain available.");
+}
+
+function ensureStudentWeldTestIds(targetState){
+  if(!Array.isArray(targetState.testIdRegistry)) targetState.testIdRegistry=[];
+  const registry=new Set(targetState.testIdRegistry.filter(id=>WELD_TEST_ID_PATTERN.test(id)));
+  const assigned=new Set();
+
+  targetState.students.forEach(student=>{
+    let current=String(student.weldTestId||"").trim();
+    if(!WELD_TEST_ID_PATTERN.test(current)||assigned.has(current)){
+      current=nextAvailableWeldTestId([...registry,...assigned]);
+      student.weldTestId=current;
+    }else{
+      student.weldTestId=current;
+    }
+    assigned.add(current);
+    registry.add(current);
+  });
+
+  targetState.testIdRegistry=[...registry].sort();
+  return targetState;
+}
+
+function assignWeldTestId(student,targetState){
+  ensureStudentWeldTestIds(targetState);
+  if(WELD_TEST_ID_PATTERN.test(String(student.weldTestId||""))) return student.weldTestId;
+  const id=nextAvailableWeldTestId(targetState.testIdRegistry);
+  student.weldTestId=id;
+  targetState.testIdRegistry.push(id);
+  targetState.testIdRegistry=[...new Set(targetState.testIdRegistry)].sort();
+  return id;
+}
+
+function updateStudentWeldTestId(student,requested,targetState){
+  const value=String(requested||"").trim();
+  if(!WELD_TEST_ID_PATTERN.test(value)){
+    return {ok:false,message:"Test ID must be exactly 4 digits, from 0000 to 9999."};
+  }
+  if(value===student.weldTestId) return {ok:true,value};
+
+  const duplicate=targetState.students.find(s=>s.id!==student.id&&s.weldTestId===value);
+  if(duplicate){
+    return {ok:false,message:`Test ID ${value} is already assigned to ${duplicate.name}.`};
+  }
+
+  if((targetState.testIdRegistry||[]).includes(value)){
+    return {ok:false,message:`Test ID ${value} has already been issued and cannot be reused.`};
+  }
+
+  if(WELD_TEST_ID_PATTERN.test(String(student.weldTestId||""))){
+    targetState.testIdRegistry.push(student.weldTestId);
+  }
+  student.weldTestId=value;
+  targetState.testIdRegistry.push(value);
+  targetState.testIdRegistry=[...new Set(targetState.testIdRegistry)].sort();
+  return {ok:true,value};
+}
+
 function uid(prefix="id"){
   if (crypto.randomUUID) return crypto.randomUUID();
   return prefix+"-"+Date.now()+"-"+Math.random().toString(16).slice(2);
@@ -187,7 +258,7 @@ function blankStudent(name,studentId){
   const positionQualifications={};
   POSITION_QUALIFICATIONS.forEach(q=>positionQualifications[q.id]={status:"Not Started",date:"",notes:""});
   return {
-    id:uid("student"),name,studentId,email:"",cohort:"Level 1 Test Cohort",
+    id:uid("student"),name,studentId,email:"",cohort:"Level 1 Test Cohort",weldTestId:"",
     aws:{registrationStatus:"Not registered",candidateId:"",enrollmentDate:"",submissionStatus:"Not submitted"},
     competencies,exams,qualifications,positionQualifications,lab:{}
   };
@@ -200,14 +271,17 @@ function makeDemoState(){
   students[0].exams.m2.attempts=[{score:100,date:"2026-09-10"}];
   students[0].competencies.m4[4].status="Practicing";
   students[1].competencies.m4[4].status="Introduced";
-  return {
-    schemaVersion:3,
+  const demoState={
+    schemaVersion:4,
     program:{name:"PCCC Welding — AWS SENSE Level I Tower Lab",standardBasis:"AWS QC10:2017 / AWS EG2.0:2017 / Supplement"},
     assignments:JSON.parse(JSON.stringify(DEFAULT_ASSIGNMENTS)),
     students,
     activeStudentId:students[0].id,
+    testIdRegistry:[],
     ui:{view:"home",labAssignmentId:"smaw-fillet-3F",labIndex:0,labAttempt:"attempt1",moduleId:"m4",competencyIndex:4,competencyIndexStudent:0,examModuleId:"m2",examStudentIndex:0,qualificationProcessId:"smaw",qualificationFamily:"Groove",qualificationBacking:"Backing",qualificationPosition:"1G",qualificationStudentIndex:0}
   };
+  ensureStudentWeldTestIds(demoState);
+  return demoState;
 }
 
 function loadState(){
@@ -215,13 +289,16 @@ function loadState(){
     const raw=localStorage.getItem(STORAGE_KEY);
     if(!raw) return makeDemoState();
     const parsed=JSON.parse(raw);
-    if(parsed?.schemaVersion!==3 || !Array.isArray(parsed.students)) return makeDemoState();
+    if(!parsed||![3,4].includes(parsed.schemaVersion)||!Array.isArray(parsed.students)) return makeDemoState();
+    parsed.schemaVersion=4;
+    ensureStudentWeldTestIds(parsed);
     return parsed;
   }catch{return makeDemoState();}
 }
 let state=loadState();
 
 function saveState(){
+  ensureStudentWeldTestIds(state);
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
   renderStudentSelect();
 }
@@ -510,6 +587,7 @@ function renderQualifications(){
     '</div>'+
     '<div class="queue-status"><div style="flex:1"><div class="small muted">'+passed+' of '+state.students.length+' marked Pass · '+escapeHtml(q.name)+'</div><div class="progress-track"><div class="progress-fill" style="width:'+Math.round(passed/state.students.length*100)+'%"></div></div></div><div class="queue-nav"><button class="secondary-btn" data-qualification-nav="-1">← Previous</button><button class="primary-btn" data-qualification-nav="1">Next student →</button></div></div></div>'+
     '<div class="card"><div class="student-banner"><div><div class="eyebrow">Student '+(state.ui.qualificationStudentIndex+1)+' of '+state.students.length+'</div><h3>'+escapeHtml(student.name)+'</h3><div class="student-meta">'+escapeHtml(q.name)+'</div></div><div>'+badge(rec.status,tone(rec.status))+'</div></div>'+
+    '<div class="queue-toolbar" style="margin-top:14px"><label>4-Digit Weld Test ID<input id="studentWeldTestId" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" value="'+escapeHtml(student.weldTestId)+'" /></label><div class="muted small">Automatically assigned starting at 0000. Unique across students and never reused after issuance. This ID is reserved for qualification and future destructive-test certificate records.</div></div>'+
     '<div class="section-head"><div><h3>Tap the result</h3><div class="muted small">This is position-level PCCC qualification readiness. It does not automatically mark an official AWS SENSE performance test Pass.</div></div></div>'+
     '<div class="status-row">'+["Not Started","Pass","Fail"].map(s=>'<button class="status-btn '+(s==="Pass"?"verify ":"")+(rec.status===s?"selected":"")+'" data-position-qualification-status="'+s+'">'+s+'</button>').join("")+'</div>'+
     '<div class="queue-toolbar" style="margin-top:14px"><label>Date<input id="positionQualificationDate" type="date" value="'+escapeHtml(rec.date||"")+'" /></label><label style="flex:1">Optional note<input id="positionQualificationNote" value="'+escapeHtml(rec.notes||"")+'" placeholder="Short note only if needed" /></label></div>'+
@@ -523,7 +601,7 @@ function renderPassport(){
   const student=activeStudent();
   if(!student) return '<div class="card">No test students.</div>';
   const sum=credentialSummary(student);
-  return '<div class="card"><div class="student-banner"><div><div class="eyebrow">Student Passport</div><h3>'+escapeHtml(student.name)+'</h3><div class="student-meta">'+escapeHtml(student.studentId)+' · '+escapeHtml(student.cohort)+'</div></div><div>'+badge(sum.full?"Full completion eligible":sum.partial?"Partial completion eligible":"In progress",sum.full?"green":sum.partial?"blue":"yellow")+'</div></div></div>'+
+  return '<div class="card"><div class="student-banner"><div><div class="eyebrow">Student Passport</div><h3>'+escapeHtml(student.name)+'</h3><div class="student-meta">'+escapeHtml(student.studentId)+' · '+escapeHtml(student.cohort)+' · Weld Test ID '+escapeHtml(student.weldTestId)+'</div></div><div>'+badge(sum.full?"Full completion eligible":sum.partial?"Partial completion eligible":"In progress",sum.full?"green":sum.partial?"blue":"yellow")+'</div></div></div>'+
     '<div class="grid cols-2" style="margin-top:14px"><div class="card"><h3>AWS SENSE progress</h3><div class="module-progress">'+MODULES.map(m=>{const p=moduleProgress(student,m.id);return '<div class="module-line"><span>'+escapeHtml(m.name)+'</span><div class="progress-track"><div class="progress-fill" style="width:'+p+'%"></div></div><b>'+p+'%</b></div>';}).join("")+'</div></div>'+
     '<div class="card"><h3>Academic lab grades</h3><div class="table-wrap"><table><thead><tr><th>Assignment</th><th>Official</th><th>Attempt</th></tr></thead><tbody>'+state.assignments.map(a=>{const r=officialLabResult(student,a.id);return '<tr><td>'+escapeHtml(a.name)+'</td><td>'+escapeHtml(r.display)+'</td><td>'+r.attempt+'</td></tr>';}).join("")+'</tbody></table></div></div></div>'+
     '<div class="card"><div class="alert blue"><strong>Important:</strong> The Passport shows both records together for convenience. It does not treat a PCCC academic grade as automatic AWS SENSE verification.</div></div>';
@@ -650,6 +728,17 @@ document.getElementById("appContent").addEventListener("change",e=>{
   if(e.target.id==="qualificationFamilySelect"){state.ui.qualificationFamily=e.target.value;state.ui.qualificationBacking=e.target.value==="Groove"?"Backing":"N/A";state.ui.qualificationPosition="";state.ui.qualificationStudentIndex=0;render();}
   if(e.target.id==="qualificationBackingSelect"){state.ui.qualificationBacking=e.target.value;state.ui.qualificationPosition="";state.ui.qualificationStudentIndex=0;render();}
   if(e.target.id==="qualificationPositionSelect"){state.ui.qualificationPosition=e.target.value;state.ui.qualificationStudentIndex=0;render();}
+  if(e.target.id==="studentWeldTestId"){
+    const s=studentAt(state.ui.qualificationStudentIndex);
+    const result=updateStudentWeldTestId(s,e.target.value,state);
+    if(!result.ok){
+      alert(result.message);
+      e.target.value=s.weldTestId;
+    }else{
+      saveState();
+      render();
+    }
+  }
   if(e.target.id==="positionQualificationDate"){const s=studentAt(state.ui.qualificationStudentIndex),q=selectedPositionQualification();s.positionQualifications[q.id].date=e.target.value;saveState();}
   if(e.target.id==="awsRegistration"){activeStudent().aws.registrationStatus=e.target.value;saveState();}
   if(e.target.id==="awsEnrollmentDate"){activeStudent().aws.enrollmentDate=e.target.value;saveState();}
@@ -673,13 +762,13 @@ document.getElementById("createAssignmentBtn").addEventListener("click",e=>{
 
 document.getElementById("exportBtn").addEventListener("click",()=>{
   const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);a.download="aws-sense-tower-lab-v3.json";a.click();URL.revokeObjectURL(a.href);
+  a.href=URL.createObjectURL(blob);a.download="aws-sense-tower-lab-v4.json";a.click();URL.revokeObjectURL(a.href);
 });
 document.getElementById("importInput").addEventListener("change",e=>{
   const file=e.target.files[0];if(!file)return;const reader=new FileReader();
-  reader.onload=()=>{try{const parsed=JSON.parse(reader.result);if(parsed.schemaVersion!==3)throw new Error();state=parsed;saveState();render();}catch{alert("That file is not a valid Tower Lab v3 export.");}};
+  reader.onload=()=>{try{const parsed=JSON.parse(reader.result);if(![3,4].includes(parsed.schemaVersion))throw new Error();parsed.schemaVersion=4;ensureStudentWeldTestIds(parsed);state=parsed;saveState();render();}catch{alert("That file is not a valid Tower Lab v4 export.");}};
   reader.readAsText(file);
 });
-document.getElementById("resetBtn").addEventListener("click",()=>{if(confirm("Reset all standalone v2 test data?")){localStorage.removeItem(STORAGE_KEY);state=makeDemoState();render();}});
+document.getElementById("resetBtn").addEventListener("click",()=>{if(confirm("Reset all standalone test data?")){localStorage.removeItem(STORAGE_KEY);state=makeDemoState();render();}});
 
 render();
