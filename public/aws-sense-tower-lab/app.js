@@ -164,11 +164,11 @@ const COMMENT_TAGS = [
 ];
 
 const DEFAULT_ASSIGNMENTS = [
-  ...LEVEL1_WELDING_PROJECTS.map(project=>({...project,rubricType:"weld"})),
+  ...LEVEL1_WELDING_PROJECTS.map(project=>({...project,rubricType:"weld",courseId:"wld110"})),
   ...CUTTING_PROJECTS
 ];
 
-const COURSE_CATALOG = [
+const DEFAULT_COURSE_CATALOG = [
   {id:"wld105",code:"WLD 105",level:"Level I",semester:1,role:"theory",label:"Theory / Projects",pairedCourse:"WLD 110"},
   {id:"wld110",code:"WLD 110",level:"Level I",semester:1,role:"shop",label:"Shop / Certifications",pairedCourse:"WLD 105"},
   {id:"wld205",code:"WLD 205",level:"Level II",semester:1,role:"theory",label:"Theory / Projects",pairedCourse:"WLD 210"},
@@ -176,37 +176,55 @@ const COURSE_CATALOG = [
 ];
 
 const PLANNER_PROJECT_SEED = [
-  {id:"steel-dice",title:"Steel Dice Fabrication Project",category:"Fabrication Projects",source:"WLD 105 planner"},
-  {id:"fabricated-m",title:"Fabricated M Fabrication Project",category:"Fabrication Projects",source:"WLD 105 planner"}
+  {id:"steel-dice",courseId:"wld105",title:"Steel Dice Fabrication Project",category:"Fabrication Projects",source:"WLD 105 planner"},
+  {id:"fabricated-m",courseId:"wld105",title:"Fabricated M Fabrication Project",category:"Fabrication Projects",source:"WLD 105 planner"}
 ];
 
-function blankCourseRecords(){
-  return {
-    wld105:{
-      finalization:{status:"Open",officialFinal:null,finalizedAt:"",revisions:[]},
-      items:[
-        {id:"theory-live-classroom",title:"Live Classroom Assessments",category:"Theory Assessments",source:"Existing theory gradebook",status:"Imported by gradebook",score:null,possible:null},
-        {id:"theory-math",title:"Welding Math Assessments",category:"Theory Assessments",source:"Existing theory gradebook",status:"Imported by gradebook",score:null,possible:null},
-        ...PLANNER_PROJECT_SEED.map(item=>({...item,status:"Planner-linked",score:null,possible:null}))
-      ]
-    },
-    wld110:{finalization:{status:"Open",officialFinal:null,finalizedAt:"",revisions:[]},items:[]},
-    wld205:{
-      finalization:{status:"Open",officialFinal:null,finalizedAt:"",revisions:[]},
-      items:[
-        {id:"level2-live-classroom",title:"Live Classroom Assessments",category:"Theory Assessments",source:"Existing theory gradebook",status:"Imported by gradebook",score:null,possible:null}
-      ]
-    },
-    wld210:{finalization:{status:"Open",officialFinal:null,finalizedAt:"",revisions:[]},items:[]}
-  };
+function blankCourseRecord(course){
+  const record={finalization:{status:"Open",officialFinal:null,finalizedAt:"",revisions:[]},items:[]};
+  if(course.role==="theory"){
+    record.items.push({
+      id:course.id+"-live-classroom",
+      courseId:course.id,
+      title:"Live Classroom Assessments",
+      category:"Theory Assessments",
+      source:"Existing theory gradebook",
+      status:"Imported by gradebook",score:null,possible:null
+    });
+    if(course.id==="wld105"){
+      record.items.push({
+        id:"theory-math",courseId:"wld105",title:"Welding Math Assessments",
+        category:"Theory Assessments",source:"Existing theory gradebook",
+        status:"Imported by gradebook",score:null,possible:null
+      });
+      record.items.push(...PLANNER_PROJECT_SEED.map(item=>({...item,status:"Planner-linked",score:null,possible:null})));
+    }
+  }
+  return record;
+}
+
+function blankCourseRecords(catalog=DEFAULT_COURSE_CATALOG){
+  const records={};
+  catalog.forEach(course=>{records[course.id]=blankCourseRecord(course);});
+  return records;
+}
+
+function courseCatalog(targetState=state){
+  return Array.isArray(targetState?.courseCatalog)&&targetState.courseCatalog.length
+    ? targetState.courseCatalog
+    : DEFAULT_COURSE_CATALOG;
 }
 
 function ensurePermanentRecordState(targetState){
+  if(!Array.isArray(targetState.courseCatalog)||!targetState.courseCatalog.length){
+    targetState.courseCatalog=JSON.parse(JSON.stringify(DEFAULT_COURSE_CATALOG));
+  }
   if(!Number.isFinite(Number(targetState.destructiveTestCounter))||Number(targetState.destructiveTestCounter)<1) targetState.destructiveTestCounter=1;
   targetState.students.forEach(student=>{
-    if(!student.courseRecords) student.courseRecords=blankCourseRecords();
-    COURSE_CATALOG.forEach(course=>{
-      if(!student.courseRecords[course.id]) student.courseRecords[course.id]=blankCourseRecords()[course.id];
+    if(!student.ltgStudentId) student.ltgStudentId=student.id;
+    if(!student.courseRecords) student.courseRecords=blankCourseRecords(targetState.courseCatalog);
+    targetState.courseCatalog.forEach(course=>{
+      if(!student.courseRecords[course.id]) student.courseRecords[course.id]=blankCourseRecord(course);
       if(!student.courseRecords[course.id].finalization) student.courseRecords[course.id].finalization={status:"Open",officialFinal:null,finalizedAt:"",revisions:[]};
     });
     if(!Array.isArray(student.destructiveTests)) student.destructiveTests=[];
@@ -220,11 +238,10 @@ function ensurePermanentRecordState(targetState){
   return targetState;
 }
 
-function courseById(id){return COURSE_CATALOG.find(course=>course.id===id)||COURSE_CATALOG[0];}
+function courseById(id){const catalog=courseCatalog();return catalog.find(course=>course.id===id)||catalog[0];}
 
 function shopAcademicItems(student,courseId){
-  if(courseId!=="wld110") return [];
-  return state.assignments.filter(a=>a.rubricType==="weld").map(a=>{
+  return state.assignments.filter(a=>a.rubricType==="weld"&&a.courseId===courseId).map(a=>{
     const result=officialLabResult(student,a.id);
     return {
       id:a.id,title:a.name,category:a.family==="Groove"?"Groove Welds":"Fillet Welds",
@@ -263,6 +280,7 @@ function selectedDestructivePosition(){
 function recordDestructiveTest(student,payload){
   const test={
     id:nextDestructiveTestId(state),
+    studentRecordId:student.ltgStudentId,
     weldTestId:student.weldTestId,
     studentName:student.name,
     courseCode:payload.courseCode||"WLD 110",
@@ -292,6 +310,7 @@ function createCertificateRecord(student,test){
     version:1,
     issuedAt:new Date().toISOString(),
     snapshot:{
+      studentRecordId:student.ltgStudentId,
       studentName:student.name,
       weldTestId:student.weldTestId,
       destructiveTestId:test.id,
@@ -370,6 +389,7 @@ function newAttempt(){
 }
 
 function blankStudent(name,studentId){
+  const id=uid("student");
   const competencies={};
   MODULES.forEach(m=>competencies[m.id]=m.competencies.map((label,i)=>({id:m.id+"-c"+(i+1),label,status:"Not Started",date:""})));
   const exams={};
@@ -379,7 +399,7 @@ function blankStudent(name,studentId){
   const positionQualifications={};
   POSITION_QUALIFICATIONS.forEach(q=>positionQualifications[q.id]={status:"Not Started",date:"",notes:""});
   return {
-    id:uid("student"),name,studentId,email:"",cohort:"Level 1 Test Cohort",weldTestId:"",
+    id,ltgStudentId:id,name,studentId,email:"",cohort:"Level 1 Test Cohort",weldTestId:"",
     aws:{registrationStatus:"Not registered",candidateId:"",enrollmentDate:"",submissionStatus:"Not submitted"},
     competencies,exams,qualifications,positionQualifications,lab:{},courseRecords:blankCourseRecords(),destructiveTests:[]
   };
@@ -396,6 +416,7 @@ function makeDemoState(){
     schemaVersion:5,
     program:{name:"PCCC Welding — AWS SENSE Level I Tower Lab",standardBasis:"AWS QC10:2017 / AWS EG2.0:2017 / Supplement"},
     assignments:JSON.parse(JSON.stringify(DEFAULT_ASSIGNMENTS)),
+    courseCatalog:JSON.parse(JSON.stringify(DEFAULT_COURSE_CATALOG)),
     students,
     activeStudentId:students[0].id,
     testIdRegistry:[],
@@ -644,6 +665,77 @@ function renderGradebookOverview(selectedAssignmentId){
   '</tr>').join("")+'</tbody></table></div></div>';
 }
 
+function buildLtgIntegrationSnapshot(targetState=state){
+  ensureStudentWeldTestIds(targetState);
+  ensurePermanentRecordState(targetState);
+  const catalog=courseCatalog(targetState);
+
+  return {
+    schema:"pccc-welding-record-tower-ltg-bridge/v1",
+    generatedAt:new Date().toISOString(),
+    students:targetState.students.map(student=>({
+      studentId:student.ltgStudentId,
+      externalStudentId:student.studentId,
+      displayName:student.name,
+      weldTestId:student.weldTestId
+    })),
+    courseCatalog:catalog.map(course=>({...course})),
+    academicShopGrades:targetState.students.flatMap(student=>
+      targetState.assignments.filter(a=>a.rubricType==="weld"&&a.courseId).flatMap(assignment=>{
+        const result=officialLabResult(student,assignment.id);
+        if(result.display==="—") return [];
+        return [{
+          studentId:student.ltgStudentId,
+          courseId:assignment.courseId,
+          sourceSystem:"welding_record_tower",
+          sourceKey:"shop:"+assignment.id,
+          itemTitle:assignment.name,
+          attemptNumber:result.attempt,
+          officialScore:result.numeric,
+          possibleScore:result.numeric===null?null:100,
+          display:result.display,
+          status:result.status
+        }];
+      })
+    ),
+    plannerProjectItems:targetState.students.flatMap(student=>
+      catalog.filter(course=>course.role==="theory").flatMap(course=>
+        (student.courseRecords?.[course.id]?.items||[])
+          .filter(item=>item.source&&String(item.source).toLowerCase().includes("planner"))
+          .map(item=>({
+            studentId:student.ltgStudentId,
+            courseId:course.id,
+            sourceSystem:"planner",
+            sourceKey:"planner:"+item.id,
+            itemTitle:item.title,
+            category:item.category,
+            score:item.score,
+            possibleScore:item.possible,
+            status:item.status
+          }))
+      )
+    ),
+    qualifications:targetState.students.flatMap(student=>
+      Object.entries(student.positionQualifications||{}).flatMap(([qualificationId,record])=>{
+        if(!record||record.status==="Not Started") return [];
+        const definition=POSITION_QUALIFICATIONS.find(q=>q.id===qualificationId);
+        return [{
+          studentId:student.ltgStudentId,weldTestId:student.weldTestId,
+          qualificationId,result:record.status,date:record.date,notes:record.notes,
+          process:definition?.process||"",material:definition?.material||"",
+          family:definition?.family||"",backing:definition?.backing||"",position:definition?.position||""
+        }];
+      })
+    ),
+    destructiveTests:targetState.students.flatMap(student=>
+      (student.destructiveTests||[]).map(test=>JSON.parse(JSON.stringify(test)))
+    ),
+    certificates:targetState.students.flatMap(student=>
+      (student.destructiveTests||[]).filter(test=>test.certificate).map(test=>JSON.parse(JSON.stringify(test.certificate)))
+    )
+  };
+}
+
 function renderCourseRecords(){
   const student=activeStudent();
   const course=courseById(state.ui.courseId);
@@ -651,10 +743,10 @@ function renderCourseRecords(){
   const items=courseItemsFor(student,course.id);
   const graded=items.filter(item=>Number.isFinite(Number(item.score))&&Number.isFinite(Number(item.possible))&&Number(item.possible)>0);
   const finalization=record.finalization;
-  const linked=COURSE_CATALOG.find(c=>c.code===course.pairedCourse);
+  const linked=courseCatalog().find(c=>c.code===course.pairedCourse);
 
   return '<div class="card"><div class="section-head"><div><h3>Academic Course Records</h3><div class="muted small">Each course keeps its own permanent grade. Linked course pairs are shown together for context only; they are never averaged into one semester grade.</div></div></div>'+
-    '<div class="queue-toolbar"><label>Course<select id="courseRecordSelect">'+COURSE_CATALOG.map(c=>'<option value="'+c.id+'" '+(c.id===course.id?"selected":"")+'>'+escapeHtml(c.code+" · "+c.label)+'</option>').join("")+'</select></label>'+
+    '<div class="queue-toolbar"><label>Course<select id="courseRecordSelect">'+courseCatalog().map(c=>'<option value="'+c.id+'" '+(c.id===course.id?"selected":"")+'>'+escapeHtml(c.code+" · "+c.label)+'</option>').join("")+'</select></label>'+
     '<div>'+badge(course.level+" · Semester "+course.semester,"blue")+' '+badge(course.role==="theory"?"Theory / Projects":"Shop / Certifications",course.role==="theory"?"yellow":"green")+'</div></div></div>'+
     '<div class="grid cols-2"><div class="card"><div class="student-banner"><div><div class="eyebrow">'+escapeHtml(course.code)+' permanent academic record</div><h3>'+escapeHtml(student.name)+'</h3><div class="student-meta">'+escapeHtml(student.studentId)+' · Weld Test ID '+escapeHtml(student.weldTestId)+'</div></div><div>'+badge(finalization.status,finalization.status==="Finalized"?"green":"yellow")+'</div></div>'+
       '<div class="section-head"><div><h3>'+escapeHtml(course.code)+' grade evidence</h3><div class="muted small">'+(course.role==="theory"?"Existing theory gradebook assessments plus planner-linked fabrication projects.":"Numeric academic shop grades from the Lab Grade Tower only.")+'</div></div></div>'+
@@ -804,7 +896,7 @@ function renderPassport(){
   const sum=credentialSummary(student);
   return '<div class="card"><div class="student-banner"><div><div class="eyebrow">Student Passport</div><h3>'+escapeHtml(student.name)+'</h3><div class="student-meta">'+escapeHtml(student.studentId)+' · '+escapeHtml(student.cohort)+' · Weld Test ID '+escapeHtml(student.weldTestId)+'</div></div><div>'+badge(sum.full?"Full completion eligible":sum.partial?"Partial completion eligible":"In progress",sum.full?"green":sum.partial?"blue":"yellow")+'</div></div></div>'+
     '<div class="grid cols-2" style="margin-top:14px"><div class="card"><h3>AWS SENSE progress</h3><div class="module-progress">'+MODULES.map(m=>{const p=moduleProgress(student,m.id);return '<div class="module-line"><span>'+escapeHtml(m.name)+'</span><div class="progress-track"><div class="progress-fill" style="width:'+p+'%"></div></div><b>'+p+'%</b></div>';}).join("")+'</div></div>'+
-    '<div class="card"><h3>Academic course records</h3><div class="table-wrap"><table><thead><tr><th>Course</th><th>Role</th><th>Final</th></tr></thead><tbody>'+COURSE_CATALOG.map(c=>{const f=student.courseRecords[c.id].finalization;return '<tr><td>'+escapeHtml(c.code)+'</td><td>'+escapeHtml(c.label)+'</td><td>'+(f.officialFinal===null?badge("Not finalized","gray"):badge(f.officialFinal+"%","green"))+'</td></tr>';}).join("")+'</tbody></table></div><div class="alert blue" style="margin-top:12px"><strong>'+student.destructiveTests.length+'</strong> destructive-test record(s) · Weld Test ID '+escapeHtml(student.weldTestId)+'</div></div></div>'+
+    '<div class="card"><h3>Academic course records</h3><div class="table-wrap"><table><thead><tr><th>Course</th><th>Role</th><th>Final</th></tr></thead><tbody>'+courseCatalog().map(c=>{const f=student.courseRecords[c.id].finalization;return '<tr><td>'+escapeHtml(c.code)+'</td><td>'+escapeHtml(c.label)+'</td><td>'+(f.officialFinal===null?badge("Not finalized","gray"):badge(f.officialFinal+"%","green"))+'</td></tr>';}).join("")+'</tbody></table></div><div class="alert blue" style="margin-top:12px"><strong>'+student.destructiveTests.length+'</strong> destructive-test record(s) · Weld Test ID '+escapeHtml(student.weldTestId)+'</div></div></div>'+
     '<div class="card"><div class="alert blue"><strong>Important:</strong> The Passport shows both records together for convenience. It does not treat a PCCC academic grade as automatic AWS SENSE verification.</div></div>';
 }
 
@@ -818,7 +910,8 @@ function renderAdmin(){
       '<label>Enrollment date<input id="awsEnrollmentDate" type="date" value="'+escapeHtml(student.aws.enrollmentDate||"")+'" /></label>'+
       '<label>Completion submission<select id="awsSubmission"><option '+(student.aws.submissionStatus==="Not submitted"?"selected":"")+'>Not submitted</option><option '+(student.aws.submissionStatus==="Pending"?"selected":"")+'>Pending</option><option '+(student.aws.submissionStatus==="Submitted"?"selected":"")+'>Submitted</option></select></label></div>'+
     '</div></div>'+
-    '<div class="card"><h3>Prototype boundaries</h3><div class="alert">No LTG authentication, no production Supabase, no attendance linkage, no AWS submission, no real student PII, and no deployment from this v2 branch yet.</div></div>';
+    '<div class="card"><h3>LTG integration bridge</h3><p class="muted small">The prototype now exposes a normalized bridge snapshot keyed by stable LTG student identity, course ID, source system, and source key. Production integration should map these records into the existing append-only gradebook and new permanent welding-record tables.</p><button class="secondary-btn" id="exportLtgBridgeBtn">Export LTG bridge snapshot</button></div>'+
+    '<div class="card"><h3>Prototype boundaries</h3><div class="alert">No LTG authentication, no production Supabase, no attendance linkage, no AWS submission, no real student PII, and no production write from this standalone build.</div></div>';
 }
 
 function render(){
@@ -947,6 +1040,11 @@ document.getElementById("appContent").addEventListener("click",e=>{
     exam.attempts.push({score,date:new Date().toISOString().slice(0,10)});saveState();render();return;
   }
 
+  if(e.target.id==="exportLtgBridgeBtn"){
+    const blob=new Blob([JSON.stringify(buildLtgIntegrationSnapshot(state),null,2)],{type:"application/json"}),a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);a.download="pccc-welding-record-tower-ltg-bridge.json";a.click();URL.revokeObjectURL(a.href);return;
+  }
+
   if(e.target.id==="openAssignmentDialog"){document.getElementById("assignmentDialog").showModal();return;}
 });
 
@@ -982,7 +1080,7 @@ document.getElementById("createAssignmentBtn").addEventListener("click",e=>{
   const name=String(data.get("name")||"").trim(),process=String(data.get("process")||"").trim();
   if(!name||!process)return;
   const id=uid("assignment");
-  state.assignments.push({id,name,process,position:String(data.get("position")||""),electrode:String(data.get("electrode")||""),type:String(data.get("type")||"position")});
+  state.assignments.push({id,name,process,position:String(data.get("position")||""),electrode:String(data.get("electrode")||""),type:String(data.get("type")||"position"),rubricType:"weld",courseId:"wld110"});
   state.ui.labAssignmentId=id;form.reset();document.getElementById("assignmentDialog").close();saveState();render();
 });
 
