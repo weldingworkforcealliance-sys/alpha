@@ -194,8 +194,58 @@ select
   'CERT-' || lpad(c.certificate_number::text, 6, '0') as certificate_display_number
 from public.weld_test_certificates c;
 
+
+create table if not exists public.weld_certificate_deliveries (
+  id uuid primary key default gen_random_uuid(),
+  certificate_id uuid not null references public.weld_test_certificates(id) on delete restrict,
+  version integer not null check (version > 0),
+  student_email text not null check (position('@' in student_email) > 1),
+  instructor_email text not null check (position('@' in instructor_email) > 1),
+  print_recipient_email text not null default 'jhconnolly@pccc.edu'
+    check (position('@' in print_recipient_email) > 1),
+  print_note text not null default 'ASAP print on thick paper.',
+  email_subject text not null,
+  attachment_reference text not null,
+  status text not null check (status in ('Queued','Sent','Failed')),
+  queued_at timestamptz not null default now(),
+  sent_at timestamptz,
+  provider_message_id text,
+  error text not null default '',
+  recorded_by uuid,
+  unique(certificate_id, version)
+);
+
+create index if not exists weld_certificate_deliveries_certificate_idx
+  on public.weld_certificate_deliveries(certificate_id, queued_at desc);
+
 -- ---------------------------------------------------------------------------
--- 6. Append-only final course-grade record
+-- 6. Course grading policy
+-- ---------------------------------------------------------------------------
+
+create table if not exists public.gradebook_grading_policies (
+  gradebook_id uuid primary key references public.gradebooks(id) on delete restrict,
+  rule_version text not null,
+  passing_score numeric not null default 65 check (passing_score >= 0 and passing_score <= 100),
+  created_at timestamptz not null default now(),
+  created_by uuid
+);
+
+create table if not exists public.gradebook_category_weights (
+  gradebook_id uuid not null references public.gradebooks(id) on delete restrict,
+  category_code text not null,
+  category_label text not null,
+  weight_percent numeric not null check (weight_percent > 0 and weight_percent <= 100),
+  primary key (gradebook_id, category_code)
+);
+
+-- Approved prototype policy:
+-- WLD 105 / WLD 205: Theory/Assessments 50%, Fabrication Projects 25%, Homework 25%.
+-- WLD 110 / WLD 210: Weld Performance 75%, Shop Projects 25%.
+-- Qualification, destructive-test, and certificate results remain Pass/Fail outside numeric grading.
+-- Promotion to production requires a write RPC that validates category weights sum to exactly 100.
+
+-- ---------------------------------------------------------------------------
+-- 7. Append-only final course-grade record
 --    This stores the approved final; it does not invent course arithmetic.
 -- ---------------------------------------------------------------------------
 
@@ -224,7 +274,7 @@ where not exists (
 );
 
 -- ---------------------------------------------------------------------------
--- 7. No UPDATE / DELETE on permanent evidence tables.
+-- 8. No UPDATE / DELETE on permanent evidence tables.
 --    Corrections append a new record with supersedes_id.
 -- ---------------------------------------------------------------------------
 
@@ -249,13 +299,19 @@ create trigger preserve_weld_test_certificates
 before update or delete on public.weld_test_certificates
 for each row execute function public.reject_welding_record_mutation();
 
+
+drop trigger if exists preserve_weld_certificate_deliveries on public.weld_certificate_deliveries;
+create trigger preserve_weld_certificate_deliveries
+before update or delete on public.weld_certificate_deliveries
+for each row execute function public.reject_welding_record_mutation();
+
 drop trigger if exists preserve_gradebook_final_grade_revisions on public.gradebook_final_grade_revisions;
 create trigger preserve_gradebook_final_grade_revisions
 before update or delete on public.gradebook_final_grade_revisions
 for each row execute function public.reject_welding_record_mutation();
 
 -- ---------------------------------------------------------------------------
--- 8. RLS: read through the existing gradebook authorization boundary.
+-- 9. RLS: read through the existing gradebook authorization boundary.
 --    Production write RPCs still need to be reviewed before migration promotion.
 -- ---------------------------------------------------------------------------
 
@@ -263,12 +319,18 @@ alter table public.weld_student_identities enable row level security;
 alter table public.weld_position_qualifications enable row level security;
 alter table public.weld_destructive_tests enable row level security;
 alter table public.weld_test_certificates enable row level security;
+alter table public.weld_certificate_deliveries enable row level security;
+alter table public.gradebook_grading_policies enable row level security;
+alter table public.gradebook_category_weights enable row level security;
 alter table public.gradebook_final_grade_revisions enable row level security;
 
 revoke all on public.weld_student_identities,
   public.weld_position_qualifications,
   public.weld_destructive_tests,
   public.weld_test_certificates,
+  public.weld_certificate_deliveries,
+  public.gradebook_grading_policies,
+  public.gradebook_category_weights,
   public.gradebook_final_grade_revisions
 from anon, authenticated;
 
@@ -276,6 +338,9 @@ grant select on public.weld_student_identities,
   public.weld_position_qualifications,
   public.weld_destructive_tests,
   public.weld_test_certificates,
+  public.weld_certificate_deliveries,
+  public.gradebook_grading_policies,
+  public.gradebook_category_weights,
   public.gradebook_final_grade_revisions
 to authenticated;
 
@@ -295,6 +360,21 @@ for select to authenticated using (
     where t.id=destructive_test_id and public.can_access_gradebook(t.gradebook_id)
   )
 );
+
+create policy weld_certificate_delivery_read on public.weld_certificate_deliveries
+for select to authenticated using (
+  exists (
+    select 1 from public.weld_test_certificates c
+    join public.weld_destructive_tests t on t.id=c.destructive_test_id
+    where c.id=certificate_id and public.can_access_gradebook(t.gradebook_id)
+  )
+);
+
+create policy gradebook_grading_policy_read on public.gradebook_grading_policies
+for select to authenticated using (public.can_access_gradebook(gradebook_id));
+
+create policy gradebook_category_weight_read on public.gradebook_category_weights
+for select to authenticated using (public.can_access_gradebook(gradebook_id));
 
 create policy gradebook_final_read on public.gradebook_final_grade_revisions
 for select to authenticated using (public.can_access_gradebook(gradebook_id));
