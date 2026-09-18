@@ -700,6 +700,8 @@ function buildLtgIntegrationSnapshot(targetState=state){
           attemptNumber:result.attempt,
           officialScore:result.numeric,
           possibleScore:result.numeric===null?null:100,
+          gradebookWriteReady:result.numeric!==null,
+          academicOverride:result.numeric===null?result.display:null,
           display:result.display,
           status:result.status
         }];
