@@ -18,6 +18,28 @@ Each course owns its own permanent academic grade:
 
 Qualification, destructive-test, and certificate results are **Pass / Fail records only**. They do not add points to or subtract points from the numeric WLD 110/210 course grade.
 
+## Approved grading-policy structure
+
+### WLD 105 / WLD 205 / future theory-side courses
+
+- Theory / Assessments: **50%**
+- Fabrication Projects: **25%**
+- Homework: **25%**
+- Passing course grade: **65%**
+
+Homework is an academic gradebook category for both WLD 105 and WLD 205.
+
+### WLD 110 / WLD 210 / future shop-side courses
+
+- Weld Performance: **75%**
+- Shop Projects: **25%**
+- Qualifications: Pass / Fail only
+- Destructive Tests: Pass / Fail only
+- Certificates: permanent record only
+- Passing course grade: **65%**
+
+The course-pair grades remain separate. There is no WLD 105/110 combined grade and no WLD 205/210 combined grade.
+
 ## Reuse the existing gradebook foundation
 
 The already-built gradebook foundation should remain the academic system of record.
@@ -194,7 +216,29 @@ The certificate snapshot includes at minimum:
 - test date;
 - inspector.
 
+The certificate renderer should preserve the approved PCCC certificate layout supplied by the program, including the operator/process/specification/filler/backing/plate/position information, guided-bend result table, and approved PCCC signature areas.
+
 A reissued certificate creates a new version and retains the old certificate.
+
+### Certificate email delivery
+
+After the final certificate PDF is generated, the system creates one permanent delivery record for that certificate version.
+
+Recipients:
+
+1. student email from the LTG student record;
+2. assigned section instructor email from LTG;
+3. **jhconnolly@pccc.edu**.
+
+The message to the print recipient contains the standing instruction:
+
+> **ASAP print on thick paper.**
+
+Suggested subject pattern:
+
+`PCCC Welding Certificate — [Student Name] — [Process] [Position] — [Certificate Number]`
+
+The PDF certificate is attached. Delivery status is stored as Queued / Sent / Failed with provider message ID and any error. Reissued certificate versions create a new delivery record; prior deliveries are retained.
 
 ## Instructor-facing workflow
 
