@@ -231,9 +231,11 @@ These items are intentional blockers, not failed tests:
    - The bridge therefore blocks numeric write rather than guessing.
 
 3. **Official course-final calculation**
-   - WLD 105/110 and 205/210 are separate grades.
-   - Category weights / final arithmetic have not been approved.
-   - Storage/finalization architecture is ready, but the system must not invent the calculation.
+   - WLD 105/110 and 205/210 remain separate grades.
+   - WLD 105 / WLD 205 policy is now defined as Theory / Assessments 50%, Fabrication Projects 25%, Homework 25%.
+   - WLD 110 / WLD 210 prototype policy remains Weld Performance 75%, Shop Projects 25%.
+   - Passing course grade is 65% or higher.
+   - Storage/finalization architecture is ready; the remaining unresolved arithmetic issue is the numeric value used when an Attempt 1 critical-defect automatic F is never replaced by Attempt 2.
 
 4. **Production write RPCs**
    - Draft schema deliberately grants no direct writes.
@@ -273,3 +275,28 @@ That integration branch should:
 6. store Pass/Fail qualifications outside numeric grade arithmetic;
 7. add permanent destructive-test / certificate tables;
 8. run staging RLS and end-to-end instructor tests before any production deployment.
+
+
+## Update — Homework + certificate delivery
+
+After the core readiness test:
+
+- Homework was added as **25%** of both WLD 105 and WLD 205.
+- Theory / Assessments is 50%; Fabrication Projects is 25%.
+- Course policy totals validate to 100%.
+- Certificate records now capture the fields required by the supplied PCCC certificate design:
+  - process;
+  - specification;
+  - filler metal;
+  - backing;
+  - plate;
+  - position;
+  - face-bend result;
+  - root-bend result.
+- Certificate email routing is defined as:
+  - student email;
+  - assigned instructor email;
+  - jhconnolly@pccc.edu.
+- Standing print instruction: **ASAP print on thick paper.**
+- Certificate email delivery is a permanent record per certificate version.
+- 21 targeted regression checks for grading weights, certificate fields, email routing, and delivery queue passed.
