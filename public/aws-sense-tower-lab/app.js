@@ -214,29 +214,8 @@ function assignWeldTestId(student,targetState){
   return id;
 }
 
-function updateStudentWeldTestId(student,requested,targetState){
-  const value=String(requested||"").trim();
-  if(!WELD_TEST_ID_PATTERN.test(value)){
-    return {ok:false,message:"Test ID must be exactly 4 digits, from 0000 to 9999."};
-  }
-  if(value===student.weldTestId) return {ok:true,value};
-
-  const duplicate=targetState.students.find(s=>s.id!==student.id&&s.weldTestId===value);
-  if(duplicate){
-    return {ok:false,message:`Test ID ${value} is already assigned to ${duplicate.name}.`};
-  }
-
-  if((targetState.testIdRegistry||[]).includes(value)){
-    return {ok:false,message:`Test ID ${value} has already been issued and cannot be reused.`};
-  }
-
-  if(WELD_TEST_ID_PATTERN.test(String(student.weldTestId||""))){
-    targetState.testIdRegistry.push(student.weldTestId);
-  }
-  student.weldTestId=value;
-  targetState.testIdRegistry.push(value);
-  targetState.testIdRegistry=[...new Set(targetState.testIdRegistry)].sort();
-  return {ok:true,value};
+function weldTestIdIsImmutable(student,requested){
+  return String(requested||"").trim()===String(student.weldTestId||"").trim();
 }
 
 function uid(prefix="id"){
@@ -587,7 +566,7 @@ function renderQualifications(){
     '</div>'+
     '<div class="queue-status"><div style="flex:1"><div class="small muted">'+passed+' of '+state.students.length+' marked Pass · '+escapeHtml(q.name)+'</div><div class="progress-track"><div class="progress-fill" style="width:'+Math.round(passed/state.students.length*100)+'%"></div></div></div><div class="queue-nav"><button class="secondary-btn" data-qualification-nav="-1">← Previous</button><button class="primary-btn" data-qualification-nav="1">Next student →</button></div></div></div>'+
     '<div class="card"><div class="student-banner"><div><div class="eyebrow">Student '+(state.ui.qualificationStudentIndex+1)+' of '+state.students.length+'</div><h3>'+escapeHtml(student.name)+'</h3><div class="student-meta">'+escapeHtml(q.name)+'</div></div><div>'+badge(rec.status,tone(rec.status))+'</div></div>'+
-    '<div class="queue-toolbar" style="margin-top:14px"><label>4-Digit Weld Test ID<input id="studentWeldTestId" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" value="'+escapeHtml(student.weldTestId)+'" /></label><div class="muted small">Automatically assigned starting at 0000. Unique across students and never reused after issuance. This ID is reserved for qualification and future destructive-test certificate records.</div></div>'+
+    '<div class="queue-toolbar" style="margin-top:14px"><div><div class="small muted">4-Digit Weld Test ID</div><div class="stat" style="font-size:28px;letter-spacing:.12em">'+escapeHtml(student.weldTestId)+'</div></div><div class="muted small">Automatically assigned starting at 0000. Permanent once issued. It cannot be edited, duplicated, or reused and is reserved for qualification and future destructive-test certificate records.</div></div>'+
     '<div class="section-head"><div><h3>Tap the result</h3><div class="muted small">This is position-level PCCC qualification readiness. It does not automatically mark an official AWS SENSE performance test Pass.</div></div></div>'+
     '<div class="status-row">'+["Not Started","Pass","Fail"].map(s=>'<button class="status-btn '+(s==="Pass"?"verify ":"")+(rec.status===s?"selected":"")+'" data-position-qualification-status="'+s+'">'+s+'</button>').join("")+'</div>'+
     '<div class="queue-toolbar" style="margin-top:14px"><label>Date<input id="positionQualificationDate" type="date" value="'+escapeHtml(rec.date||"")+'" /></label><label style="flex:1">Optional note<input id="positionQualificationNote" value="'+escapeHtml(rec.notes||"")+'" placeholder="Short note only if needed" /></label></div>'+
@@ -728,17 +707,6 @@ document.getElementById("appContent").addEventListener("change",e=>{
   if(e.target.id==="qualificationFamilySelect"){state.ui.qualificationFamily=e.target.value;state.ui.qualificationBacking=e.target.value==="Groove"?"Backing":"N/A";state.ui.qualificationPosition="";state.ui.qualificationStudentIndex=0;render();}
   if(e.target.id==="qualificationBackingSelect"){state.ui.qualificationBacking=e.target.value;state.ui.qualificationPosition="";state.ui.qualificationStudentIndex=0;render();}
   if(e.target.id==="qualificationPositionSelect"){state.ui.qualificationPosition=e.target.value;state.ui.qualificationStudentIndex=0;render();}
-  if(e.target.id==="studentWeldTestId"){
-    const s=studentAt(state.ui.qualificationStudentIndex);
-    const result=updateStudentWeldTestId(s,e.target.value,state);
-    if(!result.ok){
-      alert(result.message);
-      e.target.value=s.weldTestId;
-    }else{
-      saveState();
-      render();
-    }
-  }
   if(e.target.id==="positionQualificationDate"){const s=studentAt(state.ui.qualificationStudentIndex),q=selectedPositionQualification();s.positionQualifications[q.id].date=e.target.value;saveState();}
   if(e.target.id==="awsRegistration"){activeStudent().aws.registrationStatus=e.target.value;saveState();}
   if(e.target.id==="awsEnrollmentDate"){activeStudent().aws.enrollmentDate=e.target.value;saveState();}
