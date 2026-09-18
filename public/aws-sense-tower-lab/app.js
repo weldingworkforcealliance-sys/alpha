@@ -168,7 +168,7 @@ const DEFAULT_ASSIGNMENTS = [
   ...CUTTING_PROJECTS
 ];
 
-const WELD_TEST_ID_PATTERN = /^\\d{4}$/;
+const WELD_TEST_ID_PATTERN = /^\d{4}$/;
 
 function formatWeldTestId(value){
   return String(value).padStart(4,"0");
