@@ -5,15 +5,17 @@ import { getSupabase } from '@/lib/supabase-browser';
 import { Gradebook, linkedGradebook, scoreLabel, readGradebookRows } from '@/lib/gradebook';
 import { formatError } from '@/lib/format-error';
 import styles from './workspace.module.css';
+import TowerWorkspace from '../tower/workspace';
 
 type Student = { student_id: string; active: boolean; display_name: string };
-type Item = { id: string; title: string; category_id: string };
+type Item = { id: string; title: string; category_id: string; assessment_slug: string | null };
 type Category = { id: string; code: string; label: string; active: boolean };
 type Status = { code: string; label: string; active: boolean; requires_score: boolean };
 type Attempt = { id: string; item_id: string; student_id: string; status_label: string; status_code: string;
   score: number | null; possible_score: number | null; attempted_at: string; note: string; revision_id: number };
 type Revision = { id: number; status_label: string; score: number | null; possible_score: number | null; recorded_at: string; note: string };
-type BookData = { book: Gradebook; students: Student[]; items: Item[]; categories: Category[]; statuses: Status[]; attempts: Attempt[]; unresolved: number };
+type TowerSelection = { student_id: string; attempt_id: string };
+type BookData = { book: Gradebook; students: Student[]; items: Item[]; categories: Category[]; statuses: Status[]; attempts: Attempt[]; towerSelections: TowerSelection[]; unresolved: number };
 
 export default function GradebookWorkspace() {
   const [client] = useState(getSupabase);
@@ -23,7 +25,13 @@ export default function GradebookWorkspace() {
   const [level, setLevel] = useState('');
   const [semester, setSemester] = useState('');
   const [panels, setPanels] = useState<BookData[]>([]);
-  const [linked, setLinked] = useState(false);
+  const [linked, setLinked] = useState(true);
+  const [tab,setTab]=useState('grades');
+  const [weldingOpened,setWeldingOpened]=useState(false);
+  const [studentId,setStudentId]=useState('');
+  const [assignmentId,setAssignmentId]=useState('');
+  const [saveBlocked,setSaveBlocked]=useState(false);
+  const towerEnabled=process.env.NEXT_PUBLIC_TOWER_ENABLED==='true';
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -52,14 +60,15 @@ export default function GradebookWorkspace() {
       if (refreshed.error) throw refreshed.error;
       const results = await Promise.all([
         readGradebookRows<Student>((from, to) => client.from('gradebook_roster').select('student_id,active,display_name').eq('gradebook_id', one.id).order('student_id').range(from, to)),
-        readGradebookRows<Item>((from, to) => client.from('gradebook_items').select('id,title,category_id').eq('gradebook_id', one.id).order('created_at').order('id').range(from, to)),
+        readGradebookRows<Item>((from, to) => client.from('gradebook_items').select('id,title,category_id,assessment_slug').eq('gradebook_id', one.id).order('created_at').order('id').range(from, to)),
         readGradebookRows<Category>((from, to) => client.from('gradebook_categories').select('*').eq('gradebook_id', one.id).order('id').range(from, to)),
         readGradebookRows<Status>((from, to) => client.from('gradebook_statuses').select('*').eq('gradebook_id', one.id).order('code').range(from, to)),
         readGradebookRows<Attempt>((from, to) => client.from('gradebook_latest_attempts').select('*').eq('gradebook_id', one.id).order('attempted_at', { ascending: false }).order('id').range(from, to)),
+        process.env.NEXT_PUBLIC_TOWER_ENABLED === 'true' ? readGradebookRows<TowerSelection>((from,to)=>client.from('tower_effective_grades').select('student_id,attempt_id').eq('gradebook_id',one.id).order('student_id').order('assignment_id').range(from,to)) : Promise.resolve([] as TowerSelection[]),
       ]);
       const students = results[0];
       return { book: one, students: students.sort((a, b) => a.display_name.localeCompare(b.display_name)),
-        items: results[1], categories: results[2], statuses: results[3], attempts: results[4],
+        items: results[1], categories: results[2], statuses: results[3], attempts: results[4], towerSelections: results[5],
         unresolved: Number(refreshed.data?.unresolved ?? 0) };
     }
     const partner = linked ? linkedGradebook(book, books) : null;
@@ -83,6 +92,10 @@ export default function GradebookWorkspace() {
 
   const available = books.filter(book => (!program || book.program_id === program) && (!level || book.level_id === level) && (!semester || book.semester_id === semester));
   const chosen = books.find(book => book.id === selected);
+  const partner=chosen ? linkedGradebook(chosen,books) : null;
+  const labBook=chosen?.course_role==='lab' ? chosen : partner?.course_role==='lab' ? partner : null;
+  function openWelding(book:string,student:string,assignment:string){setSelected(book);setStudentId(student);setAssignmentId(assignment);setWeldingOpened(true);setTab('lab');}
+  function changeTab(next:string){setWeldingOpened(true);setTab(next);if(next==='grades')setReload(value=>value+1);}
   function chooseFilter(kind: string, value: string) {
     const nextProgram = kind === 'program' ? value : program;
     const nextLevel = kind === 'program' ? '' : kind === 'level' ? value : level;
@@ -94,15 +107,21 @@ export default function GradebookWorkspace() {
     Array.from(new Map(rows.filter(row => row[key]).map(row => [row[key]!, row[label]])).entries()).map(([id, text]) => <option key={id} value={id}>{text}</option>);
 
   return <main className={styles.workspace}>
-    <header><h1>Course gradebooks</h1><p>Separate course records · shared enrollment · complete attempt history</p></header>
+    <header><h1>Gradebook</h1><p>Grades, welding assessments and student records in one class workspace.</p></header>
     <div className={styles.filters}>
-      <label>Program<select disabled={busy} value={program} onChange={e => chooseFilter('program', e.target.value)}>{<option value="">All programs</option>}{options(books, 'program_id', 'program_name')}</select></label>
-      <label>Level<select disabled={busy} value={level} onChange={e => chooseFilter('level', e.target.value)}><option value="">All levels</option>{options(books.filter(b => !program || b.program_id === program), 'level_id', 'level_name')}</select></label>
-      <label>Semester<select disabled={busy} value={semester} onChange={e => chooseFilter('semester', e.target.value)}><option value="">All semesters</option>{options(books.filter(b => (!program || b.program_id === program) && (!level || b.level_id === level)), 'semester_id', 'semester_name')}</select></label>
-      <label>Class<select disabled={busy} value={selected} onChange={e => setSelected(e.target.value)}>{!available.length && <option value="">No classes</option>}{available.map(book => <option key={book.id} value={book.id}>{book.course_code} · {book.section_name}{book.section_status !== 'active' ? ' (archived)' : ''}</option>)}</select></label>
-      <label><input type="checkbox" disabled={busy} checked={linked} onChange={e => setLinked(e.target.checked)} /> Show linked course</label>
+      <label>Program<select disabled={busy || saveBlocked} value={program} onChange={e => chooseFilter('program', e.target.value)}>{<option value="">All programs</option>}{options(books, 'program_id', 'program_name')}</select></label>
+      <label>Level<select disabled={busy || saveBlocked} value={level} onChange={e => chooseFilter('level', e.target.value)}><option value="">All levels</option>{options(books.filter(b => !program || b.program_id === program), 'level_id', 'level_name')}</select></label>
+      <label>Semester<select disabled={busy || saveBlocked} value={semester} onChange={e => chooseFilter('semester', e.target.value)}><option value="">All semesters</option>{options(books.filter(b => (!program || b.program_id === program) && (!level || b.level_id === level)), 'semester_id', 'semester_name')}</select></label>
+      <label>Class<select disabled={busy || saveBlocked} value={selected} onChange={e => setSelected(e.target.value)}>{!available.length && <option value="">No classes</option>}{available.map(book => <option key={book.id} value={book.id}>{book.course_code} · {book.section_name}{book.section_status !== 'active' ? ' (archived)' : ''}</option>)}</select></label>
+      <label><input type="checkbox" disabled={busy || saveBlocked} checked={linked} onChange={e => setLinked(e.target.checked)} /> Show linked course</label>
       <button disabled={loading || busy || !selected} onClick={() => setReload(value => value + 1)}>Refresh roster and theory grades</button>
     </div>
+    {towerEnabled && labBook && <nav aria-label="Gradebook views">
+      {[['grades','Grades'],['lab','Welding assessment'],['passport','Student record']].map(([id,label])=><button key={id} disabled={saveBlocked} aria-pressed={tab===id} onClick={()=>changeTab(id)}>{label}</button>)}
+    </nav>}
+    {saveBlocked&&<p role="status">Finish saving in the welding workspace before changing class or view.</p>}
+    {towerEnabled&&labBook&&weldingOpened&&<div hidden={tab==='grades'}><TowerWorkspace key={labBook.id} gradebookId={labBook.id} view={tab==='grades'?'lab':tab} studentId={studentId} assignmentId={assignmentId} onStudentChange={setStudentId} onSaveState={setSaveBlocked}/></div>}
+    <div hidden={tab!=='grades'&&Boolean(labBook)&&towerEnabled}>
     {error && <p role="alert">{error}</p>}
     {loading && <p role="status">Loading gradebooks…</p>}
     {!loading && !books.length && !error && <p>No gradebooks are available for your assigned sections.</p>}
@@ -120,14 +139,17 @@ export default function GradebookWorkspace() {
           const attempts = panel.attempts.filter(attempt => attempt.student_id === student.student_id);
           if (!attempts.length) return [<tr key={student.student_id}><td>{student.display_name}{!student.active && ' (inactive)'}</td><td colSpan={4}>No grades recorded</td></tr>];
           return attempts.map(attempt => <tr key={attempt.id}><td>{student.display_name}{!student.active && ' (inactive)'}</td><td>{panel.items.find(item => item.id === attempt.item_id)?.title}</td><td>{new Date(attempt.attempted_at).toLocaleString()}<br />{attempt.status_label}</td><td>{scoreLabel(attempt.score, attempt.possible_score)}</td><td>
-            <button disabled={busy} onClick={async () => {
+            <button disabled={busy || saveBlocked} onClick={async () => {
               setBusy(true); setError(''); setHistory(null); setHistoryTitle(student.display_name);
               try {
                 const rows = await readGradebookRows<Revision>((from, to) => client.from('gradebook_revisions').select('*').eq('gradebook_id', panel.book.id).eq('attempt_id', attempt.id).order('id', { ascending: false }).range(from, to));
                 setHistory(rows);
               } catch { setError('Attempt history could not load.'); } finally { setBusy(false); }
             }}>View history</button>
-            <button disabled={busy} onClick={() => setEdit({ book: panel.book.id, attempt })}>Correct</button>
+            {panel.items.find(item=>item.id===attempt.item_id)?.assessment_slug?.startsWith('tower:') ? <span>
+              {process.env.NEXT_PUBLIC_TOWER_ENABLED === 'true' && <>{panel.towerSelections.some(selection=>selection.attempt_id===attempt.id) ? 'Counted Tower attempt' : 'Retained attempt history'} · </>}
+              <button disabled={saveBlocked} onClick={()=>openWelding(panel.book.id,student.student_id,panel.items.find(item=>item.id===attempt.item_id)?.assessment_slug?.slice(6)||'')}>Open welding assessment</button>
+            </span> : <button disabled={busy || saveBlocked} onClick={() => setEdit({ book: panel.book.id, attempt })}>Correct</button>}
           </td></tr>);
         })}
       </tbody></table></div>
@@ -141,14 +163,14 @@ export default function GradebookWorkspace() {
           <label>Label<input name="label" required /></label>
           <label><input name="active" type="checkbox" defaultChecked /> Active</label>
           <label><input name="requires" type="checkbox" /> Status requires score</label>
-          <button disabled={busy}>Save configuration</button>
+          <button disabled={busy || saveBlocked}>Save configuration</button>
         </form>
         <p>Categories: {panel.categories.map(c => `${c.label} (${c.code}${c.active ? '' : ', inactive'})`).join(', ') || 'None'}</p>
         <p>Statuses: {panel.statuses.map(s => `${s.label} (${s.code}${s.active ? '' : ', inactive'})`).join(', ')}</p>
         <form onSubmit={e => { e.preventDefault(); const data = new FormData(e.currentTarget); void mutate('create_gradebook_item', { p_gradebook_id: panel.book.id, p_category_id: data.get('category'), p_title: data.get('title') }); }}>
           <label>Assessment title<input name="title" required /></label>
           <label>Category<select name="category" required><option value="">Choose category</option>{panel.categories.filter(c => c.active).map(c => <option key={c.id} value={c.id}>{c.label}</option>)}</select></label>
-          <button disabled={busy}>Add assessment</button>
+          <button disabled={busy || saveBlocked}>Add assessment</button>
         </form>
       </details>
       <details open={edit?.book === panel.book.id}><summary>{edit?.book === panel.book.id ? 'Correct an existing attempt' : 'Record an attempt'}</summary>
@@ -164,7 +186,7 @@ export default function GradebookWorkspace() {
           <label>Score<input name="score" type="number" min="0" step="any" defaultValue={edit?.book === panel.book.id ? edit.attempt.score ?? '' : ''} /></label>
           <label>Possible score<input name="possible" type="number" min="0.01" step="any" defaultValue={edit?.book === panel.book.id ? edit.attempt.possible_score ?? '' : ''} /></label>
           <label>{edit?.book === panel.book.id ? 'Correction reason (required)' : 'Note'}<input name="note" required={edit?.book === panel.book.id} /></label>
-          <button disabled={busy}>Save {edit?.book === panel.book.id ? 'correction' : 'attempt'}</button>
+          <button disabled={busy || saveBlocked}>Save {edit?.book === panel.book.id ? 'correction' : 'attempt'}</button>
           {edit?.book === panel.book.id && <button type="button" onClick={() => setEdit(null)}>Cancel correction</button>}
         </form>
       </details>
@@ -172,6 +194,7 @@ export default function GradebookWorkspace() {
     {history && <section className={styles.panel}><h2>Attempt history · {historyTitle}</h2><button onClick={() => setHistory(null)}>Close history</button>
       <ol>{history.map(r => <li key={r.id}>{new Date(r.recorded_at).toLocaleString()} · {r.status_label} · {scoreLabel(r.score, r.possible_score)}<p>{r.note}</p></li>)}</ol>
     </section>}
+    </div>
   </main>;
 }
 

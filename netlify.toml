@@ -20,6 +20,7 @@
   command = "rm -rf .next && npm run build"
 
 [context.deploy-preview.environment]
+  NEXT_PUBLIC_TOWER_ENABLED = "true"
   NEXT_PUBLIC_GRADEBOOK_ENABLED = "true"
   NEXT_PUBLIC_SUPABASE_URL = "https://ezlvivmeneefiiwqwgqd.supabase.co"
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_VDQ-Ug5VBliSzl1I-FKCog_ZNPv-g7R"

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LTG Welding workspace</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">S1</div>
+        <div>
+          <div class="eyebrow">LTG course workspace</div>
+          <h1>Welding workspace</h1>
+        </div>
+      </div>
+
+      <nav class="nav-stack">
+        <button class="nav-btn active" data-view="home">Overview</button>
+        <button class="nav-btn" data-view="lab">Assessment</button>
+        <button class="nav-btn" data-view="courses">Course Records</button>
+        <button class="nav-btn" data-view="competencies">Competencies</button>
+        <button class="nav-btn" data-view="exams">Knowledge exams</button>
+        <button class="nav-btn" data-view="qualifications">Qualifications</button>
+        <button class="nav-btn" data-view="destructive">Destructive Tests</button>
+        <button class="nav-btn" data-view="passport">Student Passport</button>
+        <button class="nav-btn" data-view="admin">Assignments & registration</button>
+      </nav>
+
+      <div class="sidebar-note">
+        <strong>Instructor workflow</strong>
+        <span>Fast instructor entry first. Complexity stays underneath.</span>
+      </div>
+
+      <div class="sidebar-footer"><p id="saveStatus" role="status">Connecting to LTG…</p><button id="retrySave" hidden>Retry saving</button><a href="/gradebook" target="_parent">Open course gradebooks</a></div>
+    </aside>
+
+    <main class="main-panel">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">Welding workspace</div>
+          <h2 id="viewTitle">Overview</h2>
+        </div>
+        <div class="topbar-actions">
+          <label class="field-inline">Student
+            <select id="activeStudentSelect"></select>
+          </label>
+        </div>
+      </header>
+      <section id="appContent" class="content"><p>Loading your class roster…</p></section>
+    </main>
+  </div>
+
+  <dialog id="assignmentDialog" class="modal">
+    <form method="dialog" id="assignmentForm">
+      <div class="modal-head">
+        <div>
+          <div class="eyebrow">Class assignment</div>
+          <h3>Add grading assignment</h3>
+        </div>
+        <button value="cancel" class="icon-btn" aria-label="Close">×</button>
+      </div>
+      <div class="form-grid">
+        <label>Name<input name="name" required placeholder="e.g. SMAW 3F Fillet Weld" /></label>
+        <label>Process<input name="process" required placeholder="SMAW" /></label>
+        <label>Position<input name="position" placeholder="3F" /></label>
+        <label>Electrode<input name="electrode" placeholder='1/8" E7018' /></label>
+        <label>Type
+          <select name="type">
+            <option value="position">Weld position</option>
+            <option value="project">Lab project</option>
+          </select>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button value="cancel" class="secondary-btn">Cancel</button>
+        <button value="default" class="primary-btn" id="createAssignmentBtn">Create</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="./app.js"></script>
+</body>
+</html>
