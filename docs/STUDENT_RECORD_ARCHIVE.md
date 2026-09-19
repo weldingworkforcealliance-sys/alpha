@@ -2,6 +2,8 @@
 
 Status: option 2 approved. AWS destination, restricted synthetic automation and a synthetic indefinite hold are verified as of 2026-09-19. The user approved indefinite retention with administrator-controlled release. Production export and recovery remain pending. This document is not evidence of a working production backup. No real student records have been copied by this archive work.
 
+Scope decision: the user approved **every school hosted in LTG**, with separate school archive packages. This authorizes the scope of records, not additional IAM grants or production backup activation.
+
 ## Ownership and storage
 
 LTG remains the working record system. The user currently has no access to school storage and authorized an LTG AWS account owned by Richard Genco. The console account name is LTG Education Operating System, account ID 551626544567. The destination is `ltg-student-archive-551626544567-us-east-2`, in US East (Ohio). Encryption uses SSE-S3, public access is blocked, ACLs are disabled, versioning and Object Lock are enabled. Only synthetic transfers are enabled. A future school transfer must include recovery access and archive ownership.
@@ -22,6 +24,7 @@ Do not enable automatic expiration or choose an irreversible compliance retentio
 | Tower assessments | tower_assignments, tower_records, tower_history, tower_grade_links | Rubrics, original attempts, critical defects and replacement decisions |
 | Permanent tests/certificates | tower_permanent_tests, tower_certificates | Issued snapshot, issuer, timestamp, final PDF bytes and template version when available |
 | Classroom evidence | classroom_submissions and referenced sessions/assessments | Canonical student linkage, responses and scoring context; flag unresolved legacy identities |
+| Shop job-card evidence | job_card_submissions, job_card_sessions and templates | Student linkage, submitted checks, evidence notes and instructor review |
 | Supporting files | Referenced private storage objects and certificate attachments | Actual bytes, media type, original object identity, length and checksum |
 
 This inventory is a starting point. Before export, reconcile live schema and file references, including historical correction audit storage. A reference to a file is not a backup of the file. Supabase database backups exclude Storage object bytes: https://supabase.com/docs/guides/platform/backups
@@ -108,3 +111,17 @@ AWS IAM policy simulation denied `GetObject` and `PutObject` on a production key
 The user selected: "Keep indefinitely; administrator can release protection." Object Lock is now enabled on the existing bucket; AWS does not allow disabling that capability afterward. The GitHub-generated synthetic version above was placed under an S3 legal hold, and `GetObjectLegalHold` returned `Status: ON`. This is a technical indefinite hold, not a determination that a legal preservation obligation exists. No fixed compliance period or automatic expiration was configured.
 
 The synthetic workflow role cannot place or release holds. The owner applied the test hold through the signed-in administrator session. Production export must set and verify a hold on every finalized archive version before declaring protection complete. Simply enabling Object Lock does not protect future uploads automatically. Production uploader access must allow placing a hold but deny releasing one, deletion, retention bypass and unrelated object access. Releasing holds remains an explicitly authorized administrator action. No production export or backup schedule is active yet.
+
+## All-school export implementation, September 19, 2026
+
+`scripts/archive/snapshot-reader.mjs` prepares an internal, server-only reader for 25 core record tables. It uses a dedicated connection and a read-only repeatable-read transaction, verifies the reviewed column/type inventory in `core-schema.json`, and aggregates entire datasets without pagination or active-student filters. Decimal strings preserve bigint identities. It explicitly excludes live classroom/job-card join codes. `row_security=off` makes incomplete RLS-filtered reads fail; it does not grant or bypass access. This reader requires separately provisioned and reviewed database read access; it is not exposed as an RPC or end-user route.
+
+The generated projection was executed against Gltg staging with only aggregate counts returned: 3 schools, 5 student rows, 8 gradebooks, 9 Tower history rows, 5 classroom submissions and 1 job-card submission. No record contents were exported by that check. The real database connection adapter and worker are not configured.
+
+`school-bundle.mjs` reconciles source counts and school inventory, checks duplicate identities and school/book/student relationships, separates school packages, and preserves all core grade revisions and inactive students. Attachments require an explicit inventory, immutable source version, exact byte count and SHA-256 digest. The reader leaves attachment fields unresolved rather than assuming zero files. Recovery requires an independently protected expected bundle digest and the expected school/export identities, then rechecks the dataset manifest and relationships. It returns structured records and bytes; it never executes restored SQL or trusts archived filesystem paths.
+
+These packages are deliberately labeled **core-records-only**. Course/term and rubric context, historical audit events, private-file discovery and transfer, readable transcripts, independent receipt protection, job scheduling/status, and actual database restore still need implementation and verification. Unit-tested JSON recovery is not a full database restore or proof of production retention. The existing synthetic cloud probe is separate and has not uploaded these school bundles.
+
+Read-only readiness checks found no unlinked classroom/job-card students in production and 3 inactive students that must be retained. Official finalization tables are still absent in production (PR 72 is pending). Staging has 5 classroom submissions and 1 job-card submission without canonical student links; an all-staging package must remain incomplete until those legacy records are reconciled. Do not silently drop them, guess links, or modify live student identities to satisfy a test.
+
+Validation: 18 bundle tests, 5 reader tests and the original 10 synthetic AWS tests. Tests cover school separation, inactive students, all grade revisions, correction history, mismatched relationships, duplicate/truncated records, missing datasets, unresolved students, forbidden join codes, missing/corrupt/version-changed attachments, schema drift, transactional rollback, and trusted-receipt verification. No new database objects, access grants, production uploads, schedules or deletions were made by this implementation.
