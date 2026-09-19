@@ -43,3 +43,8 @@ yarn-error.log*
 Thumbs.db
 .AppleDouble
 .LSOverride
+
+# Private certificate artwork and local rendering artifacts
+/lib/pccc-certificate-background.ts
+/tmp/
+/output/
