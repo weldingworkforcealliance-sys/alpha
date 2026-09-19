@@ -6,6 +6,7 @@ import { Gradebook, linkedGradebook, scoreLabel, readGradebookRows } from '@/lib
 import { formatError } from '@/lib/format-error';
 import styles from './workspace.module.css';
 import TowerWorkspace from '../tower/workspace';
+import CourseFinals from './course-finals';
 
 type Student = { student_id: string; active: boolean; display_name: string };
 type Item = { id: string; title: string; category_id: string; assessment_slug: string | null };
@@ -130,7 +131,7 @@ export default function GradebookWorkspace() {
       <h2>{panel.book.course_code} · {panel.book.section_name}</h2>
       <p>{[panel.book.program_name, panel.book.level_name, panel.book.semester_name].filter(Boolean).join(' / ')}</p>
       {!panel.book.course_pair_id && <p>Academic pair mapping is pending. A school administrator must configure this section before theory import.</p>}
-      <p>Official course grade: not calculated. Category weights and attempt-selection rules have not been configured.</p>
+      {process.env.NEXT_PUBLIC_GRADEBOOK_FINALS_ENABLED==='true' ? <CourseFinals key={panel.book.id} bookId={panel.book.id} students={panel.students}/> : <p>Official course finalization is not enabled yet.</p>}
       {panel.unresolved > 0 && <p role="status">{panel.unresolved} assessment submission(s) need identity or score review before import. No student matches were guessed.</p>}
       <h3>Students and attempts</h3>
       {!panel.students.length && <p>No enrolled students yet. Students appear from the existing class enrollment roster.</p>}
