@@ -1,6 +1,6 @@
 # LTG permanent student records and independent archive
 
-Status: option 2 approved. Empty AWS destination created on 2026-09-19; automated access and retention policy pending. This document is an implementation specification, not evidence of a working production backup. No real student records have been copied by this archive work.
+Status: option 2 approved. AWS destination and restricted synthetic automation are verified as of 2026-09-19. Production export, retention policy and recovery remain pending. This document is not evidence of a working production backup. No real student records have been copied by this archive work.
 
 ## Ownership and storage
 
@@ -90,4 +90,15 @@ The committed probe at `243e960244187ea0672d58a86abaac3c2c4b2a69` ran through th
 - Verified: `2026-09-19T13:28:11.592Z`
 - Production backup verified: **false**
 
-The synthetic object was retained; no delete request was made. The access template passed AWS CloudFormation validation. After explicit user approval, stack `ltg-archive-synthetic-access` reached `CREATE_COMPLETE`, creating the GitHub OIDC provider and role `arn:aws:iam::551626544567:role/ltg-archive-synthetic-probe`. No provider existed beforehand. Repository variable `LTG_ARCHIVE_PROBE_ENABLED=true` is saved. Local tests and GitHub run `35445760165` passed before cloud activation; a GitHub-authenticated cloud test is now pending. This is synthetic-only access, not authorization or credentials for a production export.
+The synthetic object was retained; no delete request was made. The access template passed AWS CloudFormation validation. After explicit user approval, stack `ltg-archive-synthetic-access` created the GitHub OIDC provider and role `arn:aws:iam::551626544567:role/ltg-archive-synthetic-probe`. No provider existed beforehand. Repository variable `LTG_ARCHIVE_PROBE_ENABLED=true` is saved. This is synthetic-only access, not authorization or credentials for a production export.
+
+GitHub emits the immutable-ID subject `repo:weldingworkforcealliance-sys@322272778/alpha@1350025517:ref:refs/heads/integration/student-archive` for this repository. The exact trust condition was corrected to that observed identity and the stack reached `UPDATE_COMPLETE`. No wildcard or additional repository/branch access was introduced.
+
+GitHub run `35446269788`, attempt 2, then passed both jobs. The synthetic job authenticated through the restricted role (15-minute session) and verified a second 903-byte archive:
+
+- Key: `staging/synthetic/3a6e397f-cc81-45fd-8262-ba3fcd84c301.json`
+- Version: `C1V09gFkiDvaV_9REeB7Y7JB6H.8i6s_`
+- SHA-256: `44ebb97dcfeeb145d933cb543f6590bd5a3d8c131cbbca9a5d8ee019ff3f8e31`
+- Verified: `2026-09-19T13:38:32.125Z`
+
+AWS IAM policy simulation denied `GetObject` and `PutObject` on a production key, and explicitly denied `DeleteObject`, `DeleteObjectVersion` and `PutObjectRetention`. Simulation did not issue any actual data-access or deletion request. Both synthetic objects remain stored. This proves the synthetic connection and exact-version restore path; it does not prove complete database recovery or permanent retention.
