@@ -7,13 +7,14 @@ import { formatError } from '@/lib/format-error';
 import styles from './workspace.module.css';
 
 type Student = { student_id: string; active: boolean; display_name: string };
-type Item = { id: string; title: string; category_id: string };
+type Item = { id: string; title: string; category_id: string; assessment_slug: string | null };
 type Category = { id: string; code: string; label: string; active: boolean };
 type Status = { code: string; label: string; active: boolean; requires_score: boolean };
 type Attempt = { id: string; item_id: string; student_id: string; status_label: string; status_code: string;
   score: number | null; possible_score: number | null; attempted_at: string; note: string; revision_id: number };
 type Revision = { id: number; status_label: string; score: number | null; possible_score: number | null; recorded_at: string; note: string };
-type BookData = { book: Gradebook; students: Student[]; items: Item[]; categories: Category[]; statuses: Status[]; attempts: Attempt[]; unresolved: number };
+type TowerSelection = { student_id: string; attempt_id: string };
+type BookData = { book: Gradebook; students: Student[]; items: Item[]; categories: Category[]; statuses: Status[]; attempts: Attempt[]; towerSelections: TowerSelection[]; unresolved: number };
 
 export default function GradebookWorkspace() {
   const [client] = useState(getSupabase);
@@ -52,14 +53,15 @@ export default function GradebookWorkspace() {
       if (refreshed.error) throw refreshed.error;
       const results = await Promise.all([
         readGradebookRows<Student>((from, to) => client.from('gradebook_roster').select('student_id,active,display_name').eq('gradebook_id', one.id).order('student_id').range(from, to)),
-        readGradebookRows<Item>((from, to) => client.from('gradebook_items').select('id,title,category_id').eq('gradebook_id', one.id).order('created_at').order('id').range(from, to)),
+        readGradebookRows<Item>((from, to) => client.from('gradebook_items').select('id,title,category_id,assessment_slug').eq('gradebook_id', one.id).order('created_at').order('id').range(from, to)),
         readGradebookRows<Category>((from, to) => client.from('gradebook_categories').select('*').eq('gradebook_id', one.id).order('id').range(from, to)),
         readGradebookRows<Status>((from, to) => client.from('gradebook_statuses').select('*').eq('gradebook_id', one.id).order('code').range(from, to)),
         readGradebookRows<Attempt>((from, to) => client.from('gradebook_latest_attempts').select('*').eq('gradebook_id', one.id).order('attempted_at', { ascending: false }).order('id').range(from, to)),
+        process.env.NEXT_PUBLIC_TOWER_ENABLED === 'true' ? readGradebookRows<TowerSelection>((from,to)=>client.from('tower_effective_grades').select('student_id,attempt_id').eq('gradebook_id',one.id).order('student_id').order('assignment_id').range(from,to)) : Promise.resolve([] as TowerSelection[]),
       ]);
       const students = results[0];
       return { book: one, students: students.sort((a, b) => a.display_name.localeCompare(b.display_name)),
-        items: results[1], categories: results[2], statuses: results[3], attempts: results[4],
+        items: results[1], categories: results[2], statuses: results[3], attempts: results[4], towerSelections: results[5],
         unresolved: Number(refreshed.data?.unresolved ?? 0) };
     }
     const partner = linked ? linkedGradebook(book, books) : null;
@@ -127,7 +129,10 @@ export default function GradebookWorkspace() {
                 setHistory(rows);
               } catch { setError('Attempt history could not load.'); } finally { setBusy(false); }
             }}>View history</button>
-            <button disabled={busy} onClick={() => setEdit({ book: panel.book.id, attempt })}>Correct</button>
+            {panel.items.find(item=>item.id===attempt.item_id)?.assessment_slug?.startsWith('tower:') ? <span>
+              {process.env.NEXT_PUBLIC_TOWER_ENABLED === 'true' && <>{panel.towerSelections.some(selection=>selection.attempt_id===attempt.id) ? 'Counted Tower attempt' : 'Retained attempt history'} · </>}
+              <a href="/tower">Correct in Tower</a>
+            </span> : <button disabled={busy} onClick={() => setEdit({ book: panel.book.id, attempt })}>Correct</button>}
           </td></tr>);
         })}
       </tbody></table></div>

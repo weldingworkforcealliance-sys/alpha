@@ -202,6 +202,7 @@ export default function RootLayout({
                       Course Gradebooks
                     </Link>
                   )}
+                  {process.env.NEXT_PUBLIC_TOWER_ENABLED === 'true' && <Link href="/tower" className={`ltg-nav-link ${pathname.startsWith('/tower') ? 'active' : ''}`}>Welding Record Tower</Link>}
                   <ReviewQueueLink />
                   <Link
                     href="/time-clock"
