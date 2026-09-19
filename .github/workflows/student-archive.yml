@@ -1,10 +1,10 @@
-# Install this small scheduler on the repository's DEFAULT branch (main) only
-# after the pinned worker revision, permissions and restore drill are verified.
-# Keeping this file under infra makes it inert during preparation.
-name: LTG nightly student archive
+# Active scheduler on the repository default branch.
+# First weekly run: September 25, 2026 at 22:00 America/New_York.
+name: LTG weekly student archive
 on:
   schedule:
-    - cron: '17 7 * * *'
+    - cron: '0 22 * * 5'
+      timezone: 'America/New_York'
   workflow_dispatch:
 permissions:
   contents: read
