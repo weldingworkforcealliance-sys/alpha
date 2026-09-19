@@ -1,79 +1,35 @@
-# LTG permanent student records and independent archive
+# LTG student records and independent archive
 
-Latest checkpoint: the corrected private PCCC certificate is now live at production commit `7bfd733de7ee1131f8749c043f8e7e53305a446e`. The nightly archive worker, retained-version recovery, 25 additional context tables and inert scheduling/alert configuration are prepared in this branch. **Production backups remain inactive.** See [activation status and remaining gates](ARCHIVE_ACTIVATION.md). Historical checkpoints below retain their original scope.
+Updated September 19, 2026. Production student archives are enabled for every LTG school. The first supervised live backup and isolated record/file recovery passed in [Actions run 35459272170](https://github.com/weldingworkforcealliance-sys/alpha/actions/runs/35459272170). Independent administrator recovery also verified every stored artifact. The owner received the approved alert-delivery test. See [activation status](ARCHIVE_ACTIVATION.md) for evidence, configuration and remaining gates.
 
-Status: option 2 approved. AWS destination, restricted synthetic automation and a synthetic indefinite hold are verified as of 2026-09-19. The user approved indefinite retention with administrator-controlled release. Production export and recovery remain pending. This document is not evidence of a working production backup. No real student records have been copied by this archive work.
+## Current operation
 
-Scope decision: the user approved **every school hosted in LTG**, with separate school archive packages. This authorizes the scope of records, not additional IAM grants or production backup activation.
+- LTG remains the working record system. Official final grades, retained correction history, Student record and the corrected private PCCC certificate are live.
+- The default-branch scheduler installed through PR #77 runs nightly at 07:17 UTC using reviewed worker revision `a917a0942491df8d81986e6d73e42f1cf2c44726`. First scheduled execution remains to be observed after September 20 at 07:17 UTC. An immediate backup triggered by grade finalization or certificate issuance is not implemented.
+- A read-only consistent snapshot covers 25 core record tables, 25 reviewed context tables, private certificate artwork and the Storage inventory. Inactive students, previous attempts, correction history and final-grade revisions are retained. Core records are separated by school; the context companion is restricted to archive administrators.
+- Certificate snapshots are rendered to PDF with preserved code and private artwork. These archived files do not prove an email was delivered to a student.
+- Every uploaded version is encrypted and placed under an indefinite legal hold. Exact-version downloads must match hashes, lengths and protection settings before the completion receipt is written. The uploader cannot delete versions or release holds.
+- Each successful run also restores the records and file bytes into an isolated PostgreSQL test database. Independent administrator recovery has passed. This is record/file recovery, not a full operational LTG database restore.
+- Failure and missing-success alarms are configured. Alerts and GitHub logs contain no student records. The first overdue-alarm transition after activation remains to be confirmed.
 
-## Ownership and storage
+## Ownership and continuity
 
-LTG remains the working record system. The user currently has no access to school storage and authorized an LTG AWS account owned by Richard Genco. The console account name is LTG Education Operating System, account ID 551626544567. The destination is `ltg-student-archive-551626544567-us-east-2`, in US East (Ohio). Encryption uses SSE-S3, public access is blocked, ACLs are disabled, versioning and Object Lock are enabled. Only synthetic transfers are enabled. A future school transfer must include recovery access and archive ownership.
+The owner approved the AWS destination and indefinite retention, with protection released only by an archive administrator. Public access is blocked, ACLs are disabled, versioning and Object Lock are enabled. Production and synthetic prefixes have separate restricted automation roles. Credentials and real student data must never be committed to this public repository.
 
-The console displayed $100 credits and a free-plan end date of March 19, 2027, or earlier credit exhaustion. No paid upgrade was performed. Long-term funding or migration to the user's external drive remains necessary; a free-plan bucket is not a permanent retention guarantee.
+The AWS free-plan end previously displayed March 19, 2027, or earlier credit exhaustion. No paid upgrade was made. Continued account funding or migration to independently recoverable storage is still required. The external drive is not set up; school storage is not currently available. Indefinite holds alone do not guarantee permanent availability.
 
-Do not enable automatic expiration or choose an irreversible compliance retention period without the school's policy. Never put student data, database dumps, credentials, or certificate files in GitHub. Staging uses synthetic records and a separate destination prefix or bucket.
+## Remaining limits
 
-## Required inventory
+- The first nightly scheduled run and subsequent overdue-alarm clearance require observation.
+- Future Storage objects cause the worker to fail closed until a reviewed byte resolver is installed. Storage was empty at activation. External teaching-resource links are not mirrored.
+- Account passwords, payroll, deployment secrets and email configuration are excluded. Full operational disaster recovery is separate work.
+- Automatic certificate emailing and the correction/reissue workflow remain unfinished. The approved branded downloadable PDF itself is live.
+- A human-readable transcript/attendance export and an in-app archive-status screen are not delivered by this worker.
+- No Codespace cleanup is authorized before full Gradebook/Tower functionality and preservation checks. See [integration status](tower-integration-status.md).
 
-| Record | Sources identified | Preservation requirement |
-| --- | --- | --- |
-| Student identity | attendance_students, tower_student_ids | Stable student UUID, identifiers and historical display names |
-| Enrollment | attendance_pair_enrollments, gradebook_students, attendance_pairs, gradebook_course_pairs, gradebooks | Include inactive enrollments and course/term context |
-| Attendance | attendance_records, attendance_sessions, related audit events | Statuses, notes, completion flags, dates, corrections and responsible staff |
-| Grades | gradebook_categories, gradebook_statuses, gradebook_items, gradebook_attempts, gradebook_revisions | All attempts and corrections, not only latest scores |
-| Official finals | gradebook_finalizations | Every revision, grading policy, source fingerprint, approver and reason |
-| Tower assessments | tower_assignments, tower_records, tower_history, tower_grade_links | Rubrics, original attempts, critical defects and replacement decisions |
-| Permanent tests/certificates | tower_permanent_tests, tower_certificates | Issued snapshot, issuer, timestamp, final PDF bytes and template version when available |
-| Classroom evidence | classroom_submissions and referenced sessions/assessments | Canonical student linkage, responses and scoring context; flag unresolved legacy identities |
-| Shop job-card evidence | job_card_submissions, job_card_sessions and templates | Student linkage, submitted checks, evidence notes and instructor review |
-| Supporting files | Referenced private storage objects and certificate attachments | Actual bytes, media type, original object identity, length and checksum |
+## Historical implementation checkpoints
 
-This inventory is a starting point. Before export, reconcile live schema and file references, including historical correction audit storage. A reference to a file is not a backup of the file. Supabase database backups exclude Storage object bytes: https://supabase.com/docs/guides/platform/backups
-
-## Two recovery products
-
-1. A school-scoped student archive: portable structured records plus readable transcript, attendance summary, certificates and evidence files. School-authorized access only; do not derive permission to all historical records from access to one current class.
-2. An encrypted operational recovery set: consistent database export, schema/migration version and associated object files, with a separately controlled recovery procedure. Keep privileged operational data out of student-facing exports.
-
-The archive must preserve old versions when an instructor makes a correction. A replacement certificate does not overwrite its predecessor; record its supersession explicitly.
-
-## Delivery and verification contract
-
-Use a durable queue with retryable export jobs. Proposed cadence is nightly plus new finalized grades/certificates; scheduling is not configured yet. Read database records from a consistent snapshot and enumerate file versions. If files can change during export, verify their versions/checksums and fail or retry rather than accepting mixed evidence.
-
-Each export has an opaque export ID, school ID, source environment, schema version, creation time and complete manifest. Manifest entries identify each dataset or file, record count where applicable, byte length and SHA-256 digest. Avoid student names in cloud object keys.
-
-States: queued, preparing, uploading, verifying, verified, failed. Mark verified only after reading back the stored object versions, checking content hashes, and confirming destination encryption and required retention. Record bucket, object keys, version IDs and verification timestamp. Upload acceptance alone is not verification. Integrity hashes alone do not establish authenticity; preserve the manifest in protected storage with separately controlled signing or audit evidence.
-
-Incomplete pagination, inaccessible files, ambiguous student identities, missing mandatory datasets and cross-school rows must fail verification visibly. Show the last successful archive date and any failed jobs to authorized administrators. Do not display a claim that records are permanently protected while destination configuration is missing.
-
-## Acceptance gates
-
-- Synthetic complete student record survives export and restore with identical grade history, attendance, certificate files and hashes.
-- An inactive student's historical record is retained.
-- Cross-school access is denied, including export/job status endpoints.
-- Missing or altered files fail verification.
-- Retried jobs cannot replace a previously verified immutable export.
-- Corrections create a new archive version while retaining the earlier version.
-- Restore into an isolated environment succeeds without production credentials or production writes.
-- School recovery administrator can retrieve the archive independently of LTG.
-- Monitoring, retention settings and an agreed restore-test schedule are recorded before production activation.
-
-## Current release constraints
-
-Official grade finalization and the integrated Student record display were released through PR 72 on September 19, 2026, after explicit production approval. Approved certificate artwork and final PDF delivery remain unresolved. Archive implementation must preserve available certificate snapshots now and add issued PDF artifacts when implemented; it must not claim those PDFs already exist.
-
-No Codespaces, branches, repositories, student records or deployment resources may be deleted as part of this work. The user requires full live gradebook/Tower functionality before reconsidering Codespace cleanup.
-
-## Required external configuration
-
-- Destination account and region are verified above. Richard Genco owns the account; school access remains unavailable.
-- Narrowly scoped workload access and independent recovery access.
-- Retention policy and Object Lock mode, plus encryption key ownership/recovery.
-- Alert recipient and acceptable recovery window.
-
-Object Lock behavior and limitations: https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock.html
+The sections below document earlier stages on September 19. Their statements about inactive production, unresolved PDFs or missing configuration applied at those stages and are superseded by the current operation above and the activation document.
 
 ## Synthetic connection test
 
@@ -114,7 +70,7 @@ The user selected: "Keep indefinitely; administrator can release protection." Ob
 
 The synthetic workflow role cannot place or release holds. The owner applied the test hold through the signed-in administrator session. Production export must set and verify a hold on every finalized archive version before declaring protection complete. Simply enabling Object Lock does not protect future uploads automatically. Production uploader access must allow placing a hold but deny releasing one, deletion, retention bypass and unrelated object access. Releasing holds remains an explicitly authorized administrator action. No production export or backup schedule is active yet.
 
-## All-school export implementation, September 19, 2026
+### All-school export implementation, September 19, 2026
 
 `scripts/archive/snapshot-reader.mjs` prepares an internal, server-only reader for 25 core record tables. It uses a dedicated connection and a read-only repeatable-read transaction, verifies the reviewed column/type inventory in `core-schema.json`, and aggregates entire datasets without pagination or active-student filters. Decimal strings preserve bigint identities. It explicitly excludes live classroom/job-card join codes. `row_security=off` makes incomplete RLS-filtered reads fail; it does not grant or bypass access. This reader requires separately provisioned and reviewed database read access; it is not exposed as an RPC or end-user route.
 
@@ -128,7 +84,7 @@ Read-only readiness checks found no unlinked classroom/job-card students in prod
 
 Validation: 18 bundle tests, 5 reader tests and the original 10 synthetic AWS tests. Tests cover school separation, inactive students, all grade revisions, correction history, mismatched relationships, duplicate/truncated records, missing datasets, unresolved students, forbidden join codes, missing/corrupt/version-changed attachments, schema drift, transactional rollback, and trusted-receipt verification. No new database objects, access grants, production uploads, schedules or deletions were made by this implementation.
 
-## Live final-grade dependency verified
+### Live final-grade dependency verified
 
 Production commit `8f883206f5adc74d1c7c7ef35207f7899be2e397` was published in Netlify deploy `6aae99422df84f00083b45bf` at `2026-09-19T14:17:23.684Z`. The approved `gradebook_finalization_release` migration installed the final-grade table and protected functions. Direct authenticated inserts/updates and anonymous reads/RPC execution are denied; RLS and the immutable-history trigger are enabled.
 
