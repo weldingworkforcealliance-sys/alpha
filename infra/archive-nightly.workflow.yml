@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   backup:
-    if: github.repository == 'weldingworkforcealliance-sys/alpha' && github.ref == 'refs/heads/main' && vars.LTG_ARCHIVE_ENABLED == 'true'
+    if: github.repository == 'weldingworkforcealliance-sys/alpha' && github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || vars.LTG_ARCHIVE_ENABLED == 'true')
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     services:
@@ -68,4 +68,3 @@ jobs:
       - name: Record failure without student details
         if: failure()
         run: aws cloudwatch put-metric-data --namespace LTG/StudentArchive --metric-data MetricName=Failure,Value=1,Unit=Count --region us-east-2
-
