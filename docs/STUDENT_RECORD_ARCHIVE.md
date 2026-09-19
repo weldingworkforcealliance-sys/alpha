@@ -1,10 +1,10 @@
 # LTG permanent student records and independent archive
 
-Status: option 2 approved. AWS destination and restricted synthetic automation are verified as of 2026-09-19. Production export, retention policy and recovery remain pending. This document is not evidence of a working production backup. No real student records have been copied by this archive work.
+Status: option 2 approved. AWS destination, restricted synthetic automation and a synthetic indefinite hold are verified as of 2026-09-19. The user approved indefinite retention with administrator-controlled release. Production export and recovery remain pending. This document is not evidence of a working production backup. No real student records have been copied by this archive work.
 
 ## Ownership and storage
 
-LTG remains the working record system. The user currently has no access to school storage and authorized an LTG AWS account owned by Richard Genco. The console account name is LTG Education Operating System, account ID 551626544567. The destination is `ltg-student-archive-551626544567-us-east-2`, in US East (Ohio). Encryption uses SSE-S3, public access is blocked, ACLs are disabled, and versioning is enabled. Object Lock and automated transfers are not yet enabled. A future school transfer must include recovery access and archive ownership.
+LTG remains the working record system. The user currently has no access to school storage and authorized an LTG AWS account owned by Richard Genco. The console account name is LTG Education Operating System, account ID 551626544567. The destination is `ltg-student-archive-551626544567-us-east-2`, in US East (Ohio). Encryption uses SSE-S3, public access is blocked, ACLs are disabled, versioning and Object Lock are enabled. Only synthetic transfers are enabled. A future school transfer must include recovery access and archive ownership.
 
 The console displayed $100 credits and a free-plan end date of March 19, 2027, or earlier credit exhaustion. No paid upgrade was performed. Long-term funding or migration to the user's external drive remains necessary; a free-plan bucket is not a permanent retention guarantee.
 
@@ -102,3 +102,9 @@ GitHub run `35446269788`, attempt 2, then passed both jobs. The synthetic job au
 - Verified: `2026-09-19T13:38:32.125Z`
 
 AWS IAM policy simulation denied `GetObject` and `PutObject` on a production key, and explicitly denied `DeleteObject`, `DeleteObjectVersion` and `PutObjectRetention`. Simulation did not issue any actual data-access or deletion request. Both synthetic objects remain stored. This proves the synthetic connection and exact-version restore path; it does not prove complete database recovery or permanent retention.
+
+### Approved indefinite retention policy
+
+The user selected: "Keep indefinitely; administrator can release protection." Object Lock is now enabled on the existing bucket; AWS does not allow disabling that capability afterward. The GitHub-generated synthetic version above was placed under an S3 legal hold, and `GetObjectLegalHold` returned `Status: ON`. This is a technical indefinite hold, not a determination that a legal preservation obligation exists. No fixed compliance period or automatic expiration was configured.
+
+The synthetic workflow role cannot place or release holds. The owner applied the test hold through the signed-in administrator session. Production export must set and verify a hold on every finalized archive version before declaring protection complete. Simply enabling Object Lock does not protect future uploads automatically. Production uploader access must allow placing a hold but deny releasing one, deletion, retention bypass and unrelated object access. Releasing holds remains an explicitly authorized administrator action. No production export or backup schedule is active yet.
