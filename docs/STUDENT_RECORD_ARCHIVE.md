@@ -5,12 +5,12 @@ Updated September 19, 2026. Production student archives are enabled for every LT
 ## Current operation
 
 - LTG remains the working record system. Official final grades, retained correction history, Student record and the corrected private PCCC certificate are live.
-- The default-branch scheduler installed through PR #77 runs nightly at 07:17 UTC using reviewed worker revision `a917a0942491df8d81986e6d73e42f1cf2c44726`. First scheduled execution remains to be observed after September 20 at 07:17 UTC. An immediate backup triggered by grade finalization or certificate issuance is not implemented.
+- The default-branch scheduler installed through PR #77 now runs Fridays at 22:00 America/New_York through PR #79 using reviewed worker revision `a917a0942491df8d81986e6d73e42f1cf2c44726`. First scheduled execution remains to be observed after September 25 at 22:00 Eastern. An immediate backup triggered by grade finalization or certificate issuance is not implemented.
 - A read-only consistent snapshot covers 25 core record tables, 25 reviewed context tables, private certificate artwork and the Storage inventory. Inactive students, previous attempts, correction history and final-grade revisions are retained. Core records are separated by school; the context companion is restricted to archive administrators.
 - Certificate snapshots are rendered to PDF with preserved code and private artwork. These archived files do not prove an email was delivered to a student.
 - Every uploaded version is encrypted and placed under an indefinite legal hold. Exact-version downloads must match hashes, lengths and protection settings before the completion receipt is written. The uploader cannot delete versions or release holds.
 - Each successful run also restores the records and file bytes into an isolated PostgreSQL test database. Independent administrator recovery has passed. This is record/file recovery, not a full operational LTG database restore.
-- Failure and missing-success alarms are configured. Alerts and GitHub logs contain no student records. The first overdue-alarm transition after activation remains to be confirmed.
+- Failure and missing-success alarms are configured. Alerts and GitHub logs contain no student records. The missing-success alarm now evaluates completed Eastern calendar weeks.
 
 ## Ownership and continuity
 
@@ -20,7 +20,7 @@ The AWS free-plan end previously displayed March 19, 2027, or earlier credit exh
 
 ## Remaining limits
 
-- The first nightly scheduled run and subsequent overdue-alarm clearance require observation.
+- The first Friday scheduled run requires observation. Missing-backup monitoring checks completed Eastern calendar weeks after Monday 00:00; failure alerts remain enabled.
 - Future Storage objects cause the worker to fail closed until a reviewed byte resolver is installed. Storage was empty at activation. External teaching-resource links are not mirrored.
 - Account passwords, payroll, deployment secrets and email configuration are excluded. Full operational disaster recovery is separate work.
 - Automatic certificate emailing and the correction/reissue workflow remain unfinished. The approved branded downloadable PDF itself is live.
