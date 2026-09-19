@@ -1,5 +1,11 @@
 -- Provision only after approval. Credentials are a separate secure handoff.
 -- NOLOGIN means this role cannot connect until its password is installed securely.
+-- Preserve service workers while preventing a new SQL reader from invoking
+-- background mutations through inherited PUBLIC function permissions.
+revoke execute on function public.claim_due_class_watchdog_reminders(integer) from public,anon,authenticated;
+revoke execute on function public.enqueue_class_watchdog_reminders(timestamptz) from public,anon,authenticated;
+revoke execute on function public.run_class_end_of_day_cleanup(timestamptz) from public,anon,authenticated;
+grant execute on function public.claim_due_class_watchdog_reminders(integer),public.enqueue_class_watchdog_reminders(timestamptz),public.run_class_end_of_day_cleanup(timestamptz) to service_role;
 create role ltg_archive_reader nologin noinherit nosuperuser nocreatedb nocreaterole noreplication bypassrls;
 alter role ltg_archive_reader set default_transaction_read_only = on;
 alter role ltg_archive_reader set statement_timeout = '60s';
@@ -58,3 +64,4 @@ grant select on public.schools,
 grant select on certificate_private.templates,storage.objects to ltg_archive_reader;
 -- No default privileges: a new table must be reviewed before the reader can access it.
 -- No authentication tables, passwords, production write grants or function grants.
+

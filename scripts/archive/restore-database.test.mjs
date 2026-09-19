@@ -42,6 +42,7 @@ test('prepared database reader can read RLS-protected tables but has no write or
     await client.connect();
     try {
       await client.query('BEGIN');
+      await client.query('CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role');
       await client.query('CREATE SCHEMA certificate_private; CREATE SCHEMA storage');
       const tables = [...Object.keys(JSON.parse(readFileSync(new URL('./core-schema.json', import.meta.url)))),
         ...Object.keys(JSON.parse(readFileSync(new URL('./context-schema.json', import.meta.url))))];
@@ -51,12 +52,21 @@ test('prepared database reader can read RLS-protected tables but has no write or
       }
       await client.query('CREATE TABLE certificate_private.templates (id text); CREATE TABLE storage.objects (id text)');
       await client.query("INSERT INTO public.schools VALUES ('synthetic')");
+      await client.query(`CREATE FUNCTION public.claim_due_class_watchdog_reminders(integer) RETURNS integer LANGUAGE sql SECURITY DEFINER AS $$SELECT 1$$;
+        CREATE FUNCTION public.enqueue_class_watchdog_reminders(timestamptz) RETURNS integer LANGUAGE sql SECURITY DEFINER AS $$SELECT 1$$;
+        CREATE FUNCTION public.run_class_end_of_day_cleanup(timestamptz) RETURNS integer LANGUAGE sql SECURITY DEFINER AS $$SELECT 1$$`);
       await client.query(readFileSync(new URL('../../infra/archive-reader.sql', import.meta.url), 'utf8'));
       const permissions = (await client.query("select rolcanlogin,rolsuper,rolcreaterole from pg_roles where rolname='ltg_archive_reader'")).rows[0];
       assert.deepEqual(permissions, { rolcanlogin: false, rolsuper: false, rolcreaterole: false });
       await client.query('SET LOCAL ROLE ltg_archive_reader');
       await client.query('SET LOCAL row_security = off');
       assert.equal((await client.query('SELECT count(*)::int AS count FROM public.schools')).rows[0].count, 1);
+      for (const name of ['claim_due_class_watchdog_reminders(integer)', 'enqueue_class_watchdog_reminders(timestamptz)', 'run_class_end_of_day_cleanup(timestamptz)']) {
+        for (const role of ['anon', 'authenticated', 'ltg_archive_reader']) {
+          assert.equal((await client.query('SELECT has_function_privilege($1,$2,\'EXECUTE\') AS allowed', [role, 'public.' + name])).rows[0].allowed, false);
+        }
+        assert.equal((await client.query('SELECT has_function_privilege($1,$2,\'EXECUTE\') AS allowed', ['service_role', 'public.' + name])).rows[0].allowed, true);
+      }
       for (const action of ['INSERT', 'UPDATE', 'DELETE', 'TRUNCATE']) {
         assert.equal((await client.query('SELECT has_table_privilege(current_user,$1,$2) AS allowed', ['public.schools', action])).rows[0].allowed, false);
       }
