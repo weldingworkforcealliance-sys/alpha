@@ -1,17 +1,17 @@
 # Nightly student archive activation
 
-Updated September 19, 2026. Automatic production backups are NOT ACTIVATED. The live gradebook is unaffected.
+Updated September 19, 2026. Nightly production student archives are ENABLED following successful supervised backup and recovery. The first scheduled run has not yet occurred. The live gradebook is unaffected.
 
 ## Verified setup checkpoint
 
 - Production reader provisioned and its encrypted session-pooler connection verified. Actual SELECT succeeds; an UPDATE with a false predicate is denied by table permissions even inside a read-write transaction. The reader has 52 explicit SELECT grants, no explicit table writes, and no public-schema/database CREATE permission.
 - Synthetic unit checks, complete two-school PostgreSQL recovery, reader access tests and restricted synthetic AWS roundtrip passed in GitHub run 35455059295 at worker revision `a917a0942491df8d81986e6d73e42f1cf2c44726`.
 - AWS template and IAM positive/negative validation passed. A synthetic retained receipt and all referenced file versions were independently downloaded and checked with holds ON.
-- Approved production AWS stack reached CREATE_COMPLETE. Its secret container exists; the connection value still awaits secure transfer. The email subscription is PendingConfirmation.
-- Default-branch scheduler installed by PR #77. The worker revision is pinned. The automatic-enable variable remains unset, so scheduled runs skip the backup job. A manual run can perform the supervised activation test while automatic runs remain disabled.
-- First production export, production recovery, independent receipt capture and confirmed alert delivery are still outstanding. Chrome file upload is blocked until the owner enables file URL access for the browser extension.
+- Approved production AWS stack reached CREATE_COMPLETE. The dedicated connection is stored in AWS Secrets Manager; no database password is stored in GitHub. The email subscription is confirmed and the owner confirmed receipt of the approved test alert.
+- Default-branch scheduler installed by PR #77. The tested worker revision is pinned and `LTG_ARCHIVE_ENABLED=true` was verified after the successful live run.
+- First production backup and isolated PostgreSQL record/file recovery passed in GitHub run 35459272170. Independent administrator access re-downloaded all three artifacts (9,496,834 bytes), verified their hashes and encryption, and verified all indefinite holds remained ON. A trusted completion identity/digest is saved separately on the owner's computer.
 
-## Prepared behavior
+## Active behavior
 
 - Nightly at 07:17 UTC, from the repository default branch `main`, checking out an explicitly pinned worker commit. No schedule runs from the LTG deployment branch.
 - One read-only repeatable-read snapshot of all 25 student-record tables, 25 reviewed course/audit context tables, private certificate artwork and Storage object inventory. Preserves inactive students, all attempts and corrections. Each school gets a separate core-record package; shared context is an archive-administrator-only companion.
@@ -33,11 +33,11 @@ The Secrets Manager JSON at `ltg/archive/production/database` must contain `proj
 ## Activation gate checklist
 
 1. COMPLETE: validate the AWS template and IAM positive/negative cases, including inability to release holds, delete versions or read other secrets/prefixes.
-2. PARTIAL: dedicated production reader and AWS role provisioned; actual database reads succeed and writes fail. Secure AWS secret-value transfer remains pending.
+2. COMPLETE: dedicated production reader and AWS role provisioned; actual database reads succeed and writes fail. Private AWS connection installed and used successfully by the worker.
 3. COMPLETE: retained synthetic package verified in real AWS storage, including denied hold-release policy simulation (no actual holds released).
 4. COMPLETE: synthetic student-record recovery verified in an isolated PostgreSQL database, including historical attendance, grades and certificate files.
-5. Confirm independent administrator recovery access, alert subscription and a deliberate failure alert; no test email has been sent yet.
-6. Run the first supervised production export and record its trusted receipt outside the uploader's control. Then enable the nightly schedule and verify the first scheduled run. Keep the prior synthetic exports and every production archive.
+5. COMPLETE: independent administrator recovery passed, subscription confirmed, and an approved clearly labeled notification test was received. No fake backup-failure metric was emitted.
+6. COMPLETE: first supervised production export/recovery, independent receipt capture and nightly activation. PENDING: observe the first scheduled run after 07:17 UTC on September 20. Keep the prior synthetic exports and every production archive.
 
 ## Known limits and cost continuity
 
