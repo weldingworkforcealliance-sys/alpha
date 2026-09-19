@@ -88,3 +88,19 @@ describe('Tower grading policy', () => {
     expect(r.run('state')).toBeNull();
   });
 });
+
+describe('Gradebook context',()=>{
+ it('keeps student and assignment when switching between assessment and student record',()=>{
+  const r=initialized();
+  r.run('saving=false;stopped=false;pending.clear()');
+  r.listeners.message({origin:'https://ltg.test',source:r.parent,data:{type:'tower-context',view:'passport',studentId:'student-1',assignmentId:'smaw-fillet-1F'}});
+  expect(r.run('state.ui.view')).toBe('passport');
+  expect(r.run('state.activeStudentId')).toBe('student-1');
+  expect(r.run('state.ui.labAssignmentId')).toBe('smaw-fillet-1F');
+ });
+ it('refuses a context change while an edit is being saved',()=>{
+  const r=initialized();const before=r.run('state.ui.view');
+  r.listeners.message({origin:'https://ltg.test',source:r.parent,data:{type:'tower-context',view:'passport'}});
+  expect(r.run('state.ui.view')).toBe(before);
+ });
+});

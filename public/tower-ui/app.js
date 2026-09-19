@@ -1065,9 +1065,20 @@ function renderPrototypeAdmin(){
     '<div class="card"><h3>Prototype boundaries</h3><div class="alert">No LTG authentication, no production Supabase, no attendance linkage, no AWS submission, no real student PII, and no production write from this standalone build.</div></div>';
 }
 
+function applyGradebookContext(context){
+ if(!context)return;
+ if(['lab','passport'].includes(context.view)){
+  state.ui.view=context.view;
+  document.querySelectorAll('.nav-btn').forEach(button=>{button.hidden=context.view==='lab'?button.dataset.view!=='lab'&&button.dataset.view!=='admin':!['passport','competencies','exams','qualifications','destructive','admin'].includes(button.dataset.view);});
+ }
+ const index=state.students.findIndex(s=>s.id===context.studentId);
+ if(index>=0){state.activeStudentId=context.studentId;for(const key of ['labIndex','competencyIndexStudent','examStudentIndex','qualificationStudentIndex'])state.ui[key]=index;}
+ if(state.assignments.some(a=>a.id===context.assignmentId))state.ui.labAssignmentId=context.assignmentId;
+}
 function render(){
   document.getElementById("viewTitle").textContent=viewTitle();
   renderStudentSelect();
+  parent.postMessage({type:"tower-selection",studentId:state.activeStudentId},location.origin);
   const content=document.getElementById("appContent");
   const view=state.ui.view;
   content.innerHTML=view==="home"?renderHome():view==="lab"?renderLab():view==="courses"?renderCourseRecords():view==="competencies"?renderCompetencies():view==="exams"?renderExams():view==="qualifications"?renderQualifications():view==="destructive"?renderDestructiveTests():view==="passport"?renderPassport():renderAdmin();
@@ -1078,6 +1089,7 @@ function moveQueue(kind,delta){
   const key={lab:"labIndex",competency:"competencyIndexStudent",exam:"examStudentIndex",qualification:"qualificationStudentIndex"}[kind];
   if(!key) return;
   state.ui[key]=(state.ui[key]+delta+state.students.length)%state.students.length;
+  applyGradebookContext({studentId:state.students[state.ui[key]].id});
   render();
 }
 
@@ -1261,6 +1273,7 @@ function recordPayload(s){
  positionQualifications:s.positionQualifications,aws:s.aws,destructiveTests:s.destructiveTests};
 }
 function setSavingStatus(text,error=false){
+ parent.postMessage({type:"tower-save-state",blocked:saving||stopped||pending.size>0||error},location.origin);
  statusEl().textContent=text;statusEl().setAttribute("role",error?"alert":"status");
  document.getElementById("retrySave").hidden=!error;
  document.querySelectorAll("#appContent button,#appContent input,#appContent select,#activeStudentSelect").forEach(el=>{if(error){el.dataset.wasDisabled=String(el.disabled);el.disabled=true;}});
@@ -1290,6 +1303,7 @@ document.getElementById("retrySave").addEventListener("click",()=>{
 window.addEventListener("message",e=>{
  if(e.origin!==location.origin||e.source!==parent)return;
  const m=e.data;
+ if(m?.type==="tower-context"&&state&&!saving&&!stopped){applyGradebookContext(m);render();}
  if(m?.type==="tower-init"){
   const book=m.payload.book;
   const course={id:book.id,code:book.course_code,role:"shop",label:"Shop",level:book.level_name||"",semester:book.semester_number||1,pairedCourse:book.pair_name||"",
@@ -1304,7 +1318,7 @@ window.addEventListener("message",e=>{
   }
   state.activeStudentId=state.students[0]?.id;
   if(!state.students.length){document.getElementById("appContent").innerHTML="<p>No active students are enrolled in this class. Update the LTG enrollment roster first.</p>";setSavingStatus("Roster loaded");return;}
-  setSavingStatus("Saved to LTG");render();
+  applyGradebookContext(m.context);setSavingStatus("Saved to LTG");render();
  }
  if(m?.type==="tower-saved" && lastRequest?.requestId===m.requestId){
   const id=lastRequest.studentId;revisions.set(id,m.revision);baseline.set(id,lastRequest.encoded);

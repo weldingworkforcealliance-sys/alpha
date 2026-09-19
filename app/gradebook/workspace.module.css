@@ -11,3 +11,6 @@
 .workspace td button { margin: .2rem; }
 .workspace summary { cursor: pointer; padding: 1rem 0; font-weight: 600; }
 @media(max-width: 1100px) { .pair { grid-template-columns: 1fr; } }
+
+.workspace nav { display:flex; flex-wrap:wrap; gap:.5rem; margin:1rem 0; }
+.workspace nav button[aria-pressed="true"] { background:#173f50; color:white; border-color:#173f50; }
