@@ -79,3 +79,15 @@ Run locally with `node scripts/archive/synthetic-roundtrip.test.mjs` (no credent
 `infra/archive-probe-access.json` prepares a short-lived GitHub OIDC role for the exact `integration/student-archive` branch of `weldingworkforcealliance-sys/alpha`. It permits read/write only under `staging/synthetic/`, plus read-only bucket protection checks. Deletion and retention changes are explicitly denied. It creates no access keys, paid upgrade, schedule, production access or storage bucket. Check whether the GitHub OIDC provider already exists before deployment; supply its ARN if so. Creating this access through the console requires user confirmation at the final action.
 
 The GitHub workflow always runs unit tests on relevant branch pushes. The cloud test is disabled unless the repository variable `LTG_ARCHIVE_PROBE_ENABLED` is set to `true`. There is no backup schedule. AWS role sessions last 15 minutes. Before enabling production automation, complete the required inventory, export consistency, private file transfer, retention, monitoring and isolated recovery gates above.
+
+### Verified live test, September 19, 2026
+
+The committed probe at `243e960244187ea0672d58a86abaac3c2c4b2a69` ran through the owner's signed-in AWS CloudShell session. AWS account and bucket protections passed. A 903-byte synthetic record was uploaded and its exact version downloaded with matching encryption, checksum and bytes:
+
+- Key: `staging/synthetic/fd814818-52fe-4025-85a3-3f46c6452a5b.json`
+- Version: `FoU64Onpv6gikXx7RfyLIEGzUskVRVYh`
+- SHA-256: `a80d06582e0a896322cbea1fb5e0b96a006ebdcb2bfdffaecd455c8861caab36`
+- Verified: `2026-09-19T13:28:11.592Z`
+- Production backup verified: **false**
+
+The synthetic object was retained; no delete request was made. The access template passed AWS CloudFormation validation. After explicit user approval, stack `ltg-archive-synthetic-access` reached `CREATE_COMPLETE`, creating the GitHub OIDC provider and role `arn:aws:iam::551626544567:role/ltg-archive-synthetic-probe`. No provider existed beforehand. Repository variable `LTG_ARCHIVE_PROBE_ENABLED=true` is saved. Local tests and GitHub run `35445760165` passed before cloud activation; a GitHub-authenticated cloud test is now pending. This is synthetic-only access, not authorization or credentials for a production export.

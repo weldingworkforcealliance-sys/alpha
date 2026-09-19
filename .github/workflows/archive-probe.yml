@@ -12,6 +12,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ltg-synthetic-archive-verification
+  cancel-in-progress: false
+
 jobs:
   unit-tests:
     runs-on: ubuntu-24.04
