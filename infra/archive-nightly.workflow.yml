@@ -16,6 +16,15 @@ jobs:
     if: github.repository == 'weldingworkforcealliance-sys/alpha' && github.ref == 'refs/heads/main' && vars.LTG_ARCHIVE_ENABLED == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 40
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_DB: ltg_archive_recovery
+          POSTGRES_USER: archive_drill
+          POSTGRES_PASSWORD: synthetic-local-drill-only
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
     permissions:
       contents: read
       id-token: write
@@ -39,6 +48,8 @@ jobs:
           npm ci --prefix scripts/archive --ignore-scripts
       - name: Test archive code before credentials
         run: node --test scripts/archive/*.test.mjs
+        env:
+          LTG_ARCHIVE_DB_DRILL: 'true'
       - name: Obtain short-lived AWS archive access
         uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708
         with:

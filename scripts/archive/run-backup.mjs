@@ -9,6 +9,7 @@ import { storeRetainedArchive, recoverRetainedArchive } from './retained-store.m
 import { createTestRecordPdf } from '../../lib/tower-test-record-pdf.ts';
 import { createPcccCertificate, usesPcccCertificate } from '../../lib/pccc-certificate-pdf.ts';
 import { awsCli } from './synthetic-roundtrip.mjs';
+import { verifyIsolatedRecovery } from './restore-isolated.mjs';
 
 // Run from repository root on an ephemeral worker. Never upload its workspace or
 // console output as a GitHub artifact. Database rows and PDF bytes stay private.
@@ -32,6 +33,11 @@ try {
     sourceRevision, artifacts: prepared.artifacts });
   const recovered = recoverRetainedArchive({ receipt });
   if (recovered.length !== prepared.artifacts.length || recovered.some((a, i) => a.name !== prepared.artifacts[i].name || !a.bytes.equals(prepared.artifacts[i].bytes))) throw Error('Recovery mismatch');
+  client = new Client({ host: '127.0.0.1', port: 5432, database: 'ltg_archive_recovery', user: 'archive_drill',
+    password: 'synthetic-local-drill-only', connectionTimeoutMillis: 10000 });
+  await client.connect();
+  await verifyIsolatedRecovery(client, recovered, receipt);
+  await client.end(); client = null;
   // Contains only destination identities/digests, never student rows or names.
   if (process.env.GITHUB_STEP_SUMMARY) writeFileSync(process.env.GITHUB_STEP_SUMMARY,
     `## LTG student archive verified\n\nEnvironment: ${environment}\n\nExport: ${receipt.exportId}\n\nSchools: ${prepared.bundleCount}\n\nReceipt key: ${receipt.completion.key}\n\nReceipt version: ${receipt.completion.versionId}\n\nReceipt SHA-256: ${receipt.completion.sha256}\n\nExact-version recovery and indefinite holds verified. Operational database restore is a separate process.\n`, { flag: 'a' });
