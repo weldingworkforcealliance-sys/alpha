@@ -1,0 +1,1109 @@
+{
+  "academic_terms": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "term_name",
+      "type": "text"
+    },
+    {
+      "name": "academic_year",
+      "type": "text"
+    },
+    {
+      "name": "start_date",
+      "type": "date"
+    },
+    {
+      "name": "end_date",
+      "type": "date"
+    },
+    {
+      "name": "status",
+      "type": "text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "cohorts": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "program_id",
+      "type": "uuid"
+    },
+    {
+      "name": "level_id",
+      "type": "uuid"
+    },
+    {
+      "name": "term_id",
+      "type": "uuid"
+    },
+    {
+      "name": "cohort_name",
+      "type": "text"
+    },
+    {
+      "name": "cohort_code",
+      "type": "text"
+    },
+    {
+      "name": "status",
+      "type": "text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "planned_instructional_days",
+      "type": "integer"
+    },
+    {
+      "name": "daily_start_time",
+      "type": "time without time zone"
+    },
+    {
+      "name": "daily_end_time",
+      "type": "time without time zone"
+    }
+  ],
+  "courses": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "program_id",
+      "type": "uuid"
+    },
+    {
+      "name": "course_code",
+      "type": "text"
+    },
+    {
+      "name": "course_name",
+      "type": "text"
+    },
+    {
+      "name": "status",
+      "type": "text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "programs": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "name",
+      "type": "text"
+    },
+    {
+      "name": "status",
+      "type": "text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "program_levels": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "program_id",
+      "type": "uuid"
+    },
+    {
+      "name": "level_code",
+      "type": "text"
+    },
+    {
+      "name": "level_name",
+      "type": "text"
+    },
+    {
+      "name": "sequence_number",
+      "type": "integer"
+    },
+    {
+      "name": "status",
+      "type": "text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "program_semesters": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "level_id",
+      "type": "uuid"
+    },
+    {
+      "name": "semester_number",
+      "type": "integer"
+    },
+    {
+      "name": "semester_name",
+      "type": "text"
+    }
+  ],
+  "gradebook_course_pairs": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "semester_id",
+      "type": "uuid"
+    },
+    {
+      "name": "pair_name",
+      "type": "text"
+    },
+    {
+      "name": "theory_course_id",
+      "type": "uuid"
+    },
+    {
+      "name": "lab_course_id",
+      "type": "uuid"
+    }
+  ],
+  "tower_assignments": [
+    {
+      "name": "id",
+      "type": "text"
+    },
+    {
+      "name": "definition",
+      "type": "jsonb"
+    },
+    {
+      "name": "gradebook_id",
+      "type": "uuid"
+    }
+  ],
+  "job_card_templates": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "template_key",
+      "type": "text"
+    },
+    {
+      "name": "name",
+      "type": "text"
+    },
+    {
+      "name": "description",
+      "type": "text"
+    },
+    {
+      "name": "default_requirements",
+      "type": "jsonb"
+    },
+    {
+      "name": "system_defined",
+      "type": "boolean"
+    },
+    {
+      "name": "active",
+      "type": "boolean"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "assessment_modules": [
+    {
+      "name": "slug",
+      "type": "text"
+    },
+    {
+      "name": "title",
+      "type": "text"
+    },
+    {
+      "name": "description",
+      "type": "text"
+    },
+    {
+      "name": "category",
+      "type": "text"
+    },
+    {
+      "name": "estimated_minutes",
+      "type": "integer"
+    },
+    {
+      "name": "sort_order",
+      "type": "integer"
+    },
+    {
+      "name": "version",
+      "type": "integer"
+    },
+    {
+      "name": "active",
+      "type": "boolean"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "instructions",
+      "type": "text"
+    },
+    {
+      "name": "allow_team_members",
+      "type": "boolean"
+    },
+    {
+      "name": "reference_title",
+      "type": "text"
+    },
+    {
+      "name": "reference_image_url",
+      "type": "text"
+    },
+    {
+      "name": "reference_body",
+      "type": "text"
+    },
+    {
+      "name": "show_student_score",
+      "type": "boolean"
+    }
+  ],
+  "assessment_questions": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "assessment_slug",
+      "type": "text"
+    },
+    {
+      "name": "question_key",
+      "type": "text"
+    },
+    {
+      "name": "question_number",
+      "type": "integer"
+    },
+    {
+      "name": "question_type",
+      "type": "text"
+    },
+    {
+      "name": "question_text",
+      "type": "text"
+    },
+    {
+      "name": "domain",
+      "type": "text"
+    },
+    {
+      "name": "options",
+      "type": "jsonb"
+    },
+    {
+      "name": "correct_answer",
+      "type": "text"
+    },
+    {
+      "name": "accepted_answers",
+      "type": "jsonb"
+    },
+    {
+      "name": "explanation",
+      "type": "text"
+    }
+  ],
+  "assessment_reference_assets": [
+    {
+      "name": "assessment_slug",
+      "type": "text"
+    },
+    {
+      "name": "asset_key",
+      "type": "text"
+    },
+    {
+      "name": "title",
+      "type": "text"
+    },
+    {
+      "name": "image_url",
+      "type": "text"
+    },
+    {
+      "name": "original_image_url",
+      "type": "text"
+    },
+    {
+      "name": "notes",
+      "type": "text"
+    },
+    {
+      "name": "sort_order",
+      "type": "integer"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "audit_log": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "user_id",
+      "type": "uuid"
+    },
+    {
+      "name": "action",
+      "type": "text"
+    },
+    {
+      "name": "entity_type",
+      "type": "text"
+    },
+    {
+      "name": "entity_id",
+      "type": "uuid"
+    },
+    {
+      "name": "details",
+      "type": "jsonb"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "course_curriculum": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "course_id",
+      "type": "uuid"
+    },
+    {
+      "name": "version",
+      "type": "text"
+    },
+    {
+      "name": "curriculum_text",
+      "type": "text"
+    },
+    {
+      "name": "approved_date",
+      "type": "date"
+    },
+    {
+      "name": "approval_authority",
+      "type": "text"
+    },
+    {
+      "name": "status",
+      "type": "text"
+    },
+    {
+      "name": "locked",
+      "type": "boolean"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "course_outcomes": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "course_id",
+      "type": "uuid"
+    },
+    {
+      "name": "curriculum_id",
+      "type": "uuid"
+    },
+    {
+      "name": "outcome_code",
+      "type": "text"
+    },
+    {
+      "name": "outcome_text",
+      "type": "text"
+    },
+    {
+      "name": "locked",
+      "type": "boolean"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "course_guides": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "course_id",
+      "type": "uuid"
+    },
+    {
+      "name": "guide_name",
+      "type": "text"
+    },
+    {
+      "name": "academic_year",
+      "type": "text"
+    },
+    {
+      "name": "version_label",
+      "type": "text"
+    },
+    {
+      "name": "planned_instructional_days",
+      "type": "integer"
+    },
+    {
+      "name": "status",
+      "type": "text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "curriculum_authority_id",
+      "type": "uuid"
+    },
+    {
+      "name": "time_authority_model",
+      "type": "text"
+    },
+    {
+      "name": "authority_notes",
+      "type": "text"
+    }
+  ],
+  "course_guide_days": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "course_id",
+      "type": "uuid"
+    },
+    {
+      "name": "guide_id",
+      "type": "uuid"
+    },
+    {
+      "name": "planner_day_number",
+      "type": "integer"
+    },
+    {
+      "name": "title",
+      "type": "text"
+    },
+    {
+      "name": "objective",
+      "type": "text"
+    },
+    {
+      "name": "instructor_prep",
+      "type": "text"
+    },
+    {
+      "name": "safety_focus",
+      "type": "text"
+    },
+    {
+      "name": "opening_review",
+      "type": "text"
+    },
+    {
+      "name": "demonstration",
+      "type": "text"
+    },
+    {
+      "name": "guided_practice",
+      "type": "text"
+    },
+    {
+      "name": "independent_practice",
+      "type": "text"
+    },
+    {
+      "name": "instructor_checks",
+      "type": "text"
+    },
+    {
+      "name": "assessment",
+      "type": "text"
+    },
+    {
+      "name": "common_problems",
+      "type": "text"
+    },
+    {
+      "name": "teaching_tips",
+      "type": "text"
+    },
+    {
+      "name": "materials_equipment",
+      "type": "text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "corresponding_application",
+      "type": "text"
+    },
+    {
+      "name": "evidence_check_for_understanding",
+      "type": "text"
+    },
+    {
+      "name": "weekly_coaching_focus",
+      "type": "text"
+    },
+    {
+      "name": "coaching_focus",
+      "type": "text"
+    },
+    {
+      "name": "if_students_struggle",
+      "type": "text"
+    },
+    {
+      "name": "keep_momentum",
+      "type": "text"
+    },
+    {
+      "name": "aws_alignment",
+      "type": "text"
+    },
+    {
+      "name": "aws_key_indicators",
+      "type": "text"
+    },
+    {
+      "name": "safety_gate",
+      "type": "text"
+    },
+    {
+      "name": "procedure_variable_focus",
+      "type": "text"
+    },
+    {
+      "name": "evidence_type",
+      "type": "text"
+    },
+    {
+      "name": "inspection_acceptance_focus",
+      "type": "text"
+    },
+    {
+      "name": "focused_retry",
+      "type": "text"
+    },
+    {
+      "name": "record_link_expectation",
+      "type": "text"
+    },
+    {
+      "name": "qualification_guardrail",
+      "type": "text"
+    }
+  ],
+  "course_guide_day_resources": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "course_id",
+      "type": "uuid"
+    },
+    {
+      "name": "guide_day_id",
+      "type": "uuid"
+    },
+    {
+      "name": "sequence_number",
+      "type": "integer"
+    },
+    {
+      "name": "resource_type",
+      "type": "text"
+    },
+    {
+      "name": "resource_title",
+      "type": "text"
+    },
+    {
+      "name": "resource_url",
+      "type": "text"
+    },
+    {
+      "name": "resource_notes",
+      "type": "text"
+    },
+    {
+      "name": "required",
+      "type": "boolean"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "source_id",
+      "type": "uuid"
+    },
+    {
+      "name": "integration_mode",
+      "type": "text"
+    },
+    {
+      "name": "rights_basis",
+      "type": "text"
+    },
+    {
+      "name": "external_resource_id",
+      "type": "text"
+    },
+    {
+      "name": "outcome_id",
+      "type": "uuid"
+    },
+    {
+      "name": "student_safe",
+      "type": "boolean"
+    },
+    {
+      "name": "license_notes",
+      "type": "text"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "course_guide_day_outcomes": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "course_id",
+      "type": "uuid"
+    },
+    {
+      "name": "guide_day_id",
+      "type": "uuid"
+    },
+    {
+      "name": "outcome_id",
+      "type": "uuid"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "course_guide_day_segments": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "course_id",
+      "type": "uuid"
+    },
+    {
+      "name": "guide_day_id",
+      "type": "uuid"
+    },
+    {
+      "name": "sequence_number",
+      "type": "integer"
+    },
+    {
+      "name": "segment_type",
+      "type": "text"
+    },
+    {
+      "name": "segment_title",
+      "type": "text"
+    },
+    {
+      "name": "planned_minutes",
+      "type": "integer"
+    },
+    {
+      "name": "instructor_actions",
+      "type": "text"
+    },
+    {
+      "name": "student_actions",
+      "type": "text"
+    },
+    {
+      "name": "notes",
+      "type": "text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "start_minute",
+      "type": "integer"
+    },
+    {
+      "name": "end_minute",
+      "type": "integer"
+    },
+    {
+      "name": "master_slot_key",
+      "type": "uuid"
+    }
+  ],
+  "course_guide_day_math": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "course_id",
+      "type": "uuid"
+    },
+    {
+      "name": "guide_day_id",
+      "type": "uuid"
+    },
+    {
+      "name": "math_day_number",
+      "type": "integer"
+    },
+    {
+      "name": "title",
+      "type": "text"
+    },
+    {
+      "name": "planned_minutes",
+      "type": "integer"
+    },
+    {
+      "name": "book_connection",
+      "type": "text"
+    },
+    {
+      "name": "goal",
+      "type": "text"
+    },
+    {
+      "name": "instructor_notes",
+      "type": "text"
+    },
+    {
+      "name": "answers_quick_check",
+      "type": "text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "guide_id",
+      "type": "uuid"
+    }
+  ],
+  "course_guide_day_math_segments": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "math_lesson_id",
+      "type": "uuid"
+    },
+    {
+      "name": "sequence_number",
+      "type": "integer"
+    },
+    {
+      "name": "start_minute",
+      "type": "integer"
+    },
+    {
+      "name": "end_minute",
+      "type": "integer"
+    },
+    {
+      "name": "planned_minutes",
+      "type": "integer"
+    },
+    {
+      "name": "activity",
+      "type": "text"
+    },
+    {
+      "name": "segment_type",
+      "type": "text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "master_slot_key",
+      "type": "uuid"
+    }
+  ],
+  "program_level_courses": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "program_id",
+      "type": "uuid"
+    },
+    {
+      "name": "level_id",
+      "type": "uuid"
+    },
+    {
+      "name": "course_id",
+      "type": "uuid"
+    },
+    {
+      "name": "sequence_number",
+      "type": "integer"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "instructional_blocks": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "cohort_id",
+      "type": "uuid"
+    },
+    {
+      "name": "block_number",
+      "type": "integer"
+    },
+    {
+      "name": "block_name",
+      "type": "text"
+    },
+    {
+      "name": "planned_instructional_days",
+      "type": "integer"
+    },
+    {
+      "name": "start_date",
+      "type": "date"
+    },
+    {
+      "name": "end_date",
+      "type": "date"
+    },
+    {
+      "name": "status",
+      "type": "text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "school_branding": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "display_name",
+      "type": "text"
+    },
+    {
+      "name": "short_name",
+      "type": "text"
+    },
+    {
+      "name": "logo_url",
+      "type": "text"
+    },
+    {
+      "name": "program_logo_url",
+      "type": "text"
+    },
+    {
+      "name": "primary_color",
+      "type": "text"
+    },
+    {
+      "name": "secondary_color",
+      "type": "text"
+    },
+    {
+      "name": "accent_color",
+      "type": "text"
+    },
+    {
+      "name": "header_text",
+      "type": "text"
+    },
+    {
+      "name": "footer_text",
+      "type": "text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    }
+  ]
+}
+

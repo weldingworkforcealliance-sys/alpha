@@ -184,3 +184,4 @@ export function recoverSchoolBundle(bytes, { expectedDigest, schoolId, exportId 
     sourceCounts: Object.fromEntries(manifest.map((entry) => [entry.dataset, entry.rows])) });
   return payload;
 }
+

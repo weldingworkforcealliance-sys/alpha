@@ -67,3 +67,4 @@ for (const [name, change] of Object.entries({
   'bad checksum': { checksum: 'wrong' },
   'unexpected restored encryption': { downloadEncryption: 'aws:kms' },
 })) test(`does not report success: ${name}`, () => assert.throws(() => runRoundtrip(scenario(change))));
+

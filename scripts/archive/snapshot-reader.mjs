@@ -41,7 +41,7 @@ function checkSchema(rows) {
 // client must be a dedicated server-side database connection with audited read
 // access to every school. Never pass an end-user connection or expose this as RPC.
 // This function neither obtains credentials nor grants permissions.
-export async function captureCoreSnapshot(client, { environment, sourceRevision }) {
+export async function captureCoreSnapshot(client, { environment, sourceRevision, captureSupplement }) {
   if (!['staging', 'production'].includes(environment) || !/^[0-9a-f]{40}$/.test(sourceRevision)) {
     throw new Error('Source environment and exact code revision are required.');
   }
@@ -62,15 +62,19 @@ export async function captureCoreSnapshot(client, { environment, sourceRevision 
         throw new Error('Snapshot counts do not reconcile.');
       }
     }
+    // Optional internal reader runs inside this same database snapshot, never as
+    // a separate transaction that might observe different grades/templates.
+    const supplement = captureSupplement ? await captureSupplement(client) : null;
     await client.query('COMMIT');
     started = false;
     return { ...snapshot, format: 'ltg-student-snapshot-v1', scope: 'all-schools',
       consistency: 'repeatable-read', exportId: randomUUID(), environment, sourceRevision,
       // An explicit attachment resolver must fill both fields. Empty is not assumed.
-      files: null, fileInventory: null };
+      files: null, fileInventory: null, supplement };
   } catch {
     if (started) { try { await client.query('ROLLBACK'); } catch { /* caller must discard connection */ } }
     // Database errors can include record values; do not put them in CI logs.
     throw new Error('Student snapshot failed; discard this connection and inspect through the protected administrator channel.');
   }
 }
+

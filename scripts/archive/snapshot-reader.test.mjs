@@ -47,3 +47,12 @@ test('projection preserves bigint identities and excludes live join codes', () =
   assert.ok(!/\blimit\b|\boffset\b|\bwhere\b/i.test(sql));
   assert.ok(!snapshotSql({ countsOnly: true }).includes('as records'));
 });
+test('supplement shares the snapshot and a failure rolls back instead of producing mixed records', async () => {
+  const { calls, client } = fake();
+  await assert.rejects(captureCoreSnapshot(client, { ...options, captureSupplement: async (sameClient) => {
+    assert.equal(sameClient, client); assert.ok(!calls.includes('COMMIT')); throw Error('private data');
+  } }));
+  assert.equal(calls.at(-1), 'ROLLBACK');
+  assert.ok(!calls.includes('COMMIT'));
+});
+

@@ -1040,13 +1040,33 @@ function renderQualifications(){
     '</div>';
 }
 
+function requestOfficialFinals(studentId){
+ const request=++finalRecordRequest;
+ officialFinals.set(studentId,{status:'loading',requestId:request});
+ parent.postMessage({type:'tower-read-finals',studentId,requestId:request},location.origin);
+}
+function renderOfficialFinals(student){
+ if(!officialFinals.has(student.id))requestOfficialFinals(student.id);
+ const result=officialFinals.get(student.id);
+ const heading='<h3>Official academic course records</h3>';
+ if(result.status==='loading')return heading+'<p role="status">Loading saved course grades…</p>';
+ if(result.status==='disabled')return heading+'<p>Official course finalization is not enabled yet.</p>';
+ const refresh='<button class="secondary-btn" id="refreshOfficialFinals">Refresh official grades</button>';
+ if(result.status==='error')return heading+'<p role="alert">'+escapeHtml(result.message)+'</p>'+refresh;
+ const records=result.records||[];
+ if(!records.length)return heading+'<p>No finalized course grades are available for this student in your authorized classes.</p>'+refresh;
+ const latest=records.filter(r=>r.latest);
+ return heading+'<p>Saved LTG final grades. Later assessment edits require a reviewed correction.</p><div class="table-wrap"><table><thead><tr><th>Course / class</th><th>Role</th><th>Final</th><th>Finalized</th></tr></thead><tbody>'+
+ latest.map(r=>'<tr><td>'+escapeHtml(r.course)+'<br>'+escapeHtml(r.section)+'</td><td>'+escapeHtml(r.role)+'</td><td>'+badge(escapeHtml(String(r.grade))+'%',r.grade>=r.passingScore?'green':'red')+'</td><td>'+escapeHtml(new Date(r.finalizedAt).toLocaleString())+'</td></tr>').join('')+
+ '</tbody></table></div><details><summary>Final-grade correction history</summary><ol>'+records.map(r=>'<li>'+escapeHtml(r.course+' · '+r.section+' · '+r.grade+'% · '+new Date(r.finalizedAt).toLocaleString())+(r.latest?' · Latest final':' · Earlier final')+'<p>'+escapeHtml(r.reason)+'</p></li>').join('')+'</ol></details>'+refresh;
+}
 function renderPassport(){
   const student=activeStudent();
   if(!student) return '<div class="card">No students.</div>';
   const sum=credentialSummary(student);
   return '<div class="card"><div class="student-banner"><div><div class="eyebrow">Student Passport</div><h3>'+escapeHtml(student.name)+'</h3><div class="student-meta">'+escapeHtml(student.studentId)+' · '+escapeHtml(student.cohort)+' · Weld Test ID '+escapeHtml(student.weldTestId)+'</div></div><div>'+badge(sum.full?"Full completion eligible":sum.partial?"Partial completion eligible":"In progress",sum.full?"green":sum.partial?"blue":"yellow")+'</div></div></div>'+
     '<div class="grid cols-2" style="margin-top:14px"><div class="card"><h3>AWS SENSE progress</h3><div class="module-progress">'+MODULES.map(m=>{const p=moduleProgress(student,m.id);return '<div class="module-line"><span>'+escapeHtml(m.name)+'</span><div class="progress-track"><div class="progress-fill" style="width:'+p+'%"></div></div><b>'+p+'%</b></div>';}).join("")+'</div></div>'+
-    '<div class="card"><h3>Academic course records</h3><div class="table-wrap"><table><thead><tr><th>Course</th><th>Role</th><th>Final</th></tr></thead><tbody>'+courseCatalog().map(c=>{const f=student.courseRecords[c.id].finalization;return '<tr><td>'+escapeHtml(c.code)+'</td><td>'+escapeHtml(c.label)+'</td><td>'+(f.officialFinal===null?badge("Not finalized","gray"):badge(f.officialFinal+"%","green"))+'</td></tr>';}).join("")+'</tbody></table></div><div class="alert blue" style="margin-top:12px"><strong>'+student.destructiveTests.length+'</strong> destructive-test record(s) · Weld Test ID '+escapeHtml(student.weldTestId)+'</div></div></div>'+
+    '<div class="card">'+renderOfficialFinals(student)+'<div class="alert blue" style="margin-top:12px"><strong>'+student.destructiveTests.length+'</strong> destructive-test record(s) · Weld Test ID '+escapeHtml(student.weldTestId)+'</div></div></div>'+
     '<div class="card"><div class="alert blue"><strong>Important:</strong> The Passport shows both records together for convenience. It does not treat a PCCC academic grade as automatic AWS SENSE verification.</div></div>';
 }
 
@@ -1068,6 +1088,7 @@ function renderPrototypeAdmin(){
 function applyGradebookContext(context){
  if(!context)return;
  if(['lab','passport'].includes(context.view)){
+  if(context.view==='passport'&&state.ui.view!=='passport')officialFinals.clear();
   state.ui.view=context.view;
   document.querySelectorAll('.nav-btn').forEach(button=>{button.hidden=context.view==='lab'?button.dataset.view!=='lab'&&button.dataset.view!=='admin':!['passport','competencies','exams','qualifications','destructive','admin'].includes(button.dataset.view);});
  }
@@ -1102,6 +1123,7 @@ document.getElementById("activeStudentSelect").addEventListener("change",e=>{
 });
 
 document.getElementById("appContent").addEventListener("click",e=>{
+  if(e.target.closest('#refreshOfficialFinals')){requestOfficialFinals(activeStudent().id);render();return;}
   const go=e.target.closest("[data-go]"); if(go){setView(go.dataset.go);return;}
   const nav=e.target.closest("[data-lab-nav]"); if(nav){moveQueue("lab",Number(nav.dataset.labNav));return;}
   const cnav=e.target.closest("[data-competency-nav]"); if(cnav){moveQueue("competency",Number(cnav.dataset.competencyNav));return;}
@@ -1266,6 +1288,8 @@ document.getElementById("createAssignmentBtn").addEventListener("click",e=>{
 
 
 const baseline=new Map(), revisions=new Map(), pending=new Map();
+const officialFinals=new Map();
+let finalRecordRequest=0;
 let requestId=0, saving=false, stopped=false, lastRequest=null;
 const statusEl=()=>document.getElementById("saveStatus");
 function recordPayload(s){
@@ -1303,8 +1327,16 @@ document.getElementById("retrySave").addEventListener("click",()=>{
 window.addEventListener("message",e=>{
  if(e.origin!==location.origin||e.source!==parent)return;
  const m=e.data;
+ if(m?.type==='tower-final-records'&&state){
+  const requested=officialFinals.get(m.studentId);
+  if(requested?.requestId!==m.requestId)return;
+  officialFinals.set(m.studentId,{...m});
+  if(state.ui.view==='passport'&&state.activeStudentId===m.studentId)render();
+  return;
+ }
  if(m?.type==="tower-context"&&state&&!saving&&!stopped){applyGradebookContext(m);render();}
  if(m?.type==="tower-init"){
+  officialFinals.clear();
   const book=m.payload.book;
   const course={id:book.id,code:book.course_code,role:"shop",label:"Shop",level:book.level_name||"",semester:book.semester_number||1,pairedCourse:book.pair_name||"",
    gradingPolicy:{version:"tower-shop-v1",passingScore:65,categories:[{code:"weld_performance",label:"Weld Performance",weight:75},{code:"shop_projects",label:"Shop Projects",weight:25}]}};

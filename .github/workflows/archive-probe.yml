@@ -67,3 +67,4 @@ jobs:
           role-session-name: ltg-synthetic-${{ github.run_id }}
       - name: Upload synthetic data and verify downloaded version
         run: node scripts/archive/synthetic-roundtrip.mjs
+

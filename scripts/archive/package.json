@@ -1,0 +1,8 @@
+{
+  "name": "ltg-student-archive-worker",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "dependencies": { "pg": "8.23.0" }
+}
+

@@ -88,3 +88,4 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
   try { console.log(JSON.stringify(runRoundtrip(), null, 2)); }
   catch (error) { console.error(error.message); process.exitCode = 1; }
 }
+

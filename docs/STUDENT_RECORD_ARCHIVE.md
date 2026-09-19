@@ -1,5 +1,7 @@
 # LTG permanent student records and independent archive
 
+Latest checkpoint: the corrected private PCCC certificate is now live at production commit `7bfd733de7ee1131f8749c043f8e7e53305a446e`. The nightly archive worker, retained-version recovery, 25 additional context tables and inert scheduling/alert configuration are prepared in this branch. **Production backups remain inactive.** See [activation status and remaining gates](ARCHIVE_ACTIVATION.md). Historical checkpoints below retain their original scope.
+
 Status: option 2 approved. AWS destination, restricted synthetic automation and a synthetic indefinite hold are verified as of 2026-09-19. The user approved indefinite retention with administrator-controlled release. Production export and recovery remain pending. This document is not evidence of a working production backup. No real student records have been copied by this archive work.
 
 Scope decision: the user approved **every school hosted in LTG**, with separate school archive packages. This authorizes the scope of records, not additional IAM grants or production backup activation.
@@ -133,3 +135,4 @@ Production commit `8f883206f5adc74d1c7c7ef35207f7899be2e397` was published in Ne
 Signed-in staging tests saved a 90% shop final, corrected it to 85%, and preserved both versions. A 67.5% theory final appeared alongside the shop final in Student record. Another synthetic student showed no finalized grades. Live LTG verification confirmed final-review controls load, incomplete course requirements disable finalization, Student record reads the production history, and no browser errors were recorded. Production finalization count remained zero: no real student grades were finalized by these checks.
 
 This release satisfies the final-grade database dependency; it does not activate the independent archive or complete certificate delivery. No Codespaces, repositories, branches or deployment resources were deleted.
+

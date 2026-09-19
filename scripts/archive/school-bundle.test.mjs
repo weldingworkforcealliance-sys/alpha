@@ -90,3 +90,4 @@ test('a correction creates different bytes while the earlier bundle stays recove
   const recovered = recoverSchoolBundle(original.bytes, { expectedDigest: original.sha256, schoolId: original.schoolId, exportId: original.exportId });
   assert.deepEqual(recovered.datasets.gradebook_revisions.map((row) => row.score), [0, 76]);
 });
+

@@ -6,6 +6,7 @@ import { Gradebook, linkedGradebook, scoreLabel, readGradebookRows } from '@/lib
 import { formatError } from '@/lib/format-error';
 import styles from './workspace.module.css';
 import TowerWorkspace from '../tower/workspace';
+import CourseFinals from './course-finals';
 
 type Student = { student_id: string; active: boolean; display_name: string };
 type Item = { id: string; title: string; category_id: string; assessment_slug: string | null };
@@ -130,7 +131,7 @@ export default function GradebookWorkspace() {
       <h2>{panel.book.course_code} · {panel.book.section_name}</h2>
       <p>{[panel.book.program_name, panel.book.level_name, panel.book.semester_name].filter(Boolean).join(' / ')}</p>
       {!panel.book.course_pair_id && <p>Academic pair mapping is pending. A school administrator must configure this section before theory import.</p>}
-      <p>Official course grade: not calculated. Category weights and attempt-selection rules have not been configured.</p>
+      {process.env.NEXT_PUBLIC_GRADEBOOK_FINALS_ENABLED==='true' ? <CourseFinals key={panel.book.id} bookId={panel.book.id} students={panel.students}/> : <p>Official course finalization is not enabled yet.</p>}
       {panel.unresolved > 0 && <p role="status">{panel.unresolved} assessment submission(s) need identity or score review before import. No student matches were guessed.</p>}
       <h3>Students and attempts</h3>
       {!panel.students.length && <p>No enrolled students yet. Students appear from the existing class enrollment roster.</p>}
@@ -154,7 +155,7 @@ export default function GradebookWorkspace() {
         })}
       </tbody></table></div>
       <details><summary>Gradebook setup</summary>
-        <p>Configure labels and statuses here. No lab rubric or category weights are supplied.</p>
+        <p>Configure assessment categories and statuses here. Course finals use the approved shop and theory weights shown above.</p>
         <form onSubmit={e => { e.preventDefault(); const data = new FormData(e.currentTarget); void mutate('configure_gradebook', {
           p_gradebook_id: panel.book.id, p_kind: data.get('kind'), p_code: data.get('code'), p_label: data.get('label'), p_active: data.get('active') === 'on', p_requires_score: data.get('requires') === 'on',
         }); }}>
@@ -174,6 +175,7 @@ export default function GradebookWorkspace() {
         </form>
       </details>
       <details open={edit?.book === panel.book.id}><summary>{edit?.book === panel.book.id ? 'Correct an existing attempt' : 'Record an attempt'}</summary>
+        <p>Use this form for course assessments and projects. Enter weld rubric scores in Welding assessment.</p>
         <form key={edit?.book === panel.book.id ? edit.attempt.id : 'new'} onSubmit={e => {
           e.preventDefault(); const data = new FormData(e.currentTarget); const correction = edit?.book === panel.book.id ? edit.attempt : null;
           void mutate('record_gradebook_attempt', { p_gradebook_id: panel.book.id, p_item_id: correction?.item_id ?? data.get('item'), p_student_id: correction?.student_id ?? data.get('student'),
@@ -181,7 +183,7 @@ export default function GradebookWorkspace() {
             p_possible_score: data.get('possible') === '' ? null : Number(data.get('possible')), p_note: data.get('note'), p_attempt_id: correction?.id ?? null });
         }}>
           <label>Student<select name="student" required disabled={edit?.book === panel.book.id} defaultValue={edit?.book === panel.book.id ? edit.attempt.student_id : ''}><option value="">Choose student</option>{panel.students.map(s => <option key={s.student_id} value={s.student_id} disabled={!s.active && edit?.book !== panel.book.id}>{s.display_name}</option>)}</select></label>
-          <label>Assessment<select name="item" required disabled={edit?.book === panel.book.id} defaultValue={edit?.book === panel.book.id ? edit.attempt.item_id : ''}><option value="">Choose assessment</option>{panel.items.map(i => <option key={i.id} value={i.id}>{i.title}</option>)}</select></label>
+          <label>Assessment<select name="item" required disabled={edit?.book === panel.book.id} defaultValue={edit?.book === panel.book.id ? edit.attempt.item_id : ''}><option value="">Choose assessment</option>{panel.items.filter(i=>!i.assessment_slug?.startsWith('tower:')).map(i => <option key={i.id} value={i.id}>{i.title}</option>)}</select></label>
           <label>Status<select name="status" defaultValue={edit?.book === panel.book.id ? edit.attempt.status_code : 'graded'}>{panel.statuses.filter(s => s.active).map(s => <option key={s.code} value={s.code}>{s.label}</option>)}</select></label>
           <label>Score<input name="score" type="number" min="0" step="any" defaultValue={edit?.book === panel.book.id ? edit.attempt.score ?? '' : ''} /></label>
           <label>Possible score<input name="possible" type="number" min="0.01" step="any" defaultValue={edit?.book === panel.book.id ? edit.attempt.possible_score ?? '' : ''} /></label>
