@@ -74,6 +74,18 @@ begin
  perform public.record_gradebook_attempt(book_l,item,student,'excused',null,null,'Excused',attempt);
  result:=public.preview_gradebook_final(book_l,student);
  if (result->>'ready')::boolean then raise exception 'FAIL empty weighted category'; end if;
+ perform public.refresh_gradebook(book_t);
+ perform public.configure_gradebook(book_t,'category','theory_assessments','Theory');
+ perform public.configure_gradebook(book_t,'category','fabrication_projects','Fabrication');
+ perform public.configure_gradebook(book_t,'category','homework','Homework');
+ select public.create_gradebook_item(book_t,id,'Theory requirement') into item from public.gradebook_categories where gradebook_id=book_t and code='theory_assessments';
+ perform public.record_gradebook_attempt(book_t,item,student,'graded',75,100);
+ select public.create_gradebook_item(book_t,id,'Fabrication requirement') into item from public.gradebook_categories where gradebook_id=book_t and code='fabrication_projects';
+ perform public.record_gradebook_attempt(book_t,item,student,'graded',80,100);
+ select public.create_gradebook_item(book_t,id,'Homework requirement') into item from public.gradebook_categories where gradebook_id=book_t and code='homework';
+ perform public.record_gradebook_attempt(book_t,item,student,'graded',40,100);
+ result:=public.preview_gradebook_final(book_t,student);
+ if not (result->>'ready')::boolean or (result->>'grade')::numeric<>67.5 then raise exception 'FAIL theory weights: %',result;end if;
  perform set_config('request.jwt.claim.sub',stranger::text,true);
  denied:=false;begin perform public.preview_gradebook_final(book_l,student);exception when insufficient_privilege then denied:=true;end;
  if not denied then raise exception 'FAIL cross-school preview';end if;
