@@ -40,7 +40,7 @@
             "Action": "sts:AssumeRoleWithWebIdentity",
             "Condition": { "StringEquals": {
               "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-              "token.actions.githubusercontent.com:sub": "repo:weldingworkforcealliance-sys/alpha:ref:refs/heads/integration/student-archive"
+              "token.actions.githubusercontent.com:sub": "repo:weldingworkforcealliance-sys@322272778/alpha@1350025517:ref:refs/heads/integration/student-archive"
             } }
           }]
         },

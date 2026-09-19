@@ -38,7 +38,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-      - name: Inspect non-secret GitHub identity claims
+      - name: Verify expected GitHub identity claims
         run: |
           node --input-type=module <<'NODE'
           const url = new URL(process.env.ACTIONS_ID_TOKEN_REQUEST_URL);
@@ -49,7 +49,11 @@ jobs:
           if (!response.ok) throw new Error(`Identity request failed: ${response.status}`);
           const { value } = await response.json();
           const claims = JSON.parse(Buffer.from(value.split('.')[1], 'base64url').toString());
-          console.log(JSON.stringify({ aud: claims.aud, sub: claims.sub, repository: claims.repository, ref: claims.ref }));
+          const expected = 'repo:weldingworkforcealliance-sys@322272778/alpha@1350025517:ref:refs/heads/integration/student-archive';
+          if (claims.aud !== 'sts.amazonaws.com' || claims.sub !== expected) {
+            throw new Error('GitHub identity does not match the restricted archive role.');
+          }
+          console.log('Expected repository and branch identity verified; AWS will validate the signed token.');
           NODE
       - name: Obtain temporary AWS access for synthetic objects
         timeout-minutes: 2
