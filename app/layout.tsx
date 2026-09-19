@@ -54,7 +54,7 @@ export default function RootLayout({
   const [navOpen, setNavOpen] = useState(false);
   const isMarketingRoute = pathname === '/';
   const isDemoRoute = pathname.startsWith('/demo');
-  const isStudentJoin = pathname.startsWith('/join/');
+  const isStudentJoin = pathname.startsWith('/join/') || pathname === '/shop/student';
   const isStudentDisplay = pathname.startsWith('/student-display/');
   const isTrainingRoute = pathname.startsWith('/training');
   const isAccountRoute = pathname.startsWith('/accounts');

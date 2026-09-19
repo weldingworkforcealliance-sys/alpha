@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { getSupabase } from '@/lib/supabase-browser';
 
-const EXCLUDED_PREFIXES = ['/login', '/join/', '/student-display/', '/reset-password', '/forgot-password', '/training/login'];
+const EXCLUDED_PREFIXES = ['/login', '/join/', '/shop/student', '/student-display/', '/reset-password', '/forgot-password', '/training/login'];
 
 export default function UsageTracker({ pathname }: { pathname: string }) {
   const [supabase] = useState(getSupabase);

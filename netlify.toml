@@ -20,6 +20,7 @@
   command = "rm -rf .next && npm run build"
 
 [context.deploy-preview.environment]
+  NEXT_PUBLIC_WLD110_SHOP_ENABLED = "true"
   NEXT_PUBLIC_GRADEBOOK_FINALS_ENABLED = "true"
   NEXT_PUBLIC_TOWER_ENABLED = "true"
   NEXT_PUBLIC_GRADEBOOK_ENABLED = "true"

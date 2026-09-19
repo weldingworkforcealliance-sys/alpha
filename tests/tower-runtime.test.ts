@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { webcrypto } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
+import { WELD_SIZER } from '../lib/weld-sizer';
 
 function runtime() {
   const listeners: Record<string, (event: unknown) => void> = {};
@@ -60,12 +61,18 @@ function initialized() {
   const r=runtime();
   r.listeners.message({origin:'https://ltg.test',source:r.parent,data:{type:'tower-init',payload:{
     book:{id:'class-1',course_code:'WLD 110',section_name:'Synthetic test class'},
+    weldSizer:WELD_SIZER,
     students:[{id:'student-1',name:'Synthetic Student',weldTestId:'0017',active:true,revision:0,data:{}}],
     assignments:[{id:'smaw-fillet-1F',name:'SMAW 1F',processId:'smaw',process:'SMAW',material:'Carbon Steel',family:'Fillet',backing:'N/A',position:'1F',type:'position',rubricType:'weld'}],
   }}});
   return r;
 }
 describe('Tower authenticated-data adapter',()=>{
+  it('uses the shared, unchanged weld-sizer parameters',()=>{
+    const r=initialized();
+    expect(r.run('RUBRIC.find(c=>c.id==="beadSize").help')).toBe(WELD_SIZER.help);
+    expect(JSON.parse(r.run('JSON.stringify(RUBRIC.find(c=>c.id==="beadSize").choices)'))).toEqual(WELD_SIZER.choices);
+  });
   it.each(['home','lab','courses','competencies','exams','qualifications','destructive','passport','admin'])('renders %s from a real-shaped roster payload',view=>{
     const r=initialized();
     r.run(`setView('${view}')`);
