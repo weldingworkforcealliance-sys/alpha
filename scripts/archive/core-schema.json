@@ -924,5 +924,119 @@
       "name": "student_uuid",
       "type": "uuid"
     }
+  ],
+  "wld110_shop_progress": [
+    {
+      "name": "gradebook_id",
+      "type": "uuid"
+    },
+    {
+      "name": "student_id",
+      "type": "uuid"
+    },
+    {
+      "name": "current_competency",
+      "type": "integer"
+    },
+    {
+      "name": "revision",
+      "type": "integer"
+    },
+    {
+      "name": "requested_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "position_started_on",
+      "type": "date"
+    },
+    {
+      "name": "focus",
+      "type": "ARRAY"
+    }
+  ],
+  "wld110_shop_attempts": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "gradebook_id",
+      "type": "uuid"
+    },
+    {
+      "name": "student_id",
+      "type": "uuid"
+    },
+    {
+      "name": "competency",
+      "type": "integer"
+    },
+    {
+      "name": "attempt_number",
+      "type": "integer"
+    },
+    {
+      "name": "ratings",
+      "type": "jsonb"
+    },
+    {
+      "name": "total",
+      "type": "integer"
+    },
+    {
+      "name": "tags",
+      "type": "jsonb"
+    },
+    {
+      "name": "sizer_reference",
+      "type": "text"
+    },
+    {
+      "name": "sizer_note",
+      "type": "text"
+    },
+    {
+      "name": "recorded_by",
+      "type": "uuid"
+    },
+    {
+      "name": "recorded_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "wld110_shop_completions": [
+    {
+      "name": "gradebook_id",
+      "type": "uuid"
+    },
+    {
+      "name": "student_id",
+      "type": "uuid"
+    },
+    {
+      "name": "competency",
+      "type": "integer"
+    },
+    {
+      "name": "first_attempt_id",
+      "type": "uuid"
+    },
+    {
+      "name": "second_attempt_id",
+      "type": "uuid"
+    },
+    {
+      "name": "grade",
+      "type": "numeric"
+    },
+    {
+      "name": "gradebook_attempt_id",
+      "type": "uuid"
+    },
+    {
+      "name": "completed_at",
+      "type": "timestamp with time zone"
+    }
   ]
 }

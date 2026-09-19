@@ -14,7 +14,7 @@ function source() {
   datasets.gradebooks = [{ id: 'book', section_id: 'section' }];
   datasets.tower_permanent_tests = [{ id: 'test', student_id: 'student', gradebook_id: 'book' }];
   datasets.tower_certificates = [{ id: 'cert', test_id: 'test', student_id: 'student', gradebook_id: 'book', snapshot: { synthetic: true } }];
-  return { format: 'ltg-student-snapshot-v1', scope: 'all-schools', consistency: 'repeatable-read',
+  return { format: 'ltg-student-snapshot-v2', scope: 'all-schools', consistency: 'repeatable-read',
     environment: 'staging', exportId: '20000000-0000-4000-8000-000000000001', capturedAt: '2026-09-19T16:00:00Z',
     sourceRevision: 'a'.repeat(40), expectedSchoolIds: [school], datasets,
     sourceCounts: Object.fromEntries(requiredDatasets.map(t => [t, datasets[t].length])),

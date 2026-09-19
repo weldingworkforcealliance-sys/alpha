@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 
 // Internal archive format, not an authorization boundary or a database restore.
 // The reader must supply all schools and unfiltered history from one snapshot.
-export const requiredDatasets = Object.freeze([
+export const legacyDatasets = Object.freeze([
   'schools', 'attendance_students', 'attendance_pair_enrollments', 'attendance_pairs',
   'attendance_sessions', 'attendance_records', 'sections', 'gradebooks',
   'gradebook_students', 'gradebook_categories', 'gradebook_statuses', 'gradebook_items',
@@ -11,8 +11,16 @@ export const requiredDatasets = Object.freeze([
   'tower_permanent_tests', 'tower_certificates', 'classroom_sessions',
   'classroom_submissions', 'job_card_sessions', 'job_card_submissions',
 ]);
+export const requiredDatasets = Object.freeze([...legacyDatasets,
+  'wld110_shop_progress', 'wld110_shop_attempts', 'wld110_shop_completions',
+]);
+function snapshotDatasets(format) {
+  if (format === 'ltg-student-snapshot-v1') return legacyDatasets;
+  if (format === 'ltg-student-snapshot-v2') return requiredDatasets;
+  throw new Error('Unsupported snapshot format.');
+}
 
-const bookTables = new Set(requiredDatasets.filter((name) => name.startsWith('gradebook_')
+const bookTables = new Set(requiredDatasets.filter((name) => name.startsWith('gradebook_') || name.startsWith('wld110_shop_')
   || ['tower_records', 'tower_history', 'tower_grade_links', 'tower_permanent_tests', 'tower_certificates'].includes(name)));
 const directTables = new Set(['attendance_students', 'attendance_pair_enrollments', 'attendance_pairs',
   'attendance_sessions', 'attendance_records', 'sections', 'classroom_sessions', 'job_card_sessions', 'job_card_submissions']);
@@ -34,21 +42,23 @@ function index(rows, field = 'id') {
 }
 
 export function validateSnapshot(snapshot) {
-  check(snapshot?.format === 'ltg-student-snapshot-v1', 'Unsupported snapshot format.');
+  const datasetNames = snapshotDatasets(snapshot?.format);
   check(uuid.test(snapshot.exportId) && typeof snapshot.capturedAt === 'string'
     && Number.isFinite(Date.parse(snapshot.capturedAt)), 'Invalid snapshot identity or timestamp.');
   check(['staging', 'production'].includes(snapshot.environment), 'Unknown source environment.');
   check(typeof snapshot.sourceRevision === 'string' && /^[0-9a-f]{40}$/.test(snapshot.sourceRevision), 'Missing source code revision.');
   check(snapshot.scope === 'all-schools' && snapshot.consistency === 'repeatable-read', 'A consistent all-school snapshot is required.');
   const data = snapshot.datasets;
-  check(data && Object.keys(data).length === requiredDatasets.length, 'Unexpected or missing datasets.');
-  for (const table of requiredDatasets) {
+  check(data && Object.keys(data).length === datasetNames.length, 'Unexpected or missing datasets.');
+  for (const table of datasetNames) {
     check(Array.isArray(data[table]), `Missing dataset: ${table}.`);
     check(Number.isSafeInteger(snapshot.sourceCounts?.[table]) && snapshot.sourceCounts[table] === data[table].length,
       `Incomplete dataset: ${table}.`);
     const keyFields = ({ gradebook_students: ['gradebook_id', 'student_id'],
       gradebook_statuses: ['gradebook_id', 'code'], tower_student_ids: ['student_id'],
       tower_records: ['gradebook_id', 'student_id'],
+      wld110_shop_progress: ['gradebook_id', 'student_id'],
+      wld110_shop_completions: ['gradebook_id', 'student_id', 'competency'],
       tower_grade_links: ['gradebook_id', 'student_id', 'assignment_id', 'attempt_number'] })[table] ?? ['id'];
     const keys = new Set();
     for (const row of data[table]) {
@@ -77,6 +87,8 @@ export function validateSnapshot(snapshot) {
   const attempts = index(data.gradebook_attempts);
   const tests = index(data.tower_permanent_tests);
   const submissions = index(data.classroom_submissions);
+  const shopAttempts = index(data.wld110_shop_attempts ?? []);
+  const shopProgress = new Set((data.wld110_shop_progress ?? []).map(row => JSON.stringify([row.gradebook_id, row.student_id])));
   const owners = new Map();
   const owner = (table, row) => {
     if (table === 'schools') return row.id;
@@ -89,7 +101,7 @@ export function validateSnapshot(snapshot) {
   };
   const sameSchool = (expected, actual) => check(actual && actual === expected, 'Missing or cross-school relationship.');
   const sameBook = (row, parent) => check(parent && parent.gradebook_id === row.gradebook_id, 'Missing or cross-gradebook relationship.');
-  for (const table of requiredDatasets) for (const row of data[table]) {
+  for (const table of datasetNames) for (const row of data[table]) {
     check(row && typeof row === 'object' && !Array.isArray(row), 'Invalid record.');
     check(!Object.hasOwn(row, 'join_code'), 'Session access codes must not be archived.');
     const school = owner(table, row);
@@ -129,6 +141,22 @@ export function validateSnapshot(snapshot) {
       sameBook(row, source);
       check(source.student_id === row.student_id, 'Certificate student does not match.');
     }
+    if (table === 'wld110_shop_attempts' || table === 'wld110_shop_completions') {
+      check(shopProgress.has(JSON.stringify([row.gradebook_id, row.student_id])), 'Missing shop progress record.');
+    }
+    if (table === 'wld110_shop_completions') {
+      check(row.first_attempt_id !== row.second_attempt_id, 'Two shop demonstrations required.');
+      for (const id of [row.first_attempt_id, row.second_attempt_id]) {
+        const source = shopAttempts.get(id);
+        sameBook(row, source);
+        check(source.student_id === row.student_id && source.competency === row.competency, 'Shop demonstration does not match.');
+      }
+      if (row.gradebook_attempt_id != null) {
+        const posted = attempts.get(row.gradebook_attempt_id);
+        sameBook(row, posted);
+        check(posted.student_id === row.student_id, 'Posted shop grade student does not match.');
+      }
+    }
   }
   check(Array.isArray(snapshot.files) && Array.isArray(snapshot.fileInventory), 'Missing attachment inventory.');
   const inventory = index(snapshot.fileInventory);
@@ -144,20 +172,20 @@ export function validateSnapshot(snapshot) {
     check(bytes.toString('base64') === file.base64 && entry.bytes === bytes.length && sha256(bytes) === entry.sha256,
       'Attachment content failed verification.');
   }
-  return { owners, schoolIds: [...schools.keys()] };
+  return { owners, schoolIds: [...schools.keys()], datasetNames };
 }
 
 export function buildSchoolBundles(snapshot) {
-  const { owners, schoolIds } = validateSnapshot(snapshot);
+  const { owners, schoolIds, datasetNames } = validateSnapshot(snapshot);
   return schoolIds.map((schoolId) => {
-    const datasets = Object.fromEntries(requiredDatasets.map((name) => [name, snapshot.datasets[name].filter((row) => owners.get(row) === schoolId)]));
+    const datasets = Object.fromEntries(datasetNames.map((name) => [name, snapshot.datasets[name].filter((row) => owners.get(row) === schoolId)]));
     const files = snapshot.files.filter((file) => file.schoolId === schoolId);
     const fileInventory = snapshot.fileInventory.filter((file) => file.schoolId === schoolId);
-    const payload = { format: 'ltg-school-record-bundle-v1', exportId: snapshot.exportId, schoolId,
+    const payload = { format: snapshot.format === 'ltg-student-snapshot-v1' ? 'ltg-school-record-bundle-v1' : 'ltg-school-record-bundle-v2', exportId: snapshot.exportId, schoolId,
       environment: snapshot.environment, capturedAt: snapshot.capturedAt, sourceRevision: snapshot.sourceRevision,
       // Context, audit history and full DB restore are separate acceptance gates.
       completeness: 'core-records-only', datasets, files, fileInventory };
-    const manifest = requiredDatasets.map((name) => ({ dataset: name, rows: datasets[name].length,
+    const manifest = datasetNames.map((name) => ({ dataset: name, rows: datasets[name].length,
       bytes: encode(datasets[name]).length, sha256: sha256(encode(datasets[name])) }));
     const bytes = encode({ payload, manifest });
     return { schoolId, exportId: snapshot.exportId, bytes, sha256: sha256(bytes) };
@@ -169,17 +197,19 @@ export function buildSchoolBundles(snapshot) {
 export function recoverSchoolBundle(bytes, { expectedDigest, schoolId, exportId }) {
   check(hashPattern.test(expectedDigest) && sha256(bytes) === expectedDigest, 'Bundle digest does not match trusted receipt.');
   const { payload, manifest } = JSON.parse(bytes.toString('utf8'));
-  check(payload?.format === 'ltg-school-record-bundle-v1' && payload.schoolId === schoolId
+  check(['ltg-school-record-bundle-v1', 'ltg-school-record-bundle-v2'].includes(payload?.format) && payload.schoolId === schoolId
     && payload.exportId === exportId && payload.completeness === 'core-records-only', 'Unexpected archive identity.');
-  check(Array.isArray(manifest) && manifest.length === requiredDatasets.length, 'Incomplete manifest.');
-  for (const name of requiredDatasets) {
+  const format = payload.format === 'ltg-school-record-bundle-v1' ? 'ltg-student-snapshot-v1' : 'ltg-student-snapshot-v2';
+  const datasetNames = snapshotDatasets(format);
+  check(Array.isArray(manifest) && manifest.length === datasetNames.length, 'Incomplete manifest.');
+  for (const name of datasetNames) {
     const entries = manifest.filter((entry) => entry.dataset === name);
     check(entries.length === 1, 'Duplicate or missing manifest entry.');
     const content = encode(payload.datasets[name]);
     check(entries[0].rows === payload.datasets[name].length && entries[0].bytes === content.length
       && entries[0].sha256 === sha256(content), 'Dataset failed recovery verification.');
   }
-  validateSnapshot({ ...payload, format: 'ltg-student-snapshot-v1', scope: 'all-schools',
+  validateSnapshot({ ...payload, format, scope: 'all-schools',
     consistency: 'repeatable-read', expectedSchoolIds: [schoolId],
     sourceCounts: Object.fromEntries(manifest.map((entry) => [entry.dataset, entry.rows])) });
   return payload;
