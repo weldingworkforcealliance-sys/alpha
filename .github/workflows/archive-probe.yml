@@ -2,10 +2,15 @@ name: LTG synthetic archive verification
 
 on:
   push:
-    branches: [integration/student-archive]
+    branches: [integration/student-archive, product/standalone-mainline-2026-09-11]
     paths:
       - scripts/archive/**
       - infra/archive-probe-access.json
+      - .github/workflows/archive-probe.yml
+  pull_request:
+    branches: [product/standalone-mainline-2026-09-11]
+    paths:
+      - scripts/archive/**
       - .github/workflows/archive-probe.yml
   workflow_dispatch:
 
