@@ -1,0 +1,46 @@
+name: LTG synthetic archive verification
+
+on:
+  push:
+    branches: [integration/student-archive]
+    paths:
+      - scripts/archive/**
+      - infra/archive-probe-access.json
+      - .github/workflows/archive-probe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - run: node --test scripts/archive/synthetic-roundtrip.test.mjs
+
+  synthetic-roundtrip:
+    needs: unit-tests
+    if: github.repository == 'weldingworkforcealliance-sys/alpha' && github.ref == 'refs/heads/integration/student-archive' && vars.LTG_ARCHIVE_PROBE_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Obtain temporary AWS access for synthetic objects
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
+        with:
+          aws-region: us-east-2
+          role-to-assume: arn:aws:iam::551626544567:role/ltg-archive-synthetic-probe
+          role-duration-seconds: 900
+          allowed-account-ids: '551626544567'
+          role-session-name: ltg-synthetic-${{ github.run_id }}
+      - name: Upload synthetic data and verify downloaded version
+        run: node scripts/archive/synthetic-roundtrip.mjs

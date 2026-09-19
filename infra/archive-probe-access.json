@@ -1,0 +1,84 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "LTG synthetic archive verification only; no production data access or deletion permissions.",
+  "Parameters": {
+    "ExistingGitHubProviderArn": {
+      "Type": "String",
+      "Default": "",
+      "AllowedValues": ["", "arn:aws:iam::551626544567:oidc-provider/token.actions.githubusercontent.com"],
+      "Description": "Leave blank only if this account does not already have the GitHub OIDC provider."
+    }
+  },
+  "Rules": {
+    "ExpectedAccount": {
+      "Assertions": [{ "Assert": { "Fn::Equals": [{ "Ref": "AWS::AccountId" }, "551626544567"] }, "AssertDescription": "Deploy only in the approved LTG AWS account." }]
+    }
+  },
+  "Conditions": { "CreateProvider": { "Fn::Equals": [{ "Ref": "ExistingGitHubProviderArn" }, ""] } },
+  "Resources": {
+    "GitHubProvider": {
+      "Type": "AWS::IAM::OIDCProvider",
+      "Condition": "CreateProvider",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "Url": "https://token.actions.githubusercontent.com",
+        "ClientIdList": ["sts.amazonaws.com"]
+      }
+    },
+    "ArchiveProbeRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "ltg-archive-synthetic-probe",
+        "Description": "Short-lived GitHub access to synthetic archive test objects only.",
+        "MaxSessionDuration": 3600,
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": { "Federated": { "Fn::If": ["CreateProvider", { "Ref": "GitHubProvider" }, { "Ref": "ExistingGitHubProviderArn" }] } },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": { "StringEquals": {
+              "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+              "token.actions.githubusercontent.com:sub": "repo:weldingworkforcealliance-sys/alpha:ref:refs/heads/integration/student-archive"
+            } }
+          }]
+        },
+        "Policies": [{
+          "PolicyName": "SyntheticArchiveRoundtripOnly",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Sid": "InspectArchiveProtection",
+                "Effect": "Allow",
+                "Action": ["s3:GetBucketVersioning", "s3:GetBucketPublicAccessBlock", "s3:GetBucketOwnershipControls", "s3:GetEncryptionConfiguration"],
+                "Resource": "arn:aws:s3:::ltg-student-archive-551626544567-us-east-2"
+              },
+              {
+                "Sid": "WriteEncryptedSyntheticObjects",
+                "Effect": "Allow",
+                "Action": "s3:PutObject",
+                "Resource": "arn:aws:s3:::ltg-student-archive-551626544567-us-east-2/staging/synthetic/*",
+                "Condition": { "StringEquals": { "s3:x-amz-server-side-encryption": "AES256" } }
+              },
+              {
+                "Sid": "ReadSyntheticVersions",
+                "Effect": "Allow",
+                "Action": ["s3:GetObject", "s3:GetObjectVersion"],
+                "Resource": "arn:aws:s3:::ltg-student-archive-551626544567-us-east-2/staging/synthetic/*"
+              },
+              {
+                "Sid": "DenyDeletionAndRetentionChanges",
+                "Effect": "Deny",
+                "Action": ["s3:DeleteObject", "s3:DeleteObjectVersion", "s3:BypassGovernanceRetention", "s3:PutObjectRetention", "s3:PutObjectLegalHold"],
+                "Resource": "arn:aws:s3:::ltg-student-archive-551626544567-us-east-2/*"
+              }
+            ]
+          }
+        }]
+      }
+    }
+  },
+  "Outputs": { "ProbeRoleArn": { "Value": { "Fn::GetAtt": ["ArchiveProbeRole", "Arn"] } } }
+}
