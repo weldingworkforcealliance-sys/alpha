@@ -6,7 +6,7 @@ on:
       - main
       - product/standalone-mainline-2026-09-11
   pull_request:
-    branches: [main]
+    branches: [main, product/standalone-mainline-2026-09-11]
 
 jobs:
   validate:
@@ -36,6 +36,9 @@ jobs:
 
       - name: Unit tests
         run: npm run test
+
+      - name: Archive unit tests
+        run: node --test scripts/archive/*.test.mjs
 
       - name: Next.js build
         env:
