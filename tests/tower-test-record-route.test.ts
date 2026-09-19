@@ -1,11 +1,12 @@
 import {beforeEach,describe,it,expect,vi} from 'vitest';
-const mocks=vi.hoisted(()=>({getUser:vi.fn(),maybeSingle:vi.fn(),pdf:vi.fn(),eq:vi.fn()}));
+const mocks=vi.hoisted(()=>({getUser:vi.fn(),maybeSingle:vi.fn(),pdf:vi.fn(),eq:vi.fn(),rpc:vi.fn(),branded:vi.fn(),uses:vi.fn()}));
 vi.mock('@/lib/supabase-server',()=>({createSupabaseServerClient:async()=>({
-  auth:{getUser:mocks.getUser},from:()=>({select:()=>({eq:(...args:unknown[])=>{
-    mocks.eq(...args); return {maybeSingle:mocks.maybeSingle};
+  rpc:mocks.rpc,auth:{getUser:mocks.getUser},from:(table:string)=>({select:()=>({eq:(...args:unknown[])=>{
+    mocks.eq(...args); return {maybeSingle:table==='tower_certificates'?mocks.maybeSingle:async()=>({data:table==='gradebooks'?{section_id:'section'}:{school_id:'school'},error:null})};
   }})}),
 })}));
 vi.mock('@/lib/tower-test-record-pdf',()=>({createTestRecordPdf:mocks.pdf}));
+vi.mock('@/lib/pccc-certificate-pdf',()=>({usesPcccCertificate:mocks.uses,createPcccCertificate:mocks.branded,PCCC_SCHOOL_ID:'pccc'}));
 import {GET} from '../app/tower/certificates/[testId]/pdf/route';
 const id='00000000-0000-4000-8000-000000000005';
 const get=(testId=id)=>GET(new Request('https://example.test'),{params:Promise.resolve({testId})});
@@ -14,8 +15,21 @@ beforeEach(()=>{
   mocks.getUser.mockResolvedValue({data:{user:{id:'authorized-user'}},error:null});
   mocks.maybeSingle.mockResolvedValue({data:{id,snapshot:{result:'Pass'},issued_at:'2026-09-19'},error:null});
   mocks.pdf.mockResolvedValue(new Uint8Array([37,80,68,70]));
+  mocks.rpc.mockResolvedValue({data:null,error:null});mocks.uses.mockReturnValue(false);
+  mocks.branded.mockResolvedValue(new Uint8Array([37,80,68,70]));
 });
 describe('private test-record download',()=>{
+  it('loads private artwork only after authorized record lookup',async()=>{
+    mocks.rpc.mockResolvedValue({data:{layout:'pccc-guided-bend-v2',pdf:'JVBERg=='},error:null});
+    mocks.uses.mockReturnValue(true);
+    expect((await get()).status).toBe(200);
+    expect(mocks.rpc).toHaveBeenCalledWith('certificate_template_for_test',{p_test_id:id});
+    expect(mocks.branded).toHaveBeenCalled();expect(mocks.pdf).not.toHaveBeenCalled();
+  });
+  it('fails closed when private template retrieval fails',async()=>{
+    mocks.rpc.mockResolvedValue({data:null,error:{message:'denied'}});
+    expect((await get()).status).toBe(422);expect(mocks.pdf).not.toHaveBeenCalled();
+  });
   it('requires a valid id and signed-in user before querying records',async()=>{
     expect((await get('invalid')).status).toBe(404);
     expect(mocks.getUser).not.toHaveBeenCalled();
