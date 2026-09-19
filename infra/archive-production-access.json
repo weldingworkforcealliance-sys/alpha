@@ -1,0 +1,61 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "LTG nightly student archives: scoped GitHub OIDC, retained production objects, private database secret and failure monitoring. No paid-plan upgrade or deletion.",
+  "Parameters": {
+    "DatabaseSecretArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:aws:secretsmanager:us-east-2:551626544567:secret:ltg/archive/production/database-[A-Za-z0-9]{6}",
+      "Description": "Existing secret containing the dedicated read-only database connection JSON. Never use the postgres administrator account."
+    },
+    "AlertEmail": { "Type": "String", "AllowedPattern": "[^@ ]+@[^@ ]+\\.[^@ ]+", "Description": "User-approved backup-failure recipient. The subscription must be confirmed by email." }
+  },
+  "Rules": { "ExpectedAccount": { "Assertions": [{ "Assert": { "Fn::Equals": [{ "Ref": "AWS::AccountId" }, "551626544567"] }, "AssertDescription": "Use only the approved LTG AWS account." }] } },
+  "Resources": {
+    "ArchiveRole": {
+      "Type": "AWS::IAM::Role", "DeletionPolicy": "Retain", "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "RoleName": "ltg-production-student-archive", "MaxSessionDuration": 3600,
+        "AssumeRolePolicyDocument": { "Version": "2012-10-17", "Statement": [{
+          "Effect": "Allow", "Principal": { "Federated": "arn:aws:iam::551626544567:oidc-provider/token.actions.githubusercontent.com" },
+          "Action": "sts:AssumeRoleWithWebIdentity", "Condition": { "StringEquals": {
+            "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+            "token.actions.githubusercontent.com:sub": "repo:weldingworkforcealliance-sys@322272778/alpha@1350025517:ref:refs/heads/main"
+          } }
+        }] },
+        "Policies": [{ "PolicyName": "RetainedStudentArchivesOnly", "PolicyDocument": { "Version": "2012-10-17", "Statement": [
+          { "Sid": "InspectProtection", "Effect": "Allow", "Action": ["s3:GetBucketVersioning", "s3:GetBucketPublicAccessBlock", "s3:GetBucketOwnershipControls", "s3:GetEncryptionConfiguration", "s3:GetBucketObjectLockConfiguration"], "Resource": "arn:aws:s3:::ltg-student-archive-551626544567-us-east-2" },
+          { "Sid": "CreateEncryptedHeldVersions", "Effect": "Allow", "Action": "s3:PutObject", "Resource": "arn:aws:s3:::ltg-student-archive-551626544567-us-east-2/production/records/*", "Condition": { "StringEquals": { "s3:x-amz-server-side-encryption": "AES256", "s3:object-lock-legal-hold": "ON" } } },
+          { "Sid": "PlaceHoldOnly", "Effect": "Allow", "Action": "s3:PutObjectLegalHold", "Resource": "arn:aws:s3:::ltg-student-archive-551626544567-us-east-2/production/records/*", "Condition": { "StringEquals": { "s3:object-lock-legal-hold": "ON" } } },
+          { "Sid": "ReadExactVersionsAndHolds", "Effect": "Allow", "Action": ["s3:GetObject", "s3:GetObjectVersion", "s3:GetObjectLegalHold"], "Resource": "arn:aws:s3:::ltg-student-archive-551626544567-us-east-2/production/records/*" },
+          { "Sid": "NeverReleaseHold", "Effect": "Deny", "Action": "s3:PutObjectLegalHold", "Resource": "*", "Condition": { "StringNotEquals": { "s3:object-lock-legal-hold": "ON" } } },
+          { "Sid": "NeverDeleteOrChangeRetention", "Effect": "Deny", "Action": ["s3:DeleteObject", "s3:DeleteObjectVersion", "s3:PutObjectRetention", "s3:BypassGovernanceRetention", "s3:PutBucketPolicy", "s3:PutLifecycleConfiguration"], "Resource": "*" },
+          { "Sid": "ReadOnlyOneDatabaseSecret", "Effect": "Allow", "Action": "secretsmanager:GetSecretValue", "Resource": { "Ref": "DatabaseSecretArn" } },
+          { "Sid": "EmitArchiveHealthOnly", "Effect": "Allow", "Action": "cloudwatch:PutMetricData", "Resource": "*", "Condition": { "StringEquals": { "cloudwatch:namespace": "LTG/StudentArchive" } } }
+        ] } }]
+      }
+    },
+    "Alerts": { "Type": "AWS::SNS::Topic", "DeletionPolicy": "Retain", "UpdateReplacePolicy": "Retain", "Properties": { "TopicName": "ltg-student-archive-alerts" } },
+    "AlertSubscription": { "Type": "AWS::SNS::Subscription", "Properties": { "TopicArn": { "Ref": "Alerts" }, "Protocol": "email", "Endpoint": { "Ref": "AlertEmail" } } },
+    "AlertPolicy": { "Type": "AWS::SNS::TopicPolicy", "Properties": { "Topics": [{ "Ref": "Alerts" }], "PolicyDocument": { "Version": "2012-10-17", "Statement": [{
+      "Effect": "Allow", "Principal": { "Service": "cloudwatch.amazonaws.com" }, "Action": "sns:Publish", "Resource": { "Ref": "Alerts" },
+      "Condition": { "StringEquals": { "aws:SourceAccount": "551626544567" }, "ArnLike": { "aws:SourceArn": "arn:aws:cloudwatch:us-east-2:551626544567:alarm:ltg-student-archive-*" } }
+    }] } } },
+    "FailureAlarm": { "Type": "AWS::CloudWatch::Alarm", "Properties": {
+      "AlarmName": "ltg-student-archive-failed", "AlarmDescription": "A nightly archive failed. No student details are included. Inspect the private backup worker configuration.",
+      "Namespace": "LTG/StudentArchive", "MetricName": "Failure", "Statistic": "Sum", "Period": 300,
+      "EvaluationPeriods": 1, "Threshold": 1, "ComparisonOperator": "GreaterThanOrEqualToThreshold", "TreatMissingData": "notBreaching",
+      "AlarmActions": [{ "Ref": "Alerts" }]
+    } },
+    "MissedBackupAlarm": { "Type": "AWS::CloudWatch::Alarm", "Properties": {
+      "AlarmName": "ltg-student-archive-overdue", "AlarmDescription": "No verified archive for approximately 30 hours; catches disabled schedules, missing credentials and runner outages.",
+      "Namespace": "LTG/StudentArchive", "MetricName": "Success", "Statistic": "Sum", "Period": 3600,
+      "EvaluationPeriods": 30, "DatapointsToAlarm": 30, "Threshold": 1, "ComparisonOperator": "LessThanThreshold", "TreatMissingData": "breaching",
+      "AlarmActions": [{ "Ref": "Alerts" }]
+    } }
+  },
+  "Outputs": {
+    "RoleArn": { "Value": { "Fn::GetAtt": ["ArchiveRole", "Arn"] } },
+    "AlertTopicArn": { "Value": { "Ref": "Alerts" } }
+  }
+}
+

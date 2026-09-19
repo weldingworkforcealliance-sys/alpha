@@ -1,0 +1,70 @@
+# Install this small scheduler on the repository's DEFAULT branch (main) only
+# after the pinned worker revision, permissions and restore drill are verified.
+# Keeping this file under infra makes it inert during preparation.
+name: LTG nightly student archive
+on:
+  schedule:
+    - cron: '17 7 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ltg-production-student-archive
+  cancel-in-progress: false
+jobs:
+  backup:
+    if: github.repository == 'weldingworkforcealliance-sys/alpha' && github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || vars.LTG_ARCHIVE_ENABLED == 'true')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_DB: ltg_archive_recovery
+          POSTGRES_USER: archive_drill
+          POSTGRES_PASSWORD: synthetic-local-drill-only
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Validate pinned worker revision
+        env:
+          WORKER_REVISION: ${{ vars.LTG_ARCHIVE_WORKER_REVISION }}
+        run: |
+          [[ "$WORKER_REVISION" =~ ^[0-9a-f]{40}$ ]] || exit 1
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ vars.LTG_ARCHIVE_WORKER_REVISION }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.19.0'
+      - name: Require Node 24 and install locked dependencies
+        run: |
+          node -e 'if(Number(process.versions.node.split(".")[0]) < 24) process.exit(1)'
+          npm ci --ignore-scripts
+          npm ci --prefix scripts/archive --ignore-scripts
+      - name: Test archive code before credentials
+        run: node --test scripts/archive/*.test.mjs
+        env:
+          LTG_ARCHIVE_DB_DRILL: 'true'
+      - name: Obtain short-lived AWS archive access
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708
+        with:
+          aws-region: us-east-2
+          role-to-assume: arn:aws:iam::551626544567:role/ltg-production-student-archive
+          role-duration-seconds: 3600
+          allowed-account-ids: '551626544567'
+          role-session-name: ltg-archive-${{ github.run_id }}
+          retry-max-attempts: 3
+      - name: Capture, retain and recover every school archive
+        env:
+          LTG_ARCHIVE_ENABLED: 'true'
+          LTG_ARCHIVE_ENVIRONMENT: production
+          LTG_ARCHIVE_DATABASE_SECRET: ${{ vars.LTG_ARCHIVE_DATABASE_SECRET }}
+        run: node scripts/archive/run-backup.mjs
+      - name: Record failure without student details
+        if: failure()
+        run: aws cloudwatch put-metric-data --namespace LTG/StudentArchive --metric-data MetricName=Failure,Value=1,Unit=Count --region us-east-2

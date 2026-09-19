@@ -1,0 +1,94 @@
+name: LTG synthetic archive verification
+
+on:
+  push:
+    branches: [integration/student-archive]
+    paths:
+      - scripts/archive/**
+      - infra/archive-probe-access.json
+      - .github/workflows/archive-probe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ltg-synthetic-archive-verification
+  cancel-in-progress: false
+
+jobs:
+  database-recovery:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_DB: ltg_archive_recovery
+          POSTGRES_USER: archive_drill
+          POSTGRES_PASSWORD: synthetic-local-drill-only
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.19.0'
+      - run: npm ci --prefix scripts/archive --ignore-scripts
+      - run: node --test scripts/archive/restore-database.test.mjs
+        env:
+          LTG_ARCHIVE_DB_DRILL: 'true'
+
+  unit-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - run: node --test scripts/archive/*.test.mjs
+
+  synthetic-roundtrip:
+    needs: unit-tests
+    if: github.repository == 'weldingworkforcealliance-sys/alpha' && github.ref == 'refs/heads/integration/student-archive' && vars.LTG_ARCHIVE_PROBE_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Verify expected GitHub identity claims
+        run: |
+          node --input-type=module <<'NODE'
+          const url = new URL(process.env.ACTIONS_ID_TOKEN_REQUEST_URL);
+          url.searchParams.set('audience', 'sts.amazonaws.com');
+          const response = await fetch(url, { headers: {
+            Authorization: `Bearer ${process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN}`,
+          } });
+          if (!response.ok) throw new Error(`Identity request failed: ${response.status}`);
+          const { value } = await response.json();
+          const claims = JSON.parse(Buffer.from(value.split('.')[1], 'base64url').toString());
+          const expected = 'repo:weldingworkforcealliance-sys@322272778/alpha@1350025517:ref:refs/heads/integration/student-archive';
+          if (claims.aud !== 'sts.amazonaws.com' || claims.sub !== expected) {
+            throw new Error('GitHub identity does not match the restricted archive role.');
+          }
+          console.log('Expected repository and branch identity verified; AWS will validate the signed token.');
+          NODE
+      - name: Obtain temporary AWS access for synthetic objects
+        timeout-minutes: 2
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
+        with:
+          aws-region: us-east-2
+          role-to-assume: arn:aws:iam::551626544567:role/ltg-archive-synthetic-probe
+          role-duration-seconds: 900
+          retry-max-attempts: 3
+          allowed-account-ids: '551626544567'
+          role-session-name: ltg-synthetic-${{ github.run_id }}
+      - name: Upload synthetic data and verify downloaded version
+        run: node scripts/archive/synthetic-roundtrip.mjs
+

@@ -1,0 +1,928 @@
+{
+  "schools": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "name",
+      "type": "text"
+    },
+    {
+      "name": "status",
+      "type": "text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "attendance_students": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "display_name",
+      "type": "text"
+    },
+    {
+      "name": "external_student_id",
+      "type": "text"
+    },
+    {
+      "name": "active",
+      "type": "boolean"
+    },
+    {
+      "name": "created_by",
+      "type": "uuid"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "attendance_pair_enrollments": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "pair_id",
+      "type": "uuid"
+    },
+    {
+      "name": "student_id",
+      "type": "uuid"
+    },
+    {
+      "name": "active",
+      "type": "boolean"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "attendance_pairs": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "pair_name",
+      "type": "text"
+    },
+    {
+      "name": "primary_section_id",
+      "type": "uuid"
+    },
+    {
+      "name": "completion_section_id",
+      "type": "uuid"
+    },
+    {
+      "name": "attendance_mode",
+      "type": "text"
+    },
+    {
+      "name": "report_email",
+      "type": "text"
+    },
+    {
+      "name": "report_delay_minutes",
+      "type": "integer"
+    },
+    {
+      "name": "active",
+      "type": "boolean"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "report_trigger",
+      "type": "text"
+    }
+  ],
+  "attendance_sessions": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "pair_id",
+      "type": "uuid"
+    },
+    {
+      "name": "attendance_date",
+      "type": "date"
+    },
+    {
+      "name": "attendance_mode",
+      "type": "text"
+    },
+    {
+      "name": "status",
+      "type": "text"
+    },
+    {
+      "name": "taken_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "taken_by",
+      "type": "uuid"
+    },
+    {
+      "name": "finalized_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "finalized_by",
+      "type": "uuid"
+    },
+    {
+      "name": "instructor_notes",
+      "type": "text"
+    },
+    {
+      "name": "report_recipient",
+      "type": "text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "session_type",
+      "type": "text"
+    },
+    {
+      "name": "counts_toward_attendance",
+      "type": "boolean"
+    }
+  ],
+  "attendance_records": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "session_id",
+      "type": "uuid"
+    },
+    {
+      "name": "student_id",
+      "type": "uuid"
+    },
+    {
+      "name": "initial_status",
+      "type": "text"
+    },
+    {
+      "name": "final_status",
+      "type": "text"
+    },
+    {
+      "name": "completion_flags",
+      "type": "ARRAY"
+    },
+    {
+      "name": "completion_confirmed",
+      "type": "boolean"
+    },
+    {
+      "name": "notes",
+      "type": "text"
+    },
+    {
+      "name": "updated_by",
+      "type": "uuid"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "sections": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "course_id",
+      "type": "uuid"
+    },
+    {
+      "name": "section_name",
+      "type": "text"
+    },
+    {
+      "name": "start_date",
+      "type": "date"
+    },
+    {
+      "name": "status",
+      "type": "text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "cohort_id",
+      "type": "uuid"
+    },
+    {
+      "name": "term_id",
+      "type": "uuid"
+    },
+    {
+      "name": "end_date",
+      "type": "date"
+    },
+    {
+      "name": "section_code",
+      "type": "text"
+    },
+    {
+      "name": "planned_instructional_days",
+      "type": "integer"
+    },
+    {
+      "name": "instructional_block_id",
+      "type": "uuid"
+    },
+    {
+      "name": "start_time",
+      "type": "time without time zone"
+    },
+    {
+      "name": "end_time",
+      "type": "time without time zone"
+    },
+    {
+      "name": "planned_minutes_per_day",
+      "type": "integer"
+    }
+  ],
+  "gradebooks": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "section_id",
+      "type": "uuid"
+    },
+    {
+      "name": "course_pair_id",
+      "type": "uuid"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "gradebook_students": [
+    {
+      "name": "gradebook_id",
+      "type": "uuid"
+    },
+    {
+      "name": "student_id",
+      "type": "uuid"
+    },
+    {
+      "name": "active",
+      "type": "boolean"
+    },
+    {
+      "name": "enrolled_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "last_synced_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "gradebook_categories": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "gradebook_id",
+      "type": "uuid"
+    },
+    {
+      "name": "code",
+      "type": "text"
+    },
+    {
+      "name": "label",
+      "type": "text"
+    },
+    {
+      "name": "active",
+      "type": "boolean"
+    }
+  ],
+  "gradebook_statuses": [
+    {
+      "name": "gradebook_id",
+      "type": "uuid"
+    },
+    {
+      "name": "code",
+      "type": "text"
+    },
+    {
+      "name": "label",
+      "type": "text"
+    },
+    {
+      "name": "requires_score",
+      "type": "boolean"
+    },
+    {
+      "name": "active",
+      "type": "boolean"
+    }
+  ],
+  "gradebook_items": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "gradebook_id",
+      "type": "uuid"
+    },
+    {
+      "name": "category_id",
+      "type": "uuid"
+    },
+    {
+      "name": "title",
+      "type": "text"
+    },
+    {
+      "name": "assessment_slug",
+      "type": "text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "gradebook_attempts": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "gradebook_id",
+      "type": "uuid"
+    },
+    {
+      "name": "item_id",
+      "type": "uuid"
+    },
+    {
+      "name": "student_id",
+      "type": "uuid"
+    },
+    {
+      "name": "attempted_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "source_submission_id",
+      "type": "uuid"
+    }
+  ],
+  "gradebook_revisions": [
+    {
+      "name": "id",
+      "type": "bigint"
+    },
+    {
+      "name": "gradebook_id",
+      "type": "uuid"
+    },
+    {
+      "name": "attempt_id",
+      "type": "uuid"
+    },
+    {
+      "name": "status_code",
+      "type": "text"
+    },
+    {
+      "name": "score",
+      "type": "numeric"
+    },
+    {
+      "name": "possible_score",
+      "type": "numeric"
+    },
+    {
+      "name": "status_label",
+      "type": "text"
+    },
+    {
+      "name": "note",
+      "type": "text"
+    },
+    {
+      "name": "recorded_by",
+      "type": "uuid"
+    },
+    {
+      "name": "recorded_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "gradebook_finalizations": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "gradebook_id",
+      "type": "uuid"
+    },
+    {
+      "name": "student_id",
+      "type": "uuid"
+    },
+    {
+      "name": "snapshot",
+      "type": "jsonb"
+    },
+    {
+      "name": "source_fingerprint",
+      "type": "text"
+    },
+    {
+      "name": "reason",
+      "type": "text"
+    },
+    {
+      "name": "finalized_by",
+      "type": "uuid"
+    },
+    {
+      "name": "finalized_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "revision",
+      "type": "bigint"
+    }
+  ],
+  "tower_student_ids": [
+    {
+      "name": "student_id",
+      "type": "uuid"
+    },
+    {
+      "name": "weld_test_id",
+      "type": "integer"
+    },
+    {
+      "name": "issued_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "tower_records": [
+    {
+      "name": "gradebook_id",
+      "type": "uuid"
+    },
+    {
+      "name": "student_id",
+      "type": "uuid"
+    },
+    {
+      "name": "revision",
+      "type": "bigint"
+    },
+    {
+      "name": "data",
+      "type": "jsonb"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "updated_by",
+      "type": "uuid"
+    }
+  ],
+  "tower_history": [
+    {
+      "name": "id",
+      "type": "bigint"
+    },
+    {
+      "name": "gradebook_id",
+      "type": "uuid"
+    },
+    {
+      "name": "student_id",
+      "type": "uuid"
+    },
+    {
+      "name": "revision",
+      "type": "bigint"
+    },
+    {
+      "name": "data",
+      "type": "jsonb"
+    },
+    {
+      "name": "recorded_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "recorded_by",
+      "type": "uuid"
+    }
+  ],
+  "tower_grade_links": [
+    {
+      "name": "gradebook_id",
+      "type": "uuid"
+    },
+    {
+      "name": "student_id",
+      "type": "uuid"
+    },
+    {
+      "name": "assignment_id",
+      "type": "text"
+    },
+    {
+      "name": "attempt_number",
+      "type": "integer"
+    },
+    {
+      "name": "attempt_id",
+      "type": "uuid"
+    },
+    {
+      "name": "evidence",
+      "type": "jsonb"
+    }
+  ],
+  "tower_permanent_tests": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "record_number",
+      "type": "bigint"
+    },
+    {
+      "name": "gradebook_id",
+      "type": "uuid"
+    },
+    {
+      "name": "student_id",
+      "type": "uuid"
+    },
+    {
+      "name": "evidence",
+      "type": "jsonb"
+    },
+    {
+      "name": "recorded_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "recorded_by",
+      "type": "uuid"
+    }
+  ],
+  "tower_certificates": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "test_id",
+      "type": "uuid"
+    },
+    {
+      "name": "gradebook_id",
+      "type": "uuid"
+    },
+    {
+      "name": "student_id",
+      "type": "uuid"
+    },
+    {
+      "name": "snapshot",
+      "type": "jsonb"
+    },
+    {
+      "name": "issued_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "issued_by",
+      "type": "uuid"
+    }
+  ],
+  "classroom_sessions": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "section_id",
+      "type": "uuid"
+    },
+    {
+      "name": "instructor_id",
+      "type": "uuid"
+    },
+    {
+      "name": "assessment_slug",
+      "type": "text"
+    },
+    {
+      "name": "status",
+      "type": "text"
+    },
+    {
+      "name": "started_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "ended_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "expires_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "expected_students",
+      "type": "integer"
+    }
+  ],
+  "classroom_submissions": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "classroom_session_id",
+      "type": "uuid"
+    },
+    {
+      "name": "student_name",
+      "type": "text"
+    },
+    {
+      "name": "student_id",
+      "type": "text"
+    },
+    {
+      "name": "answers",
+      "type": "jsonb"
+    },
+    {
+      "name": "score",
+      "type": "integer"
+    },
+    {
+      "name": "possible_score",
+      "type": "integer"
+    },
+    {
+      "name": "domain_scores",
+      "type": "jsonb"
+    },
+    {
+      "name": "submitted_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "team_members",
+      "type": "text"
+    },
+    {
+      "name": "student_uuid",
+      "type": "uuid"
+    }
+  ],
+  "job_card_sessions": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "section_id",
+      "type": "uuid"
+    },
+    {
+      "name": "guide_day_id",
+      "type": "uuid"
+    },
+    {
+      "name": "planner_day_number",
+      "type": "integer"
+    },
+    {
+      "name": "instructor_id",
+      "type": "uuid"
+    },
+    {
+      "name": "template_id",
+      "type": "uuid"
+    },
+    {
+      "name": "status",
+      "type": "text"
+    },
+    {
+      "name": "expected_students",
+      "type": "integer"
+    },
+    {
+      "name": "job_title",
+      "type": "text"
+    },
+    {
+      "name": "drawing_ref",
+      "type": "text"
+    },
+    {
+      "name": "drawing_revision",
+      "type": "text"
+    },
+    {
+      "name": "wps_swps_ref",
+      "type": "text"
+    },
+    {
+      "name": "process",
+      "type": "text"
+    },
+    {
+      "name": "position",
+      "type": "text"
+    },
+    {
+      "name": "material_joint",
+      "type": "text"
+    },
+    {
+      "name": "requirements",
+      "type": "jsonb"
+    },
+    {
+      "name": "started_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "expires_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "ended_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "job_card_submissions": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "school_id",
+      "type": "uuid"
+    },
+    {
+      "name": "job_card_session_id",
+      "type": "uuid"
+    },
+    {
+      "name": "student_name",
+      "type": "text"
+    },
+    {
+      "name": "student_id",
+      "type": "text"
+    },
+    {
+      "name": "start_check",
+      "type": "jsonb"
+    },
+    {
+      "name": "quality_check",
+      "type": "jsonb"
+    },
+    {
+      "name": "requirement_results",
+      "type": "jsonb"
+    },
+    {
+      "name": "evidence_type",
+      "type": "text"
+    },
+    {
+      "name": "evidence_note",
+      "type": "text"
+    },
+    {
+      "name": "submitted_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "review_decision",
+      "type": "text"
+    },
+    {
+      "name": "review_notes",
+      "type": "text"
+    },
+    {
+      "name": "reviewed_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "reviewed_by",
+      "type": "uuid"
+    },
+    {
+      "name": "student_uuid",
+      "type": "uuid"
+    }
+  ]
+}
