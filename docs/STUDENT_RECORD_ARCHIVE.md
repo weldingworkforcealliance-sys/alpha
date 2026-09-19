@@ -60,7 +60,7 @@ Incomplete pagination, inaccessible files, ambiguous student identities, missing
 
 ## Current release constraints
 
-Official grade finalization is under review in PR 72. Approved certificate artwork and final PDF delivery remain unresolved. Archive implementation must preserve available certificate snapshots now and add issued PDF artifacts when implemented; it must not claim those PDFs already exist.
+Official grade finalization and the integrated Student record display were released through PR 72 on September 19, 2026, after explicit production approval. Approved certificate artwork and final PDF delivery remain unresolved. Archive implementation must preserve available certificate snapshots now and add issued PDF artifacts when implemented; it must not claim those PDFs already exist.
 
 No Codespaces, branches, repositories, student records or deployment resources may be deleted as part of this work. The user requires full live gradebook/Tower functionality before reconsidering Codespace cleanup.
 
@@ -122,6 +122,14 @@ The generated projection was executed against Gltg staging with only aggregate c
 
 These packages are deliberately labeled **core-records-only**. Course/term and rubric context, historical audit events, private-file discovery and transfer, readable transcripts, independent receipt protection, job scheduling/status, and actual database restore still need implementation and verification. Unit-tested JSON recovery is not a full database restore or proof of production retention. The existing synthetic cloud probe is separate and has not uploaded these school bundles.
 
-Read-only readiness checks found no unlinked classroom/job-card students in production and 3 inactive students that must be retained. Official finalization tables are still absent in production (PR 72 is pending). Staging has 5 classroom submissions and 1 job-card submission without canonical student links; an all-staging package must remain incomplete until those legacy records are reconciled. Do not silently drop them, guess links, or modify live student identities to satisfy a test.
+Read-only readiness checks found no unlinked classroom/job-card students in production and 3 inactive students that must be retained. The official finalization tables were subsequently installed in production through PR 72. Staging has 5 classroom submissions and 1 job-card submission without canonical student links; an all-staging package must remain incomplete until those legacy records are reconciled. Do not silently drop them, guess links, or modify live student identities to satisfy a test.
 
 Validation: 18 bundle tests, 5 reader tests and the original 10 synthetic AWS tests. Tests cover school separation, inactive students, all grade revisions, correction history, mismatched relationships, duplicate/truncated records, missing datasets, unresolved students, forbidden join codes, missing/corrupt/version-changed attachments, schema drift, transactional rollback, and trusted-receipt verification. No new database objects, access grants, production uploads, schedules or deletions were made by this implementation.
+
+## Live final-grade dependency verified
+
+Production commit `8f883206f5adc74d1c7c7ef35207f7899be2e397` was published in Netlify deploy `6aae99422df84f00083b45bf` at `2026-09-19T14:17:23.684Z`. The approved `gradebook_finalization_release` migration installed the final-grade table and protected functions. Direct authenticated inserts/updates and anonymous reads/RPC execution are denied; RLS and the immutable-history trigger are enabled.
+
+Signed-in staging tests saved a 90% shop final, corrected it to 85%, and preserved both versions. A 67.5% theory final appeared alongside the shop final in Student record. Another synthetic student showed no finalized grades. Live LTG verification confirmed final-review controls load, incomplete course requirements disable finalization, Student record reads the production history, and no browser errors were recorded. Production finalization count remained zero: no real student grades were finalized by these checks.
+
+This release satisfies the final-grade database dependency; it does not activate the independent archive or complete certificate delivery. No Codespaces, repositories, branches or deployment resources were deleted.
