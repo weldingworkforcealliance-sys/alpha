@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { createRequire } from 'node:module';
+import { join } from 'node:path';
 import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 
@@ -17,8 +17,7 @@ export async function createTestRecordPdf(record: TestRecord) {
   if (!record.id || !Number.isFinite(Date.parse(record.issued_at)) || record.snapshot.result !== 'Pass') {
     throw new Error('Invalid saved passing test record');
   }
-  const require = createRequire(import.meta.url);
-  const bytes = await readFile(require.resolve('@fontsource/noto-sans/files/noto-sans-latin-400-normal.woff'));
+  const bytes = await readFile(join(process.cwd(), 'node_modules/@fontsource/noto-sans/files/noto-sans-latin-400-normal.woff'));
   const pdf = await PDFDocument.create();
   pdf.registerFontkit(fontkit);
   const font = await pdf.embedFont(bytes, {subset: true});
