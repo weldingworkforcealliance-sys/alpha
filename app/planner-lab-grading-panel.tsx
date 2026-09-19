@@ -11,6 +11,7 @@ import styles from './planner-lab-grading-panel.module.css';
 const TowerWorkspace = dynamic(() => import('./tower/workspace'), {
   loading: () => <p role="status">Loading lab grading…</p>,
 });
+const ShopWorkspace = dynamic(() => import('./shop/workspace'));
 
 export default function PlannerLabGradingPanel({ pathname }: { pathname: string }) {
   const [client] = useState(getSupabase);
@@ -74,7 +75,9 @@ export default function PlannerLabGradingPanel({ pathname }: { pathname: string 
     </p>}
     <div id="planner-lab-grading-workspace" hidden={!open} className={styles.body}>
       <p className={styles.help}>Grade welds here. Scores save to this class’s gradebook and student records.</p>
-      {opened && <TowerWorkspace key={session.id} gradebookId={session.id} view="lab" onSaveState={setSaveBlocked} />}
+      {opened && (process.env.NEXT_PUBLIC_WLD110_SHOP_ENABLED === 'true' && session.course_code === 'WLD 110'
+        ? <ShopWorkspace key={session.id} gradebookId={session.id} onSaveState={setSaveBlocked}/>
+        : <TowerWorkspace key={session.id} gradebookId={session.id} view="lab" onSaveState={setSaveBlocked} />)}
     </div>
   </section>;
 }

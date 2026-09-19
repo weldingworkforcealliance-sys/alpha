@@ -9,6 +9,28 @@ on:
     branches: [main, product/standalone-mainline-2026-09-11]
 
 jobs:
+  archive-recovery:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_DB: ltg_archive_recovery
+          POSTGRES_USER: archive_drill
+          POSTGRES_PASSWORD: synthetic-local-drill-only
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.19.0'
+      - run: npm ci --prefix scripts/archive --ignore-scripts
+      - name: Recover synthetic history in isolated PostgreSQL
+        run: node --test scripts/archive/*.test.mjs
+        env:
+          LTG_ARCHIVE_DB_DRILL: 'true'
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 10

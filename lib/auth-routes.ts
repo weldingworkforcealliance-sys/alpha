@@ -1,4 +1,5 @@
 const PUBLIC_EXACT_ROUTES = new Set([
+  '/shop/student',
   '/',
   '/login',
   '/account-setup',

@@ -30,6 +30,7 @@ test('captures all datasets in a dedicated read-only repeatable-read transaction
   assert.equal(calls.at(-1), 'COMMIT');
   assert.equal(result.files, null);
   assert.equal(result.fileInventory, null);
+  assert.equal(result.format, 'ltg-student-snapshot-v2');
   assert.throws(() => buildSchoolBundles(result));
 });
 for (const scenario of [{ drift: true }, { fail: true }, { truncate: true }]) {
@@ -44,6 +45,8 @@ test('projection preserves bigint identities and excludes live join codes', () =
   const sql = snapshotSql();
   assert.match(sql, /"revision"::text/);
   assert.ok(!sql.includes('join_code'));
+  assert.ok(!sql.includes('wld110_student_links'));
+  for (const table of ['wld110_shop_progress','wld110_shop_attempts','wld110_shop_completions']) assert.ok(sql.includes(table));
   assert.ok(!/\blimit\b|\boffset\b|\bwhere\b/i.test(sql));
   assert.ok(!snapshotSql({ countsOnly: true }).includes('as records'));
 });

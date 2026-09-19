@@ -26,7 +26,7 @@ function fixture() {
     datasets.job_card_submissions.push({ id: `job-submission-${suffix}`, school_id: school, job_card_session_id: `job-${suffix}`, student_uuid: `student-${suffix}`, evidence_note: 'Synthetic job evidence' });
   }
   const bytes = Buffer.from('Synthetic certificate attachment; not a valid certificate.');
-  return { format: 'ltg-student-snapshot-v1', scope: 'all-schools', consistency: 'repeatable-read',
+  return { format: 'ltg-student-snapshot-v2', scope: 'all-schools', consistency: 'repeatable-read',
     environment: 'staging', exportId: '20000000-0000-4000-8000-000000000001', capturedAt: '2026-09-19T14:00:00Z',
     sourceRevision: 'a'.repeat(40), expectedSchoolIds: [schoolA, schoolB], datasets,
     sourceCounts: Object.fromEntries(requiredDatasets.map((name) => [name, datasets[name].length])),

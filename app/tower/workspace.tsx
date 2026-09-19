@@ -3,6 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 import {getSupabase} from '@/lib/supabase-browser';
 import {readGradebookRows,type Gradebook} from '@/lib/gradebook';
 import {formatError} from '@/lib/format-error';
+import {WELD_SIZER} from '@/lib/weld-sizer';
 import {courseFinalRecords,type SavedCourseFinal} from '@/lib/course-final-records';
 type StudentRow={id:string;name:string;active:boolean;weldTestId:string;revision:number;data:Record<string,unknown>};
 type Payload={book:Gradebook;students:StudentRow[];assignments:Record<string,unknown>[]};
@@ -28,7 +29,7 @@ export default function TowerWorkspace(props:Props){
    const m=e.data;const target=frame.current.contentWindow;
    if(m?.type==='tower-selection'){context.current.onStudentChange?.(m.studentId);return;}
    if(m?.type==='tower-save-state'){context.current.onSaveState?.(Boolean(m.blocked));return;}
-   if(m?.type==='tower-ready'){target?.postMessage({type:'tower-init',payload:current.current,context:{view:context.current.view,studentId:context.current.studentId,assignmentId:context.current.assignmentId}},window.location.origin);return;}
+   if(m?.type==='tower-ready'){target?.postMessage({type:'tower-init',payload:{...current.current,weldSizer:WELD_SIZER},context:{view:context.current.view,studentId:context.current.studentId,assignmentId:context.current.assignmentId}},window.location.origin);return;}
    if(m?.type==='tower-read-finals'&&typeof m.requestId==='number'){
     if(process.env.NEXT_PUBLIC_GRADEBOOK_FINALS_ENABLED!=='true'){
      target?.postMessage({type:'tower-final-records',requestId:m.requestId,studentId:m.studentId,status:'disabled'},window.location.origin);return;

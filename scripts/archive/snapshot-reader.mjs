@@ -67,7 +67,7 @@ export async function captureCoreSnapshot(client, { environment, sourceRevision,
     const supplement = captureSupplement ? await captureSupplement(client) : null;
     await client.query('COMMIT');
     started = false;
-    return { ...snapshot, format: 'ltg-student-snapshot-v1', scope: 'all-schools',
+    return { ...snapshot, format: 'ltg-student-snapshot-v2', scope: 'all-schools',
       consistency: 'repeatable-read', exportId: randomUUID(), environment, sourceRevision,
       // An explicit attachment resolver must fill both fields. Empty is not assumed.
       files: null, fileInventory: null, supplement };

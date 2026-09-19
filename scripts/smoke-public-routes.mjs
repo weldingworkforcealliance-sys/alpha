@@ -21,6 +21,7 @@ const expectedPublicContent = new Map([
 ]);
 
 const protectedRoutes = [
+  ['/shop', '/login'],
   ['/dashboard', '/login'],
   ['/agenda', '/login'],
   ['/resources', '/login'],

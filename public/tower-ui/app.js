@@ -145,9 +145,7 @@ const RUBRIC = [
   {id:"restarts",name:"Restarts",help:"Crater treatment, tie-in and bead continuity",choices:[
     [20,"Seamless"],[18,"Good"],[16,"Noticeable"],[14,"Poor"],[10,"Major"]
   ]},
-  {id:"beadSize",name:"Bead Size",help:'1/8" rod: 3/16" min · 1/4" target · 3/8" max',choices:[
-    [20,'1/4" target'],[18,"Near target"],[16,"Acceptable"],[14,"At limit"],[10,"Outside range"]
-  ]}
+  {id:"beadSize",name:"Bead Size",help:"",choices:[]}
 ];
 
 const DEFECT_TAGS = [
@@ -1336,6 +1334,10 @@ window.addEventListener("message",e=>{
  }
  if(m?.type==="tower-context"&&state&&!saving&&!stopped){applyGradebookContext(m);render();}
  if(m?.type==="tower-init"){
+  if(m.payload.weldSizer){
+   const size=RUBRIC.find(c=>c.id==="beadSize");
+   size.help=m.payload.weldSizer.help;size.choices=m.payload.weldSizer.choices;
+  }
   officialFinals.clear();
   const book=m.payload.book;
   const course={id:book.id,code:book.course_code,role:"shop",label:"Shop",level:book.level_name||"",semester:book.semester_number||1,pairedCourse:book.pair_name||"",

@@ -29,7 +29,8 @@ test('real PostgreSQL restores historical rows and exact certificate bytes witho
       } })) }, { name: 'certificate-test.pdf', bytes: Buffer.from('%PDF-synthetic-not-a-valid-certificate') }];
       const receipt = { exportId, environment: 'staging', entries: artifacts.map(a => ({ name: a.name, sha256: sha256(a.bytes) })) };
       const result = await verifyIsolatedRecovery(client, artifacts, receipt);
-      assert.ok(result.recordsVerified > 30); assert.equal(result.artifactsVerified, 4);
+      assert.equal(result.recordsVerified, Object.values(fixture().datasets).reduce((sum, rows) => sum + rows.length, 0) + 3);
+      assert.equal(result.artifactsVerified, 4);
       const tables = await client.query("select to_regnamespace('ltg_archive_drill') as schema");
       assert.equal(tables.rows[0].schema, null);
       assert.ok((await client.query("select to_regnamespace('public') as schema")).rows[0].schema);
@@ -70,7 +71,10 @@ test('prepared database reader can read RLS-protected tables but has no write or
         assert.equal((await client.query('SELECT has_function_privilege($1,$2,\'EXECUTE\') AS allowed', ['service_role', 'public.' + name])).rows[0].allowed, true);
       }
       for (const action of ['INSERT', 'UPDATE', 'DELETE', 'TRUNCATE']) {
-        assert.equal((await client.query('SELECT has_table_privilege(current_user,$1,$2) AS allowed', ['public.schools', action])).rows[0].allowed, false);
+        for (const table of ['schools','wld110_shop_progress','wld110_shop_attempts','wld110_shop_completions']) {
+          assert.equal((await client.query('SELECT has_table_privilege(current_user,$1,$2) AS allowed', ['public.' + table, action])).rows[0].allowed, false);
+          assert.equal((await client.query('SELECT has_table_privilege(current_user,$1,\'SELECT\') AS allowed', ['public.' + table])).rows[0].allowed, true);
+        }
       }
       await client.query('SAVEPOINT denied_write');
       await assert.rejects(client.query("INSERT INTO public.schools VALUES ('forbidden')"), e => e.code === '42501');
