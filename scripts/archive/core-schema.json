@@ -125,6 +125,10 @@
     {
       "name": "updated_at",
       "type": "timestamp with time zone"
+    },
+    {
+      "name": "report_trigger",
+      "type": "text"
     }
   ],
   "attendance_sessions": [
@@ -922,4 +926,3 @@
     }
   ]
 }
-
