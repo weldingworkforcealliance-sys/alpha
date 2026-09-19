@@ -20,6 +20,7 @@
   command = "rm -rf .next && npm run build"
 
 [context.deploy-preview.environment]
+  NEXT_PUBLIC_GRADEBOOK_FINALS_ENABLED = "true"
   NEXT_PUBLIC_TOWER_ENABLED = "true"
   NEXT_PUBLIC_GRADEBOOK_ENABLED = "true"
   NEXT_PUBLIC_SUPABASE_URL = "https://ezlvivmeneefiiwqwgqd.supabase.co"
@@ -29,3 +30,4 @@
 # Gradebook migrations verified in production September 17, 2026.
 [context.production.environment]
   NEXT_PUBLIC_GRADEBOOK_ENABLED = "true"
+  NEXT_PUBLIC_GRADEBOOK_FINALS_ENABLED = "true"

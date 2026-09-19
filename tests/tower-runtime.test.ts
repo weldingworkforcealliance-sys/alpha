@@ -24,6 +24,38 @@ const attempt = (value: number, defects: string[] = []) => JSON.stringify({
   scores: { consistency: value, defects: value, procedure: value, restarts: value, beadSize: value }, defects,
 });
 
+describe('official finals in the student record',()=>{
+ it('loads saved grades once, renders correction history and escapes record text',()=>{
+  const r=initialized();
+  r.run("setView('passport')");
+  const request=r.run("officialFinals.get('student-1').requestId");
+  const before=r.run('JSON.stringify(recordPayload(activeStudent()))');
+  r.listeners.message({origin:'https://ltg.test',source:r.parent,data:{type:'tower-final-records',studentId:'student-1',requestId:request,status:'ready',records:[
+   {id:'final-2',course:'WLD 110',section:'Test class',role:'Shop',grade:65,passingScore:65,finalizedAt:'2026-09-19T15:00:00Z',reason:'<script>bad</script>',latest:true},
+   {id:'final-1',course:'WLD 110',section:'Test class',role:'Shop',grade:0,passingScore:65,finalizedAt:'2026-09-18T15:00:00Z',reason:'Original',latest:false},
+  ]}});
+  expect(r.element('appContent').innerHTML).toContain('65%');
+  expect(r.element('appContent').innerHTML).toContain('Earlier final');
+  expect(r.element('appContent').innerHTML).toContain('&lt;script&gt;');
+  expect(r.element('appContent').innerHTML).not.toContain('<script>bad');
+  expect(r.run('JSON.stringify(recordPayload(activeStudent()))')).toBe(before);
+  expect(r.sent.filter(message=>(message as {type:string}).type==='tower-read-finals')).toHaveLength(1);
+ });
+ it('ignores stale or untrusted replies and shows read failures instead of empty grades',()=>{
+  const r=initialized();r.run("setView('passport')");
+  const request=r.run("officialFinals.get('student-1').requestId");
+  for(const event of [
+   {origin:'https://other.test',source:r.parent,requestId:request},
+   {origin:'https://ltg.test',source:{},requestId:request},
+   {origin:'https://ltg.test',source:r.parent,requestId:request+1},
+  ])r.listeners.message({...event,data:{type:'tower-final-records',studentId:'student-1',requestId:event.requestId,status:'ready',records:[]}});
+  expect(r.run("officialFinals.get('student-1').status")).toBe('loading');
+  r.listeners.message({origin:'https://ltg.test',source:r.parent,data:{type:'tower-final-records',studentId:'student-1',requestId:request,status:'error',message:'Could not load official grades'}});
+  expect(r.element('appContent').innerHTML).toContain('Could not load official grades');
+  expect(r.element('appContent').innerHTML).not.toContain('No finalized course grades');
+ });
+});
+
 function initialized() {
   const r=runtime();
   r.listeners.message({origin:'https://ltg.test',source:r.parent,data:{type:'tower-init',payload:{
