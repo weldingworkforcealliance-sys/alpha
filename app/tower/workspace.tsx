@@ -3,6 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 import {getSupabase} from '@/lib/supabase-browser';
 import {readGradebookRows,type Gradebook} from '@/lib/gradebook';
 import {formatError} from '@/lib/format-error';
+import {courseFinalRecords,type SavedCourseFinal} from '@/lib/course-final-records';
 type StudentRow={id:string;name:string;active:boolean;weldTestId:string;revision:number;data:Record<string,unknown>};
 type Payload={book:Gradebook;students:StudentRow[];assignments:Record<string,unknown>[]};
 type Props={gradebookId?:string;view?:string;studentId?:string;assignmentId?:string;onStudentChange?:(id:string)=>void;onSaveState?:(blocked:boolean)=>void};
@@ -28,6 +29,20 @@ export default function TowerWorkspace(props:Props){
    if(m?.type==='tower-selection'){context.current.onStudentChange?.(m.studentId);return;}
    if(m?.type==='tower-save-state'){context.current.onSaveState?.(Boolean(m.blocked));return;}
    if(m?.type==='tower-ready'){target?.postMessage({type:'tower-init',payload:current.current,context:{view:context.current.view,studentId:context.current.studentId,assignmentId:context.current.assignmentId}},window.location.origin);return;}
+   if(m?.type==='tower-read-finals'&&typeof m.requestId==='number'){
+    if(process.env.NEXT_PUBLIC_GRADEBOOK_FINALS_ENABLED!=='true'){
+     target?.postMessage({type:'tower-final-records',requestId:m.requestId,studentId:m.studentId,status:'disabled'},window.location.origin);return;
+    }
+    try{
+     if(!current.current.students.some(s=>s.id===m.studentId))throw new Error('This student is not in the selected class.');
+     const [finals,directory]=await Promise.all([
+      readGradebookRows<SavedCourseFinal>((from,to)=>client.from('gradebook_finalizations').select('id,gradebook_id,student_id,revision,snapshot,reason,finalized_at').eq('student_id',m.studentId).order('revision',{ascending:false}).range(from,to)),
+      readGradebookRows<Gradebook>((from,to)=>client.from('gradebook_directory').select('*').order('id').range(from,to)),
+     ]);
+     target?.postMessage({type:'tower-final-records',requestId:m.requestId,studentId:m.studentId,status:'ready',records:courseFinalRecords(finals,directory,m.studentId)},window.location.origin);
+    }catch(c){target?.postMessage({type:'tower-final-records',requestId:m.requestId,studentId:m.studentId,status:'error',message:formatError(c,'Official grades could not load. Refresh and try again.')},window.location.origin);}
+    return;
+   }
    if(!['tower-save','tower-create-assignment'].includes(m?.type)||typeof m.requestId!=='number')return;
    const known=responses.current.get(m.requestId);
    if(known){target?.postMessage({requestId:m.requestId,...known},window.location.origin);return;}
