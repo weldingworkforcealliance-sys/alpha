@@ -9,7 +9,7 @@ The integrated Gradebook/Tower is deployed to live LTG. This replaces the origin
 - PR #72: protected official course finalization and retained final-grade history in Student record. Approved weights: shop 75% weld performance / 25% shop projects; theory 50% assessments / 25% fabrication projects / 25% homework; passing 65%. Required items must be graded or marked missing/excused before finalization.
 - PRs #74 and #75: downloadable certificate PDF and the corrected private PCCC template, including student/test ID fields and Anthony Ruffino.
 - PR #76: lab grading opens inside the planner below attendance.
-- Archive worker: first live all-school backup and isolated record/file recovery passed in Actions run 35459272170, with independent administrator recovery and confirmed test-alert delivery. Nightly scheduling is enabled through PR #77 on default branch main. See [archive activation](ARCHIVE_ACTIVATION.md).
+- Archive worker: first live all-school backup and isolated record/file recovery passed in Actions run 35459272170, with independent administrator recovery and confirmed test-alert delivery. Weekly scheduling is enabled on default branch main: PR #79 changed it to Fridays at 22:00 America/New_York, starting September 25, 2026. See [archive activation](ARCHIVE_ACTIVATION.md).
 
 The production deployment branch is `product/standalone-mainline-2026-09-11`; it is distinct from default branch `main`. Before archive release housekeeping, Netlify published commit `b19ef0a0d0cae7a63d1d91be427fcf1388e7238a`, including PR #76, and the production build passed.
 
