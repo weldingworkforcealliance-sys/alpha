@@ -38,12 +38,27 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
+      - name: Inspect non-secret GitHub identity claims
+        run: |
+          node --input-type=module <<'NODE'
+          const url = new URL(process.env.ACTIONS_ID_TOKEN_REQUEST_URL);
+          url.searchParams.set('audience', 'sts.amazonaws.com');
+          const response = await fetch(url, { headers: {
+            Authorization: `Bearer ${process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN}`,
+          } });
+          if (!response.ok) throw new Error(`Identity request failed: ${response.status}`);
+          const { value } = await response.json();
+          const claims = JSON.parse(Buffer.from(value.split('.')[1], 'base64url').toString());
+          console.log(JSON.stringify({ aud: claims.aud, sub: claims.sub, repository: claims.repository, ref: claims.ref }));
+          NODE
       - name: Obtain temporary AWS access for synthetic objects
+        timeout-minutes: 2
         uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
         with:
           aws-region: us-east-2
           role-to-assume: arn:aws:iam::551626544567:role/ltg-archive-synthetic-probe
           role-duration-seconds: 900
+          retry-max-attempts: 3
           allowed-account-ids: '551626544567'
           role-session-name: ltg-synthetic-${{ github.run_id }}
       - name: Upload synthetic data and verify downloaded version
