@@ -7,19 +7,20 @@ import { WELD_SIZER } from '../lib/weld-sizer';
 function runtime() {
   const listeners: Record<string, (event: unknown) => void> = {};
   const sent: unknown[] = [];
-  const elements = new Map<string, { addEventListener: () => void; setAttribute: () => void; dataset: object; classList: { toggle: () => void }; textContent: string; innerHTML: string }>();
+  const events:Record<string,Record<string,(event:unknown)=>void>>={};
+  const elements = new Map<string, { addEventListener: (name:string,handler:(event:unknown)=>void) => void; setAttribute: () => void; dataset: object; classList: { toggle: () => void }; textContent: string; innerHTML: string }>();
   const element = (id: string) => {
-    if(!elements.has(id))elements.set(id,{ addEventListener() {}, setAttribute() {}, dataset: {}, classList: { toggle() {} }, textContent: '', innerHTML: '' });
+    if(!elements.has(id))elements.set(id,{ addEventListener(name:string,handler:(event:unknown)=>void) { (events[id]??={})[name]=handler; }, setAttribute() {}, dataset: {}, classList: { toggle() {} }, textContent: '', innerHTML: '' });
     return elements.get(id)!;
   };
   const parent = { postMessage: (message: unknown) => sent.push(structuredClone(message)) };
   const context = vm.createContext({
     document: { getElementById: element, querySelectorAll: () => [], addEventListener() {} },
     window: { addEventListener: (name: string, handler: (event: unknown) => void) => { listeners[name] = handler; } },
-    crypto: webcrypto, location: { origin: 'https://ltg.test' }, parent, console,
+    crypto: webcrypto, location: { origin: 'https://ltg.test' }, parent, console, alert:()=>{},
   });
   vm.runInContext(readFileSync('public/tower-ui/app.js', 'utf8'), context);
-  return { run: (code: string) => vm.runInContext(code, context), listeners, sent, parent, element };
+  return { run: (code: string) => vm.runInContext(code, context), listeners, sent, parent, element, events };
 }
 const attempt = (value: number, defects: string[] = []) => JSON.stringify({
   scores: { consistency: value, defects: value, procedure: value, restarts: value, beadSize: value }, defects,
@@ -141,5 +142,22 @@ describe('Gradebook context',()=>{
   const r=initialized();const before=r.run('state.ui.view');
   r.listeners.message({origin:'https://ltg.test',source:r.parent,data:{type:'tower-context',view:'passport'}});
   expect(r.run('state.ui.view')).toBe(before);
+ });
+});
+
+describe('shared lab coaching bridge',()=>{
+ it('offers coaching and QR for the currently rendered student and assignment',()=>{
+  const r=initialized();r.run("setView('lab')");
+  expect(r.element('appContent').innerHTML).toContain('data-lab-coaching="coach"');
+  expect(r.element('appContent').innerHTML).toContain('data-lab-coaching="qr"');
+  expect(r.sent.filter(m=>(m as {type:string}).type==='tower-selection').at(-1)).toEqual({type:'tower-selection',studentId:'student-1',assignmentId:'smaw-fillet-1F',view:'lab'});
+  r.run("saving=false;stopped=false;pending.clear()");
+  r.events.appContent.click({target:{closest:(selector:string)=>selector==='[data-lab-coaching]'?{dataset:{labCoaching:'coach'}}:null}});
+  expect(r.sent.at(-1)).toEqual({type:'tower-coaching',studentId:'student-1',assignmentId:'smaw-fillet-1F',action:'coach'});
+ });
+ it('does not open coaching while grading is still saving',()=>{
+  const r=initialized();r.run("setView('lab');saving=true");
+  r.events.appContent.click({target:{closest:(selector:string)=>selector==='[data-lab-coaching]'?{dataset:{labCoaching:'qr'}}:null}});
+  expect(r.sent.filter(m=>(m as {type:string}).type==='tower-coaching')).toHaveLength(0);
  });
 });

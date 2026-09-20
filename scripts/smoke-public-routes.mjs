@@ -22,6 +22,7 @@ const expectedPublicContent = new Map([
 
 const protectedRoutes = [
   ['/shop', '/login'],
+  ['/lab/instructor', '/login'],
   ['/dashboard', '/login'],
   ['/agenda', '/login'],
   ['/resources', '/login'],
@@ -76,6 +77,13 @@ for (const route of publicRoutes) {
   }
 }
 
+// Student token pages must stay reachable without an instructor login even
+// when their feature flag makes this build return a deliberate 404.
+for (const route of ['/shop/student','/lab/student']) {
+  const response=await fetch(baseUrl+route,{redirect:'manual'});
+  if(![200,404].includes(response.status))failures.push(route+': student page unexpectedly requires login or failed');
+  if(!(response.headers.get('cache-control')??'').includes('no-store'))failures.push(route+': student page must not be cached');
+}
 for (const [route, expectedLoginPath] of protectedRoutes) {
   try {
     const response = await fetch(`${baseUrl}${route}`, { redirect: 'manual' });
