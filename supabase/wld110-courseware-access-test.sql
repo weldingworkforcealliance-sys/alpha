@@ -26,8 +26,8 @@ begin
   execute 'reset role';
 
   -- The existing staging School A has no access to the PCCC licensed courseware.
-  update public.school_memberships set school_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa' where user_id=teacher;
-  perform set_config('request.jwt.claim.sub',teacher::text,true);
+  -- Use the existing School A instructor fixture; memberships are immutable.
+  perform set_config('request.jwt.claim.sub','11111111-1111-4111-8111-222222222222',true);
   execute 'set local role authenticated';
   select count(*) into visible from public.instructor_courseware_slide_assets;
   if visible<>0 then raise exception 'Instructor from another school can read courseware'; end if;
