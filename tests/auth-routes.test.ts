@@ -3,6 +3,9 @@ import { isPublicRoute, loginRouteFor, safePostLoginRoute } from '../lib/auth-ro
 
 describe('server route protection', () => {
   it('keeps only intentional entry routes public', () => {
+    expect(isPublicRoute('/lab/student')).toBe(true);
+    expect(isPublicRoute('/lab/student/admin')).toBe(false);
+    expect(isPublicRoute('/lab/instructor')).toBe(false);
     expect(isPublicRoute('/login')).toBe(true);
     expect(isPublicRoute('/join/ABC123')).toBe(true);
     expect(isPublicRoute('/job/ABC123')).toBe(true);

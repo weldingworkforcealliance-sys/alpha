@@ -763,6 +763,7 @@ function renderLab(){
   '<div class="card">'+
     '<div class="student-banner"><div><div class="eyebrow">Student '+(state.ui.labIndex+1)+' of '+state.students.length+'</div><h3>'+escapeHtml(student.name)+'</h3><div class="student-meta">'+escapeHtml(student.studentId)+' · '+escapeHtml(assignment.name)+'</div></div>'+
       '<div class="official-grade"><div class="label">Official grade</div><div class="grade">'+official.display+'</div><div>'+badge(official.attempt===2?"Attempt 2":"Attempt 1",official.attempt===2?"blue":"gray")+' '+badge(official.status,tone(official.status))+'</div></div></div>'+
+    '<div class="queue-nav"><button class="primary-btn" data-lab-coaching="coach">Practice / coach</button><button class="secondary-btn" data-lab-coaching="qr">Student QR</button></div>'+
     '<div class="attempt-tabs"><button class="attempt-tab '+(attemptKey==="attempt1"?"active":"")+'" data-attempt="attempt1">Attempt 1</button>'+
       (rec.attempt2?'<button class="attempt-tab '+(attemptKey==="attempt2"?"active":"")+'" data-attempt="attempt2">Attempt 2</button>':
       '<button class="attempt-tab '+(!attemptComplete(rec.attempt1)?"locked":"")+'" '+(!attemptComplete(rec.attempt1)?"disabled":"data-start-attempt2")+'>'+(attemptComplete(rec.attempt1)?"Start Attempt 2":"Attempt 2 unlocks after Attempt 1")+'</button>')+
@@ -1097,10 +1098,10 @@ function applyGradebookContext(context){
 function render(){
   document.getElementById("viewTitle").textContent=viewTitle();
   renderStudentSelect();
-  parent.postMessage({type:"tower-selection",studentId:state.activeStudentId},location.origin);
   const content=document.getElementById("appContent");
   const view=state.ui.view;
   content.innerHTML=view==="home"?renderHome():view==="lab"?renderLab():view==="courses"?renderCourseRecords():view==="competencies"?renderCompetencies():view==="exams"?renderExams():view==="qualifications"?renderQualifications():view==="destructive"?renderDestructiveTests():view==="passport"?renderPassport():renderAdmin();
+  parent.postMessage({type:"tower-selection",studentId:state.activeStudentId,assignmentId:state.ui.labAssignmentId,view:state.ui.view},location.origin);
   saveState();
 }
 
@@ -1121,6 +1122,12 @@ document.getElementById("activeStudentSelect").addEventListener("change",e=>{
 });
 
 document.getElementById("appContent").addEventListener("click",e=>{
+  const coaching=e.target.closest('[data-lab-coaching]');
+  if(coaching){
+    if(saving||stopped||pending.size){alert("Wait for Saved to LTG before opening student coaching.");return;}
+    parent.postMessage({type:"tower-coaching",studentId:studentAt(state.ui.labIndex).id,assignmentId:state.ui.labAssignmentId,action:coaching.dataset.labCoaching},location.origin);
+    return;
+  }
   if(e.target.closest('#refreshOfficialFinals')){requestOfficialFinals(activeStudent().id);render();return;}
   const go=e.target.closest("[data-go]"); if(go){setView(go.dataset.go);return;}
   const nav=e.target.closest("[data-lab-nav]"); if(nav){moveQueue("lab",Number(nav.dataset.labNav));return;}

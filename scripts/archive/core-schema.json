@@ -567,6 +567,14 @@
     {
       "name": "updated_by",
       "type": "uuid"
+    },
+    {
+      "name": "lab_coaching",
+      "type": "jsonb"
+    },
+    {
+      "name": "lab_requested_at",
+      "type": "timestamp with time zone"
     }
   ],
   "tower_history": [

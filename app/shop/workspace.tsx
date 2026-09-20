@@ -1,6 +1,6 @@
 'use client';
 import {useCallback,useEffect,useRef,useState} from 'react';
-import QRCode from 'qrcode';
+import {StudentQrCache} from '@/lib/student-qr';
 import {StudentQrCard,type StudentQr} from './student-qr-card';
 import {getSupabase} from '@/lib/supabase-browser';
 import {formatError} from '@/lib/format-error';
@@ -13,7 +13,7 @@ export default function ShopWorkspace({gradebookId,onSaveState}:{gradebookId:str
  const [selected,setSelected]=useState<ShopStudent|null>(null),[busy,setBusy]=useState(false),[locked,setLocked]=useState(false);
  const [history,setHistory]=useState<string|null>(null),[notice,setNotice]=useState('');
  const [studentQr,setStudentQr]=useState<StudentQr|null>(null);
- const qrLinks=useRef(new Map<string,{url:string;image?:string}>());
+ const qrLinks=useRef(new StudentQrCache());
  const [coaching,setCoaching]=useState<ShopStudent|null>(null),[focus,setFocus]=useState<string[]>([]);
  const saving=useRef(false),generation=useRef(0),pending=useRef<Record<string,unknown>|null>(null);
  const refresh=useCallback(async()=>{
@@ -69,21 +69,15 @@ export default function ShopWorkspace({gradebookId,onSaveState}:{gradebookId:str
   setStudentQr({student,afterCoaching,url:'',image:'',error:''});
   const key=gradebookId+':'+student.student_id;
   try{
-   let cached=qrLinks.current.get(key);
-   if(!cached){
+   const link=await qrLinks.current.prepare(key,async()=>{
     const result=await client.rpc('issue_wld110_student_link',{p_gradebook_id:gradebookId,p_student_id:student.student_id});
     if(result.error)throw result.error;
     if(typeof result.data!=='string'||!result.data)throw new Error('Student link could not load.');
-    cached={url:window.location.origin+'/shop/student#'+result.data};
-    qrLinks.current.set(key,cached);
-   }
-   if(!cached.image){
-    cached.image=await QRCode.toDataURL(cached.url,{width:280,margin:4,errorCorrectionLevel:'M',color:{dark:'#000000',light:'#ffffff'}});
-   }
-   setStudentQr({student,afterCoaching,url:cached.url,image:cached.image,error:''});
+    return window.location.origin+'/shop/student#'+result.data;
+   });
+   setStudentQr({student,afterCoaching,...link,error:''});
   }catch{
-   const cached=qrLinks.current.get(key);
-   setStudentQr({student,afterCoaching,url:cached?.url??'',image:'',error:'Student QR code could not load. Try again.'});
+   setStudentQr({student,afterCoaching,url:qrLinks.current.url(key),image:'',error:'Student QR code could not load. Try again.'});
   }
  }
  async function showStudentQr(student:ShopStudent,afterCoaching=false){
@@ -105,7 +99,7 @@ export default function ShopWorkspace({gradebookId,onSaveState}:{gradebookId:str
    <div className={styles.tags}>{['Continue current project','Targeted booth coaching','Instructor demonstration','Scrap exercise','Additional coupon',...CATEGORIES.flatMap(c=>[...c.tags])].map(tag=><button key={tag} disabled={busy} aria-pressed={focus.includes(tag)} onClick={()=>setFocus(f=>f.includes(tag)?f.filter(t=>t!==tag):f.length<12?[...f,tag]:f)}>{tag}</button>)}</div>
    <button className={styles.primary} disabled={busy} onClick={practice}>Save practice focus</button> <button disabled={busy} onClick={()=>setCoaching(null)}>Cancel</button>
   </section>}
-  {studentQr&&<StudentQrCard key={studentQr.student.student_id} qr={studentQr} busy={busy} onRetry={()=>void showStudentQr(studentQr.student,studentQr.afterCoaching)}/>}
+  {studentQr&&<StudentQrCard key={studentQr.student.student_id} qr={studentQr} busy={busy} onRetry={()=>{const student=board?.students.find(s=>s.student_id===studentQr.student.student_id);if(student)void showStudentQr(student,studentQr.afterCoaching);}}/>}
   {board&&<div className={styles.card+' '+styles.scroll}><table><caption>Check queue and current work</caption><thead><tr><th>Student</th><th>Current work</th><th>Status / focus</th><th>Action</th></tr></thead><tbody>
    {students.map(s=><tr key={s.student_id}><td>{s.display_name}{!s.active?' (inactive)':''}</td><td>{assignmentLabel(s.current_competency)}<br/><small>Core {Math.min(s.current_competency,8)} / 8</small></td>
     <td>{s.current_competency===9?'Complete':s.requested_at?'Ready for check':'Practice'}{s.requested_at&&<small> · {new Date(s.requested_at).toLocaleTimeString()}</small>}

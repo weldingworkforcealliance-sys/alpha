@@ -26,6 +26,9 @@ export function fixture() {
       second_attempt_id: `shop-${suffix}-3`, grade: 88, gradebook_attempt_id: `attempt-${suffix}`, completed_at: '2026-09-19T14:00:00Z' });
     for (const revision of [1, 2]) datasets.gradebook_revisions.push({ id: `${suffix}-${revision}`, gradebook_id: `book-${suffix}`, attempt_id: `attempt-${suffix}`, score: revision === 1 ? 0 : 76 });
     datasets.gradebook_finalizations.push({ id: `final-${suffix}`, gradebook_id: `book-${suffix}`, student_id: `student-${suffix}`, snapshot: { grade: 76 } });
+    datasets.tower_records.push({gradebook_id: `book-${suffix}`,student_id: `student-${suffix}`,revision:'2',data:{lab:{}},
+      lab_coaching:{revision:2,assignment_id:'synthetic-assignment',focus:['Travel speed'],note:'Keep the arc steady',
+        history:[{revision:1,focus:['Arc length']},{revision:2,focus:['Travel speed']}]},lab_requested_at:'2026-09-20T12:00:00Z'});
     datasets.tower_permanent_tests.push({ id: `test-${suffix}`, gradebook_id: `book-${suffix}`, student_id: `student-${suffix}` });
     datasets.tower_certificates.push({ id: `cert-${suffix}`, test_id: `test-${suffix}`, gradebook_id: `book-${suffix}`, student_id: `student-${suffix}`, snapshot: { synthetic: true } });
     datasets.attendance_pairs.push({ id: `pair-${suffix}`, school_id: school, primary_section_id: `section-${suffix}` });

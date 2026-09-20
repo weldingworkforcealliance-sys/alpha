@@ -1,0 +1,43 @@
+.lab {max-width:1200px;margin:0 auto;padding:24px;color:inherit}
+.heading,.row,.actions {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.card {border:1px solid #78889a66;border-radius:12px;padding:20px;margin:16px 0}
+.lab button,.lab select,.lab input {font:inherit;border:1px solid #63766a;border-radius:8px;padding:10px 14px;background:transparent;color:inherit}
+.lab button {cursor:pointer;min-height:44px}
+.lab button:disabled {opacity:.55;cursor:default}
+.lab button[aria-pressed=true] {background:#b5edc3!important;color:#102817!important;border-color:#b5edc3!important;font-weight:700}
+.primary {background:#b5edc3!important;color:#102817!important;font-weight:700}
+.muted {opacity:.8}
+.alert {border-left:5px solid #efbc59;padding:12px;background:#352c1c;color:#ffe3aa}
+.error {border-left:5px solid #ffb3ba;padding:12px;background:#3a1d22;color:#ffd8dc}
+.ratings {border:0;padding:12px 0;margin:0}
+.ratings legend {font-weight:700;padding:0}
+.choices {display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tags {display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.grade {font-size:1.6rem;font-weight:800}
+.scroll {overflow:auto}
+.lab table {width:100%;border-collapse:collapse;text-align:left}
+.lab th,.lab td {padding:12px;border-bottom:1px solid #405449}
+.lab caption {text-align:left;font-weight:700;margin-bottom:10px}
+.dialog {border:2px solid #b5edc3}
+.lab a {color:inherit;text-decoration:underline}
+.lab label {display:block;margin:10px 0}
+.lab input {max-width:100%;box-sizing:border-box}
+.lab summary {cursor:pointer;padding:10px 0}
+@media(max-width:600px){.lab{padding:12px}.card{padding:14px}.choices{grid-template-columns:repeat(2,1fr)}.lab th,.lab td{padding:8px}.lab h1{font-size:1.7rem}}
+
+.studentQr {display:flex;align-items:center;justify-content:space-between;gap:24px;border:2px solid #b5edc3;scroll-margin-block:24px}
+.studentQr:focus {outline:3px solid #79b8f3;outline-offset:3px}
+.qrDetails {min-width:0}
+.studentQr h3 {font-size:1.5rem;margin:8px 0;overflow-wrap:anywhere}
+.qrInstruction {font-size:1.15rem;font-weight:700}
+.saved {display:inline-block;margin:0;padding:8px 12px;border-radius:8px;background:#b5edc3;color:#102817;font-weight:700}
+.qrImage {display:block;width:280px;height:auto;max-width:100%;flex-shrink:0;background:#fff;border-radius:8px}
+.qrActions {display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+@media(max-width:700px){.studentQr{flex-direction:column;align-items:stretch}.qrImage{align-self:center}}
+
+.lab {max-width:1200px;margin:0 auto;padding:16px}
+.lab textarea {width:100%;box-sizing:border-box;min-height:90px;font:inherit;border-radius:8px;padding:12px}
+.lab select {max-width:100%}
+.focusList {display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.formTitle {font-size:1.4rem;margin:0 0 8px}
+.queue {display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
