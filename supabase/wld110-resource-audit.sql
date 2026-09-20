@@ -10,6 +10,7 @@ declare
   v_dice integer;
   v_tube integer;
   v_bad_timing integer;
+  v_student_safe integer;
 begin
   select count(*) into v_blank
   from public.course_guide_day_resources r
@@ -56,6 +57,15 @@ begin
     and r.rights_basis='licensed'
     and r.license_notes ilike '%purchased courseware%';
   if v_licensed<>69 then raise exception 'WLD 110 licensed courseware rows: %',v_licensed; end if;
+
+  select count(*) into v_student_safe
+  from public.course_guide_day_resources r
+  join public.course_guide_days d on d.id=r.guide_day_id
+  join public.course_guides g on g.id=d.guide_id
+  where g.guide_name='WLD 110 College Day/Night 23-Day Instructor Guide'
+    and r.sequence_number in (1,2,3)
+    and r.student_safe=true;
+  if v_student_safe<>0 then raise exception 'Instructor courseware shown on student displays: %',v_student_safe; end if;
 
   select count(*) into v_fabm
   from public.course_guide_day_resources r

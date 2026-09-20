@@ -12,6 +12,8 @@ The source decks contain 61, 80, and 103 slides respectively. The supplied origi
 
 The asset population only changes rows for the mapped PCCC chapter/slide keys. The legacy OFC slide 13 is outside the current mappings and remains untouched in production. No curriculum, outcomes, modules, schedule segments, planner links, or resource URLs are changed by asset population.
 
+The 69 purchased-courseware resource records are marked instructor-only with `student_safe=false`. The existing student display uses that field to exclude them. Students continue to use their separate AWS learning resources.
+
 ## Verification
 
 - `tests/wld110-courseware-resources.test.ts` exercises all 69 day/chapter views, exact image endpoints, chapter bounds, advertised source ranges, duplicate selections, and previous/next navigation.
