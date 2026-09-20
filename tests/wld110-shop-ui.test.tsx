@@ -5,7 +5,8 @@ import {AttemptHistory,GradeForm,StudentShopCard} from '../app/shop/components';
 import ShopWorkspace from '../app/shop/workspace';
 import StudentPageClient from '../app/shop/student/student-client';
 import {defaultRatings,type ShopAttempt,type ShopStudent} from '../lib/wld110-shop';
-const mocks=vi.hoisted(()=>({rpc:vi.fn()}));
+const mocks=vi.hoisted(()=>({rpc:vi.fn(),qr:vi.fn()}));
+vi.mock('qrcode',()=>({default:{toDataURL:mocks.qr}}));
 vi.mock('@/lib/supabase-browser',()=>({getSupabase:()=>({rpc:mocks.rpc})}));
 const student=(patch:Partial<ShopStudent>={}):ShopStudent=>({
  student_id:'student-1',display_name:'Synthetic Student',active:true,current_competency:0,revision:0,
@@ -15,7 +16,7 @@ const attempt=(number:number,total=90):ShopAttempt=>({
  id:'attempt-'+number,competency:0,attempt_number:number,ratings:defaultRatings(),total,tags:{},
  sizer_reference:'ltg-tower-bead-size-v1',sizer_note:'Checked',recorded_at:'2026-09-19T12:00:00Z',recorded_by:'qa-instructor',
 });
-beforeEach(()=>{mocks.rpc.mockReset();sessionStorage.clear();window.history.replaceState(null,'','/');});
+beforeEach(()=>{mocks.rpc.mockReset();mocks.qr.mockReset().mockResolvedValue('data:image/png;base64,synthetic-qr');sessionStorage.clear();window.history.replaceState(null,'','/');});
 afterEach(()=>{cleanup();vi.restoreAllMocks();});
 describe('quick grading',()=>{
  it('supports the one-tap Good grade and exact numeric total',()=>{
@@ -80,13 +81,25 @@ describe('instructor board saves and coaching',()=>{
  });
  it('shows pacing review at six meetings, and practice records no grade',async()=>{
   const original=student({position_meetings:6});
-  mocks.rpc.mockImplementation(async(name:string)=>name==='open_wld110_shop'?{data:{night:6,students:[original]},error:null}:{data:{...original,revision:1,focus:['Travel speed']},error:null});
+  mocks.rpc.mockImplementation(async(name:string)=>{
+   if(name==='open_wld110_shop')return {data:{night:6,students:[original]},error:null};
+   if(name==='issue_wld110_student_link')return {data:'synthetic-token',error:null};
+   return {data:{...original,revision:1,focus:['Travel speed']},error:null};
+  });
   render(<ShopWorkspace gradebookId="book-1"/>);
   await screen.findByText('Pacing review · 6 meetings in position');
   fireEvent.click(screen.getByRole('button',{name:'Practice / coach'}));
   fireEvent.click(screen.getByRole('button',{name:'Travel speed'}));
   fireEvent.click(screen.getByRole('button',{name:'Save practice focus'}));
-  await screen.findByText('Practice focus saved. No grade recorded.');
+  await screen.findByText('Coaching saved · No grade recorded');
+  const qr=within(screen.getByRole('region',{name:'Student QR code'}));
+  await qr.findByRole('img',{name:'Scan to open the shop card for Synthetic Student'});
+  expect(qr.getByRole('heading',{name:'Synthetic Student'})).toBeTruthy();
+  expect(qr.getByText(/Travel speed/)).toBeTruthy();
+  expect(qr.getByRole('link',{name:'Open student shop card'}).getAttribute('href')).toBe(window.location.origin+'/shop/student#synthetic-token');
+  expect(mocks.qr).toHaveBeenCalledWith(window.location.origin+'/shop/student#synthetic-token',expect.objectContaining({width:280,margin:4,errorCorrectionLevel:'M'}));
+  expect(screen.queryByRole('button',{name:'Save practice focus'})).toBeNull();
+  expect(document.activeElement).toBe(screen.getByRole('region',{name:'Student QR code'}));
   expect(mocks.rpc.mock.calls.some(c=>c[0]==='grade_wld110_weld')).toBe(false);
   expect(mocks.rpc).toHaveBeenCalledWith('coach_wld110_practice',{p_gradebook_id:'book-1',p_student_id:'student-1',p_revision:0,p_focus:['Travel speed']});
  });
@@ -97,6 +110,81 @@ describe('instructor board saves and coaching',()=>{
   const rows=screen.getAllByRole('row');expect(rows[1].textContent).toContain('Ready Student');
  });
 });
+describe('student QR after coaching',()=>{
+ function setup(options:{coachingError?:boolean;linkError?:boolean}={}){
+  let current=student();
+  let linkTries=0;
+  mocks.rpc.mockImplementation(async(name:string,args:Record<string,unknown>)=>{
+   if(name==='open_wld110_shop')return {data:{night:1,students:[current,student({student_id:'second',display_name:'Second Student'})]},error:null};
+   if(name==='coach_wld110_practice'){
+    if(options.coachingError)return {data:null,error:{message:'Coaching could not save'}};
+    current={...current,revision:current.revision+1,focus:args.p_focus as string[]};
+    return {data:current,error:null};
+   }
+   if(name==='issue_wld110_student_link'){
+    if(options.linkError&&linkTries++===0)return {data:null,error:{message:'Offline'}};
+    return {data:'token-'+args.p_student_id,error:null};
+   }
+   throw Error(name);
+  });
+ }
+ async function coach(){
+  const row=await screen.findByRole('row',{name:/Synthetic Student/});
+  fireEvent.click(within(row).getByRole('button',{name:'Practice / coach'}));
+  fireEvent.click(screen.getByRole('button',{name:'Travel speed'}));
+  fireEvent.click(screen.getByRole('button',{name:'Save practice focus'}));
+ }
+ it('does not issue a QR when coaching fails',async()=>{
+  setup({coachingError:true});render(<ShopWorkspace gradebookId="book-1"/>);
+  await coach();
+  expect(await screen.findByRole('alert')).toHaveProperty('textContent','Coaching could not save');
+  expect(screen.getByRole('button',{name:'Save practice focus'})).toBeTruthy();
+  expect(screen.queryByRole('region',{name:'Student QR code'})).toBeNull();
+  expect(mocks.rpc.mock.calls.filter(c=>c[0]==='issue_wld110_student_link')).toHaveLength(0);
+ });
+ it('keeps coaching saved when the link fails and retries only the QR step',async()=>{
+  setup({linkError:true});render(<ShopWorkspace gradebookId="book-1"/>);
+  await coach();
+  await screen.findByText('Student QR code could not load. Try again.');
+  expect(screen.getByText('Coaching saved · No grade recorded')).toBeTruthy();
+  expect(screen.queryByRole('button',{name:'Save practice focus'})).toBeNull();
+  fireEvent.click(screen.getByRole('button',{name:'Retry student QR'}));
+  await screen.findByRole('img',{name:'Scan to open the shop card for Synthetic Student'});
+  expect(mocks.rpc.mock.calls.filter(c=>c[0]==='coach_wld110_practice')).toHaveLength(1);
+  expect(mocks.rpc.mock.calls.filter(c=>c[0]==='issue_wld110_student_link')).toHaveLength(2);
+  expect(mocks.rpc.mock.calls.filter(c=>c[0]==='grade_wld110_weld')).toHaveLength(0);
+ });
+ it('retries QR encoding with the same link instead of replacing it again',async()=>{
+  setup();mocks.qr.mockRejectedValueOnce(new Error('Canvas unavailable'));
+  render(<ShopWorkspace gradebookId="book-1"/>);await coach();
+  await screen.findByText('Student QR code could not load. Try again.');
+  expect(screen.getByRole('link',{name:'Open student shop card'})).toBeTruthy();
+  fireEvent.click(screen.getByRole('button',{name:'Retry student QR'}));
+  await screen.findByRole('img',{name:'Scan to open the shop card for Synthetic Student'});
+  expect(mocks.rpc.mock.calls.filter(c=>c[0]==='issue_wld110_student_link')).toHaveLength(1);
+  expect(mocks.qr.mock.calls[1][0]).toBe(mocks.qr.mock.calls[0][0]);
+ });
+ it('reuses the same student QR for later coaching and isolates other students',async()=>{
+  setup();render(<ShopWorkspace gradebookId="book-1"/>);await coach();
+  await screen.findByRole('img',{name:'Scan to open the shop card for Synthetic Student'});
+  const second=screen.getByRole('row',{name:/Second Student/});
+  fireEvent.click(within(second).getByRole('button',{name:'Student QR'}));
+  await screen.findByRole('img',{name:'Scan to open the shop card for Second Student'});
+  expect(screen.queryByRole('img',{name:'Scan to open the shop card for Synthetic Student'})).toBeNull();
+  expect(screen.getByRole('link',{name:'Open student shop card'}).getAttribute('href')).toBe(window.location.origin+'/shop/student#token-second');
+  const first=screen.getByRole('row',{name:/Synthetic Student/});
+  fireEvent.click(within(first).getByRole('button',{name:'Practice / coach'}));
+  expect(screen.queryByRole('region',{name:'Student QR code'})).toBeNull();
+  fireEvent.click(screen.getByRole('button',{name:'Arc length'}));
+  fireEvent.click(screen.getByRole('button',{name:'Save practice focus'}));
+  await screen.findByRole('img',{name:'Scan to open the shop card for Synthetic Student'});
+  const card=within(screen.getByRole('region',{name:'Student QR code'}));
+  expect(card.getByText(/Travel speed · Arc length/)).toBeTruthy();
+  expect(card.getByRole('link',{name:'Open student shop card'}).getAttribute('href')).toBe(window.location.origin+'/shop/student#token-student-1');
+  expect(mocks.rpc.mock.calls.filter(c=>c[0]==='issue_wld110_student_link'&&c[1].p_student_id==='student-1')).toHaveLength(1);
+ });
+});
+
 describe('minimal student workflow',()=>{
  it('shows assignment, focus, post-grading grade and next assignment',()=>{
   render(<StudentShopCard student={student({focus:['Travel speed'],attempts:[attempt(1)]})} busy={false} onRequest={()=>{}}/>);
