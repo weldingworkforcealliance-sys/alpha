@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import PlannerActivity from '../planner-activity';
 import { getSupabase } from '@/lib/supabase-browser';
 import {
   publishSelectedSection,
@@ -510,7 +511,7 @@ export default function AgendaPage() {
                 </div>
               </div>
             ) : (
-              <p className="activity-text">{activity}</p>
+              <PlannerActivity text={activity} fallbackTitle={guideSegment?.segment_title || ''} headingLevel={4} />
             )}
           </div>
 

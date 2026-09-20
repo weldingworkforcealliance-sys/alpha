@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import PlannerActivity from '../planner-activity';
 import { getSupabase } from '@/lib/supabase-browser';
 import { SCHOOL_DASHBOARD_ROLES } from '@/lib/access-roles';
 import { guardedSignOut } from '@/lib/guarded-signout';
@@ -1032,8 +1033,8 @@ export default function DashboardPage() {
                           <p>{guideDay.objective || 'No objective entered.'}</p>
                         </div>
 
-                        <div className="guide-outcomes">
-                          <span className="guide-label">Protected Outcomes</span>
+                        <details className="guide-outcomes planner-reference">
+                          <summary>Protected outcomes · {protectedOutcomes.map((outcome) => outcome.outcome_code).join(', ') || 'View'}</summary>
                           <div className="outcome-chips">
                             {protectedOutcomes.length > 0 ? (
                               protectedOutcomes.map((outcome) => (
@@ -1046,7 +1047,7 @@ export default function DashboardPage() {
                               <span className="guide-muted">No linked outcomes.</span>
                             )}
                           </div>
-                        </div>
+                        </details>
                       </div>
 
                       <div className="guide-body-grid">
@@ -1068,33 +1069,19 @@ export default function DashboardPage() {
                               </span>
                             </div>
 
-                            <div className="agenda-table-wrap">
-                              <table className="agenda-table">
-                                <thead>
-                                  <tr>
-                                    <th>Time</th>
-                                    <th>Activity</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {guideSegments.map((segment) => (
-                                    <tr key={segment.id}>
-                                      <td>
-                                        {minuteRange(
-                                          segment.start_minute,
-                                          segment.end_minute,
-                                          segment.planned_minutes
-                                        )}
-                                      </td>
-                                      <td>
-                                        {segment.instructor_actions ||
-                                          segment.segment_title ||
-                                          'Activity'}
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
+                            <div className="planner-agenda">
+                              {guideSegments.map((segment) => (
+                                <article className="planner-agenda-slot" key={segment.id}>
+                                  <div className="planner-time">
+                                    <strong>{minuteRange(segment.start_minute, segment.end_minute, segment.planned_minutes)}</strong>
+                                    <span>{segment.planned_minutes} minutes</span>
+                                  </div>
+                                  <PlannerActivity
+                                    text={segment.instructor_actions || segment.segment_title || 'Activity'}
+                                    fallbackTitle={segment.segment_title || ''}
+                                  />
+                                </article>
+                              ))}
                             </div>
                           </div>
 
@@ -1224,10 +1211,8 @@ export default function DashboardPage() {
                         </aside>
                       </div>
 
-                      <div className="coaching-card">
-                        <div className="coaching-heading">
-                          <span className="guide-label">Instructor Coaching</span>
-                        </div>
+                      <details className="coaching-card planner-reference">
+                        <summary>Instructor coaching &amp; support</summary>
                         <div className="coaching-grid">
                           {guideDay.weekly_coaching_focus && (
                             <div>
@@ -1251,7 +1236,7 @@ export default function DashboardPage() {
                             <p>{guideDay.keep_momentum || 'No momentum note entered.'}</p>
                           </div>
                         </div>
-                      </div>
+                      </details>
                     </>
                   ) : (
                     <div className="guide-loading">
