@@ -99,7 +99,7 @@ export default function ShopWorkspace({gradebookId,onSaveState}:{gradebookId:str
    <div className={styles.tags}>{['Continue current project','Targeted booth coaching','Instructor demonstration','Scrap exercise','Additional coupon',...CATEGORIES.flatMap(c=>[...c.tags])].map(tag=><button key={tag} disabled={busy} aria-pressed={focus.includes(tag)} onClick={()=>setFocus(f=>f.includes(tag)?f.filter(t=>t!==tag):f.length<12?[...f,tag]:f)}>{tag}</button>)}</div>
    <button className={styles.primary} disabled={busy} onClick={practice}>Save practice focus</button> <button disabled={busy} onClick={()=>setCoaching(null)}>Cancel</button>
   </section>}
-  {studentQr&&<StudentQrCard key={studentQr.student.student_id} qr={studentQr} busy={busy} onRetry={()=>void showStudentQr(studentQr.student,studentQr.afterCoaching)}/>}
+  {studentQr&&<StudentQrCard key={studentQr.student.student_id} qr={studentQr} busy={busy} onRetry={()=>{const student=board?.students.find(s=>s.student_id===studentQr.student.student_id);if(student)void showStudentQr(student,studentQr.afterCoaching);}}/>}
   {board&&<div className={styles.card+' '+styles.scroll}><table><caption>Check queue and current work</caption><thead><tr><th>Student</th><th>Current work</th><th>Status / focus</th><th>Action</th></tr></thead><tbody>
    {students.map(s=><tr key={s.student_id}><td>{s.display_name}{!s.active?' (inactive)':''}</td><td>{assignmentLabel(s.current_competency)}<br/><small>Core {Math.min(s.current_competency,8)} / 8</small></td>
     <td>{s.current_competency===9?'Complete':s.requested_at?'Ready for check':'Practice'}{s.requested_at&&<small> · {new Date(s.requested_at).toLocaleTimeString()}</small>}
