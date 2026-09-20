@@ -18,7 +18,8 @@ type SlideAsset = {
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const chapter = (url.searchParams.get('chapter') || '').toLowerCase();
-  const slide = Number.parseInt(url.searchParams.get('slide') || '', 10);
+  const slideValue = url.searchParams.get('slide') || '';
+  const slide = /^[1-9]\d{0,2}$/.test(slideValue) ? Number(slideValue) : NaN;
 
   if (!ALLOWED_CHAPTERS.has(chapter) || !Number.isInteger(slide) || slide < 1 || slide > 200) {
     return new Response('Invalid courseware slide.', { status: 400 });
@@ -54,7 +55,7 @@ export async function GET(request: Request) {
     headers: {
       'Content-Type': asset.mime_type || 'image/webp',
       'Content-Disposition': `inline; filename="${chapter}-slide-${slide}.webp"`,
-      'Cache-Control': 'private, max-age=3600',
+      'Cache-Control': 'private, no-store',
       'X-Content-Type-Options': 'nosniff',
       'X-Robots-Tag': 'noindex, nofollow, noarchive',
     },

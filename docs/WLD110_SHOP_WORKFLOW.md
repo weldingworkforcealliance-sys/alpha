@@ -25,8 +25,15 @@ introduced. Each formal attempt retains the sizer reference version and optional
 measurement/inspection note.
 
 **Practice / coach** saves a current focus and clears a check request without
-creating an attempt or grade. **Student link** issues a personal shop card for
-one active student; reissuing replaces the previous link. The card shows the
+creating an attempt or grade. After a successful coaching save, the form is replaced
+by that student's named QR card and saved practice focus. The student scans it
+to open their personal shop card immediately. **Student QR** also opens the card
+directly from a roster row, with open/copy link fallbacks.
+
+QR images are generated locally in the browser. A student's existing link is
+reused within the current board session, including later coaching saves. The
+first issuance in a new session replaces their previous link. If QR preparation
+fails, coaching remains saved and **Retry student QR** retries only the QR step. The card shows the
 assignment, electrode, coupon, practice/check status, focus, latest grade,
 last completed competency grade, and next assignment.
 

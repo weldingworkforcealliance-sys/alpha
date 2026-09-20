@@ -27,6 +27,7 @@ h1{margin:5px 0 8px;font-size:30px;color:#5f260d}.lede{margin:0;color:var(--mute
 .slide-figure a{color:#9fd9ff;font-weight:800}
 @media(max-width:760px){.page{margin:0;box-shadow:none}.hero,.content{padding:18px}.topgrid,.twocol{grid-template-columns:1fr}.visual{flex-direction:column}.arrow{justify-content:center;transform:rotate(90deg)}}
 @media(max-width:620px){.slide-gallery{grid-template-columns:1fr}.slide-image{display:block;width:100%;height:auto;background:#111}.slide-link{display:block;background:#111}}
+.nav select{max-width:100%;min-width:0}
 </style>
 </head>
 <body>
@@ -74,7 +75,7 @@ function render(n){
   document.getElementById('target').textContent=x.o;
   fillList('teach',x.teach); fillList('demo',x.demo); fillList('watch',x.watch); fillList('questions',x.q);
   document.getElementById('visual').innerHTML=x.v.map((s,i)=>'<div class="step">'+s+'</div>'+(i<x.v.length-1?'<div class="arrow">→</div>':'')).join('');
-  document.getElementById('fullSlides').innerHTML=(FULL_SLIDES[x.d]||[]).map(slide=>'<figure class="slide-figure"><a class="slide-link" href="'+COURSEWARE_SLIDE+slide+'" target="_blank" rel="noopener noreferrer"><img class="slide-image" loading="lazy" alt="Chapter 8 — Oxygen Gas Cutting original slide '+slide+'" src="'+COURSEWARE_SLIDE+slide+'"></a><figcaption><strong>Original full slide '+slide+'</strong> · <a href="'+COURSEWARE_SLIDE+slide+'" target="_blank" rel="noopener noreferrer">Open full screen</a></figcaption></figure>').join('');
+  document.getElementById('fullSlides').innerHTML=(FULL_SLIDES[x.d]||[]).map(slide=>'<figure class="slide-figure"><a class="slide-link" href="'+COURSEWARE_SLIDE+slide+'" target="_blank" rel="noopener noreferrer"><img class="slide-image" width="1920" height="1440" loading="lazy" alt="Chapter 8 — Oxygen Gas Cutting original slide '+slide+'" src="'+COURSEWARE_SLIDE+slide+'"></a><figcaption><strong>Original full slide '+slide+'</strong> · <a href="'+COURSEWARE_SLIDE+slide+'" target="_blank" rel="noopener noreferrer">Open full screen</a></figcaption></figure>').join('');
   document.getElementById('daySelect').value=String(x.d);
   document.getElementById('prev').disabled=x.d===1; document.getElementById('next').disabled=x.d===23;
 }
