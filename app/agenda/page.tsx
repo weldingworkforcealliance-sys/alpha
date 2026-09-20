@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import PlannerActivity from '../planner-activity';
+import PlannerTimeBudget from '../planner-time-budget';
+import { getPlannerTimeBudget } from '@/lib/planner-time-budget';
 import { getSupabase } from '@/lib/supabase-browser';
 import {
   publishSelectedSection,
@@ -39,6 +41,8 @@ type GuideDay = {
 
 type GuideSegment = {
   id: string;
+  notes: string | null;
+  segment_type: string;
   sequence_number: number;
   segment_title: string | null;
   instructor_actions: string | null;
@@ -116,6 +120,7 @@ export default function AgendaPage() {
 
   const [guideDay, setGuideDay] = useState<GuideDay | null>(null);
   const [guideSegments, setGuideSegments] = useState<GuideSegment[]>([]);
+  const guideTimeBudget = getPlannerTimeBudget(guideSegments);
   const [mathLesson, setMathLesson] = useState<MathLesson | null>(null);
   const [mathSegments, setMathSegments] = useState<MathSegment[]>([]);
   const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
@@ -204,7 +209,7 @@ export default function AgendaPage() {
           supabase
             .from('course_guide_day_segments')
             .select(
-              'id, sequence_number, segment_title, instructor_actions, planned_minutes, start_minute, end_minute'
+              'id, sequence_number, segment_title, instructor_actions, planned_minutes, start_minute, end_minute, notes, segment_type'
             )
             .eq('guide_day_id', plannerDay.guide_day_id)
             .order('sequence_number'),
@@ -659,11 +664,12 @@ export default function AgendaPage() {
                   <div className="eyebrow">{mathLesson ? 'Section 1 · Daily Agenda' : 'Daily Agenda'}</div>
                   <h3>{selectedSection?.course_code || 'Course'} Instruction</h3>
                 </div>
-                <strong>{guideSegments.reduce((sum, item) => sum + item.planned_minutes, 0)} min</strong>
+                <strong>{guideTimeBudget.usableMinutes} min</strong>
               </div>
+              <PlannerTimeBudget {...guideTimeBudget} />
               <div className="slot-list">
-                {guideSegments.map((segment, index) =>
-                  renderSlot('guide', segment, index, guideSegments.length)
+                {guideTimeBudget.teachingSegments.map((segment, index) =>
+                  renderSlot('guide', segment, index, guideTimeBudget.teachingSegments.length)
                 )}
               </div>
             </section>

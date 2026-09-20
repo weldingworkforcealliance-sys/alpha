@@ -121,3 +121,19 @@
   [data-planner-activity] .planner-cue-label { color: #111 !important; }
   [data-planner-activity] .planner-cue { background: transparent; }
 }
+
+
+.planner-time-budget {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--border, #6b8090);
+  border-left: 4px solid var(--accent, #e67e22);
+  border-radius: 10px;
+  color: var(--text, #e9f0f4);
+  background: var(--surface, #182c38);
+}
+.planner-time-budget strong { font-size: 19px; line-height: 1.35; }
+.planner-time-budget span { font-size: 14px; line-height: 1.45; }
+.planner-time-budget p { margin: 0; font-size: 15px; line-height: 1.5; }

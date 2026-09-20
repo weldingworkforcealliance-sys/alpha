@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import PlannerActivity from '../planner-activity';
+import PlannerTimeBudget from '../planner-time-budget';
+import { getPlannerTimeBudget } from '@/lib/planner-time-budget';
 import { getSupabase } from '@/lib/supabase-browser';
 import { SCHOOL_DASHBOARD_ROLES } from '@/lib/access-roles';
 import { guardedSignOut } from '@/lib/guarded-signout';
@@ -84,6 +86,7 @@ interface GuideSegment {
   id: string;
   sequence_number: number;
   segment_type: string;
+  notes: string | null;
   segment_title: string | null;
   planned_minutes: number;
   instructor_actions: string | null;
@@ -307,7 +310,7 @@ export default function DashboardPage() {
         supabase
           .from('course_guide_day_segments')
           .select(
-            'id, sequence_number, segment_type, segment_title, planned_minutes, instructor_actions, start_minute, end_minute'
+            'id, sequence_number, segment_type, segment_title, planned_minutes, instructor_actions, start_minute, end_minute, notes'
           )
           .eq('guide_day_id', guideDayId)
           .order('sequence_number'),
@@ -720,10 +723,8 @@ export default function DashboardPage() {
       )
     : 0;
 
-  const guideInstructionalMinutes = guideSegments.reduce(
-    (total, segment) => total + segment.planned_minutes,
-    0
-  );
+  const guideTimeBudget = getPlannerTimeBudget(guideSegments);
+  const guideInstructionalMinutes = guideTimeBudget.usableMinutes;
   const plannedInstructionalMinutes =
     guideInstructionalMinutes + (mathLesson?.planned_minutes ?? 0);
   const selectedCourseLabel =
@@ -1061,16 +1062,14 @@ export default function DashboardPage() {
                                 <h4>{mathLesson ? `${selectedCourseLabel} Agenda` : 'Daily Agenda'}</h4>
                               </div>
                               <span className="agenda-duration">
-                                {guideSegments.reduce(
-                                  (sum, segment) => sum + segment.planned_minutes,
-                                  0
-                                )}{' '}
+                                {guideInstructionalMinutes}{' '}
                                 min
                               </span>
                             </div>
 
+                            <PlannerTimeBudget {...guideTimeBudget} />
                             <div className="planner-agenda">
-                              {guideSegments.map((segment) => (
+                              {guideTimeBudget.teachingSegments.map((segment) => (
                                 <article className="planner-agenda-slot" key={segment.id}>
                                   <div className="planner-time">
                                     <strong>{minuteRange(segment.start_minute, segment.end_minute, segment.planned_minutes)}</strong>
