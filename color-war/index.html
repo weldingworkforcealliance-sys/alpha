@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Color War v0.17 — Two-Phone Orientation</title>
+<title>Color War v0.17.1 — Live Two-Player Flip</title>
 <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#081019;color:#fff;font-family:Arial,sans-serif}button,input{font:inherit}button{touch-action:manipulation}
@@ -83,7 +83,7 @@ input{width:100%;background:#08111c;color:#fff;border:1px solid #ffffff33;border
 </head>
 <body><div class="wrap">
 <section id="lobby" class="lobby">
-<div class="card"><h1>COLOR WAR — v0.17</h1><div class="muted">Play across two phones, or play Blue against the computer on one device.</div></div>
+<div class="card"><h1>COLOR WAR — v0.17.1</h1><div class="muted">Play across two phones, or play Blue against the computer on one device.</div></div>
 <div class="grid2">
 <div class="card"><h3>BLUE PHONE</h3><button id="createBtn" class="btn blueBtn">CREATE GAME</button><div id="hostArea" class="hidden"><div class="muted" style="text-align:center;margin-top:10px">ROOM CODE</div><div id="roomCode" class="code">----</div></div></div>
 <div class="card"><h3>RED PHONE</h3><input id="joinCode" maxlength="4" inputmode="numeric" placeholder="4-digit code"><button id="joinBtn" class="btn redBtn" style="margin-top:8px;width:100%">JOIN GAME</button></div>
@@ -115,8 +115,12 @@ function orientationReady(){return vsComputer||!!(state?.orient?.blue&&state?.or
 function isFlipped(){return !vsComputer&&!!neighborDir&&((side==="blue"&&neighborDir==="left")||(side==="red"&&neighborDir==="right"))}
 function castleAtLeft(){let v=currentView(),left=v==="blue";return isFlipped()?!left:left}
 function setOrientation(dir){
-  if(vsComputer||localOriented||!state)return;
-  neighborDir=dir;localOriented=true;cfg();render();send("orient",{dir})
+  if(vsComputer||!state)return;
+  let first=!localOriented;
+  neighborDir=dir;
+  localOriented=true;
+  cfg();render();
+  if(first)send("orient",{dir})
 }
 function fp(s){return{side:s,castle:CASTLE_HP,food:4,foodClock:0,wood:0,stone:0,iron:0,farms:[],farmCooldown:0,miners:[],minerBuild:0,ready:[],trainQ:[],sieges:[],lanes:Array.from({length:9},()=>({groups:[]})),aiCycle:0}}
 function fs(){return{blue:fp("blue"),red:fp("red"),orient:{blue:false,red:false},frontier:LANE_RES.map((res,i)=>({res,amt:LANE_MAX,opened:false,openedAt:null,respawn:0})),route:null,time:TIME,winner:null,logs:["Place Farms, Miners, and every combat unit into the lane you choose."]}}
@@ -169,8 +173,8 @@ function cfg(){
   $("hp").className="hp "+v;
   $("hitNum").className="hitNum "+v;
   $("scoutBadge").classList.toggle("show",vsComputer&&v==="red");
-  $("swipeHint").classList.toggle("show",vsComputer);
-  $("swipeHint").textContent=v==="red"?"SWIPE RIGHT TO RETURN TO BLUE":"SWIPE LEFT TO SCOUT RED";
+  $("swipeHint").classList.toggle("show",vsComputer||(!vsComputer&&localOriented));
+  $("swipeHint").textContent=vsComputer?(v==="red"?"SWIPE RIGHT TO RETURN TO BLUE":"SWIPE LEFT TO SCOUT RED"):"SWIPE LEFT / RIGHT TO FLIP YOUR PHONE";
   updateOrientationOverlay()
 }
 function switchView(next){
@@ -467,14 +471,12 @@ function renderFarmsAndMiners(){
 }
 function render(){if(!state)return;updateOrientationOverlay();for(let i=0;i<9;i++)barr(i);let v=currentView(),p=state[v],h=Math.max(0,p.castle);$("hpNum").textContent=Math.ceil(h)+" / "+CASTLE_HP+" HP";$("hpFill").style.width=(h/CASTLE_HP*100)+"%";$("field").querySelectorAll(".mob,.minerPack,.farmIcon,.farmLane,.trainingBadge").forEach(x=>x.remove());$("board").querySelectorAll(".readyDeploy,.siegePark").forEach(x=>x.remove());renderArmies();renderReady();updateLaneTargets();renderSiege();renderFarmsAndMiners();if(v===side&&p.trainQ.length){let d=document.createElement("div");d.className="trainingBadge";d.textContent="TRAINING "+p.trainQ[0].type.toUpperCase()+" "+Math.ceil(p.trainQ[0].left)+"s • QUEUE "+p.trainQ.length;$("field").appendChild(d)}let openCount=state.frontier.filter(l=>l.opened).length;$("route").textContent=(!vsComputer&&!orientationReady()?"ORIENTING PHONES • ":(vsComputer?("VIEW "+v.toUpperCase()+" • "):""))+openCount+"/9 LANES OPEN • DOUBLE-DISTANCE KINGDOM";let m=Math.floor(state.time/60),s=Math.floor(state.time%60).toString().padStart(2,"0");$("timer").textContent=m+":"+s;$("log").textContent=state.logs.slice(-3).join(" • ");$("win").classList.toggle("show",!!state.winner);if(state.winner)$("winText").textContent=state.winner==="draw"?"DRAW":state.winner.toUpperCase()+" WINS"}
 $("board").addEventListener("pointerdown",e=>{
-  let orienting=!vsComputer&&!localOriented;
-  if((!vsComputer&&!orienting)||e.target.closest("button"))return;
+  if(e.target.closest("button")||(!vsComputer&&!state))return;
   swipeX=e.clientX;swipeY=e.clientY;swipePointer=e.pointerId;
   try{$("board").setPointerCapture(e.pointerId)}catch(_){}
 });
 $("board").addEventListener("pointermove",e=>{
-  let orienting=!vsComputer&&!localOriented;
-  if((!vsComputer&&!orienting)||swipePointer!==e.pointerId||swipeX===null)return;
+  if(swipePointer!==e.pointerId||swipeX===null)return;
   let dx=e.clientX-swipeX,dy=e.clientY-swipeY;
   if(Math.abs(dx)<55||Math.abs(dx)<Math.abs(dy)*1.15)return;
   e.preventDefault();
