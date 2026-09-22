@@ -179,6 +179,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 (() => {
   const API = 'https://qsmvgyyaemjmklceyikr.supabase.co/functions/v1/twinlane-api';
   const PAGE = location.origin + location.pathname;
+  const REALTIME_URL = 'wss://qsmvgyyaemjmklceyikr.supabase.co/realtime/v1/websocket?apikey=sb_publishable_pvvIlRcj-vro31h1Hng1jA_WL3oItk0&vsn=1.0.0';
   const params = new URLSearchParams(location.search);
   const joinSession = params.get('session') || '';
   const joinToken = params.get('join') || '';
@@ -226,6 +227,14 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   let shotSeq = 0;
   let netSample = null;
   let netVelocity = {ball:{x:0,y:0},pallino:{x:0,y:0}};
+  let realtimeSocket = null;
+  let realtimeTopic = '';
+  let realtimeJoinRef = '1';
+  let realtimeRef = 1;
+  let realtimeReady = false;
+  let heartbeatTimer = null;
+  let reconnectTimer = null;
+  let lastRealtimeFrameAt = 0;
 
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
   const nice=(s)=>String(s||'').charAt(0).toUpperCase()+String(s||'').slice(1);
@@ -379,6 +388,129 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   }
   requestAnimationFrame(animateDisplay);
 
+
+  function realtimeSend(event,payload){
+    if(!realtimeSocket || realtimeSocket.readyState!==WebSocket.OPEN || !realtimeReady || !realtimeTopic)return;
+    realtimeRef+=1;
+    realtimeSocket.send(JSON.stringify({
+      topic:realtimeTopic,
+      event:'broadcast',
+      payload:{event:event,payload:payload,type:'broadcast'},
+      ref:String(realtimeRef),
+      join_ref:realtimeJoinRef
+    }));
+  }
+
+  function applyRealtimePhysics(payload){
+    if(!payload || localSim)return;
+    const seq=Number(payload.seq||0);
+    if(seq < shotSeq)return;
+
+    shotSeq=seq;
+    lastRealtimeFrameAt=performance.now();
+
+    const newBall={x:Number(payload.ball_x??targetBall.x),y:Number(payload.ball_y??targetBall.y)};
+    const newPallino={x:Number(payload.pallino_x??targetPallino.x),y:Number(payload.pallino_y??targetPallino.y)};
+    const now=performance.now();
+
+    if(netSample){
+      const dt=Math.max(.016,(now-netSample.t)/1000);
+      netVelocity.ball.x=(newBall.x-netSample.ball.x)/dt;
+      netVelocity.ball.y=(newBall.y-netSample.ball.y)/dt;
+      netVelocity.pallino.x=(newPallino.x-netSample.pallino.x)/dt;
+      netVelocity.pallino.y=(newPallino.y-netSample.pallino.y)/dt;
+    }
+
+    netSample={t:now,ball:newBall,pallino:newPallino};
+    targetBall=newBall;
+    targetPallino=newPallino;
+
+    if(state){
+      state.ball_x=newBall.x;
+      state.ball_y=newBall.y;
+      state.pallino_x=newPallino.x;
+      state.pallino_y=newPallino.y;
+      state.ball_moving=Boolean(payload.moving);
+      state.ball_seq=seq;
+      if(Array.isArray(payload.settled_balls))state.settled_balls=payload.settled_balls;
+    }
+  }
+
+  function connectRealtime(){
+    if(!session)return;
+
+    if(realtimeSocket){
+      try{realtimeSocket.close();}catch{}
+      realtimeSocket=null;
+    }
+    if(heartbeatTimer)clearInterval(heartbeatTimer);
+    if(reconnectTimer)clearTimeout(reconnectTimer);
+
+    realtimeReady=false;
+    realtimeTopic='realtime:twinlane-'+session;
+    const ws=new WebSocket(REALTIME_URL);
+    realtimeSocket=ws;
+
+    ws.addEventListener('open',()=>{
+      realtimeJoinRef=String(Date.now());
+      realtimeRef+=1;
+      ws.send(JSON.stringify({
+        topic:realtimeTopic,
+        event:'phx_join',
+        payload:{
+          config:{
+            broadcast:{ack:false,self:false},
+            presence:{enabled:false},
+            private:false
+          }
+        },
+        ref:String(realtimeRef),
+        join_ref:realtimeJoinRef
+      }));
+
+      heartbeatTimer=setInterval(()=>{
+        if(ws.readyState===WebSocket.OPEN){
+          realtimeRef+=1;
+          ws.send(JSON.stringify({
+            topic:'phoenix',
+            event:'heartbeat',
+            payload:{},
+            ref:String(realtimeRef),
+            join_ref:null
+          }));
+        }
+      },20000);
+    });
+
+    ws.addEventListener('message',(event)=>{
+      let msg;
+      try{msg=JSON.parse(event.data);}catch{return;}
+      if(msg?.event==='phx_reply' && msg?.topic===realtimeTopic && msg?.payload?.status==='ok'){
+        realtimeReady=true;
+        debugEl.textContent='Realtime motion connected.';
+        return;
+      }
+      if(msg?.event==='broadcast' && msg?.topic===realtimeTopic){
+        const p=msg?.payload;
+        if(p?.event==='physics')applyRealtimePhysics(p.payload);
+        if(p?.event==='shot_complete'){
+          applyRealtimePhysics(p.payload);
+          void poll();
+        }
+      }
+    });
+
+    ws.addEventListener('close',()=>{
+      realtimeReady=false;
+      if(heartbeatTimer){clearInterval(heartbeatTimer);heartbeatTimer=null;}
+      if(session)reconnectTimer=setTimeout(connectRealtime,800);
+    });
+
+    ws.addEventListener('error',()=>{
+      realtimeReady=false;
+    });
+  }
+
   async function api(method,body,query='') {
     const opts={method,headers:{}};
     if(body){opts.headers['content-type']='application/json';opts.body=JSON.stringify(body);}
@@ -389,15 +521,23 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   }
 
   async function sendPhysics(ball,pallino,settledBalls,moving,seq) {
+    const frame={
+      ball_x:ball.x,ball_y:ball.y,
+      pallino_x:pallino.x,pallino_y:pallino.y,
+      settled_balls:settledBalls,
+      moving,seq,
+      sent_at:Date.now()
+    };
+
+    realtimeSend('physics',frame);
+
+    // Durable recovery snapshot only. Live motion rides the WebSocket.
     try{
       await api('POST',{
         action:'physics',session,token,
-        ball_x:ball.x,ball_y:ball.y,
-        pallino_x:pallino.x,pallino_y:pallino.y,
-        settled_balls:settledBalls,
-        moving,seq
+        ...frame
       });
-    }catch(e){debugEl.textContent='Physics send error: '+e.message;}
+    }catch(e){debugEl.textContent='Snapshot error: '+e.message;}
   }
 
   async function poll() {
@@ -408,7 +548,9 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       const newBall={x:Number(s.ball_x||50),y:Number(s.ball_y||8)};
       const newPallino={x:Number(s.pallino_x||52),y:Number(s.pallino_y||82)};
 
-      if(!localSim && netSample){
+      const realtimeFresh=(now-lastRealtimeFrameAt)<350;
+
+      if(!localSim && !realtimeFresh && netSample){
         const dt=Math.max(.025,(now-netSample.t)/1000);
         netVelocity.ball.x=(newBall.x-netSample.ball.x)/dt;
         netVelocity.ball.y=(newBall.y-netSample.ball.y)/dt;
@@ -416,11 +558,14 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         netVelocity.pallino.y=(newPallino.y-netSample.pallino.y)/dt;
       }
 
-      netSample={t:now,ball:newBall,pallino:newPallino};
-      state=s;
-      shotSeq=Number(s.ball_seq||0);
+      if(!realtimeFresh){
+        netSample={t:now,ball:newBall,pallino:newPallino};
+      }
 
-      if(!localSim){
+      state=s;
+      shotSeq=Math.max(shotSeq,Number(s.ball_seq||0));
+
+      if(!localSim && !realtimeFresh){
         targetBall=newBall;
         targetPallino=newPallino;
       }
@@ -469,7 +614,8 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       document.getElementById('joinLink').textContent=joinUrl;
       document.getElementById('qr').src=qrUrl;
       setStatus('Screen 1 ready. Scan the QR with Screen 2.');
-      startPolling(role==='launch' ? 120 : 50);
+      connectRealtime();
+      startPolling(500);
     }catch(e){setStatus('Create failed: '+e.message);}
   });
 
@@ -484,7 +630,8 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       session=joinSession;token=joinToken;isHost=false;
       joinPanel.classList.add('hidden');viewPanel.classList.remove('hidden');
       setStatus('Connected. Loading court…');
-      startPolling(role==='launch' ? 120 : 50);
+      connectRealtime();
+      startPolling(500);
     }catch(e){setStatus('Join failed: '+e.message);}
   });
 
@@ -631,6 +778,15 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         netSample=null;
         netVelocity={ball:{x:0,y:0},pallino:{x:0,y:0}};
 
+        realtimeSend('shot_complete',{
+          ball_x:50,ball_y:8,
+          pallino_x:pallino.x,pallino_y:pallino.y,
+          settled_balls:state.settled_balls,
+          moving:false,seq:shotSeq,
+          next_ball_number:state.next_ball_number,
+          sent_at:Date.now()
+        });
+
         await poll();
 
         setStatus(
@@ -677,9 +833,23 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       state.pallino_x=pallino.x;state.pallino_y=pallino.y;
       state.settled_balls=settledPayload;
 
-      if(now-lastSend>65){
+      if(now-lastSend>34){
         lastSend=now;
-        void sendPhysics(displayedBall,displayedPallino,settledPayload,true,shotSeq);
+        const frame={
+          ball_x:displayedBall.x,ball_y:displayedBall.y,
+          pallino_x:displayedPallino.x,pallino_y:displayedPallino.y,
+          settled_balls:settledPayload,
+          moving:true,seq:shotSeq,
+          sent_at:Date.now()
+        };
+        realtimeSend('physics',frame);
+
+        // Save a recovery snapshot only every ~220ms.
+        if(!state._lastSnapshotAt || now-state._lastSnapshotAt>220){
+          state._lastSnapshotAt=now;
+          void api('POST',{action:'physics',session,token,...frame})
+            .catch(e=>{debugEl.textContent='Snapshot error: '+e.message;});
+        }
       }
 
       render();
@@ -720,7 +890,12 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     setStatus('Configure Screen 2, then join.');
   }
 
-  window.addEventListener('beforeunload',()=>{if(pollTimer)clearInterval(pollTimer);});
+  window.addEventListener('beforeunload',()=>{
+    if(pollTimer)clearInterval(pollTimer);
+    if(heartbeatTimer)clearInterval(heartbeatTimer);
+    if(reconnectTimer)clearTimeout(reconnectTimer);
+    try{realtimeSocket?.close();}catch{}
+  });
 })();
 </script>
 </body>
