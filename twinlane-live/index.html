@@ -30,7 +30,9 @@ label{display:grid;gap:6px;font-size:14px;font-weight:700}
 .rails{position:absolute;inset:0 10%;border-left:2px solid #4b586b;border-right:2px solid #4b586b;pointer-events:none}
 .start-zone{position:absolute;border:2px dashed #607089;border-radius:10px;background:#60708914;pointer-events:none}
 .start-label{position:absolute;font-size:10px;color:#95a3b6;font-weight:800;letter-spacing:.08em;pointer-events:none}
-.ball{position:absolute;width:30px;height:30px;border-radius:50%;background:#eef3fa;border:3px solid #7f90a8;transform:translate(-50%,50%);box-shadow:0 8px 18px #0008;touch-action:none}
+.ball{display:none;position:absolute;width:30px;height:30px;border-radius:50%;background:#eef3fa;border:3px solid #7f90a8;transform:translate(-50%,50%);box-shadow:0 8px 18px #0008;touch-action:none}
+.settled-ball{position:absolute;width:30px;height:30px;border-radius:50%;background:#cbd6e5;border:3px solid #667991;transform:translate(-50%,50%);box-shadow:0 8px 18px #0008;pointer-events:none}
+.settled-number{position:absolute;inset:0;display:grid;place-items:center;color:#17202b;font-size:10px;font-weight:900}
 .pallino{position:absolute;width:17px;height:17px;border-radius:50%;background:#dac992;border:2px solid #fff1c4;transform:translate(-50%,50%);box-shadow:0 5px 12px #0008;pointer-events:none}
 .flick-line{position:absolute;height:2px;background:#dce6f4;transform-origin:left center;opacity:.8;pointer-events:none}
 .tag{display:inline-block;border:1px solid #394555;border-radius:999px;padding:5px 9px;font-size:12px;color:#aab4c2}
@@ -144,6 +146,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     <div class="rails"></div>
     <div id="startZone" class="start-zone hidden"></div>
     <div id="startLabel" class="start-label hidden">START AREA</div>
+    <div id="settledLayer" style="position:absolute;inset:0;pointer-events:none"></div>
     <div id="pallino" class="pallino"></div>
     <div id="ball" class="ball"></div>
     <div id="flickLine" class="flick-line hidden"></div>
@@ -156,9 +159,12 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   </div>
 
   <div id="launchHelp" class="card hidden" style="margin-top:12px">
-    <strong>How to throw</strong>
-    <div class="small" style="margin-top:5px">Drag the bocce ball inside the start area and release it. Then touch it again and flick forward. There is no lock button.</div>
-    <button id="resetBallBtn" style="width:100%;margin-top:12px">Reset Bocce Ball to Start</button>
+    <div class="row">
+      <strong>Ball <span id="ballNumber">1</span> ready</strong>
+      <span class="tag"><span id="ballsOnCourt">0</span> thrown</span>
+    </div>
+    <div class="small" style="margin-top:7px">Drag the new ball inside the start area, release it, then touch it again and flick forward. Previous balls stay on the court.</div>
+    <button id="resetFrameBtn" style="width:100%;margin-top:12px">Reset Entire Frame</button>
   </div>
 </section>
 
@@ -187,6 +193,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   const laneEl = document.getElementById('lane');
   const ballEl = document.getElementById('ball');
   const pallinoEl = document.getElementById('pallino');
+  const settledLayerEl = document.getElementById('settledLayer');
   const startZoneEl = document.getElementById('startZone');
   const startLabelEl = document.getElementById('startLabel');
   const flickLineEl = document.getElementById('flickLine');
@@ -196,7 +203,9 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   const screenPositionEl = document.getElementById('screenPosition');
   const screenMetaEl = document.getElementById('screenMeta');
   const launchHelp = document.getElementById('launchHelp');
-  const resetBallBtn = document.getElementById('resetBallBtn');
+  const ballNumberEl = document.getElementById('ballNumber');
+  const ballsOnCourtEl = document.getElementById('ballsOnCourt');
+  const resetFrameBtn = document.getElementById('resetFrameBtn');
 
   let session = '';
   let token = '';
@@ -277,6 +286,29 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     el.style.bottom=(laneEl.clientHeight-p.y)+'px';
   }
 
+  function renderSettledBalls() {
+    settledLayerEl.innerHTML='';
+    const vp=viewport();
+    const balls=Array.isArray(state?.settled_balls)?state.settled_balls:[];
+    ballsOnCourtEl.textContent=String(balls.length);
+    ballNumberEl.textContent=String(Number(state?.next_ball_number||1));
+    if(!vp)return;
+    for(const b of balls){
+      if(Number(b.y)<vp.y0-3||Number(b.y)>vp.y1+3)continue;
+      const p=worldToLocal(Number(b.x),Number(b.y));
+      if(!p)continue;
+      const el=document.createElement('div');
+      el.className='settled-ball';
+      el.style.left=p.x+'px';
+      el.style.bottom=(laneEl.clientHeight-p.y)+'px';
+      const num=document.createElement('div');
+      num.className='settled-number';
+      num.textContent=String(b.id||'');
+      el.appendChild(num);
+      settledLayerEl.appendChild(el);
+    }
+  }
+
   function renderStartZone() {
     const vp=viewport();
     const show=role==='launch' && position==='first' && vp && !state?.ball_moving;
@@ -308,11 +340,13 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       startZoneEl.classList.add('hidden');
       startLabelEl.classList.add('hidden');
       launchHelp.classList.add('hidden');
+      settledLayerEl.innerHTML='';
       return;
     }
 
     laneEl.style.background='repeating-linear-gradient(0deg,#141b24 0,#141b24 58px,#1a222d 59px,#1a222d 60px)';
     independentEl.classList.add('hidden');
+    renderSettledBalls();
     positionObject(ballEl,displayedBall,3);
     positionObject(pallinoEl,displayedPallino,2);
     renderStartZone();
@@ -339,12 +373,13 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     return data;
   }
 
-  async function sendPhysics(ball,pallino,moving,seq) {
+  async function sendPhysics(ball,pallino,settledBalls,moving,seq) {
     try{
       await api('POST',{
         action:'physics',session,token,
         ball_x:ball.x,ball_y:ball.y,
         pallino_x:pallino.x,pallino_y:pallino.y,
+        settled_balls:settledBalls,
         moving,seq
       });
     }catch(e){debugEl.textContent='Physics send error: '+e.message;}
@@ -364,7 +399,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         connectionCard.classList.add('ready');
         if(role==='launch' && position==='first'){
           if(s.ball_moving)setStatus('CONNECTED · Ball rolling.');
-          else setStatus('CONNECTED · Drag the bocce ball in the start area, then flick forward.');
+          else setStatus('CONNECTED · Ball '+Number(s.next_ball_number||1)+' ready. Place it, then flick forward.');
         }else if(role==='target'){
           setStatus('CONNECTED · Pallino is live. Watch the incoming bocce ball.');
         }else{
@@ -373,7 +408,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       }else if(isHost){
         setStatus('Waiting for Screen 2 to scan the QR and join.');
       }
-      debugEl.textContent='Ball ('+Number(s.ball_x||50).toFixed(1)+', '+Number(s.ball_y||8).toFixed(1)+') · Pallino ('+Number(s.pallino_x||52).toFixed(1)+', '+Number(s.pallino_y||82).toFixed(1)+')';
+      debugEl.textContent='Active ball ('+Number(s.ball_x||50).toFixed(1)+', '+Number(s.ball_y||8).toFixed(1)+') · '+(Array.isArray(s.settled_balls)?s.settled_balls.length:0)+' settled · Pallino ('+Number(s.pallino_x||52).toFixed(1)+', '+Number(s.pallino_y||82).toFixed(1)+')';
       render();
     }catch(e){debugEl.textContent='Poll error: '+e.message;}
   }
@@ -394,7 +429,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       session=data.session;token=data.host_token;isHost=true;
       state={
         screen1_kind:kind,screen1_role:role,screen1_position:position,
-        screen2_joined:false,ball_x:50,ball_y:8,ball_seq:0,ball_moving:false,pallino_x:52,pallino_y:82
+        screen2_joined:false,ball_x:50,ball_y:8,ball_seq:0,ball_moving:false,pallino_x:52,pallino_y:82,settled_balls:[],next_ball_number:1
       };
       displayedBall=targetBall={x:50,y:8};
       displayedPallino=targetPallino={x:52,y:82};
@@ -477,7 +512,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       const bx=clamp(w.x,15,85),by=clamp(w.y,5,14);
       state.ball_x=bx;state.ball_y=by;
       displayedBall={x:bx,y:by};targetBall={x:bx,y:by};
-      void sendPhysics(displayedBall,displayedPallino,false,shotSeq);
+      void sendPhysics(displayedBall,displayedPallino,Array.isArray(state.settled_balls)?state.settled_balls:[],false,shotSeq);
       setStatus('Ball placed. Touch it again and flick forward to throw.');
       return;
     }
@@ -498,20 +533,42 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     localSim=true;
     shotSeq+=1;
     state.ball_moving=true;
-    let ball={x:startX,y:startY,vx:0,vy:0,m:1,r:2.8};
-    let pallino={x:Number(state.pallino_x||52),y:Number(state.pallino_y||82),vx:0,vy:0,m:.35,r:1.6};
+
+    const active={id:'active',x:startX,y:startY,vx:0,vy:0,m:1,r:2.8,type:'active'};
+    const pallino={id:'pallino',x:Number(state.pallino_x||52),y:Number(state.pallino_y||82),vx:0,vy:0,m:.35,r:1.6,type:'pallino'};
+    const settled=(Array.isArray(state.settled_balls)?state.settled_balls:[]).map((b)=>({
+      id:Number(b.id),x:Number(b.x),y:Number(b.y),vx:0,vy:0,m:1,r:2.8,type:'settled'
+    }));
+
     const ang=clamp(Math.atan2(dx,dy),-.55,.55);
     const gestureSpeed=Math.hypot(dx,dy)/duration;
     const power=clamp(28+Math.hypot(dx,dy)*1.8+gestureSpeed*.045,30,100);
     const v=30+power*.36;
-    ball.vx=Math.sin(ang)*v;ball.vy=Math.cos(ang)*v;
-    setStatus('Bocce ball rolling…');
+    active.vx=Math.sin(ang)*v;
+    active.vy=Math.cos(ang)*v;
+    setStatus('Ball '+Number(state.next_ball_number||1)+' rolling…');
+
+    function collide(a,b){
+      let dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy),min=a.r+b.r;
+      if(!d||d>=min)return;
+      const nx=dx/d,ny=dy/d,over=min-d;
+      const i1=1/a.m,i2=1/b.m,sum=i1+i2;
+      a.x-=nx*over*(i1/sum);a.y-=ny*over*(i1/sum);
+      b.x+=nx*over*(i2/sum);b.y+=ny*over*(i2/sum);
+      const rvx=b.vx-a.vx,rvy=b.vy-a.vy,rel=rvx*nx+rvy*ny;
+      if(rel>=0)return;
+      const impulse=-(1+.44)*rel/sum;
+      const ix=impulse*nx,iy=impulse*ny;
+      a.vx-=ix*i1;a.vy-=iy*i1;
+      b.vx+=ix*i2;b.vy+=iy*i2;
+    }
 
     let last=performance.now();
     async function frame(now){
       const dt=Math.min(.025,(now-last)/1000||.016);last=now;
       const friction=Math.exp(-.60*dt);
-      const objs=[ball,pallino];
+      const objs=[active,pallino,...settled];
+
       for(const o of objs){
         o.x+=o.vx*dt;o.y+=o.vy*dt;o.vx*=friction;o.vy*=friction;
         if(Math.hypot(o.vx,o.vy)<.38){o.vx=0;o.vy=0;}
@@ -521,53 +578,69 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         if(o.y+o.r>100){o.y=100-o.r;o.vy=-Math.abs(o.vy)*.25;}
       }
 
-      let cdx=pallino.x-ball.x,cdy=pallino.y-ball.y;
-      let d=Math.hypot(cdx,cdy),min=ball.r+pallino.r;
-      if(d>0&&d<min){
-        const nx=cdx/d,ny=cdy/d,over=min-d;
-        const i1=1/ball.m,i2=1/pallino.m,sum=i1+i2;
-        ball.x-=nx*over*(i1/sum);ball.y-=ny*over*(i1/sum);
-        pallino.x+=nx*over*(i2/sum);pallino.y+=ny*over*(i2/sum);
-        const rvx=pallino.vx-ball.vx,rvy=pallino.vy-ball.vy,rel=rvx*nx+rvy*ny;
-        if(rel<0){
-          const impulse=-(1+.46)*rel/sum;
-          const ix=impulse*nx,iy=impulse*ny;
-          ball.vx-=ix*i1;ball.vy-=iy*i1;
-          pallino.vx+=ix*i2;pallino.vy+=iy*i2;
-        }
+      for(let i=0;i<objs.length;i++){
+        for(let j=i+1;j<objs.length;j++)collide(objs[i],objs[j]);
       }
 
-      displayedBall={x:ball.x,y:ball.y};targetBall=displayedBall;
+      const settledPayload=settled.map(b=>({id:b.id,x:b.x,y:b.y}));
+      displayedBall={x:active.x,y:active.y};targetBall=displayedBall;
       displayedPallino={x:pallino.x,y:pallino.y};targetPallino=displayedPallino;
-      state.ball_x=ball.x;state.ball_y=ball.y;state.pallino_x=pallino.x;state.pallino_y=pallino.y;
+      state.ball_x=active.x;state.ball_y=active.y;
+      state.pallino_x=pallino.x;state.pallino_y=pallino.y;
+      state.settled_balls=settledPayload;
 
       if(now-lastSend>90){
         lastSend=now;
-        void sendPhysics(displayedBall,displayedPallino,true,shotSeq);
+        void sendPhysics(displayedBall,displayedPallino,settledPayload,true,shotSeq);
       }
 
       render();
-      const moving=Math.hypot(ball.vx,ball.vy)>.01||Math.hypot(pallino.vx,pallino.vy)>.01;
+      const moving=objs.some(o=>Math.hypot(o.vx,o.vy)>.01);
       if(moving){
         requestAnimationFrame(frame);
       }else{
-        state.ball_moving=false;
-        await sendPhysics(displayedBall,displayedPallino,false,shotSeq);
-        localSim=false;
-        setStatus('Shot complete. Reset the bocce ball to throw again; the pallino stays where it was hit.');
+        try{
+          const result=await api('POST',{
+            action:'complete_shot',
+            session,token,
+            ball_x:active.x,ball_y:active.y,
+            pallino_x:pallino.x,pallino_y:pallino.y,
+            settled_balls:settledPayload,
+            seq:shotSeq
+          });
+          state.ball_moving=false;
+          state.settled_balls=result.settled_balls||[];
+          state.next_ball_number=Number(result.next_ball_number||Number(state.next_ball_number||1)+1);
+          state.ball_x=50;state.ball_y=8;
+          displayedBall=targetBall={x:50,y:8};
+          displayedPallino=targetPallino={x:pallino.x,y:pallino.y};
+          localSim=false;
+          setStatus('Ball '+state.next_ball_number+' ready automatically. Previous balls stay where they stopped.');
+          render();
+        }catch(e){
+          localSim=false;
+          state.ball_moving=false;
+          setStatus('Shot finished but next-ball setup failed: '+e.message);
+        }
       }
     }
     requestAnimationFrame(frame);
   }
 
-  resetBallBtn.addEventListener('click',async()=>{
+  resetFrameBtn.addEventListener('click',async()=>{
     if(role!=='launch')return;
     try{
-      await api('POST',{action:'reset_ball',session,token});
+      await api('POST',{action:'reset_frame',session,token});
       displayedBall=targetBall={x:50,y:8};
-      if(state){state.ball_x=50;state.ball_y=8;state.ball_moving=false;}
-      setStatus('New bocce ball ready. Drag it into position, then flick forward.');
-    }catch(e){setStatus('Reset failed: '+e.message);}
+      displayedPallino=targetPallino={x:52,y:82};
+      if(state){
+        state.ball_x=50;state.ball_y=8;state.ball_moving=false;
+        state.pallino_x=52;state.pallino_y=82;
+        state.settled_balls=[];state.next_ball_number=1;
+      }
+      setStatus('New frame ready. Ball 1 is waiting at the Near Player end.');
+      render();
+    }catch(e){setStatus('Frame reset failed: '+e.message);}
   });
 
   if(joinSession&&joinToken){
