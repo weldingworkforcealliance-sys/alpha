@@ -224,6 +224,8 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   let localSim = false;
   let lastSend = 0;
   let shotSeq = 0;
+  let netSample = null;
+  let netVelocity = {ball:{x:0,y:0},pallino:{x:0,y:0}};
 
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
   const nice=(s)=>String(s||'').charAt(0).toUpperCase()+String(s||'').slice(1);
@@ -354,10 +356,23 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
   function animateDisplay() {
     if (!localSim) {
-      displayedBall.x+=(targetBall.x-displayedBall.x)*.28;
-      displayedBall.y+=(targetBall.y-displayedBall.y)*.28;
-      displayedPallino.x+=(targetPallino.x-displayedPallino.x)*.28;
-      displayedPallino.y+=(targetPallino.y-displayedPallino.y)*.28;
+      const now=performance.now();
+      let desiredBall={...targetBall};
+      let desiredPallino={...targetPallino};
+
+      if(state?.ball_moving && netSample){
+        const ahead=Math.min(.11,Math.max(0,(now-netSample.t)/1000));
+        desiredBall.x=clamp(targetBall.x+netVelocity.ball.x*ahead,0,100);
+        desiredBall.y=clamp(targetBall.y+netVelocity.ball.y*ahead,0,100);
+        desiredPallino.x=clamp(targetPallino.x+netVelocity.pallino.x*ahead,0,100);
+        desiredPallino.y=clamp(targetPallino.y+netVelocity.pallino.y*ahead,0,100);
+      }
+
+      const alpha=state?.ball_moving ? .42 : .28;
+      displayedBall.x+=(desiredBall.x-displayedBall.x)*alpha;
+      displayedBall.y+=(desiredBall.y-displayedBall.y)*alpha;
+      displayedPallino.x+=(desiredPallino.x-displayedPallino.x)*alpha;
+      displayedPallino.y+=(desiredPallino.y-displayedPallino.y)*alpha;
     }
     render();
     requestAnimationFrame(animateDisplay);
@@ -389,11 +404,25 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     if(!session||!token)return;
     try{
       const s=await api('GET',null,'?api=state&session='+encodeURIComponent(session)+'&token='+encodeURIComponent(token));
+      const now=performance.now();
+      const newBall={x:Number(s.ball_x||50),y:Number(s.ball_y||8)};
+      const newPallino={x:Number(s.pallino_x||52),y:Number(s.pallino_y||82)};
+
+      if(!localSim && netSample){
+        const dt=Math.max(.025,(now-netSample.t)/1000);
+        netVelocity.ball.x=(newBall.x-netSample.ball.x)/dt;
+        netVelocity.ball.y=(newBall.y-netSample.ball.y)/dt;
+        netVelocity.pallino.x=(newPallino.x-netSample.pallino.x)/dt;
+        netVelocity.pallino.y=(newPallino.y-netSample.pallino.y)/dt;
+      }
+
+      netSample={t:now,ball:newBall,pallino:newPallino};
       state=s;
       shotSeq=Number(s.ball_seq||0);
+
       if(!localSim){
-        targetBall={x:Number(s.ball_x||50),y:Number(s.ball_y||8)};
-        targetPallino={x:Number(s.pallino_x||52),y:Number(s.pallino_y||82)};
+        targetBall=newBall;
+        targetPallino=newPallino;
       }
       if(s.screen2_joined){
         connectionCard.classList.add('ready');
@@ -440,7 +469,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       document.getElementById('joinLink').textContent=joinUrl;
       document.getElementById('qr').src=qrUrl;
       setStatus('Screen 1 ready. Scan the QR with Screen 2.');
-      startPolling(250);
+      startPolling(role==='launch' ? 120 : 50);
     }catch(e){setStatus('Create failed: '+e.message);}
   });
 
@@ -455,7 +484,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       session=joinSession;token=joinToken;isHost=false;
       joinPanel.classList.add('hidden');viewPanel.classList.remove('hidden');
       setStatus('Connected. Loading court…');
-      startPolling(80);
+      startPolling(role==='launch' ? 120 : 50);
     }catch(e){setStatus('Join failed: '+e.message);}
   });
 
@@ -642,7 +671,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       state.pallino_x=pallino.x;state.pallino_y=pallino.y;
       state.settled_balls=settledPayload;
 
-      if(now-lastSend>90){
+      if(now-lastSend>65){
         lastSend=now;
         void sendPhysics(displayedBall,displayedPallino,settledPayload,true,shotSeq);
       }
