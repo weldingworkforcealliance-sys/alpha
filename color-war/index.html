@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Color War v0.14 — Siege Balance Pass</title>
+<title>Color War v0.15 — 100 Match Trained AI</title>
 <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#081019;color:#fff;font-family:Arial,sans-serif}button,input{font:inherit}button{touch-action:manipulation}
@@ -66,7 +66,7 @@ input{width:100%;background:#08111c;color:#fff;border:1px solid #ffffff33;border
 </head>
 <body><div class="wrap">
 <section id="lobby" class="lobby">
-<div class="card"><h1>COLOR WAR — v0.14</h1><div class="muted">Play across two phones, or play Blue against the computer on one device.</div></div>
+<div class="card"><h1>COLOR WAR — v0.15</h1><div class="muted">Play across two phones, or play Blue against the computer on one device.</div></div>
 <div class="grid2">
 <div class="card"><h3>BLUE PHONE</h3><button id="createBtn" class="btn blueBtn">CREATE GAME</button><div id="hostArea" class="hidden"><div class="muted" style="text-align:center;margin-top:10px">ROOM CODE</div><div id="roomCode" class="code">----</div></div></div>
 <div class="card"><h3>RED PHONE</h3><input id="joinCode" maxlength="4" inputmode="numeric" placeholder="4-digit code"><button id="joinBtn" class="btn redBtn" style="margin-top:8px;width:100%">JOIN GAME</button></div>
@@ -188,30 +188,94 @@ function siegeFire(dt){
     })
   })
 }
-function aiDeploy(){let p=state.red;if(!p.ready.length)return false;let unit=p.ready[0],lane;if(unit.type==="farm"){let free=[0,1,2,3,4,5,6,7,8].filter(i=>!p.farms.some(f=>f.lane===i));if(!free.length)return false;lane=free[(p.aiCycle||0)%free.length]}else if(unit.type==="miner"){lane=targetLane("red");if(lane<0)lane=(p.aiCycle||0)%9}else{let open=state.frontier.map((l,i)=>({l,i})).filter(x=>x.l.opened);if(open.length)lane=open[(p.aiCycle||0)%open.length].i;else{let min=Math.min(...state.frontier.map(l=>l.amt));let candidates=state.frontier.map((l,i)=>({l,i})).filter(x=>x.l.amt===min);lane=candidates[(p.aiCycle||0)%candidates.length].i}}deploy("red",lane);p.aiCycle=(p.aiCycle||0)+1;return true}
-function aiTryTrain(){
-  let p=state.red;
-  if(p.trainQ.length>=2)return false;
-  let pattern=state.route!==null?["siege","heavy","soldier","heavy"]:["soldier","heavy","soldier","siege"];
-  for(let i=0;i<pattern.length;i++){
-    let t=pattern[((p.aiCycle||0)+i)%pattern.length];
-    if(canP("red",t)){p.aiCycle=(p.aiCycle||0)+1;bp("red",t);return true}
+const AI_TRAINED={
+  farmTarget:6,minerTarget:5,siegeTarget:1,heavyRatio:.28,
+  concentrate:1.19,openBonus:4.15,weakEnemy:1.59,stageBonus:2.81,
+  rockReserve:7,woodNeed:2.07,ironNeed:1.95,stoneNeed:.80
+};
+function aiResourceMinerLane(){
+  let p=state.red,assigned={wood:0,stone:0,iron:0};
+  p.miners.forEach(m=>assigned[state.frontier[m.lane].res]++);
+  let needs={
+    wood:AI_TRAINED.woodNeed,
+    iron:AI_TRAINED.ironNeed,
+    stone:AI_TRAINED.stoneNeed+(p.sieges.length||p.ready.some(x=>x.type==="siege")||p.trainQ.some(x=>x.type==="siege")?.9:0)
+  };
+  if(p.sieges.length&&p.stone<AI_TRAINED.rockReserve)needs.stone+=2;
+  let best=-1,bestScore=-1e9;
+  state.frontier.forEach((l,i)=>{
+    if(l.amt<=0)return;
+    let score=needs[l.res]/(1+p[l.res]*.18+assigned[l.res]*1.4);
+    score+=.15*(l.amt/LANE_MAX)+(l.opened?.08:0);
+    if(score>bestScore){bestScore=score;best=i}
+  });
+  return best>=0?best:(p.aiCycle||0)%9
+}
+function aiLanePresence(p,lane){return p.lanes[lane].groups.reduce((n,g)=>n+g.pawns.length,0)}
+function aiCombatLane(type){
+  let p=state.red,enemy=state.blue,best=0,bestScore=-1e9;
+  state.frontier.forEach((l,i)=>{
+    let own=aiLanePresence(p,i),opp=aiLanePresence(enemy,i),stage=(LANE_MAX-l.amt)/LANE_MAX;
+    let score=(l.opened?AI_TRAINED.openBonus:AI_TRAINED.stageBonus*stage);
+    score+=AI_TRAINED.concentrate*Math.min(6,own);
+    score+=AI_TRAINED.weakEnemy*Math.max(-2,2-opp);
+    let blueFront=-1;
+    enemy.lanes[i].groups.forEach(g=>{if(g.pawns.length)blueFront=Math.max(blueFront,g.x)});
+    if(blueFront>240)score+=4;
+    if(type==="siege"){
+      score+=l.opened?8:2.5*stage;
+      if(l.res==="stone")score+=.5
+    }
+    if(score>bestScore){bestScore=score;best=i}
+  });
+  return best
+}
+function aiDeploy(){
+  let p=state.red;if(!p.ready.length)return false;
+  let unit=p.ready[0],lane;
+  if(unit.type==="farm"){
+    let free=[0,1,2,3,4,5,6,7,8].filter(i=>!p.farms.some(f=>f.lane===i));
+    if(!free.length)return false;
+    free.sort((a,b)=>Math.abs(a-4)-Math.abs(b-4));
+    lane=free[0]
+  }else if(unit.type==="miner"){
+    lane=aiResourceMinerLane()
+  }else{
+    lane=aiCombatLane(unit.type)
   }
-  for(let t of ["soldier","heavy","siege"])if(canP("red",t)){p.aiCycle=(p.aiCycle||0)+1;bp("red",t);return true}
+  deploy("red",lane);p.aiCycle=(p.aiCycle||0)+1;return true
+}
+function aiCounts(){
+  let p=state.red,c={soldier:0,heavy:0,siege:p.sieges.length};
+  p.ready.forEach(x=>{if(c[x.type]!==undefined)c[x.type]++});
+  p.trainQ.forEach(x=>{if(c[x.type]!==undefined)c[x.type]++});
+  p.lanes.forEach(l=>l.groups.forEach(g=>g.pawns.forEach(x=>c[x.type]++)));
+  return c
+}
+function aiTryTrain(){
+  let p=state.red;if(p.trainQ.length>=2)return false;
+  let c=aiCounts();
+  let type;
+  if(c.siege<AI_TRAINED.siegeTarget)type="siege";
+  else{
+    let ground=c.soldier+c.heavy;
+    type=!ground?"soldier":((c.heavy/ground)<AI_TRAINED.heavyRatio?"heavy":"soldier")
+  }
+  if(canP("red",type)){bp("red",type);return true}
+  for(let t of ["soldier","heavy","siege"]){
+    if(t==="siege"&&c.siege>=AI_TRAINED.siegeTarget)continue;
+    if(canP("red",t)){bp("red",t);return true}
+  }
   return false
 }
 function computerAI(dt){
   if(!vsComputer||!state||state.winner)return;
-  aiClock+=dt;
-  if(aiClock<1.5)return;
-  aiClock=0;
+  aiClock+=dt;if(aiClock<1.5)return;aiClock=0;
   let p=state.red;
   if(aiDeploy())return;
-  if(canF("red")){bf("red");return}
-  if(p.miners.length<2&&p.minerBuild<=0&&canM("red")){bm("red");return}
-  if(p.miners.length<4&&p.minerBuild<=0&&p.farms.some(f=>f.build<=0)&&canM("red")){bm("red");return}
-  if(p.miners.length<6&&p.minerBuild<=0&&state.time<540&&canM("red")){bm("red");return}
-  aiTryTrain();
+  if(plannedFarms(p)<AI_TRAINED.farmTarget&&canF("red")){bf("red");return}
+  if(activeMinerCount(p)<AI_TRAINED.minerTarget&&canM("red")){bm("red");return}
+  aiTryTrain()
 }
 function update(dt){computerAI(dt);buildAndTrain(dt);respawnResources(dt);miners(dt);laneArmies(dt);siegeFire(dt);state.time=Math.max(0,state.time-dt);if(state.blue.castle<=0){state.blue.castle=0;state.winner="red"}if(state.red.castle<=0){state.red.castle=0;state.winner="blue"}if(state.time<=0&&!state.winner)state.winner=state.blue.castle>state.red.castle?"blue":state.red.castle>state.blue.castle?"red":"draw"}
 function loop(ts){let dt=Math.min(.15,(ts-last)/1000);last=ts;if(!state.winner)update(dt);refreshPanel();render();snap();requestAnimationFrame(loop)}function lg(x){state.logs.push(x);if(state.logs.length>15)state.logs.shift()}
