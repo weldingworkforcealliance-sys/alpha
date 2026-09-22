@@ -93,7 +93,7 @@ const P="cw-test-",LANE_MAX=8,TIME=900,CAP=36,CASTLE_HP=500,R=["wood","stone","i
 const S={soldier:{icon:"●",cost:{food:2,wood:1},hp:24,a:4,c:1,train:9},heavy:{icon:"■",cost:{food:3,iron:2},hp:55,a:3,c:2,train:14},siege:{icon:"▲",cost:{food:4,wood:2,iron:1},hp:30,a:0,c:0,train:22}};
 let peer,conn,host=false,side=null,state,last=0,lastSend=0,lastPanelPaint=0,audio,prev=null,vsComputer=false,aiClock=0;
 const $=x=>document.getElementById(x),other=s=>s==="blue"?"red":"blue";
-function fp(s){return{side:s,castle:CASTLE_HP,food:4,foodClock:0,wood:0,stone:0,iron:0,farms:[],farmBuild:0,miners:0,minerBuild:0,minerX:s==="blue"?18:182,mine:0,ready:[],trainQ:[],sieges:[],lanes:Array.from({length:9},()=>({groups:[]})),aiCycle:0}}
+function fp(s){return{side:s,castle:CASTLE_HP,food:4,foodClock:0,wood:0,stone:0,iron:0,farms:[],farmBuild:0,farmEver:false,miners:0,minerBuild:0,minerX:s==="blue"?18:182,mine:0,ready:[],trainQ:[],sieges:[],lanes:Array.from({length:9},()=>({groups:[]})),aiCycle:0}}
 function fs(){return{blue:fp("blue"),red:fp("red"),frontier:LANE_RES.map((res,i)=>({res,amt:LANE_MAX,openedAt:null})),route:null,time:TIME,winner:null,logs:["Train troops, place them into L1–L9, and keep Siege supplied with mined Rocks."]}}
 function unlock(){if(!audio)audio=new(AudioContext||webkitAudioContext)();if(audio.state==="suspended")audio.resume()}document.addEventListener("pointerdown",unlock,{passive:true});
 function fart(){unlock();if(!audio)return;let n=audio.currentTime,o=audio.createOscillator(),g=audio.createGain();o.type="sawtooth";o.frequency.setValueAtTime(125,n);o.frequency.exponentialRampToValueAtTime(52,n+.27);g.gain.setValueAtTime(.001,n);g.gain.exponentialRampToValueAtTime(.22,n+.02);g.gain.exponentialRampToValueAtTime(.001,n+.27);o.connect(g).connect(audio.destination);o.start(n);o.stop(n+.27)}
@@ -121,8 +121,8 @@ function snap(force=0){if(!host||!conn?.open)return;let n=performance.now();if(!
 function recv(s){if(prev&&s[side].castle<prev[side].castle)hit(prev[side].castle-s[side].castle);state=s;prev=structuredClone(s);refreshPanel();render()}
 function send(a,x={}){if(host)act({t:"act",a,side,...x});else conn?.send({t:"act",a,side,...x})}
 function act(m){if(!state)return;if(m.a==="farm")bf(m.side);if(m.a==="miner")bm(m.side);if(m.a==="pawn")bp(m.side,m.p);if(m.a==="deploy")deploy(m.side,m.lane);if(m.a==="rematch"){state=fs();prev=null;aiClock=0;if(vsComputer)state.logs=["REMATCH VS COMPUTER"];snap(1)}}
-function canF(s){let p=state?.[s];return p&&p.farms.length<MAX_FARMS&&p.farmBuild<=0&&(p.farms.length===0||p.wood>=FARM_COST)}
-function bf(s){if(!canF(s))return;let p=state[s];if(p.farms.length>0)p.wood-=FARM_COST;p.farmBuild=FARM_TIME;lg(s.toUpperCase()+" FARM construction started");if(s===side)refreshPanel(true);snap(1)}
+function canF(s){let p=state?.[s];return p&&p.farms.length<MAX_FARMS&&p.farmBuild<=0&&(!p.farmEver||p.wood>=FARM_COST)}
+function bf(s){if(!canF(s))return;let p=state[s];if(p.farmEver)p.wood-=FARM_COST;p.farmEver=true;p.farmBuild=FARM_TIME;lg(s.toUpperCase()+" FARM construction started");if(s===side)refreshPanel(true);snap(1)}
 function canM(s){let p=state?.[s];return p&&p.food>=2&&p.miners<5&&p.minerBuild<=0}
 function fieldCount(p){return p.ready.length+p.trainQ.length+p.sieges.length+p.lanes.reduce((n,l)=>n+l.groups.reduce((m,g)=>m+g.pawns.length,0),0)}
 function queuedSiege(p){return p.trainQ.filter(x=>x.type==="siege").length}
@@ -219,7 +219,7 @@ function pct(done,total){return Math.max(0,Math.min(100,Math.round(done/total*10
 function progressBits(percent){return percent>0&&percent<100?'<span class="prodTrack"><i style="width:'+percent+'%"></i></span><span class="prodPct">'+percent+'%</span>':''}
 function panel(){
   if(!state)return;
-  let p=state[side],train=p.trainQ[0],farmCost=p.farms.length===0?"FREE":FARM_COST+"W",nextFarm=p.farms.length?Math.ceil(Math.min(...p.farms)):0;
+  let p=state[side],train=p.trainQ[0],farmCost=!p.farmEver?"FREE":FARM_COST+"W",nextFarm=p.farms.length?Math.ceil(Math.min(...p.farms)):0;
   let farmPct=p.farmBuild>0?pct(FARM_TIME-p.farmBuild,FARM_TIME):0;
   let minerPct=p.minerBuild>0?pct(MINER_TIME-p.minerBuild,MINER_TIME):0;
   $("panel").innerHTML=
