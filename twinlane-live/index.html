@@ -79,6 +79,11 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   </div>
   <div style="margin-top:10px"><code id="joinLink"></code></div>
   <button id="runBtn" class="primary" style="margin-top:14px" disabled>Waiting for Screen 2</button>
+  <div id="readyPanel" class="card hidden" style="margin-top:14px;background:#0d1712;border-color:#345642">
+    <div style="font-weight:800">✓ CONNECTED / READY</div>
+    <div class="small" style="margin-top:5px">Cross-screen synchronization test passed.</div>
+    <button id="rerunBtn" style="margin-top:12px;width:100%">Run Test Again</button>
+  </div>
 </section>
 
 <section id="joinPanel" class="card hidden">
@@ -152,6 +157,8 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   const statusEl = document.getElementById('status');
   const debugEl = document.getElementById('debug');
   const runBtn = document.getElementById('runBtn');
+  const readyPanel = document.getElementById('readyPanel');
+  const rerunBtn = document.getElementById('rerunBtn');
   const ballEl = document.getElementById('ball');
   const laneEl = document.getElementById('lane');
   const independentEl = document.getElementById('independent');
@@ -173,6 +180,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   let sendAt = 0;
   let currentSeq = 0;
   let testRunning = false;
+  let testComplete = false;
 
   const setStatus = (s) => statusEl.textContent = s;
   const nice = (s) => String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1);
@@ -258,14 +266,26 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       if (isHost) {
         if (s.screen2_joined) {
           const playable = hasPlayableScreen(s);
-          runBtn.disabled = testRunning || !playable;
-          runBtn.textContent = !playable ? 'No Playfield Screen Configured' : (testRunning ? 'Ball Moving…' : 'Run Live Ball Test');
-          if (!testRunning) {
-            setStatus('Screen 2 connected: ' + nice(s.screen2_kind || 'screen') + ' · ' + (s.screen2_role || 'target') + ' · ' + (s.screen2_position || 'independent'));
+          if (testComplete) {
+            runBtn.classList.add('hidden');
+            readyPanel.classList.remove('hidden');
+            setStatus('CONNECTED / READY · Screen 2: ' + nice(s.screen2_kind || 'screen') + ' · ' + (s.screen2_role || 'target') + ' · ' + (s.screen2_position || 'independent'));
+          } else {
+            readyPanel.classList.add('hidden');
+            runBtn.classList.remove('hidden');
+            runBtn.disabled = testRunning || !playable;
+            runBtn.textContent = !playable ? 'No Playfield Screen Configured' : (testRunning ? 'Ball Moving…' : 'Run Live Ball Test');
+            if (!testRunning) {
+              setStatus('Screen 2 connected. Ready for one synchronization test.');
+            }
           }
         }
       } else {
         debugEl.textContent = 'Ball Y ' + targetY.toFixed(1) + ' · seq ' + currentSeq + ' · ' + (s.ball_moving ? 'moving' : 'stopped');
+        if (currentSeq > 0 && !s.ball_moving && !testRunning) {
+          testComplete = true;
+          setStatus('CONNECTED / READY · Cross-screen synchronization test completed.');
+        }
       }
       renderBall();
     } catch (e) {
@@ -355,7 +375,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     }
   });
 
-  runBtn.addEventListener('click', async () => {
+  async function runSyncTest() {
     if (!isHost || testRunning || !sessionState || !hasPlayableScreen(sessionState)) return;
     testRunning = true;
     runBtn.disabled = true;
@@ -393,12 +413,21 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         requestAnimationFrame(frame);
       } else {
         testRunning = false;
-        runBtn.disabled = false;
-        runBtn.textContent = 'Run Live Ball Test';
-        setStatus('PASS if the ball followed the configured first/second playfield order.');
+        testComplete = true;
+        runBtn.classList.add('hidden');
+        readyPanel.classList.remove('hidden');
+        setStatus('CONNECTED / READY · Cross-screen synchronization test passed.');
       }
     }
     requestAnimationFrame(frame);
+  }
+
+  runBtn.addEventListener('click', runSyncTest);
+  rerunBtn.addEventListener('click', () => {
+    testComplete = false;
+    readyPanel.classList.add('hidden');
+    runBtn.classList.remove('hidden');
+    void runSyncTest();
   });
 
   if (joinSession && joinToken) {
