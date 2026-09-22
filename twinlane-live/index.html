@@ -622,10 +622,16 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         state.ball_moving=false;
         state.settled_balls=result.settled_balls||[];
         state.next_ball_number=Number(result.next_ball_number||Number(state.next_ball_number||1)+1);
+        shotSeq=Number(result.ball_seq||shotSeq+1);
+        state.ball_seq=shotSeq;
         state.ball_x=50;state.ball_y=8;
         displayedBall=targetBall={x:50,y:8};
         displayedPallino=targetPallino={x:pallino.x,y:pallino.y};
         localSim=false;
+        netSample=null;
+        netVelocity={ball:{x:0,y:0},pallino:{x:0,y:0}};
+
+        await poll();
 
         setStatus(
           reason==='watchdog'
