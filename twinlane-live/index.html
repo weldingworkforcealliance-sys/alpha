@@ -15,7 +15,7 @@ h1{font-size:28px;margin:6px 0 4px} h2{font-size:18px;margin:0 0 10px}
 p{color:#aab4c2;line-height:1.45}
 .card{border:1px solid #303846;border-radius:16px;background:#11161d;padding:16px;margin-top:14px}
 button,select{min-height:48px;border-radius:12px;border:1px solid #3c4656;background:#1b2430;color:#f3f5f7;padding:10px 14px;font-weight:700;font-size:16px}
-button{cursor:pointer} button:disabled{opacity:.45;cursor:not-allowed}
+button{cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}
 .primary{background:#e7edf6;color:#10151c;border-color:#e7edf6;width:100%}
 .grid{display:grid;gap:12px}
 label{display:grid;gap:6px;font-size:14px;font-weight:700}
@@ -35,12 +35,37 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 <main>
 <div class="eyebrow">CORVU MOR · TWINLANE LIVE TRIAL</div>
 <h1>Real two-screen test</h1>
-<p>One session, two separate browsers, one shared moving object.</p>
+<p>Each screen can now be configured independently. The physical position determines which part of the shared world it renders.</p>
 
 <section id="hostCreate" class="card">
-  <h2>Phone A</h2>
-  <p>Create the live session on the launch phone.</p>
-  <button id="createBtn" class="primary">Create Live Session</button>
+  <h2>Configure Screen 1</h2>
+  <div class="grid">
+    <label>Device
+      <select id="s1Kind">
+        <option value="phone" selected>Phone</option>
+        <option value="tablet">Tablet</option>
+        <option value="laptop">Laptop</option>
+        <option value="tv">TV / browser display</option>
+      </select>
+    </label>
+    <label>Role
+      <select id="s1Role">
+        <option value="launch" selected>Launch</option>
+        <option value="lane">Lane</option>
+        <option value="target">Target</option>
+        <option value="scoreboard">Scoreboard</option>
+        <option value="spectator">Spectator</option>
+      </select>
+    </label>
+    <label>Physical position
+      <select id="s1Position">
+        <option value="first" selected>First playfield screen</option>
+        <option value="second">Second playfield screen</option>
+        <option value="independent">Independent display</option>
+      </select>
+    </label>
+    <button id="createBtn" class="primary">Create Live Session</button>
+  </div>
 </section>
 
 <section id="hostPanel" class="card hidden">
@@ -57,18 +82,19 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 </section>
 
 <section id="joinPanel" class="card hidden">
-  <h2>Join as Screen 2</h2>
+  <h2>Configure Screen 2</h2>
   <div class="grid">
     <label>Device
-      <select id="deviceKind">
-        <option value="phone">Phone</option>
+      <select id="s2Kind">
+        <option value="phone" selected>Phone</option>
         <option value="tablet">Tablet</option>
         <option value="laptop">Laptop</option>
         <option value="tv">TV / browser display</option>
       </select>
     </label>
     <label>Role
-      <select id="role">
+      <select id="s2Role">
+        <option value="launch">Launch</option>
         <option value="lane">Lane</option>
         <option value="target" selected>Target</option>
         <option value="scoreboard">Scoreboard</option>
@@ -76,9 +102,9 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       </select>
     </label>
     <label>Physical position
-      <select id="position">
-        <option value="afterA" selected>After Phone A</option>
-        <option value="after2">After Screen 2</option>
+      <select id="s2Position">
+        <option value="first">First playfield screen</option>
+        <option value="second" selected>Second playfield screen</option>
         <option value="independent">Independent display</option>
       </select>
     </label>
@@ -95,7 +121,10 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     <div class="rails"></div>
     <div id="ball" class="ball"></div>
     <div id="independent" class="hidden" style="position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px">
-      <div><div class="eyebrow">INDEPENDENT DISPLAY</div><div id="independentRole" style="font-size:28px;font-weight:800;margin-top:8px"></div></div>
+      <div>
+        <div class="eyebrow">INDEPENDENT DISPLAY</div>
+        <div id="independentRole" style="font-size:28px;font-weight:800;margin-top:8px"></div>
+      </div>
     </div>
   </div>
 </section>
@@ -133,8 +162,11 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   let session = '';
   let token = '';
   let isHost = false;
+  let localScreen = 1;
+  let kind = 'phone';
   let role = 'launch';
-  let position = 'center';
+  let position = 'first';
+  let sessionState = null;
   let displayedY = 8;
   let targetY = 8;
   let pollTimer = null;
@@ -143,16 +175,41 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   let testRunning = false;
 
   const setStatus = (s) => statusEl.textContent = s;
+  const nice = (s) => String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1);
 
-  function viewport() {
+  function playfieldPositions(state) {
+    if (!state) return [];
+    const items = [];
+    if (state.screen1_position && state.screen1_position !== 'independent') {
+      items.push({screen:1,position:state.screen1_position});
+    }
+    if (state.screen2_joined && state.screen2_position && state.screen2_position !== 'independent') {
+      items.push({screen:2,position:state.screen2_position});
+    }
+    items.sort((a,b) => (a.position === 'first' ? 0 : 1) - (b.position === 'first' ? 0 : 1));
+    return items;
+  }
+
+  function viewportForLocal() {
     if (position === 'independent') return null;
-    if (position === 'center') return {y0:0,y1:34};
-    if (position === 'after2') return {y0:67,y1:100};
-    return {y0:34,y1:100};
+    const chain = playfieldPositions(sessionState);
+    if (!chain.length) return null;
+    if (chain.length === 1) return {y0:0,y1:100};
+    const item = chain.find(x => x.screen === localScreen);
+    if (!item) return null;
+    return item.position === 'first' ? {y0:0,y1:50} : {y0:50,y1:100};
+  }
+
+  function updateScreenMeta() {
+    const vp = viewportForLocal();
+    const deviceLabel = nice(kind);
+    screenNameEl.textContent = 'Screen ' + localScreen + ' · ' + deviceLabel;
+    screenMetaEl.textContent = vp ? (role + ' · Y ' + vp.y0 + '–' + vp.y1) : (role + ' · independent');
   }
 
   function renderBall() {
-    const vp = viewport();
+    const vp = viewportForLocal();
+    updateScreenMeta();
     if (!vp) {
       laneEl.style.background = '#11161d';
       independentEl.classList.remove('hidden');
@@ -160,6 +217,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       ballEl.style.display = 'none';
       return;
     }
+    laneEl.style.background = 'repeating-linear-gradient(0deg,#141b24 0,#141b24 58px,#1a222d 59px,#1a222d 60px)';
     independentEl.classList.add('hidden');
     ballEl.style.display = displayedY >= vp.y0 && displayedY <= vp.y1 ? 'block' : 'none';
     const pct = Math.max(2, Math.min(98, ((displayedY - vp.y0) / (vp.y1 - vp.y0)) * 100));
@@ -185,21 +243,31 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     return data;
   }
 
+  function hasPlayableScreen(state) {
+    return playfieldPositions(state).length > 0;
+  }
+
   async function poll() {
     if (!session || !token) return;
     try {
       const s = await api('GET', null, '?api=state&session=' + encodeURIComponent(session) + '&token=' + encodeURIComponent(token));
+      sessionState = s;
       targetY = Number(s.ball_y || 8);
       currentSeq = Number(s.ball_seq || 0);
+
       if (isHost) {
         if (s.screen2_joined) {
-          runBtn.disabled = testRunning;
-          runBtn.textContent = testRunning ? 'Ball Moving…' : 'Run Live Ball Test';
-          if (!testRunning) setStatus('Screen 2 connected: ' + (s.screen2_role || 'target') + ' · ' + (s.screen2_position || 'afterA'));
+          const playable = hasPlayableScreen(s);
+          runBtn.disabled = testRunning || !playable;
+          runBtn.textContent = !playable ? 'No Playfield Screen Configured' : (testRunning ? 'Ball Moving…' : 'Run Live Ball Test');
+          if (!testRunning) {
+            setStatus('Screen 2 connected: ' + nice(s.screen2_kind || 'screen') + ' · ' + (s.screen2_role || 'target') + ' · ' + (s.screen2_position || 'independent'));
+          }
         }
       } else {
         debugEl.textContent = 'Ball Y ' + targetY.toFixed(1) + ' · seq ' + currentSeq + ' · ' + (s.ball_moving ? 'moving' : 'stopped');
       }
+      renderBall();
     } catch (e) {
       debugEl.textContent = 'Poll error: ' + e.message;
     }
@@ -213,13 +281,31 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
   document.getElementById('createBtn').addEventListener('click', async () => {
     try {
+      kind = document.getElementById('s1Kind').value;
+      role = document.getElementById('s1Role').value;
+      position = document.getElementById('s1Position').value;
+      localScreen = 1;
+
       setStatus('Creating standalone session…');
-      const data = await api('POST', {action:'create'});
+      const data = await api('POST', {
+        action:'create',
+        kind:kind,
+        role:role,
+        position:position
+      });
+
       session = data.session;
       token = data.host_token;
       isHost = true;
-      role = 'launch';
-      position = 'center';
+      sessionState = {
+        screen1_kind:kind,
+        screen1_role:role,
+        screen1_position:position,
+        screen2_joined:false,
+        ball_y:8,
+        ball_seq:0,
+        ball_moving:false
+      };
 
       hostCreate.classList.add('hidden');
       hostPanel.classList.remove('hidden');
@@ -231,9 +317,8 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
       document.getElementById('joinLink').textContent = joinUrl;
       document.getElementById('qr').src = qrUrl;
-      screenNameEl.textContent = 'Phone A';
-      screenMetaEl.textContent = 'launch · Y 0–34';
-      setStatus('Session ready. Scan the QR with Screen 2.');
+      setStatus('Session ready. Screen 1 is ' + nice(kind) + ' / ' + role + ' / ' + position + '. Scan the QR with Screen 2.');
+      renderBall();
       startPolling(350);
     } catch (e) {
       setStatus('Create failed: ' + e.message);
@@ -242,18 +327,19 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
   document.getElementById('joinBtn').addEventListener('click', async () => {
     try {
-      role = document.getElementById('role').value;
-      position = document.getElementById('position').value;
-      const kind = document.getElementById('deviceKind').value;
-      setStatus('Joining Phone A…');
+      kind = document.getElementById('s2Kind').value;
+      role = document.getElementById('s2Role').value;
+      position = document.getElementById('s2Position').value;
+      localScreen = 2;
 
+      setStatus('Joining Screen 1…');
       await api('POST', {
         action:'join',
         session:joinSession,
         join_token:joinToken,
-        role,
-        position,
-        kind
+        kind:kind,
+        role:role,
+        position:position
       });
 
       session = joinSession;
@@ -262,10 +348,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
       joinPanel.classList.add('hidden');
       viewPanel.classList.remove('hidden');
-      screenNameEl.textContent = kind.charAt(0).toUpperCase() + kind.slice(1) + ' Screen';
-      const vp = viewport();
-      screenMetaEl.textContent = vp ? role + ' · Y ' + vp.y0 + '–' + vp.y1 : role + ' · independent';
-      setStatus('Connected. Waiting for Phone A to run the ball test.');
+      setStatus('Connected. Waiting for the host to run the ball test.');
       startPolling(100);
     } catch (e) {
       setStatus('Join failed: ' + e.message);
@@ -273,7 +356,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   });
 
   runBtn.addEventListener('click', async () => {
-    if (!isHost || testRunning) return;
+    if (!isHost || testRunning || !sessionState || !hasPlayableScreen(sessionState)) return;
     testRunning = true;
     runBtn.disabled = true;
     runBtn.textContent = 'Ball Moving…';
@@ -295,10 +378,10 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         try {
           await api('POST', {
             action:'ball',
-            session,
+            session:session,
             host_token:token,
-            y,
-            seq,
+            y:y,
+            seq:seq,
             moving:t < 1
           });
         } catch (e) {
@@ -312,7 +395,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         testRunning = false;
         runBtn.disabled = false;
         runBtn.textContent = 'Run Live Ball Test';
-        setStatus('PASS if the ball crossed Phone A and continued on Screen 2 without restarting.');
+        setStatus('PASS if the ball followed the configured first/second playfield order.');
       }
     }
     requestAnimationFrame(frame);
@@ -321,7 +404,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   if (joinSession && joinToken) {
     hostCreate.classList.add('hidden');
     joinPanel.classList.remove('hidden');
-    setStatus('Choose this screen’s role and physical position.');
+    setStatus('Configure Screen 2, then join.');
   }
 
   window.addEventListener('beforeunload', () => {
