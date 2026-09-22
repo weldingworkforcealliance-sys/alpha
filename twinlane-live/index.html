@@ -221,6 +221,9 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   let targetBall = {x:50,y:8};
   let displayedPallino = {x:52,y:82};
   let targetPallino = {x:52,y:82};
+  let displayedSettledBalls = [];
+  let realtimeFrames = [];
+  const REALTIME_BUFFER_MS = 75;
   let gesture = null;
   let localSim = false;
   let lastSend = 0;
@@ -300,7 +303,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   function renderSettledBalls() {
     settledLayerEl.innerHTML='';
     const vp=viewport();
-    const balls=Array.isArray(state?.settled_balls)?state.settled_balls:[];
+    const balls=Array.isArray(displayedSettledBalls)?displayedSettledBalls:[];
     ballsOnCourtEl.textContent=String(balls.length);
     ballNumberEl.textContent=String(Number(state?.next_ball_number||1));
     if(!vp)return;
@@ -358,33 +361,66 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     laneEl.style.background='repeating-linear-gradient(0deg,#141b24 0,#141b24 58px,#1a222d 59px,#1a222d 60px)';
     independentEl.classList.add('hidden');
     renderSettledBalls();
-    positionObject(ballEl,displayedBall,3);
-    positionObject(pallinoEl,displayedPallino,2);
+    positionObject(ballEl,displayedBall,.15);
+    positionObject(pallinoEl,displayedPallino,.15);
     renderStartZone();
+  }
+
+  function interpolateBalls(a,b,t){
+    const byId=new Map();
+    for(const item of (Array.isArray(a)?a:[]))byId.set(Number(item.id),{a:item,b:item});
+    for(const item of (Array.isArray(b)?b:[])){
+      const id=Number(item.id);
+      const pair=byId.get(id)||{a:item,b:item};
+      pair.b=item;
+      byId.set(id,pair);
+    }
+    return [...byId.entries()].map(([id,pair])=>({
+      id,
+      x:Number(pair.a.x)+(Number(pair.b.x)-Number(pair.a.x))*t,
+      y:Number(pair.a.y)+(Number(pair.b.y)-Number(pair.a.y))*t
+    }));
   }
 
   function animateDisplay() {
     if (!localSim) {
       const now=performance.now();
-      let desiredBall={...targetBall};
-      let desiredPallino={...targetPallino};
+      const playback=now-REALTIME_BUFFER_MS;
 
-      if(state?.ball_moving && netSample){
-        const ahead=Math.min(.11,Math.max(0,(now-netSample.t)/1000));
-        desiredBall.x=clamp(targetBall.x+netVelocity.ball.x*ahead,0,100);
-        desiredBall.y=clamp(targetBall.y+netVelocity.ball.y*ahead,0,100);
-        desiredPallino.x=clamp(targetPallino.x+netVelocity.pallino.x*ahead,0,100);
-        desiredPallino.y=clamp(targetPallino.y+netVelocity.pallino.y*ahead,0,100);
+      while(realtimeFrames.length>2 && realtimeFrames[1].recvAt<=playback){
+        realtimeFrames.shift();
       }
 
-      const alpha=state?.ball_moving ? .42 : .28;
-      displayedBall.x+=(desiredBall.x-displayedBall.x)*alpha;
-      displayedBall.y+=(desiredBall.y-displayedBall.y)*alpha;
-      displayedPallino.x+=(desiredPallino.x-displayedPallino.x)*alpha;
-      displayedPallino.y+=(desiredPallino.y-displayedPallino.y)*alpha;
+      if(realtimeFrames.length){
+        const a=realtimeFrames[0];
+        const b=realtimeFrames[1]||a;
+        let t=0;
+        if(b.recvAt>a.recvAt){
+          t=clamp((playback-a.recvAt)/(b.recvAt-a.recvAt),0,1);
+        }
+
+        displayedBall={
+          x:a.ball.x+(b.ball.x-a.ball.x)*t,
+          y:a.ball.y+(b.ball.y-a.ball.y)*t
+        };
+        displayedPallino={
+          x:a.pallino.x+(b.pallino.x-a.pallino.x)*t,
+          y:a.pallino.y+(b.pallino.y-a.pallino.y)*t
+        };
+        displayedSettledBalls=interpolateBalls(a.settled,b.settled,t);
+      }else{
+        displayedBall.x+=(targetBall.x-displayedBall.x)*.30;
+        displayedBall.y+=(targetBall.y-displayedBall.y)*.30;
+        displayedPallino.x+=(targetPallino.x-displayedPallino.x)*.30;
+        displayedPallino.y+=(targetPallino.y-displayedPallino.y)*.30;
+        if(state?.settled_balls)displayedSettledBalls=state.settled_balls;
+      }
     }
+
     render();
     requestAnimationFrame(animateDisplay);
+  }
+  requestAnimationFrame(animateDisplay);
   }
   requestAnimationFrame(animateDisplay);
 
@@ -407,32 +443,43 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     if(seq < shotSeq)return;
 
     shotSeq=seq;
-    lastRealtimeFrameAt=performance.now();
-
-    const newBall={x:Number(payload.ball_x??targetBall.x),y:Number(payload.ball_y??targetBall.y)};
-    const newPallino={x:Number(payload.pallino_x??targetPallino.x),y:Number(payload.pallino_y??targetPallino.y)};
     const now=performance.now();
+    lastRealtimeFrameAt=now;
 
-    if(netSample){
-      const dt=Math.max(.016,(now-netSample.t)/1000);
-      netVelocity.ball.x=(newBall.x-netSample.ball.x)/dt;
-      netVelocity.ball.y=(newBall.y-netSample.ball.y)/dt;
-      netVelocity.pallino.x=(newPallino.x-netSample.pallino.x)/dt;
-      netVelocity.pallino.y=(newPallino.y-netSample.pallino.y)/dt;
-    }
+    const frame={
+      recvAt:now,
+      seq,
+      ball:{
+        x:Number(payload.ball_x??targetBall.x),
+        y:Number(payload.ball_y??targetBall.y)
+      },
+      pallino:{
+        x:Number(payload.pallino_x??targetPallino.x),
+        y:Number(payload.pallino_y??targetPallino.y)
+      },
+      settled:Array.isArray(payload.settled_balls)?payload.settled_balls.map(b=>({
+        id:Number(b.id),x:Number(b.x),y:Number(b.y)
+      })):[],
+      moving:Boolean(payload.moving)
+    };
 
-    netSample={t:now,ball:newBall,pallino:newPallino};
-    targetBall=newBall;
-    targetPallino=newPallino;
+    const last=realtimeFrames[realtimeFrames.length-1];
+    if(last && last.seq===frame.seq && last.recvAt===frame.recvAt)return;
+
+    realtimeFrames.push(frame);
+    if(realtimeFrames.length>12)realtimeFrames.splice(0,realtimeFrames.length-12);
+
+    targetBall={...frame.ball};
+    targetPallino={...frame.pallino};
 
     if(state){
-      state.ball_x=newBall.x;
-      state.ball_y=newBall.y;
-      state.pallino_x=newPallino.x;
-      state.pallino_y=newPallino.y;
-      state.ball_moving=Boolean(payload.moving);
+      state.ball_x=frame.ball.x;
+      state.ball_y=frame.ball.y;
+      state.pallino_x=frame.pallino.x;
+      state.pallino_y=frame.pallino.y;
+      state.ball_moving=frame.moving;
       state.ball_seq=seq;
-      if(Array.isArray(payload.settled_balls))state.settled_balls=payload.settled_balls;
+      state.settled_balls=frame.settled;
     }
   }
 
@@ -550,16 +597,9 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
       const realtimeFresh=(now-lastRealtimeFrameAt)<350;
 
-      if(!localSim && !realtimeFresh && netSample){
-        const dt=Math.max(.025,(now-netSample.t)/1000);
-        netVelocity.ball.x=(newBall.x-netSample.ball.x)/dt;
-        netVelocity.ball.y=(newBall.y-netSample.ball.y)/dt;
-        netVelocity.pallino.x=(newPallino.x-netSample.pallino.x)/dt;
-        netVelocity.pallino.y=(newPallino.y-netSample.pallino.y)/dt;
-      }
-
       if(!realtimeFresh){
         netSample={t:now,ball:newBall,pallino:newPallino};
+        realtimeFrames=[];
       }
 
       state=s;
@@ -568,6 +608,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       if(!localSim && !realtimeFresh){
         targetBall=newBall;
         targetPallino=newPallino;
+        displayedSettledBalls=Array.isArray(s.settled_balls)?s.settled_balls:[];
       }
       if(s.screen2_joined){
         connectionCard.classList.add('ready');
@@ -607,6 +648,8 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       };
       displayedBall=targetBall={x:50,y:8};
       displayedPallino=targetPallino={x:52,y:82};
+      displayedSettledBalls=[];
+      realtimeFrames=[];
       hostCreate.classList.add('hidden');hostPanel.classList.remove('hidden');viewPanel.classList.remove('hidden');
       document.getElementById('sessionId').textContent=session;
       const joinUrl=PAGE+'?session='+encodeURIComponent(session)+'&join='+encodeURIComponent(data.join_token);
@@ -768,6 +811,8 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
         state.ball_moving=false;
         state.settled_balls=result.settled_balls||[];
+        displayedSettledBalls=state.settled_balls;
+        realtimeFrames=[];
         state.next_ball_number=Number(result.next_ball_number||Number(state.next_ball_number||1)+1);
         shotSeq=Number(result.ball_seq||shotSeq+1);
         state.ball_seq=shotSeq;
@@ -832,6 +877,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       state.ball_x=active.x;state.ball_y=active.y;
       state.pallino_x=pallino.x;state.pallino_y=pallino.y;
       state.settled_balls=settledPayload;
+      displayedSettledBalls=settledPayload;
 
       if(now-lastSend>34){
         lastSend=now;
@@ -879,6 +925,8 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         state.ball_x=50;state.ball_y=8;state.ball_moving=false;
         state.pallino_x=52;state.pallino_y=82;
         state.settled_balls=[];state.next_ball_number=1;
+        displayedSettledBalls=[];
+        realtimeFrames=[];
       }
       setStatus('New frame ready. Ball 1 is waiting at the Near Player end.');
       render();
