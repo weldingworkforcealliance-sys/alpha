@@ -564,23 +564,76 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     }
 
     let last=performance.now();
+    const shotStarted=last;
+    let stableFrames=0;
+    let finishing=false;
+
+    async function finishShot(reason){
+      if(finishing)return;
+      finishing=true;
+
+      for(const o of [active,pallino,...settled]){
+        o.vx=0;o.vy=0;
+      }
+
+      const settledPayload=settled.map(b=>({id:b.id,x:b.x,y:b.y}));
+      displayedBall={x:active.x,y:active.y};targetBall=displayedBall;
+      displayedPallino={x:pallino.x,y:pallino.y};targetPallino=displayedPallino;
+
+      try{
+        const result=await api('POST',{
+          action:'complete_shot',
+          session,token,
+          ball_x:active.x,ball_y:active.y,
+          pallino_x:pallino.x,pallino_y:pallino.y,
+          settled_balls:settledPayload,
+          seq:shotSeq
+        });
+
+        state.ball_moving=false;
+        state.settled_balls=result.settled_balls||[];
+        state.next_ball_number=Number(result.next_ball_number||Number(state.next_ball_number||1)+1);
+        state.ball_x=50;state.ball_y=8;
+        displayedBall=targetBall={x:50,y:8};
+        displayedPallino=targetPallino={x:pallino.x,y:pallino.y};
+        localSim=false;
+
+        setStatus(
+          reason==='watchdog'
+            ? 'Shot resolved automatically. Ball '+state.next_ball_number+' is ready.'
+            : 'Ball '+state.next_ball_number+' ready automatically. Previous balls stay where they stopped.'
+        );
+        render();
+      }catch(e){
+        localSim=false;
+        state.ball_moving=false;
+        setStatus('Shot resolution failed: '+e.message);
+      }
+    }
+
     async function frame(now){
+      if(finishing)return;
+
       const dt=Math.min(.025,(now-last)/1000||.016);last=now;
-      const friction=Math.exp(-.60*dt);
+      const friction=Math.exp(-.72*dt);
       const objs=[active,pallino,...settled];
 
       for(const o of objs){
         o.x+=o.vx*dt;o.y+=o.vy*dt;o.vx*=friction;o.vy*=friction;
-        if(Math.hypot(o.vx,o.vy)<.38){o.vx=0;o.vy=0;}
-        if(o.x-o.r<8){o.x=8+o.r;o.vx=Math.abs(o.vx)*.36;}
-        if(o.x+o.r>92){o.x=92-o.r;o.vx=-Math.abs(o.vx)*.36;}
-        if(o.y-o.r<0){o.y=o.r;o.vy=Math.abs(o.vy)*.25;}
-        if(o.y+o.r>100){o.y=100-o.r;o.vy=-Math.abs(o.vy)*.25;}
+        if(Math.hypot(o.vx,o.vy)<.48){o.vx=0;o.vy=0;}
+        if(o.x-o.r<8){o.x=8+o.r;o.vx=Math.abs(o.vx)*.30;}
+        if(o.x+o.r>92){o.x=92-o.r;o.vx=-Math.abs(o.vx)*.30;}
+        if(o.y-o.r<0){o.y=o.r;o.vy=Math.abs(o.vy)*.20;}
+        if(o.y+o.r>100){o.y=100-o.r;o.vy=-Math.abs(o.vy)*.20;}
       }
 
       for(let i=0;i<objs.length;i++){
         for(let j=i+1;j<objs.length;j++)collide(objs[i],objs[j]);
       }
+
+      const maxSpeed=Math.max(...objs.map(o=>Math.hypot(o.vx,o.vy)));
+      if(maxSpeed<.70)stableFrames+=1;
+      else stableFrames=0;
 
       const settledPayload=settled.map(b=>({id:b.id,x:b.x,y:b.y}));
       displayedBall={x:active.x,y:active.y};targetBall=displayedBall;
@@ -595,34 +648,18 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       }
 
       render();
-      const moving=objs.some(o=>Math.hypot(o.vx,o.vy)>.01);
-      if(moving){
-        requestAnimationFrame(frame);
-      }else{
-        try{
-          const result=await api('POST',{
-            action:'complete_shot',
-            session,token,
-            ball_x:active.x,ball_y:active.y,
-            pallino_x:pallino.x,pallino_y:pallino.y,
-            settled_balls:settledPayload,
-            seq:shotSeq
-          });
-          state.ball_moving=false;
-          state.settled_balls=result.settled_balls||[];
-          state.next_ball_number=Number(result.next_ball_number||Number(state.next_ball_number||1)+1);
-          state.ball_x=50;state.ball_y=8;
-          displayedBall=targetBall={x:50,y:8};
-          displayedPallino=targetPallino={x:pallino.x,y:pallino.y};
-          localSim=false;
-          setStatus('Ball '+state.next_ball_number+' ready automatically. Previous balls stay where they stopped.');
-          render();
-        }catch(e){
-          localSim=false;
-          state.ball_moving=false;
-          setStatus('Shot finished but next-ball setup failed: '+e.message);
-        }
+
+      if(stableFrames>=10){
+        void finishShot('settled');
+        return;
       }
+
+      if(now-shotStarted>9000){
+        void finishShot('watchdog');
+        return;
+      }
+
+      requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);
   }
