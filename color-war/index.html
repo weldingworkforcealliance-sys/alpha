@@ -199,7 +199,7 @@ function aiResourceMinerLane(){
   let needs={
     wood:AI_TRAINED.woodNeed,
     iron:AI_TRAINED.ironNeed,
-    stone:AI_TRAINED.stoneNeed+(p.sieges.length||p.ready.some(x=>x.type==="siege")||p.trainQ.some(x=>x.type==="siege")?.9:0)
+    stone:AI_TRAINED.stoneNeed+((p.sieges.length||p.ready.some(x=>x.type==="siege")||p.trainQ.some(x=>x.type==="siege")) ? .9 : 0)
   };
   if(p.sieges.length&&p.stone<AI_TRAINED.rockReserve)needs.stone+=2;
   let best=-1,bestScore=-1e9;
