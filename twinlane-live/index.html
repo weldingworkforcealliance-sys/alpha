@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090d12">
+<title>TwinLane Live Trial</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:#090d12;color:#f3f5f7;min-height:100vh}
+main{max-width:720px;margin:0 auto;padding:18px 14px 42px}
+.eyebrow{font-size:12px;letter-spacing:.14em;font-weight:800;color:#8793a4}
+h1{font-size:28px;margin:6px 0 4px} h2{font-size:18px;margin:0 0 10px}
+p{color:#aab4c2;line-height:1.45}
+.card{border:1px solid #303846;border-radius:16px;background:#11161d;padding:16px;margin-top:14px}
+button,select{min-height:48px;border-radius:12px;border:1px solid #3c4656;background:#1b2430;color:#f3f5f7;padding:10px 14px;font-weight:700;font-size:16px}
+button{cursor:pointer} button:disabled{opacity:.45;cursor:not-allowed}
+.primary{background:#e7edf6;color:#10151c;border-color:#e7edf6;width:100%}
+.grid{display:grid;gap:12px}
+label{display:grid;gap:6px;font-size:14px;font-weight:700}
+.small{font-size:12px;color:#8190a2}.status{color:#c9d2de}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.qr{background:white;padding:7px;border-radius:12px;width:170px;height:170px}
+.lane{height:360px;position:relative;overflow:hidden;border-radius:14px;border:1px solid #303846;background:repeating-linear-gradient(0deg,#141b24 0,#141b24 58px,#1a222d 59px,#1a222d 60px)}
+.rails{position:absolute;inset:0 10%;border-left:2px solid #4b586b;border-right:2px solid #4b586b}
+.ball{position:absolute;width:30px;height:30px;border-radius:50%;background:#eef3fa;border:3px solid #7f90a8;left:50%;transform:translateX(-50%);box-shadow:0 8px 18px #0008}
+.tag{display:inline-block;border:1px solid #394555;border-radius:999px;padding:5px 9px;font-size:12px;color:#aab4c2}
+.hidden{display:none!important}
+code{word-break:break-all;font-size:12px;color:#9eacbd}
+@media(max-width:520px){h1{font-size:24px}.qr{width:145px;height:145px}}
+</style>
+</head>
+<body>
+<main>
+<div class="eyebrow">CORVU MOR · TWINLANE LIVE TRIAL</div>
+<h1>Real two-screen test</h1>
+<p>One session, two separate browsers, one shared moving object.</p>
+
+<section id="hostCreate" class="card">
+  <h2>Phone A</h2>
+  <p>Create the live session on the launch phone.</p>
+  <button id="createBtn" class="primary">Create Live Session</button>
+</section>
+
+<section id="hostPanel" class="card hidden">
+  <div class="row">
+    <div>
+      <div class="small">SESSION</div>
+      <strong id="sessionId"></strong>
+      <div class="small" style="margin-top:8px">Scan with Screen 2</div>
+    </div>
+    <img id="qr" class="qr" alt="QR code to join TwinLane">
+  </div>
+  <div style="margin-top:10px"><code id="joinLink"></code></div>
+  <button id="runBtn" class="primary" style="margin-top:14px" disabled>Waiting for Screen 2</button>
+</section>
+
+<section id="joinPanel" class="card hidden">
+  <h2>Join as Screen 2</h2>
+  <div class="grid">
+    <label>Device
+      <select id="deviceKind">
+        <option value="phone">Phone</option>
+        <option value="tablet">Tablet</option>
+        <option value="laptop">Laptop</option>
+        <option value="tv">TV / browser display</option>
+      </select>
+    </label>
+    <label>Role
+      <select id="role">
+        <option value="lane">Lane</option>
+        <option value="target" selected>Target</option>
+        <option value="scoreboard">Scoreboard</option>
+        <option value="spectator">Spectator</option>
+      </select>
+    </label>
+    <label>Physical position
+      <select id="position">
+        <option value="afterA" selected>After Phone A</option>
+        <option value="after2">After Screen 2</option>
+        <option value="independent">Independent display</option>
+      </select>
+    </label>
+    <button id="joinBtn" class="primary">Join Live Session</button>
+  </div>
+</section>
+
+<section id="viewPanel" class="card hidden">
+  <div class="row" style="margin-bottom:10px">
+    <strong id="screenName">Screen</strong>
+    <span id="screenMeta" class="tag"></span>
+  </div>
+  <div id="lane" class="lane">
+    <div class="rails"></div>
+    <div id="ball" class="ball"></div>
+    <div id="independent" class="hidden" style="position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px">
+      <div><div class="eyebrow">INDEPENDENT DISPLAY</div><div id="independentRole" style="font-size:28px;font-weight:800;margin-top:8px"></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <strong>Status</strong>
+  <div id="status" class="status" style="margin-top:6px">Ready.</div>
+  <div id="debug" class="small" style="margin-top:8px"></div>
+</section>
+</main>
+
+<script>
+(() => {
+  const API = 'https://qsmvgyyaemjmklceyikr.supabase.co/functions/v1/twinlane-api';
+  const PAGE = 'https://raw.githack.com/weldingworkforcealliance-sys/alpha/main/twinlane-live/index.html';
+
+  const params = new URLSearchParams(location.search);
+  const joinSession = params.get('session') || '';
+  const joinToken = params.get('join') || '';
+
+  const hostCreate = document.getElementById('hostCreate');
+  const hostPanel = document.getElementById('hostPanel');
+  const joinPanel = document.getElementById('joinPanel');
+  const viewPanel = document.getElementById('viewPanel');
+  const statusEl = document.getElementById('status');
+  const debugEl = document.getElementById('debug');
+  const runBtn = document.getElementById('runBtn');
+  const ballEl = document.getElementById('ball');
+  const laneEl = document.getElementById('lane');
+  const independentEl = document.getElementById('independent');
+  const independentRoleEl = document.getElementById('independentRole');
+  const screenNameEl = document.getElementById('screenName');
+  const screenMetaEl = document.getElementById('screenMeta');
+
+  let session = '';
+  let token = '';
+  let isHost = false;
+  let role = 'launch';
+  let position = 'center';
+  let displayedY = 8;
+  let targetY = 8;
+  let pollTimer = null;
+  let sendAt = 0;
+  let currentSeq = 0;
+  let testRunning = false;
+
+  const setStatus = (s) => statusEl.textContent = s;
+
+  function viewport() {
+    if (position === 'independent') return null;
+    if (position === 'center') return {y0:0,y1:34};
+    if (position === 'after2') return {y0:67,y1:100};
+    return {y0:34,y1:100};
+  }
+
+  function renderBall() {
+    const vp = viewport();
+    if (!vp) {
+      laneEl.style.background = '#11161d';
+      independentEl.classList.remove('hidden');
+      independentRoleEl.textContent = role.toUpperCase();
+      ballEl.style.display = 'none';
+      return;
+    }
+    independentEl.classList.add('hidden');
+    ballEl.style.display = displayedY >= vp.y0 && displayedY <= vp.y1 ? 'block' : 'none';
+    const pct = Math.max(2, Math.min(98, ((displayedY - vp.y0) / (vp.y1 - vp.y0)) * 100));
+    ballEl.style.bottom = 'calc(' + pct + '% - 15px)';
+  }
+
+  function animate() {
+    displayedY += (targetY - displayedY) * 0.24;
+    renderBall();
+    requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+
+  async function api(method, body, query='') {
+    const opts = {method, headers:{}};
+    if (body) {
+      opts.headers['content-type'] = 'application/json';
+      opts.body = JSON.stringify(body);
+    }
+    const res = await fetch(API + query, opts);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Request failed');
+    return data;
+  }
+
+  async function poll() {
+    if (!session || !token) return;
+    try {
+      const s = await api('GET', null, '?api=state&session=' + encodeURIComponent(session) + '&token=' + encodeURIComponent(token));
+      targetY = Number(s.ball_y || 8);
+      currentSeq = Number(s.ball_seq || 0);
+      if (isHost) {
+        if (s.screen2_joined) {
+          runBtn.disabled = testRunning;
+          runBtn.textContent = testRunning ? 'Ball Moving…' : 'Run Live Ball Test';
+          if (!testRunning) setStatus('Screen 2 connected: ' + (s.screen2_role || 'target') + ' · ' + (s.screen2_position || 'afterA'));
+        }
+      } else {
+        debugEl.textContent = 'Ball Y ' + targetY.toFixed(1) + ' · seq ' + currentSeq + ' · ' + (s.ball_moving ? 'moving' : 'stopped');
+      }
+    } catch (e) {
+      debugEl.textContent = 'Poll error: ' + e.message;
+    }
+  }
+
+  function startPolling(ms) {
+    if (pollTimer) clearInterval(pollTimer);
+    poll();
+    pollTimer = setInterval(poll, ms);
+  }
+
+  document.getElementById('createBtn').addEventListener('click', async () => {
+    try {
+      setStatus('Creating standalone session…');
+      const data = await api('POST', {action:'create'});
+      session = data.session;
+      token = data.host_token;
+      isHost = true;
+      role = 'launch';
+      position = 'center';
+
+      hostCreate.classList.add('hidden');
+      hostPanel.classList.remove('hidden');
+      viewPanel.classList.remove('hidden');
+      document.getElementById('sessionId').textContent = session;
+
+      const joinUrl = PAGE + '?session=' + encodeURIComponent(session) + '&join=' + encodeURIComponent(data.join_token);
+      const qrUrl = API + '?api=qr&session=' + encodeURIComponent(session) + '&join=' + encodeURIComponent(data.join_token) + '&target=' + encodeURIComponent(PAGE);
+
+      document.getElementById('joinLink').textContent = joinUrl;
+      document.getElementById('qr').src = qrUrl;
+      screenNameEl.textContent = 'Phone A';
+      screenMetaEl.textContent = 'launch · Y 0–34';
+      setStatus('Session ready. Scan the QR with Screen 2.');
+      startPolling(350);
+    } catch (e) {
+      setStatus('Create failed: ' + e.message);
+    }
+  });
+
+  document.getElementById('joinBtn').addEventListener('click', async () => {
+    try {
+      role = document.getElementById('role').value;
+      position = document.getElementById('position').value;
+      const kind = document.getElementById('deviceKind').value;
+      setStatus('Joining Phone A…');
+
+      await api('POST', {
+        action:'join',
+        session:joinSession,
+        join_token:joinToken,
+        role,
+        position,
+        kind
+      });
+
+      session = joinSession;
+      token = joinToken;
+      isHost = false;
+
+      joinPanel.classList.add('hidden');
+      viewPanel.classList.remove('hidden');
+      screenNameEl.textContent = kind.charAt(0).toUpperCase() + kind.slice(1) + ' Screen';
+      const vp = viewport();
+      screenMetaEl.textContent = vp ? role + ' · Y ' + vp.y0 + '–' + vp.y1 : role + ' · independent';
+      setStatus('Connected. Waiting for Phone A to run the ball test.');
+      startPolling(100);
+    } catch (e) {
+      setStatus('Join failed: ' + e.message);
+    }
+  });
+
+  runBtn.addEventListener('click', async () => {
+    if (!isHost || testRunning) return;
+    testRunning = true;
+    runBtn.disabled = true;
+    runBtn.textContent = 'Ball Moving…';
+    setStatus('Running live cross-screen ball test…');
+
+    const start = performance.now();
+    const duration = 3600;
+    const seq = currentSeq + 1;
+
+    async function frame(now) {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 2.05);
+      const y = 8 + eased * 88;
+      targetY = y;
+      displayedY = y;
+
+      if (now - sendAt > 115 || t === 1) {
+        sendAt = now;
+        try {
+          await api('POST', {
+            action:'ball',
+            session,
+            host_token:token,
+            y,
+            seq,
+            moving:t < 1
+          });
+        } catch (e) {
+          debugEl.textContent = 'Send error: ' + e.message;
+        }
+      }
+
+      if (t < 1) {
+        requestAnimationFrame(frame);
+      } else {
+        testRunning = false;
+        runBtn.disabled = false;
+        runBtn.textContent = 'Run Live Ball Test';
+        setStatus('PASS if the ball crossed Phone A and continued on Screen 2 without restarting.');
+      }
+    }
+    requestAnimationFrame(frame);
+  });
+
+  if (joinSession && joinToken) {
+    hostCreate.classList.add('hidden');
+    joinPanel.classList.remove('hidden');
+    setStatus('Choose this screen’s role and physical position.');
+  }
+
+  window.addEventListener('beforeunload', () => {
+    if (pollTimer) clearInterval(pollTimer);
+  });
+})();
+</script>
+</body>
+</html>
