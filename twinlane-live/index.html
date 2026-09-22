@@ -440,6 +440,9 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     const seq=Number(payload.seq||0);
     if(seq < shotSeq)return;
 
+    if(seq>shotSeq){
+      realtimeFrames=[];
+    }
     shotSeq=seq;
     const now=performance.now();
     lastRealtimeFrameAt=now;
@@ -479,6 +482,49 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       state.ball_seq=seq;
       state.settled_balls=frame.settled;
     }
+  }
+
+  function applyShotComplete(payload){
+    if(!payload)return;
+    const seq=Number(payload.seq||shotSeq);
+    shotSeq=Math.max(shotSeq,seq);
+    lastRealtimeFrameAt=performance.now();
+
+    // Completion is a state transition, not another movement frame.
+    // Never interpolate the finished ball backward to the launch position.
+    realtimeFrames=[];
+
+    const settled=Array.isArray(payload.settled_balls)
+      ? payload.settled_balls.map(b=>({id:Number(b.id),x:Number(b.x),y:Number(b.y)}))
+      : [];
+
+    const pallino={
+      x:Number(payload.pallino_x??targetPallino.x),
+      y:Number(payload.pallino_y??targetPallino.y)
+    };
+
+    targetBall={x:50,y:8};
+    displayedBall={x:50,y:8};
+    targetPallino={...pallino};
+    displayedPallino={...pallino};
+    displayedSettledBalls=settled;
+
+    if(state){
+      state.ball_x=50;
+      state.ball_y=8;
+      state.ball_moving=false;
+      state.ball_seq=seq;
+      state.pallino_x=pallino.x;
+      state.pallino_y=pallino.y;
+      state.settled_balls=settled;
+      if(payload.next_ball_number!=null){
+        state.next_ball_number=Number(payload.next_ball_number);
+      }
+    }
+
+    netSample=null;
+    netVelocity={ball:{x:0,y:0},pallino:{x:0,y:0}};
+    render();
   }
 
   function connectRealtime(){
@@ -539,7 +585,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         const p=msg?.payload;
         if(p?.event==='physics')applyRealtimePhysics(p.payload);
         if(p?.event==='shot_complete'){
-          applyRealtimePhysics(p.payload);
+          applyShotComplete(p.payload);
           void poll();
         }
       }
