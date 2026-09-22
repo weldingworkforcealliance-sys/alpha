@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#090d12">
-<title>TwinLane Live Trial</title>
+<title>TwinLane Live Bocce Trial</title>
 <style>
 :root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 *{box-sizing:border-box}
 body{margin:0;background:#090d12;color:#f3f5f7;min-height:100vh}
-main{max-width:720px;margin:0 auto;padding:18px 14px 42px}
+main{max-width:760px;margin:0 auto;padding:18px 14px 42px}
 .eyebrow{font-size:12px;letter-spacing:.14em;font-weight:800;color:#8793a4}
 h1{font-size:28px;margin:6px 0 4px} h2{font-size:18px;margin:0 0 10px}
 p{color:#aab4c2;line-height:1.45}
@@ -18,28 +18,49 @@ button,select{min-height:48px;border-radius:12px;border:1px solid #3c4656;backgr
 button{cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}
 .primary{background:#e7edf6;color:#10151c;border-color:#e7edf6;width:100%}
 .grid{display:grid;gap:12px}
+.three{grid-template-columns:repeat(3,minmax(0,1fr))}
 label{display:grid;gap:6px;font-size:14px;font-weight:700}
 .small{font-size:12px;color:#8190a2}.status{color:#c9d2de}
 .row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .qr{background:white;padding:7px;border-radius:12px;width:170px;height:170px}
-.lane{height:360px;position:relative;overflow:hidden;border-radius:14px;border:1px solid #303846;background:repeating-linear-gradient(0deg,#141b24 0,#141b24 58px,#1a222d 59px,#1a222d 60px)}
-.rails{position:absolute;inset:0 10%;border-left:2px solid #4b586b;border-right:2px solid #4b586b}
-.ball{position:absolute;width:30px;height:30px;border-radius:50%;background:#eef3fa;border:3px solid #7f90a8;left:50%;transform:translateX(-50%);box-shadow:0 8px 18px #0008}
+.guide{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:14px;border:1px solid #303846;border-radius:14px;background:#0d1218}
+.guide-box{min-width:122px;padding:12px;border:1px solid #435064;border-radius:12px;text-align:center;background:#141b24}
+.guide-arrow{font-size:24px;color:#748197}
+.lane{height:390px;position:relative;overflow:hidden;border-radius:14px;border:1px solid #303846;background:repeating-linear-gradient(0deg,#141b24 0,#141b24 58px,#1a222d 59px,#1a222d 60px);touch-action:none}
+.rails{position:absolute;inset:0 10%;border-left:2px solid #4b586b;border-right:2px solid #4b586b;pointer-events:none}
+.start-zone{position:absolute;border:2px dashed #607089;border-radius:10px;background:#60708914;pointer-events:none}
+.start-label{position:absolute;font-size:10px;color:#95a3b6;font-weight:800;letter-spacing:.08em;pointer-events:none}
+.ball{position:absolute;width:30px;height:30px;border-radius:50%;background:#eef3fa;border:3px solid #7f90a8;transform:translate(-50%,50%);box-shadow:0 8px 18px #0008;touch-action:none}
+.pallino{position:absolute;width:17px;height:17px;border-radius:50%;background:#dac992;border:2px solid #fff1c4;transform:translate(-50%,50%);box-shadow:0 5px 12px #0008;pointer-events:none}
+.flick-line{position:absolute;height:2px;background:#dce6f4;transform-origin:left center;opacity:.8;pointer-events:none}
 .tag{display:inline-block;border:1px solid #394555;border-radius:999px;padding:5px 9px;font-size:12px;color:#aab4c2}
 .hidden{display:none!important}
 code{word-break:break-all;font-size:12px;color:#9eacbd}
-@media(max-width:520px){h1{font-size:24px}.qr{width:145px;height:145px}}
+.ready{background:#0d1712;border-color:#345642}
+.warn{background:#21180d;border-color:#6a4d29}
+@media(max-width:600px){h1{font-size:24px}.qr{width:145px;height:145px}.three{grid-template-columns:1fr}.guide-box{min-width:105px}}
 </style>
 </head>
 <body>
 <main>
-<div class="eyebrow">CORVU MOR · TWINLANE LIVE TRIAL</div>
-<h1>Real two-screen test</h1>
-<p>Each screen can now be configured independently. The physical position determines which part of the shared world it renders.</p>
+<div class="eyebrow">CORVU MOR · TWINLANE LIVE BOCCE</div>
+<h1>Two-screen playable trial</h1>
+<p>The device number does not decide where it sits. You choose the physical position for each screen.</p>
+
+<section class="card">
+  <h2>What “physical position” means</h2>
+  <div class="guide">
+    <div><div class="small" style="text-align:center;margin-bottom:5px">PLAYER</div><div style="font-size:26px;text-align:center">⬆</div></div>
+    <div class="guide-box"><strong>NEAR PLAYER</strong><div class="small">start / launch end</div></div>
+    <div class="guide-arrow">→</div>
+    <div class="guide-box"><strong>FAR END</strong><div class="small">target / pallino end</div></div>
+  </div>
+  <div class="small" style="margin-top:10px"><strong>SIDE DISPLAY</strong> means the device sits beside the court or on a TV. The ball never travels through it.</div>
+</section>
 
 <section id="hostCreate" class="card">
   <h2>Configure Screen 1</h2>
-  <div class="grid">
+  <div class="grid three">
     <label>Device
       <select id="s1Kind">
         <option value="phone" selected>Phone</option>
@@ -50,22 +71,22 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     </label>
     <label>Role
       <select id="s1Role">
-        <option value="launch" selected>Launch</option>
+        <option value="launch" selected>Launch / throw from here</option>
         <option value="lane">Lane</option>
-        <option value="target">Target</option>
+        <option value="target">Target / pallino end</option>
         <option value="scoreboard">Scoreboard</option>
         <option value="spectator">Spectator</option>
       </select>
     </label>
     <label>Physical position
       <select id="s1Position">
-        <option value="first" selected>First playfield screen</option>
-        <option value="second">Second playfield screen</option>
-        <option value="independent">Independent display</option>
+        <option value="first" selected>Near Player</option>
+        <option value="second">Far End</option>
+        <option value="independent">Side Display</option>
       </select>
     </label>
-    <button id="createBtn" class="primary">Create Live Session</button>
   </div>
+  <button id="createBtn" class="primary" style="margin-top:14px">Create Live Bocce Session</button>
 </section>
 
 <section id="hostPanel" class="card hidden">
@@ -78,17 +99,11 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     <img id="qr" class="qr" alt="QR code to join TwinLane">
   </div>
   <div style="margin-top:10px"><code id="joinLink"></code></div>
-  <button id="runBtn" class="primary" style="margin-top:14px" disabled>Waiting for Screen 2</button>
-  <div id="readyPanel" class="card hidden" style="margin-top:14px;background:#0d1712;border-color:#345642">
-    <div style="font-weight:800">✓ CONNECTED / READY</div>
-    <div class="small" style="margin-top:5px">Cross-screen synchronization test passed.</div>
-    <button id="rerunBtn" style="margin-top:12px;width:100%">Run Test Again</button>
-  </div>
 </section>
 
 <section id="joinPanel" class="card hidden">
   <h2>Configure Screen 2</h2>
-  <div class="grid">
+  <div class="grid three">
     <label>Device
       <select id="s2Kind">
         <option value="phone" selected>Phone</option>
@@ -99,42 +114,55 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     </label>
     <label>Role
       <select id="s2Role">
-        <option value="launch">Launch</option>
+        <option value="launch">Launch / throw from here</option>
         <option value="lane">Lane</option>
-        <option value="target" selected>Target</option>
+        <option value="target" selected>Target / pallino end</option>
         <option value="scoreboard">Scoreboard</option>
         <option value="spectator">Spectator</option>
       </select>
     </label>
     <label>Physical position
       <select id="s2Position">
-        <option value="first">First playfield screen</option>
-        <option value="second" selected>Second playfield screen</option>
-        <option value="independent">Independent display</option>
+        <option value="first">Near Player</option>
+        <option value="second" selected>Far End</option>
+        <option value="independent">Side Display</option>
       </select>
     </label>
-    <button id="joinBtn" class="primary">Join Live Session</button>
   </div>
+  <button id="joinBtn" class="primary" style="margin-top:14px">Join Live Bocce Session</button>
 </section>
 
 <section id="viewPanel" class="card hidden">
   <div class="row" style="margin-bottom:10px">
-    <strong id="screenName">Screen</strong>
+    <div>
+      <strong id="screenName">Screen</strong>
+      <div id="screenPosition" class="small"></div>
+    </div>
     <span id="screenMeta" class="tag"></span>
   </div>
   <div id="lane" class="lane">
     <div class="rails"></div>
+    <div id="startZone" class="start-zone hidden"></div>
+    <div id="startLabel" class="start-label hidden">START AREA</div>
+    <div id="pallino" class="pallino"></div>
     <div id="ball" class="ball"></div>
+    <div id="flickLine" class="flick-line hidden"></div>
     <div id="independent" class="hidden" style="position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px">
       <div>
-        <div class="eyebrow">INDEPENDENT DISPLAY</div>
+        <div class="eyebrow">SIDE DISPLAY</div>
         <div id="independentRole" style="font-size:28px;font-weight:800;margin-top:8px"></div>
       </div>
     </div>
   </div>
+
+  <div id="launchHelp" class="card hidden" style="margin-top:12px">
+    <strong>How to throw</strong>
+    <div class="small" style="margin-top:5px">Drag the bocce ball inside the start area and release it. Then touch it again and flick forward. There is no lock button.</div>
+    <button id="resetBallBtn" style="width:100%;margin-top:12px">Reset Bocce Ball to Start</button>
+  </div>
 </section>
 
-<section class="card">
+<section id="connectionCard" class="card">
   <strong>Status</strong>
   <div id="status" class="status" style="margin-top:6px">Ready.</div>
   <div id="debug" class="small" style="margin-top:8px"></div>
@@ -145,7 +173,6 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 (() => {
   const API = 'https://qsmvgyyaemjmklceyikr.supabase.co/functions/v1/twinlane-api';
   const PAGE = location.origin + location.pathname;
-
   const params = new URLSearchParams(location.search);
   const joinSession = params.get('session') || '';
   const joinToken = params.get('join') || '';
@@ -154,17 +181,22 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   const hostPanel = document.getElementById('hostPanel');
   const joinPanel = document.getElementById('joinPanel');
   const viewPanel = document.getElementById('viewPanel');
+  const connectionCard = document.getElementById('connectionCard');
   const statusEl = document.getElementById('status');
   const debugEl = document.getElementById('debug');
-  const runBtn = document.getElementById('runBtn');
-  const readyPanel = document.getElementById('readyPanel');
-  const rerunBtn = document.getElementById('rerunBtn');
-  const ballEl = document.getElementById('ball');
   const laneEl = document.getElementById('lane');
+  const ballEl = document.getElementById('ball');
+  const pallinoEl = document.getElementById('pallino');
+  const startZoneEl = document.getElementById('startZone');
+  const startLabelEl = document.getElementById('startLabel');
+  const flickLineEl = document.getElementById('flickLine');
   const independentEl = document.getElementById('independent');
   const independentRoleEl = document.getElementById('independentRole');
   const screenNameEl = document.getElementById('screenName');
+  const screenPositionEl = document.getElementById('screenPosition');
   const screenMetaEl = document.getElementById('screenMeta');
+  const launchHelp = document.getElementById('launchHelp');
+  const resetBallBtn = document.getElementById('resetBallBtn');
 
   let session = '';
   let token = '';
@@ -173,272 +205,377 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   let kind = 'phone';
   let role = 'launch';
   let position = 'first';
-  let sessionState = null;
-  let displayedY = 8;
-  let targetY = 8;
+  let state = null;
   let pollTimer = null;
-  let sendAt = 0;
-  let currentSeq = 0;
-  let testRunning = false;
-  let testComplete = false;
+  let displayedBall = {x:50,y:8};
+  let targetBall = {x:50,y:8};
+  let displayedPallino = {x:52,y:82};
+  let targetPallino = {x:52,y:82};
+  let gesture = null;
+  let localSim = false;
+  let lastSend = 0;
+  let shotSeq = 0;
 
-  const setStatus = (s) => statusEl.textContent = s;
-  const nice = (s) => String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1);
+  const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+  const nice=(s)=>String(s||'').charAt(0).toUpperCase()+String(s||'').slice(1);
+  const setStatus=(s)=>statusEl.textContent=s;
 
-  function playfieldPositions(state) {
-    if (!state) return [];
-    const items = [];
-    if (state.screen1_position && state.screen1_position !== 'independent') {
-      items.push({screen:1,position:state.screen1_position});
-    }
-    if (state.screen2_joined && state.screen2_position && state.screen2_position !== 'independent') {
-      items.push({screen:2,position:state.screen2_position});
-    }
-    items.sort((a,b) => (a.position === 'first' ? 0 : 1) - (b.position === 'first' ? 0 : 1));
-    return items;
+  function localPositionLabel() {
+    if (position==='first') return 'Near Player';
+    if (position==='second') return 'Far End';
+    return 'Side Display';
   }
 
-  function viewportForLocal() {
-    if (position === 'independent') return null;
-    const chain = playfieldPositions(sessionState);
+  function playfieldChain(s) {
+    if (!s) return [];
+    const arr=[];
+    if (s.screen1_position && s.screen1_position!=='independent') arr.push({screen:1,position:s.screen1_position});
+    if (s.screen2_joined && s.screen2_position && s.screen2_position!=='independent') arr.push({screen:2,position:s.screen2_position});
+    arr.sort((a,b)=>(a.position==='first'?0:1)-(b.position==='first'?0:1));
+    return arr;
+  }
+
+  function viewport() {
+    if (position==='independent') return null;
+    const chain=playfieldChain(state);
     if (!chain.length) return null;
-    if (chain.length === 1) return {y0:0,y1:100};
-    const item = chain.find(x => x.screen === localScreen);
-    if (!item) return null;
-    return item.position === 'first' ? {y0:0,y1:50} : {y0:50,y1:100};
+    if (chain.length===1) return {y0:0,y1:100};
+    const me=chain.find(x=>x.screen===localScreen);
+    if (!me) return null;
+    return me.position==='first'?{y0:0,y1:50}:{y0:50,y1:100};
   }
 
-  function updateScreenMeta() {
-    const vp = viewportForLocal();
-    const deviceLabel = nice(kind);
-    screenNameEl.textContent = 'Screen ' + localScreen + ' · ' + deviceLabel;
-    screenMetaEl.textContent = vp ? (role + ' · Y ' + vp.y0 + '–' + vp.y1) : (role + ' · independent');
+  function worldToLocal(x,y) {
+    const vp=viewport();
+    if (!vp) return null;
+    const r=laneEl.getBoundingClientRect();
+    return {
+      x:(x/100)*r.width,
+      y:r.height-((y-vp.y0)/(vp.y1-vp.y0))*r.height
+    };
   }
 
-  function renderBall() {
-    const vp = viewportForLocal();
-    updateScreenMeta();
+  function pointerToWorld(e) {
+    const vp=viewport();
+    if (!vp) return null;
+    const r=laneEl.getBoundingClientRect();
+    return {
+      x:clamp(((e.clientX-r.left)/r.width)*100,0,100),
+      y:clamp(vp.y0+(1-(e.clientY-r.top)/r.height)*(vp.y1-vp.y0),vp.y0,vp.y1)
+    };
+  }
+
+  function positionObject(el,obj,visibleExtra=0) {
+    const vp=viewport();
+    if (!vp || obj.y<vp.y0-visibleExtra || obj.y>vp.y1+visibleExtra) {
+      el.style.display='none';return;
+    }
+    const p=worldToLocal(obj.x,obj.y);
+    if (!p){el.style.display='none';return;}
+    el.style.display='block';
+    el.style.left=p.x+'px';
+    el.style.bottom=(laneEl.clientHeight-p.y)+'px';
+  }
+
+  function renderStartZone() {
+    const vp=viewport();
+    const show=role==='launch' && position==='first' && vp && !state?.ball_moving;
+    launchHelp.classList.toggle('hidden',!show);
+    startZoneEl.classList.toggle('hidden',!show);
+    startLabelEl.classList.toggle('hidden',!show);
+    if (!show) return;
+    const p1=worldToLocal(15,14),p2=worldToLocal(85,5);
+    startZoneEl.style.left=p1.x+'px';
+    startZoneEl.style.top=p1.y+'px';
+    startZoneEl.style.width=(p2.x-p1.x)+'px';
+    startZoneEl.style.height=(p2.y-p1.y)+'px';
+    startLabelEl.style.left=(p1.x+8)+'px';
+    startLabelEl.style.top=(p1.y+7)+'px';
+  }
+
+  function render() {
+    const vp=viewport();
+    screenNameEl.textContent='Screen '+localScreen+' · '+nice(kind);
+    screenPositionEl.textContent='Physical position: '+localPositionLabel();
+    screenMetaEl.textContent=vp?(role+' · Y '+vp.y0+'–'+vp.y1):(role+' · side display');
+
     if (!vp) {
-      laneEl.style.background = '#11161d';
+      laneEl.style.background='#11161d';
       independentEl.classList.remove('hidden');
-      independentRoleEl.textContent = role.toUpperCase();
-      ballEl.style.display = 'none';
+      independentRoleEl.textContent=role.toUpperCase();
+      ballEl.style.display='none';
+      pallinoEl.style.display='none';
+      startZoneEl.classList.add('hidden');
+      startLabelEl.classList.add('hidden');
+      launchHelp.classList.add('hidden');
       return;
     }
-    laneEl.style.background = 'repeating-linear-gradient(0deg,#141b24 0,#141b24 58px,#1a222d 59px,#1a222d 60px)';
+
+    laneEl.style.background='repeating-linear-gradient(0deg,#141b24 0,#141b24 58px,#1a222d 59px,#1a222d 60px)';
     independentEl.classList.add('hidden');
-    ballEl.style.display = displayedY >= vp.y0 && displayedY <= vp.y1 ? 'block' : 'none';
-    const pct = Math.max(2, Math.min(98, ((displayedY - vp.y0) / (vp.y1 - vp.y0)) * 100));
-    ballEl.style.bottom = 'calc(' + pct + '% - 15px)';
+    positionObject(ballEl,displayedBall,3);
+    positionObject(pallinoEl,displayedPallino,2);
+    renderStartZone();
   }
 
-  function animate() {
-    displayedY += (targetY - displayedY) * 0.24;
-    renderBall();
-    requestAnimationFrame(animate);
-  }
-  requestAnimationFrame(animate);
-
-  async function api(method, body, query='') {
-    const opts = {method, headers:{}};
-    if (body) {
-      opts.headers['content-type'] = 'application/json';
-      opts.body = JSON.stringify(body);
+  function animateDisplay() {
+    if (!localSim) {
+      displayedBall.x+=(targetBall.x-displayedBall.x)*.28;
+      displayedBall.y+=(targetBall.y-displayedBall.y)*.28;
+      displayedPallino.x+=(targetPallino.x-displayedPallino.x)*.28;
+      displayedPallino.y+=(targetPallino.y-displayedPallino.y)*.28;
     }
-    const res = await fetch(API + query, opts);
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Request failed');
+    render();
+    requestAnimationFrame(animateDisplay);
+  }
+  requestAnimationFrame(animateDisplay);
+
+  async function api(method,body,query='') {
+    const opts={method,headers:{}};
+    if(body){opts.headers['content-type']='application/json';opts.body=JSON.stringify(body);}
+    const res=await fetch(API+query,opts);
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Request failed');
     return data;
   }
 
-  function hasPlayableScreen(state) {
-    return playfieldPositions(state).length > 0;
+  async function sendPhysics(ball,pallino,moving,seq) {
+    try{
+      await api('POST',{
+        action:'physics',session,token,
+        ball_x:ball.x,ball_y:ball.y,
+        pallino_x:pallino.x,pallino_y:pallino.y,
+        moving,seq
+      });
+    }catch(e){debugEl.textContent='Physics send error: '+e.message;}
   }
 
   async function poll() {
-    if (!session || !token) return;
-    try {
-      const s = await api('GET', null, '?api=state&session=' + encodeURIComponent(session) + '&token=' + encodeURIComponent(token));
-      sessionState = s;
-      targetY = Number(s.ball_y || 8);
-      currentSeq = Number(s.ball_seq || 0);
-
-      if (isHost) {
-        if (s.screen2_joined) {
-          const playable = hasPlayableScreen(s);
-          if (testComplete) {
-            runBtn.classList.add('hidden');
-            readyPanel.classList.remove('hidden');
-            setStatus('CONNECTED / READY · Screen 2: ' + nice(s.screen2_kind || 'screen') + ' · ' + (s.screen2_role || 'target') + ' · ' + (s.screen2_position || 'independent'));
-          } else {
-            readyPanel.classList.add('hidden');
-            runBtn.classList.remove('hidden');
-            runBtn.disabled = testRunning || !playable;
-            runBtn.textContent = !playable ? 'No Playfield Screen Configured' : (testRunning ? 'Ball Moving…' : 'Run Live Ball Test');
-            if (!testRunning) {
-              setStatus('Screen 2 connected. Ready for one synchronization test.');
-            }
-          }
-        }
-      } else {
-        debugEl.textContent = 'Ball Y ' + targetY.toFixed(1) + ' · seq ' + currentSeq + ' · ' + (s.ball_moving ? 'moving' : 'stopped');
-        if (currentSeq > 0 && !s.ball_moving && !testRunning) {
-          testComplete = true;
-          setStatus('CONNECTED / READY · Cross-screen synchronization test completed.');
-        }
+    if(!session||!token)return;
+    try{
+      const s=await api('GET',null,'?api=state&session='+encodeURIComponent(session)+'&token='+encodeURIComponent(token));
+      state=s;
+      shotSeq=Number(s.ball_seq||0);
+      if(!localSim){
+        targetBall={x:Number(s.ball_x||50),y:Number(s.ball_y||8)};
+        targetPallino={x:Number(s.pallino_x||52),y:Number(s.pallino_y||82)};
       }
-      renderBall();
-    } catch (e) {
-      debugEl.textContent = 'Poll error: ' + e.message;
-    }
+      if(s.screen2_joined){
+        connectionCard.classList.add('ready');
+        if(role==='launch' && position==='first'){
+          if(s.ball_moving)setStatus('CONNECTED · Ball rolling.');
+          else setStatus('CONNECTED · Drag the bocce ball in the start area, then flick forward.');
+        }else if(role==='target'){
+          setStatus('CONNECTED · Pallino is live. Watch the incoming bocce ball.');
+        }else{
+          setStatus('CONNECTED / READY · '+nice(role)+' display.');
+        }
+      }else if(isHost){
+        setStatus('Waiting for Screen 2 to scan the QR and join.');
+      }
+      debugEl.textContent='Ball ('+Number(s.ball_x||50).toFixed(1)+', '+Number(s.ball_y||8).toFixed(1)+') · Pallino ('+Number(s.pallino_x||52).toFixed(1)+', '+Number(s.pallino_y||82).toFixed(1)+')';
+      render();
+    }catch(e){debugEl.textContent='Poll error: '+e.message;}
   }
 
-  function startPolling(ms) {
-    if (pollTimer) clearInterval(pollTimer);
-    poll();
-    pollTimer = setInterval(poll, ms);
+  function startPolling(ms){
+    if(pollTimer)clearInterval(pollTimer);
+    poll();pollTimer=setInterval(poll,ms);
   }
 
-  document.getElementById('createBtn').addEventListener('click', async () => {
-    try {
-      kind = document.getElementById('s1Kind').value;
-      role = document.getElementById('s1Role').value;
-      position = document.getElementById('s1Position').value;
-      localScreen = 1;
-
-      setStatus('Creating standalone session…');
-      const data = await api('POST', {
-        action:'create',
-        kind:kind,
-        role:role,
-        position:position
-      });
-
-      session = data.session;
-      token = data.host_token;
-      isHost = true;
-      sessionState = {
-        screen1_kind:kind,
-        screen1_role:role,
-        screen1_position:position,
-        screen2_joined:false,
-        ball_y:8,
-        ball_seq:0,
-        ball_moving:false
+  document.getElementById('createBtn').addEventListener('click',async()=>{
+    try{
+      kind=document.getElementById('s1Kind').value;
+      role=document.getElementById('s1Role').value;
+      position=document.getElementById('s1Position').value;
+      localScreen=1;
+      setStatus('Creating live Bocce session…');
+      const data=await api('POST',{action:'create',kind,role,position});
+      session=data.session;token=data.host_token;isHost=true;
+      state={
+        screen1_kind:kind,screen1_role:role,screen1_position:position,
+        screen2_joined:false,ball_x:50,ball_y:8,ball_seq:0,ball_moving:false,pallino_x:52,pallino_y:82
       };
-
-      hostCreate.classList.add('hidden');
-      hostPanel.classList.remove('hidden');
-      viewPanel.classList.remove('hidden');
-      document.getElementById('sessionId').textContent = session;
-
-      const joinUrl = PAGE + '?session=' + encodeURIComponent(session) + '&join=' + encodeURIComponent(data.join_token);
-      const qrUrl = API + '?api=qr&session=' + encodeURIComponent(session) + '&join=' + encodeURIComponent(data.join_token) + '&target=' + encodeURIComponent(PAGE);
-
-      document.getElementById('joinLink').textContent = joinUrl;
-      document.getElementById('qr').src = qrUrl;
-      setStatus('Session ready. Screen 1 is ' + nice(kind) + ' / ' + role + ' / ' + position + '. Scan the QR with Screen 2.');
-      renderBall();
-      startPolling(350);
-    } catch (e) {
-      setStatus('Create failed: ' + e.message);
-    }
+      displayedBall=targetBall={x:50,y:8};
+      displayedPallino=targetPallino={x:52,y:82};
+      hostCreate.classList.add('hidden');hostPanel.classList.remove('hidden');viewPanel.classList.remove('hidden');
+      document.getElementById('sessionId').textContent=session;
+      const joinUrl=PAGE+'?session='+encodeURIComponent(session)+'&join='+encodeURIComponent(data.join_token);
+      const qrUrl=API+'?api=qr&session='+encodeURIComponent(session)+'&join='+encodeURIComponent(data.join_token)+'&target='+encodeURIComponent(PAGE);
+      document.getElementById('joinLink').textContent=joinUrl;
+      document.getElementById('qr').src=qrUrl;
+      setStatus('Screen 1 ready. Scan the QR with Screen 2.');
+      startPolling(250);
+    }catch(e){setStatus('Create failed: '+e.message);}
   });
 
-  document.getElementById('joinBtn').addEventListener('click', async () => {
-    try {
-      kind = document.getElementById('s2Kind').value;
-      role = document.getElementById('s2Role').value;
-      position = document.getElementById('s2Position').value;
-      localScreen = 2;
-
-      setStatus('Joining Screen 1…');
-      await api('POST', {
-        action:'join',
-        session:joinSession,
-        join_token:joinToken,
-        kind:kind,
-        role:role,
-        position:position
-      });
-
-      session = joinSession;
-      token = joinToken;
-      isHost = false;
-
-      joinPanel.classList.add('hidden');
-      viewPanel.classList.remove('hidden');
-      setStatus('Connected. Waiting for the host to run the ball test.');
-      startPolling(100);
-    } catch (e) {
-      setStatus('Join failed: ' + e.message);
-    }
+  document.getElementById('joinBtn').addEventListener('click',async()=>{
+    try{
+      kind=document.getElementById('s2Kind').value;
+      role=document.getElementById('s2Role').value;
+      position=document.getElementById('s2Position').value;
+      localScreen=2;
+      setStatus('Joining live Bocce session…');
+      await api('POST',{action:'join',session:joinSession,join_token:joinToken,kind,role,position});
+      session=joinSession;token=joinToken;isHost=false;
+      joinPanel.classList.add('hidden');viewPanel.classList.remove('hidden');
+      setStatus('Connected. Loading court…');
+      startPolling(80);
+    }catch(e){setStatus('Join failed: '+e.message);}
   });
 
-  async function runSyncTest() {
-    if (!isHost || testRunning || !sessionState || !hasPlayableScreen(sessionState)) return;
-    testRunning = true;
-    runBtn.disabled = true;
-    runBtn.textContent = 'Ball Moving…';
-    setStatus('Running live cross-screen ball test…');
+  function canThrow(){
+    return role==='launch' && position==='first' && state && !state.ball_moving && viewport();
+  }
 
-    const start = performance.now();
-    const duration = 3600;
-    const seq = currentSeq + 1;
+  laneEl.addEventListener('pointerdown',(e)=>{
+    if(!canThrow())return;
+    const w=pointerToWorld(e);if(!w)return;
+    const bx=Number(state.ball_x||50),by=Number(state.ball_y||8);
+    if(Math.hypot(w.x-bx,w.y-by)>8)return;
+    gesture={mode:'pending',startX:bx,startY:by,x:w.x,y:w.y,t0:performance.now()};
+    laneEl.setPointerCapture?.(e.pointerId);
+  });
 
-    async function frame(now) {
-      const t = Math.min(1, (now - start) / duration);
-      const eased = 1 - Math.pow(1 - t, 2.05);
-      const y = 8 + eased * 88;
-      targetY = y;
-      displayedY = y;
+  laneEl.addEventListener('pointermove',(e)=>{
+    if(!gesture||!canThrow())return;
+    const w=pointerToWorld(e);if(!w)return;
+    gesture.x=w.x;gesture.y=w.y;
+    if(gesture.mode==='pending')gesture.mode=w.y>17?'throw':'place';
+    if(gesture.mode==='place'&&w.y<=17){
+      const bx=clamp(w.x,15,85),by=clamp(w.y,5,14);
+      state.ball_x=bx;state.ball_y=by;
+      displayedBall={x:bx,y:by};targetBall={x:bx,y:by};
+      setStatus('Ball placed. Release here, then touch it again and flick forward.');
+    }
+    if(gesture.mode==='place'&&w.y>17)gesture.mode='throw';
 
-      if (now - sendAt > 115 || t === 1) {
-        sendAt = now;
-        try {
-          await api('POST', {
-            action:'ball',
-            session:session,
-            host_token:token,
-            y:y,
-            seq:seq,
-            moving:t < 1
-          });
-        } catch (e) {
-          debugEl.textContent = 'Send error: ' + e.message;
+    if(gesture.mode==='throw'){
+      const p1=worldToLocal(gesture.startX,gesture.startY),p2=worldToLocal(w.x,w.y);
+      const dx=p2.x-p1.x,dy=p2.y-p1.y;
+      const len=Math.hypot(dx,dy);
+      flickLineEl.classList.remove('hidden');
+      flickLineEl.style.left=p1.x+'px';
+      flickLineEl.style.top=p1.y+'px';
+      flickLineEl.style.width=len+'px';
+      flickLineEl.style.transform='rotate('+Math.atan2(dy,dx)+'rad)';
+    }else{
+      flickLineEl.classList.add('hidden');
+    }
+    render();
+  });
+
+  laneEl.addEventListener('pointerup',(e)=>{
+    if(!gesture)return;
+    const w=pointerToWorld(e);
+    const g=gesture;gesture=null;
+    flickLineEl.classList.add('hidden');
+    laneEl.releasePointerCapture?.(e.pointerId);
+    if(!w)return;
+
+    if(g.mode!=='throw'&&w.y<=17){
+      const bx=clamp(w.x,15,85),by=clamp(w.y,5,14);
+      state.ball_x=bx;state.ball_y=by;
+      displayedBall={x:bx,y:by};targetBall={x:bx,y:by};
+      void sendPhysics(displayedBall,displayedPallino,false,shotSeq);
+      setStatus('Ball placed. Touch it again and flick forward to throw.');
+      return;
+    }
+
+    const dx=w.x-g.startX,dy=w.y-g.startY;
+    const dist=Math.hypot(dx,dy);
+    const duration=Math.max(.08,(performance.now()-g.t0)/1000);
+    if(dy<4||dist<5){setStatus('Flick forward from the ball to throw.');return;}
+    startShot(g.startX,g.startY,dx,dy,duration);
+  });
+
+  laneEl.addEventListener('pointercancel',()=>{
+    gesture=null;flickLineEl.classList.add('hidden');
+  });
+
+  async function startShot(startX,startY,dx,dy,duration){
+    if(localSim)return;
+    localSim=true;
+    shotSeq+=1;
+    state.ball_moving=true;
+    let ball={x:startX,y:startY,vx:0,vy:0,m:1,r:2.8};
+    let pallino={x:Number(state.pallino_x||52),y:Number(state.pallino_y||82),vx:0,vy:0,m:.35,r:1.6};
+    const ang=clamp(Math.atan2(dx,dy),-.55,.55);
+    const gestureSpeed=Math.hypot(dx,dy)/duration;
+    const power=clamp(28+Math.hypot(dx,dy)*1.8+gestureSpeed*.045,30,100);
+    const v=30+power*.36;
+    ball.vx=Math.sin(ang)*v;ball.vy=Math.cos(ang)*v;
+    setStatus('Bocce ball rolling…');
+
+    let last=performance.now();
+    async function frame(now){
+      const dt=Math.min(.025,(now-last)/1000||.016);last=now;
+      const friction=Math.exp(-.60*dt);
+      const objs=[ball,pallino];
+      for(const o of objs){
+        o.x+=o.vx*dt;o.y+=o.vy*dt;o.vx*=friction;o.vy*=friction;
+        if(Math.hypot(o.vx,o.vy)<.38){o.vx=0;o.vy=0;}
+        if(o.x-o.r<8){o.x=8+o.r;o.vx=Math.abs(o.vx)*.36;}
+        if(o.x+o.r>92){o.x=92-o.r;o.vx=-Math.abs(o.vx)*.36;}
+        if(o.y-o.r<0){o.y=o.r;o.vy=Math.abs(o.vy)*.25;}
+        if(o.y+o.r>100){o.y=100-o.r;o.vy=-Math.abs(o.vy)*.25;}
+      }
+
+      let cdx=pallino.x-ball.x,cdy=pallino.y-ball.y;
+      let d=Math.hypot(cdx,cdy),min=ball.r+pallino.r;
+      if(d>0&&d<min){
+        const nx=cdx/d,ny=cdy/d,over=min-d;
+        const i1=1/ball.m,i2=1/pallino.m,sum=i1+i2;
+        ball.x-=nx*over*(i1/sum);ball.y-=ny*over*(i1/sum);
+        pallino.x+=nx*over*(i2/sum);pallino.y+=ny*over*(i2/sum);
+        const rvx=pallino.vx-ball.vx,rvy=pallino.vy-ball.vy,rel=rvx*nx+rvy*ny;
+        if(rel<0){
+          const impulse=-(1+.46)*rel/sum;
+          const ix=impulse*nx,iy=impulse*ny;
+          ball.vx-=ix*i1;ball.vy-=iy*i1;
+          pallino.vx+=ix*i2;pallino.vy+=iy*i2;
         }
       }
 
-      if (t < 1) {
+      displayedBall={x:ball.x,y:ball.y};targetBall=displayedBall;
+      displayedPallino={x:pallino.x,y:pallino.y};targetPallino=displayedPallino;
+      state.ball_x=ball.x;state.ball_y=ball.y;state.pallino_x=pallino.x;state.pallino_y=pallino.y;
+
+      if(now-lastSend>90){
+        lastSend=now;
+        void sendPhysics(displayedBall,displayedPallino,true,shotSeq);
+      }
+
+      render();
+      const moving=Math.hypot(ball.vx,ball.vy)>.01||Math.hypot(pallino.vx,pallino.vy)>.01;
+      if(moving){
         requestAnimationFrame(frame);
-      } else {
-        testRunning = false;
-        testComplete = true;
-        runBtn.classList.add('hidden');
-        readyPanel.classList.remove('hidden');
-        setStatus('CONNECTED / READY · Cross-screen synchronization test passed.');
+      }else{
+        state.ball_moving=false;
+        await sendPhysics(displayedBall,displayedPallino,false,shotSeq);
+        localSim=false;
+        setStatus('Shot complete. Reset the bocce ball to throw again; the pallino stays where it was hit.');
       }
     }
     requestAnimationFrame(frame);
   }
 
-  runBtn.addEventListener('click', runSyncTest);
-  rerunBtn.addEventListener('click', () => {
-    testComplete = false;
-    readyPanel.classList.add('hidden');
-    runBtn.classList.remove('hidden');
-    void runSyncTest();
+  resetBallBtn.addEventListener('click',async()=>{
+    if(role!=='launch')return;
+    try{
+      await api('POST',{action:'reset_ball',session,token});
+      displayedBall=targetBall={x:50,y:8};
+      if(state){state.ball_x=50;state.ball_y=8;state.ball_moving=false;}
+      setStatus('New bocce ball ready. Drag it into position, then flick forward.');
+    }catch(e){setStatus('Reset failed: '+e.message);}
   });
 
-  if (joinSession && joinToken) {
-    hostCreate.classList.add('hidden');
-    joinPanel.classList.remove('hidden');
+  if(joinSession&&joinToken){
+    hostCreate.classList.add('hidden');joinPanel.classList.remove('hidden');
     setStatus('Configure Screen 2, then join.');
   }
 
-  window.addEventListener('beforeunload', () => {
-    if (pollTimer) clearInterval(pollTimer);
-  });
+  window.addEventListener('beforeunload',()=>{if(pollTimer)clearInterval(pollTimer);});
 })();
 </script>
 </body>
