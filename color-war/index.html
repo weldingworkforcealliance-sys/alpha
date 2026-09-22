@@ -141,11 +141,25 @@ $("computerBtn").onclick=()=>{
 };
 function wire(){conn.on("open",()=>{if(host){state=fs();conn.send({t:"hello"});snap(1);launch()}});conn.on("data",m=>{if(m.t==="hello"&&!host)launch();else if(m.t==="snap"&&!host)recv(m.s);else if(m.t==="act"&&host)act(m);else if(m.t==="event"){if(m.e==="cross"&&m.to===side)warp(m.n);if(m.e==="hit"&&m.to===side)hit(m.d);if(m.e==="rock")animateRock(m.from,m.to,m.n||1,m.lane??4)}});conn.on("close",()=>{$("log").textContent="Other phone disconnected."})}
 function launch(){$("lobby").classList.add("hidden");$("game").classList.remove("hidden");cfg();ensureLaneTargets();refreshPanel(true);render();if(host){last=performance.now();requestAnimationFrame(loop)}}
+function updateOrientationOverlay(){
+  let o=$("orientOverlay");if(!o)return;
+  if(vsComputer){o.classList.remove("show");return}
+  let done=orientationReady();
+  o.classList.toggle("show",!done);
+  if(!localOriented){
+    $("orientArrow").textContent="↔";
+    $("orientWait").textContent="Swipe toward the other phone"
+  }else{
+    $("orientArrow").textContent=neighborDir==="right"?"→":"←";
+    $("orientWait").textContent="You are oriented. Waiting for the other player…"
+  }
+}
 function cfg(){
-  let v=currentView();
-  $("panel").className="panel "+side;
+  let v=currentView(),flip=isFlipped();
+  let outer=!vsComputer&&neighborDir?(neighborDir==="right"?"outerLeft":"outerRight"):"";
+  $("panel").className="panel "+side+(outer?" "+outer:"");
   $("panel").style.display=(vsComputer&&v!==side)?"none":"";
-  $("board").className="board "+v+"View"+(vsComputer&&v==="red"?" scoutView":"")+(vsComputer?" swipeEnabled":"");
+  $("board").className="board "+v+"View"+(vsComputer&&v==="red"?" scoutView":"")+(vsComputer||(!vsComputer&&!localOriented)?" swipeEnabled":"")+(flip?" flipView":"");
   $("zone").className="zone "+v;
   $("edge").className="edge "+v;
   $("castle").className="castle "+v;
@@ -155,6 +169,7 @@ function cfg(){
   $("scoutBadge").classList.toggle("show",vsComputer&&v==="red");
   $("swipeHint").classList.toggle("show",vsComputer);
   $("swipeHint").textContent=v==="red"?"SWIPE RIGHT TO RETURN TO BLUE":"SWIPE LEFT TO SCOUT RED";
+  updateOrientationOverlay()
 }
 function switchView(next){
   if(!vsComputer||!state||!["blue","red"].includes(next)||viewSide===next)return;
@@ -377,7 +392,7 @@ function barr(i){
   if(l.opened){e.innerHTML=art+'<span class="resMeta"><b>L'+(i+1)+' OPEN • '+label+'</b><small>'+l.amt+' / '+LANE_MAX+'</small><span class="deplete">PASSAGE STAYS OPEN</span></span>';return}
   e.innerHTML=art+'<span class="resMeta"><b>L'+(i+1)+' '+label+'</b><small>'+l.amt+' / '+LANE_MAX+'</small><span class="deplete">'+Math.round(ratio*100)+'% REMAINS</span></span>';
 }
-function lx(x){let v=currentView();return v==="blue"?x/2:(x-WORLD_EDGE)/2}function vis(x){let v=currentView();return v==="blue"?x>=0&&x<=WORLD_EDGE:x>=WORLD_EDGE&&x<=WORLD_MAX}
+function lx(x){let v=currentView(),base=v==="blue"?x/2:(x-WORLD_EDGE)/2;return isFlipped()?100-base:base}function vis(x){let v=currentView();return v==="blue"?x>=0&&x<=WORLD_EDGE:x>=WORLD_EDGE&&x<=WORLD_MAX}
 function renderGroup(s,lane,g){
   if(!g.pawns.length||!vis(g.x))return;
   let d=document.createElement("div");d.className="mob";d.style.left=lx(g.x)+"%";d.style.top=Y[lane]+"%";
@@ -432,23 +447,23 @@ function renderSiege(){
   p.sieges.forEach((sg,idx)=>{
     let d=document.createElement("div");d.className="siegePark "+v;
     d.style.top=Y[sg.lane]+"%";
-    if(v==="blue"){d.style.left="1%";d.style.right="auto"}else{d.style.right="1%";d.style.left="auto"}
+    if(castleAtLeft()){d.style.left="1%";d.style.right="auto"}else{d.style.right="1%";d.style.left="auto"}
     d.innerHTML='<div class="siegeSlots"><span class="siegeMini">'+charArt("siege")+'</span></div><div class="siegeAmmo">SIEGE '+(idx+1)+' • L'+(sg.lane+1)+'<br>ROCKS '+p.stone+'<br><span class="muted">fires every '+SIEGE_FIRE+'s</span></div>';
     $("field").appendChild(d)
   })
 }
 function animateRock(from,to,count=1,lane=4){
   let v=currentView();if(v!==from&&v!==to)return;
-  let startX,endX;if(v===from){startX=v==="blue"?8:92;endX=v==="blue"?97:3}else{startX=v==="blue"?97:3;endX=v==="blue"?8:92}
+  let startX,endX,left=castleAtLeft();if(v===from){startX=left?8:92;endX=left?97:3}else{startX=left?97:3;endX=left?8:92}
   let y=Y[Math.max(0,Math.min(8,lane))];
   for(let i=0;i<count;i++){let r=document.createElement("div");r.className="rockShot";r.style.left=startX+"%";r.style.top=y+"%";$("field").appendChild(r);let dx=endX-startX;r.animate([{transform:"translate(0,0) scale(.85)"},{transform:"translate("+dx/2+"vw,-70px) scale(1.12)",offset:.5},{transform:"translate("+dx+"vw,0) scale(.92)"}],{duration:1600+i*110,easing:"cubic-bezier(.25,.5,.45,1)"}).onfinish=()=>r.remove()}
 }
 function renderFarmsAndMiners(){
   let v=currentView(),p=state[v];
-  p.farms.forEach(f=>{let d=document.createElement("div");d.className="farmLane "+v;d.style.position="absolute";d.style.zIndex="11";d.style.top=Y[f.lane]+"%";d.style.left=v==="blue"?"14%":"86%";d.style.transform="translate(-50%,-50%) scale(.7)";d.innerHTML=charArt("farm")+'<span style="position:absolute;left:35px;top:8px;white-space:nowrap;font-size:7px;font-weight:900;background:#081019cc;padding:2px 4px;border-radius:5px">L'+(f.lane+1)+' '+(f.build>0?"BUILD "+Math.ceil(f.build)+"s":"FARM "+Math.ceil(f.life)+"s")+'</span>';$("field").appendChild(d)});
+  p.farms.forEach(f=>{let d=document.createElement("div");d.className="farmLane "+v;d.style.position="absolute";d.style.zIndex="11";d.style.top=Y[f.lane]+"%";d.style.left=castleAtLeft()?"14%":"86%";d.style.transform="translate(-50%,-50%) scale(.7)";d.innerHTML=charArt("farm")+'<span style="position:absolute;left:35px;top:8px;white-space:nowrap;font-size:7px;font-weight:900;background:#081019cc;padding:2px 4px;border-radius:5px">L'+(f.lane+1)+' '+(f.build>0?"BUILD "+Math.ceil(f.build)+"s":"FARM "+Math.ceil(f.life)+"s")+'</span>';$("field").appendChild(d)});
   p.miners.forEach(m=>{let d=document.createElement("div");d.className="minerPack";d.style.top=Y[m.lane]+"%";d.style.left=lx(m.x)+"%";let atEdge=Math.abs(m.x-(v==="blue"?188:212))<1;d.textContent=(atEdge?"⛏ MINING L":"⛏ TRAVEL L")+(m.lane+1);$("field").appendChild(d)})
 }
-function render(){if(!state)return;for(let i=0;i<9;i++)barr(i);let v=currentView(),p=state[v],h=Math.max(0,p.castle);$("hpNum").textContent=Math.ceil(h)+" / "+CASTLE_HP+" HP";$("hpFill").style.width=(h/CASTLE_HP*100)+"%";$("field").querySelectorAll(".mob,.minerPack,.farmIcon,.farmLane,.trainingBadge").forEach(x=>x.remove());$("board").querySelectorAll(".readyDeploy,.siegePark").forEach(x=>x.remove());renderArmies();renderReady();updateLaneTargets();renderSiege();renderFarmsAndMiners();if(v===side&&p.trainQ.length){let d=document.createElement("div");d.className="trainingBadge";d.textContent="TRAINING "+p.trainQ[0].type.toUpperCase()+" "+Math.ceil(p.trainQ[0].left)+"s • QUEUE "+p.trainQ.length;$("field").appendChild(d)}let openCount=state.frontier.filter(l=>l.opened).length;$("route").textContent=(vsComputer?("VIEW "+v.toUpperCase()+" • "):"")+openCount+"/9 LANES OPEN • DOUBLE-DISTANCE KINGDOM";let m=Math.floor(state.time/60),s=Math.floor(state.time%60).toString().padStart(2,"0");$("timer").textContent=m+":"+s;$("log").textContent=state.logs.slice(-3).join(" • ");$("win").classList.toggle("show",!!state.winner);if(state.winner)$("winText").textContent=state.winner==="draw"?"DRAW":state.winner.toUpperCase()+" WINS"}
+function render(){if(!state)return;updateOrientationOverlay();for(let i=0;i<9;i++)barr(i);let v=currentView(),p=state[v],h=Math.max(0,p.castle);$("hpNum").textContent=Math.ceil(h)+" / "+CASTLE_HP+" HP";$("hpFill").style.width=(h/CASTLE_HP*100)+"%";$("field").querySelectorAll(".mob,.minerPack,.farmIcon,.farmLane,.trainingBadge").forEach(x=>x.remove());$("board").querySelectorAll(".readyDeploy,.siegePark").forEach(x=>x.remove());renderArmies();renderReady();updateLaneTargets();renderSiege();renderFarmsAndMiners();if(v===side&&p.trainQ.length){let d=document.createElement("div");d.className="trainingBadge";d.textContent="TRAINING "+p.trainQ[0].type.toUpperCase()+" "+Math.ceil(p.trainQ[0].left)+"s • QUEUE "+p.trainQ.length;$("field").appendChild(d)}let openCount=state.frontier.filter(l=>l.opened).length;$("route").textContent=(!vsComputer&&!orientationReady()?"ORIENTING PHONES • ":(vsComputer?("VIEW "+v.toUpperCase()+" • "):""))+openCount+"/9 LANES OPEN • DOUBLE-DISTANCE KINGDOM";let m=Math.floor(state.time/60),s=Math.floor(state.time%60).toString().padStart(2,"0");$("timer").textContent=m+":"+s;$("log").textContent=state.logs.slice(-3).join(" • ");$("win").classList.toggle("show",!!state.winner);if(state.winner)$("winText").textContent=state.winner==="draw"?"DRAW":state.winner.toUpperCase()+" WINS"}
 $("board").addEventListener("pointerdown",e=>{
   if(!vsComputer||e.target.closest("button"))return;
   swipeX=e.clientX;swipeY=e.clientY;swipePointer=e.pointerId;
