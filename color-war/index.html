@@ -140,7 +140,7 @@ function aiTryTrain(){
   if(p.trainQ.length>=2)return false;
   let pattern=state.route?["siege","heavy","soldier","heavy"]:["soldier","heavy","soldier","siege"];
   for(let i=0;i<pattern.length;i++){
-    let t=pattern[(p.aiCycle||0+i)%pattern.length];
+    let t=pattern[((p.aiCycle||0)+i)%pattern.length];
     if(canP("red",t)){p.aiCycle=(p.aiCycle||0)+1;bp("red",t);return true}
   }
   for(let t of ["soldier","heavy","siege"])if(canP("red",t)){p.aiCycle=(p.aiCycle||0)+1;bp("red",t);return true}
