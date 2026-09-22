@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Color War v0.16.1 — Mobile Input Repair</title>
+<title>Color War v0.17 — Two-Phone Orientation</title>
 <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#081019;color:#fff;font-family:Arial,sans-serif}button,input{font:inherit}button{touch-action:manipulation}
@@ -72,7 +72,7 @@ input{width:100%;background:#08111c;color:#fff;border:1px solid #ffffff33;border
 </head>
 <body><div class="wrap">
 <section id="lobby" class="lobby">
-<div class="card"><h1>COLOR WAR — v0.16.1</h1><div class="muted">Play across two phones, or play Blue against the computer on one device.</div></div>
+<div class="card"><h1>COLOR WAR — v0.17</h1><div class="muted">Play across two phones, or play Blue against the computer on one device.</div></div>
 <div class="grid2">
 <div class="card"><h3>BLUE PHONE</h3><button id="createBtn" class="btn blueBtn">CREATE GAME</button><div id="hostArea" class="hidden"><div class="muted" style="text-align:center;margin-top:10px">ROOM CODE</div><div id="roomCode" class="code">----</div></div></div>
 <div class="card"><h3>RED PHONE</h3><input id="joinCode" maxlength="4" inputmode="numeric" placeholder="4-digit code"><button id="joinBtn" class="btn redBtn" style="margin-top:8px;width:100%">JOIN GAME</button></div>
@@ -97,18 +97,25 @@ input{width:100%;background:#08111c;color:#fff;border:1px solid #ffffff33;border
 (()=>{
 const P="cw-test-",LANE_MAX=8,TIME=900,CAP=36,CASTLE_HP=500,R=["wood","stone","iron"],LANE_RES=["wood","stone","iron","stone","wood","iron","iron","wood","stone"],Y=[5.55,16.66,27.77,38.88,50,61.11,72.22,83.33,94.44],WORLD_EDGE=200,WORLD_MAX=400,FARM_COOLDOWN=45,FARM_BUILD=8,FARM_LIFE=420,MAX_FARMS=9,MAX_MINERS=9,RESOURCE_RESPAWN=60,MINER_TIME=8,FOOD_TIME=12,MINER_TRAVEL=4,MINER_MINE=4,SIEGE_FIRE=8,SIEGE_DAMAGE=4;
 const S={soldier:{icon:"●",cost:{food:2,wood:1},hp:24,a:4,c:1,train:9},heavy:{icon:"■",cost:{food:3,iron:2},hp:55,a:3,c:2,train:14},siege:{icon:"▲",cost:{food:4,wood:2,iron:1},hp:30,a:0,c:0,train:22}};
-let peer,conn,host=false,side=null,viewSide=null,state,last=0,lastSend=0,lastPanelPaint=0,audio,prev=null,vsComputer=false,aiClock=0,swipeX=null,swipeY=null,swipePointer=null;
+let peer,conn,host=false,side=null,viewSide=null,state,last=0,lastSend=0,lastPanelPaint=0,audio,prev=null,vsComputer=false,aiClock=0,swipeX=null,swipeY=null,swipePointer=null,neighborDir=null,localOriented=false;
 const $=x=>document.getElementById(x),other=s=>s==="blue"?"red":"blue";
 function currentView(){return vsComputer?(viewSide||side):side}
+function orientationReady(){return vsComputer||!!(state?.orient?.blue&&state?.orient?.red)}
+function isFlipped(){return !vsComputer&&!!neighborDir&&((side==="blue"&&neighborDir==="left")||(side==="red"&&neighborDir==="right"))}
+function castleAtLeft(){let v=currentView(),left=v==="blue";return isFlipped()?!left:left}
+function setOrientation(dir){
+  if(vsComputer||localOriented||!state)return;
+  neighborDir=dir;localOriented=true;cfg();render();send("orient",{dir})
+}
 function fp(s){return{side:s,castle:CASTLE_HP,food:4,foodClock:0,wood:0,stone:0,iron:0,farms:[],farmCooldown:0,miners:[],minerBuild:0,ready:[],trainQ:[],sieges:[],lanes:Array.from({length:9},()=>({groups:[]})),aiCycle:0}}
-function fs(){return{blue:fp("blue"),red:fp("red"),frontier:LANE_RES.map((res,i)=>({res,amt:LANE_MAX,opened:false,openedAt:null,respawn:0})),route:null,time:TIME,winner:null,logs:["Place Farms, Miners, and every combat unit into the lane you choose."]}}
+function fs(){return{blue:fp("blue"),red:fp("red"),orient:{blue:false,red:false},frontier:LANE_RES.map((res,i)=>({res,amt:LANE_MAX,opened:false,openedAt:null,respawn:0})),route:null,time:TIME,winner:null,logs:["Place Farms, Miners, and every combat unit into the lane you choose."]}}
 function unlock(){if(!audio)audio=new(AudioContext||webkitAudioContext)();if(audio.state==="suspended")audio.resume()}document.addEventListener("pointerdown",unlock,{passive:true});
 function fart(){unlock();if(!audio)return;let n=audio.currentTime,o=audio.createOscillator(),g=audio.createGain();o.type="sawtooth";o.frequency.setValueAtTime(125,n);o.frequency.exponentialRampToValueAtTime(52,n+.27);g.gain.setValueAtTime(.001,n);g.gain.exponentialRampToValueAtTime(.22,n+.02);g.gain.exponentialRampToValueAtTime(.001,n+.27);o.connect(g).connect(audio.destination);o.start(n);o.stop(n+.27)}
 function warp(n){unlock();if(audio)for(let i=0;i<Math.min(n,10);i++){let t=audio.currentTime+i*.05,o=audio.createOscillator(),g=audio.createGain();o.frequency.setValueAtTime(160,t);o.frequency.exponentialRampToValueAtTime(1000,t+.2);o.frequency.exponentialRampToValueAtTime(230,t+.4);g.gain.setValueAtTime(.001,t);g.gain.exponentialRampToValueAtTime(.05,t+.03);g.gain.exponentialRampToValueAtTime(.001,t+.4);o.connect(g).connect(audio.destination);o.start(t);o.stop(t+.42)}if(navigator.vibrate)navigator.vibrate(25);let e=$("edge");e.classList.remove("flash");void e.offsetWidth;e.classList.add("flash")}
 function hit(d){let c=$("castle"),h=$("hitNum");h.textContent="-"+Math.round(d);h.classList.remove("show");c.classList.remove("hit");void h.offsetWidth;h.classList.add("show");c.classList.add("hit");setTimeout(()=>c.classList.remove("hit"),360)}
 function code(){return String(Math.floor(1000+Math.random()*9000))}function status(x){$("status").textContent=x}function refreshPanel(force=false){let n=performance.now();if(force||n-lastPanelPaint>=500){panel();lastPanelPaint=n}}
-$("createBtn").onclick=()=>{unlock();if(peer)peer.destroy();vsComputer=false;host=true;side="blue";viewSide="blue";let c=code();peer=new Peer(P+c);peer.on("open",()=>{$("hostArea").classList.remove("hidden");$("roomCode").textContent=c;status("Waiting for Red phone…")});peer.on("connection",x=>{conn=x;wire()});peer.on("error",()=>status("Connection error. Try another room."))};
-$("joinBtn").onclick=()=>{unlock();vsComputer=false;let c=$("joinCode").value.trim();if(!/^\d{4}$/.test(c)){status("Enter the 4-digit code.");return}if(peer)peer.destroy();host=false;side="red";viewSide="red";peer=new Peer();peer.on("open",()=>{conn=peer.connect(P+c,{reliable:true});wire();status("Connecting…")});peer.on("error",()=>status("Connection error."))};
+$("createBtn").onclick=()=>{unlock();if(peer)peer.destroy();vsComputer=false;host=true;side="blue";viewSide="blue";neighborDir=null;localOriented=false;let c=code();peer=new Peer(P+c);peer.on("open",()=>{$("hostArea").classList.remove("hidden");$("roomCode").textContent=c;status("Waiting for Red phone…")});peer.on("connection",x=>{conn=x;wire()});peer.on("error",()=>status("Connection error. Try another room."))};
+$("joinBtn").onclick=()=>{unlock();vsComputer=false;let c=$("joinCode").value.trim();if(!/^\d{4}$/.test(c)){status("Enter the 4-digit code.");return}if(peer)peer.destroy();host=false;side="red";viewSide="red";neighborDir=null;localOriented=false;peer=new Peer();peer.on("open",()=>{conn=peer.connect(P+c,{reliable:true});wire();status("Connecting…")});peer.on("error",()=>status("Connection error."))};
 $("computerBtn").onclick=()=>{
   unlock();
   if(peer)peer.destroy();
@@ -117,6 +124,7 @@ $("computerBtn").onclick=()=>{
   host=true;
   side="blue";
   viewSide="blue";
+  neighborDir=null;localOriented=true;
   aiClock=0;
   state=fs();
   state.logs=["VS COMPUTER — both kingdoms follow the same build rules."];
@@ -146,7 +154,7 @@ function switchView(next){
 function snap(force=0){if(!host||!conn?.open)return;let n=performance.now();if(!force&&n-lastSend<100)return;lastSend=n;conn.send({t:"snap",s:state})}
 function recv(s){if(prev&&s[side].castle<prev[side].castle)hit(prev[side].castle-s[side].castle);state=s;prev=structuredClone(s);refreshPanel();render()}
 function send(a,x={}){if(host)act({t:"act",a,side,...x});else conn?.send({t:"act",a,side,...x})}
-function act(m){if(!state)return;if(m.a==="farm")bf(m.side);if(m.a==="miner")bm(m.side);if(m.a==="pawn")bp(m.side,m.p);if(m.a==="deploy")deploy(m.side,m.lane);if(m.a==="rematch"){state=fs();prev=null;aiClock=0;if(vsComputer)state.logs=["REMATCH VS COMPUTER"];snap(1)}}
+function act(m){if(!state)return;if(m.a==="orient"){state.orient[m.side]=true;snap(1)}if(m.a==="farm")bf(m.side);if(m.a==="miner")bm(m.side);if(m.a==="pawn")bp(m.side,m.p);if(m.a==="deploy")deploy(m.side,m.lane);if(m.a==="rematch"){state=fs();prev=null;aiClock=0;if(vsComputer)state.logs=["REMATCH VS COMPUTER"];else if(localOriented){state.orient.blue=true;state.orient.red=true}snap(1)}}
 function plannedFarms(p){return p.farms.length+p.ready.filter(x=>x.type==="farm").length}
 function canF(s){let p=state?.[s];return p&&plannedFarms(p)<MAX_FARMS&&p.farmCooldown<=0&&!p.ready.some(x=>x.type==="farm")}
 function bf(s){if(!canF(s))return;let p=state[s];p.ready.push({id:Math.random(),type:"farm"});p.farmCooldown=FARM_COOLDOWN;lg(s.toUpperCase()+" FARM ready — choose a lane");if(s===side)refreshPanel(true);snap(1)}
@@ -304,7 +312,7 @@ function computerAI(dt){
   aiTryTrain()
 }
 function update(dt){computerAI(dt);buildAndTrain(dt);respawnResources(dt);miners(dt);laneArmies(dt);siegeFire(dt);state.time=Math.max(0,state.time-dt);if(state.blue.castle<=0){state.blue.castle=0;state.winner="red"}if(state.red.castle<=0){state.red.castle=0;state.winner="blue"}if(state.time<=0&&!state.winner)state.winner=state.blue.castle>state.red.castle?"blue":state.red.castle>state.blue.castle?"red":"draw"}
-function loop(ts){let dt=Math.min(.15,(ts-last)/1000);last=ts;if(!state.winner)update(dt);refreshPanel();render();snap();requestAnimationFrame(loop)}function lg(x){state.logs.push(x);if(state.logs.length>15)state.logs.shift()}
+function loop(ts){let dt=Math.min(.15,(ts-last)/1000);last=ts;if(!state.winner&&orientationReady())update(dt);refreshPanel();render();snap();requestAnimationFrame(loop)}function lg(x){state.logs.push(x);if(state.logs.length>15)state.logs.shift()}
 function charArt(type){
   if(type==="farm")return '<span class="charSlot"><span class="char farmArt"><i class="barn"></i><i class="roof"></i><i class="door"></i><i class="sun"></i><i class="crop1"></i><i class="crop2"></i><i class="crop3"></i></span></span>';
   if(type==="miner")return '<span class="charSlot"><span class="char minerArt"><i class="head"></i><i class="helmet"></i><i class="lamp"></i><i class="body"></i><i class="leg1"></i><i class="leg2"></i><i class="pick"></i></span></span>';
