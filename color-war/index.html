@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Color War v0.16 — Swipe Kingdom View</title>
+<title>Color War v0.16.1 — Mobile Input Repair</title>
 <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#081019;color:#fff;font-family:Arial,sans-serif}button,input{font:inherit}button{touch-action:manipulation}
@@ -29,7 +29,7 @@ input{width:100%;background:#08111c;color:#fff;border:1px solid #ffffff33;border
 .barrier.stone{background:linear-gradient(#555b62,#383d43)}.stone .resourceArt i{bottom:2px;width:17px;height:15px;background:linear-gradient(145deg,#aab0b6,#707780 55%,#484f56);clip-path:polygon(22% 5%,75% 0,100% 46%,75% 100%,12% 88%,0 36%);box-shadow:inset 3px 2px 0 #d9dde044,0 2px 3px #0008}.stone .resourceArt i:nth-child(1){left:1px;transform:scale(.88)}.stone .resourceArt i:nth-child(2){left:14px;bottom:4px;transform:scale(1.1)}.stone .resourceArt i:nth-child(3){left:29px;transform:scale(.8)}
 .barrier.iron{background:linear-gradient(#503025,#2f1d19)}.iron .resourceArt i{bottom:2px;width:18px;height:15px;background:linear-gradient(145deg,#6b5a50,#3f3834);clip-path:polygon(15% 5%,79% 0,100% 40%,80% 100%,10% 85%,0 35%);box-shadow:inset 0 0 0 1px #d2723b44,0 2px 3px #0008}.iron .resourceArt i:before{content:"";position:absolute;left:2px;right:2px;top:5px;height:3px;background:linear-gradient(90deg,#7c351f,#f08b4c,#7c351f);transform:rotate(-18deg);box-shadow:0 0 4px #d86f39}.iron .resourceArt i:nth-child(1){left:1px}.iron .resourceArt i:nth-child(2){left:14px;bottom:5px;transform:scale(1.08)}.iron .resourceArt i:nth-child(3){left:30px;transform:scale(.78)}.barrier.stage2 .resourceArt i:nth-child(3){opacity:.16;transform:translateY(5px) scale(.65)}.barrier.stage1 .resourceArt i:nth-child(2),.barrier.stage1 .resourceArt i:nth-child(3){opacity:.12;transform:translateY(6px) scale(.55)}.barrier.stage1 .resourceArt{filter:saturate(.55) brightness(.82)}.barrier.open{background:linear-gradient(#163b23,#0d2817);color:#9bf3ae;border-color:#64d48288;justify-content:center;box-shadow:inset 0 0 18px #2a9f5230}.barrier.open:after{content:"";position:absolute;left:7px;right:7px;top:50%;height:2px;background:#6be38f44;box-shadow:0 0 8px #6be38f}.resMeta{display:flex;flex-direction:column;line-height:1.05;z-index:3;text-shadow:0 1px 2px #000}.resMeta b{font-size:7px;letter-spacing:.04em}.resMeta small{font-size:10px;color:#fff}.resMeta .deplete{font-size:6px;color:#c8d1dc;margin-top:1px}.barrier.open .resourceArt{display:none}.barrier.open .resMeta b{font-size:9px}.barrier.open .resMeta small,.barrier.open .deplete{display:none}.barrier.open.stocked{justify-content:flex-start;background:linear-gradient(#163b23aa,#0d2817aa)}.barrier.open.stocked .resourceArt{display:block;transform:scale(.72);transform-origin:left center}.barrier.open.stocked .resMeta b{font-size:6px}.barrier.open.stocked .resMeta small,.barrier.open.stocked .deplete{display:block}.laneTarget:disabled{opacity:.22;box-shadow:none;border-color:#ffffff22;background:#111;color:#777}
 .mob{position:absolute;z-index:12;transform:translate(-50%,-50%);width:78px;height:70px}.mobLabel{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:900;background:#0009;padding:2px 5px;border-radius:5px;white-space:nowrap}.unit{position:absolute;width:20px;height:22px;transform:translate(-50%,-50%);cursor:pointer}.shape{width:17px;height:17px;border:2px solid #ffffff88}.unit.blue .shape{background:#2468ef}.unit.red .shape{background:#d62b37}.soldier .shape{border-radius:50%}.heavy .shape{border-radius:4px}.siege .shape{clip-path:polygon(50% 0,0 100%,100% 100%)}.minerPack{position:absolute;z-index:10;background:#090d14dd;border:1px solid #e5bc6488;border-radius:7px;padding:4px 6px;font-size:10px;font-weight:900;transform:translate(-50%,-50%)}.farmIcon,.trainingBadge{position:absolute;z-index:10;background:#0a111bdf;border:1px solid #ffffff28;border-radius:8px;padding:5px 7px;font-size:10px;font-weight:900}.farmIcon.blue{left:13%;bottom:24%}.farmIcon.red{right:13%;bottom:24%}.trainingBadge{left:50%;bottom:17%;transform:translateX(-50%);white-space:nowrap}
-.mob{width:62px;height:34px}.mobLabel{top:-11px;font-size:7px;padding:1px 3px}.unit{width:14px;height:14px}.shape{width:11px;height:11px;border-width:1px}.readyDeploy{position:absolute;z-index:22;top:50%;transform:translateY(-50%);width:74px;min-height:62px;border-radius:11px;background:#07101be8;border:2px solid #ffffff55;box-shadow:0 0 16px #84b4ff55;padding:5px;text-align:center;font-size:8px;font-weight:900}.readyDeploy.blue{left:7%}.readyDeploy.red{right:7%;box-shadow:0 0 16px #ff777f55}.readyDeploy .miniChar{height:35px;display:flex;align-items:center;justify-content:center}.readyDeploy .miniChar .char{transform:scale(.68)}.readyDeploy strong{display:block;font-size:8px}.readyDeploy small{display:block;color:#b8c5d4;font-size:6px;margin-top:2px}.laneTarget{position:absolute;z-index:21;transform:translate(-50%,-50%);width:25px;height:25px;border-radius:50%;border:1px solid #cfe1ff;background:#173763e8;color:#fff;font-size:8px;font-weight:1000;box-shadow:0 0 9px #82b4ff88;display:flex;align-items:center;justify-content:center;padding:0}.panel.red~.board .laneTarget{background:#63222ae8;border-color:#ffc5c9;box-shadow:0 0 9px #ff788088}.laneTarget.blue{left:9%}.laneTarget.red{left:91%}.laneTarget.openLane{border-color:#80f0a0;box-shadow:0 0 10px #61db8388}.siegePark{position:absolute;z-index:19;top:67%;width:92px;min-height:45px;border-radius:9px;background:#0a1018cc;border:1px solid #ffffff35;padding:4px 5px;font-size:7px;font-weight:900;display:flex;align-items:center;gap:4px}.siegePark.blue{left:6%}.siegePark.red{right:6%}.siegeSlots{display:flex;gap:2px}.siegeMini{width:29px;height:35px;transform:scale(.68);transform-origin:center}.siegeAmmo{line-height:1.15}.rockShot{position:absolute;z-index:35;width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#b7bcc1,#656b71 55%,#2f3438);box-shadow:0 2px 4px #000,0 0 5px #ffffff22;pointer-events:none}.rockBurst{position:absolute;z-index:34;width:28px;height:28px;border-radius:50%;border:2px solid #ffffff99;opacity:0;pointer-events:none}.ammoFlash{animation:ammoPulse .45s}@keyframes ammoPulse{0%{filter:brightness(2)}100%{filter:brightness(1)}}.log{position:absolute;left:18px;right:18px;bottom:10px;min-height:38px;background:#0009;border-radius:8px;padding:6px;font-size:10px;color:#bdc8d6;z-index:14}.win{display:none;position:absolute;inset:0;background:#000d;z-index:30;align-items:center;justify-content:center;text-align:center}.win.show{display:flex}
+.mob{width:62px;height:34px}.mobLabel{top:-11px;font-size:7px;padding:1px 3px}.unit{width:14px;height:14px}.shape{width:11px;height:11px;border-width:1px}.readyDeploy{position:absolute;z-index:22;top:50%;transform:translateY(-50%);width:74px;min-height:62px;border-radius:11px;background:#07101be8;border:2px solid #ffffff55;box-shadow:0 0 16px #84b4ff55;padding:5px;text-align:center;font-size:8px;font-weight:900}.readyDeploy.blue{left:7%}.readyDeploy.red{right:7%;box-shadow:0 0 16px #ff777f55}.readyDeploy .miniChar{height:35px;display:flex;align-items:center;justify-content:center}.readyDeploy .miniChar .char{transform:scale(.68)}.readyDeploy strong{display:block;font-size:8px}.readyDeploy small{display:block;color:#b8c5d4;font-size:6px;margin-top:2px}.laneTarget{position:absolute;z-index:21;transform:translate(-50%,-50%);width:25px;height:25px;touch-action:none;border-radius:50%;border:1px solid #cfe1ff;background:#173763e8;color:#fff;font-size:8px;font-weight:1000;box-shadow:0 0 9px #82b4ff88;display:flex;align-items:center;justify-content:center;padding:0}.panel.red~.board .laneTarget{background:#63222ae8;border-color:#ffc5c9;box-shadow:0 0 9px #ff788088}.laneTarget.blue{left:9%}.laneTarget.red{left:91%}.laneTarget.openLane{border-color:#80f0a0;box-shadow:0 0 10px #61db8388}.siegePark{position:absolute;z-index:19;top:67%;width:92px;min-height:45px;border-radius:9px;background:#0a1018cc;border:1px solid #ffffff35;padding:4px 5px;font-size:7px;font-weight:900;display:flex;align-items:center;gap:4px}.siegePark.blue{left:6%}.siegePark.red{right:6%}.siegeSlots{display:flex;gap:2px}.siegeMini{width:29px;height:35px;transform:scale(.68);transform-origin:center}.siegeAmmo{line-height:1.15}.rockShot{position:absolute;z-index:35;width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#b7bcc1,#656b71 55%,#2f3438);box-shadow:0 2px 4px #000,0 0 5px #ffffff22;pointer-events:none}.rockBurst{position:absolute;z-index:34;width:28px;height:28px;border-radius:50%;border:2px solid #ffffff99;opacity:0;pointer-events:none}.ammoFlash{animation:ammoPulse .45s}@keyframes ammoPulse{0%{filter:brightness(2)}100%{filter:brightness(1)}}.log{position:absolute;left:18px;right:18px;bottom:10px;min-height:38px;background:#0009;border-radius:8px;padding:6px;font-size:10px;color:#bdc8d6;z-index:14}.win{display:none;position:absolute;inset:0;background:#000d;z-index:30;align-items:center;justify-content:center;text-align:center}.win.show{display:flex}
 @media(max-width:820px){
   body{overflow:hidden}
   .wrap{padding:0}
@@ -72,7 +72,7 @@ input{width:100%;background:#08111c;color:#fff;border:1px solid #ffffff33;border
 </head>
 <body><div class="wrap">
 <section id="lobby" class="lobby">
-<div class="card"><h1>COLOR WAR — v0.16</h1><div class="muted">Play across two phones, or play Blue against the computer on one device.</div></div>
+<div class="card"><h1>COLOR WAR — v0.16.1</h1><div class="muted">Play across two phones, or play Blue against the computer on one device.</div></div>
 <div class="grid2">
 <div class="card"><h3>BLUE PHONE</h3><button id="createBtn" class="btn blueBtn">CREATE GAME</button><div id="hostArea" class="hidden"><div class="muted" style="text-align:center;margin-top:10px">ROOM CODE</div><div id="roomCode" class="code">----</div></div></div>
 <div class="card"><h3>RED PHONE</h3><input id="joinCode" maxlength="4" inputmode="numeric" placeholder="4-digit code"><button id="joinBtn" class="btn redBtn" style="margin-top:8px;width:100%">JOIN GAME</button></div>
@@ -123,7 +123,7 @@ $("computerBtn").onclick=()=>{
   launch();
 };
 function wire(){conn.on("open",()=>{if(host){state=fs();conn.send({t:"hello"});snap(1);launch()}});conn.on("data",m=>{if(m.t==="hello"&&!host)launch();else if(m.t==="snap"&&!host)recv(m.s);else if(m.t==="act"&&host)act(m);else if(m.t==="event"){if(m.e==="cross"&&m.to===side)warp(m.n);if(m.e==="hit"&&m.to===side)hit(m.d);if(m.e==="rock")animateRock(m.from,m.to,m.n||1,m.lane??4)}});conn.on("close",()=>{$("log").textContent="Other phone disconnected."})}
-function launch(){$("lobby").classList.add("hidden");$("game").classList.remove("hidden");cfg();refreshPanel(true);render();if(host){last=performance.now();requestAnimationFrame(loop)}}
+function launch(){$("lobby").classList.add("hidden");$("game").classList.remove("hidden");cfg();ensureLaneTargets();refreshPanel(true);render();if(host){last=performance.now();requestAnimationFrame(loop)}}
 function cfg(){
   let v=currentView();
   $("panel").className="panel "+side;
@@ -369,14 +369,46 @@ function renderGroup(s,lane,g){
   $("field").appendChild(d)
 }
 function renderArmies(){["blue","red"].forEach(s=>state[s].lanes.forEach((l,i)=>l.groups.forEach(g=>renderGroup(s,i,g))))}
+function ensureLaneTargets(){
+  let field=$("field");
+  if(field.querySelectorAll(".laneTarget").length===9)return;
+  field.querySelectorAll(".laneTarget").forEach(x=>x.remove());
+  for(let i=0;i<9;i++){
+    let b=document.createElement("button");
+    b.type="button";
+    b.className="laneTarget "+side;
+    b.dataset.lane=String(i);
+    b.style.top=Y[i]+"%";
+    b.hidden=true;
+    b.addEventListener("pointerdown",e=>{
+      if(b.hidden||b.disabled||currentView()!==side)return;
+      e.preventDefault();e.stopPropagation();
+      send("deploy",{lane:Number(b.dataset.lane)})
+    },{passive:false});
+    field.appendChild(b)
+  }
+}
+function updateLaneTargets(){
+  ensureLaneTargets();
+  let p=state?.[side],unit=p?.ready?.[0],show=currentView()===side&&!!unit;
+  $("field").querySelectorAll(".laneTarget").forEach((b,i)=>{
+    if(!show){b.hidden=true;return}
+    let allowed=canDeployToLane(p,unit,i);
+    b.hidden=false;
+    b.disabled=!allowed;
+    b.className="laneTarget "+side+(state.frontier[i].opened?" openLane":"");
+    b.textContent=allowed?String(i+1):"×";
+    b.title=allowed?"Deploy "+unit.type+" to lane "+(i+1):"Farm already in lane "+(i+1)
+  })
+}
 function renderReady(){
   if(currentView()!==side)return;
   let p=state[side];
   if(!p.ready.length)return;
-  let unit=p.ready[0],d=document.createElement("div");d.className="readyDeploy "+side;
-  d.innerHTML='<div class="miniChar">'+charArt(unit.type)+'</div><strong>PLACE '+unit.type.toUpperCase()+'</strong><small>'+p.ready.length+' awaiting lane</small>';
-  $("board").appendChild(d);
-  for(let i=0;i<9;i++){let allowed=canDeployToLane(p,unit,i),b=document.createElement("button");b.className="laneTarget "+side+(state.frontier[i].opened?" openLane":"");b.style.top=Y[i]+"%";b.textContent=allowed?(i+1):"×";b.disabled=!allowed;b.title=allowed?"Deploy to lane "+(i+1):"Farm already in lane "+(i+1);if(allowed)b.addEventListener("pointerdown",e=>{e.preventDefault();send("deploy",{lane:i})},{passive:false});$("field").appendChild(b)}
+  let unit=p.ready[0],d=document.createElement("div");
+  d.className="readyDeploy "+side;
+  d.innerHTML='<div class="miniChar">'+charArt(unit.type)+'</div><strong>PLACE '+unit.type.toUpperCase()+'</strong><small>TAP LANE 1–9 • '+p.ready.length+' waiting</small>';
+  $("board").appendChild(d)
 }
 function renderSiege(){
   let v=currentView(),p=state[v];if(!p.sieges.length)return;
@@ -399,7 +431,7 @@ function renderFarmsAndMiners(){
   p.farms.forEach(f=>{let d=document.createElement("div");d.className="farmLane "+v;d.style.position="absolute";d.style.zIndex="11";d.style.top=Y[f.lane]+"%";d.style.left=v==="blue"?"14%":"86%";d.style.transform="translate(-50%,-50%) scale(.7)";d.innerHTML=charArt("farm")+'<span style="position:absolute;left:35px;top:8px;white-space:nowrap;font-size:7px;font-weight:900;background:#081019cc;padding:2px 4px;border-radius:5px">L'+(f.lane+1)+' '+(f.build>0?"BUILD "+Math.ceil(f.build)+"s":"FARM "+Math.ceil(f.life)+"s")+'</span>';$("field").appendChild(d)});
   p.miners.forEach(m=>{let d=document.createElement("div");d.className="minerPack";d.style.top=Y[m.lane]+"%";d.style.left=lx(m.x)+"%";let atEdge=Math.abs(m.x-(v==="blue"?188:212))<1;d.textContent=(atEdge?"⛏ MINING L":"⛏ TRAVEL L")+(m.lane+1);$("field").appendChild(d)})
 }
-function render(){if(!state)return;for(let i=0;i<9;i++)barr(i);let v=currentView(),p=state[v],h=Math.max(0,p.castle);$("hpNum").textContent=Math.ceil(h)+" / "+CASTLE_HP+" HP";$("hpFill").style.width=(h/CASTLE_HP*100)+"%";$("field").querySelectorAll(".mob,.minerPack,.farmIcon,.farmLane,.trainingBadge,.laneTarget").forEach(x=>x.remove());$("board").querySelectorAll(".readyDeploy,.siegePark").forEach(x=>x.remove());renderArmies();renderReady();renderSiege();renderFarmsAndMiners();if(v===side&&p.trainQ.length){let d=document.createElement("div");d.className="trainingBadge";d.textContent="TRAINING "+p.trainQ[0].type.toUpperCase()+" "+Math.ceil(p.trainQ[0].left)+"s • QUEUE "+p.trainQ.length;$("field").appendChild(d)}let openCount=state.frontier.filter(l=>l.opened).length;$("route").textContent=(vsComputer?("VIEW "+v.toUpperCase()+" • "):"")+openCount+"/9 LANES OPEN • DOUBLE-DISTANCE KINGDOM";let m=Math.floor(state.time/60),s=Math.floor(state.time%60).toString().padStart(2,"0");$("timer").textContent=m+":"+s;$("log").textContent=state.logs.slice(-3).join(" • ");$("win").classList.toggle("show",!!state.winner);if(state.winner)$("winText").textContent=state.winner==="draw"?"DRAW":state.winner.toUpperCase()+" WINS"}
+function render(){if(!state)return;for(let i=0;i<9;i++)barr(i);let v=currentView(),p=state[v],h=Math.max(0,p.castle);$("hpNum").textContent=Math.ceil(h)+" / "+CASTLE_HP+" HP";$("hpFill").style.width=(h/CASTLE_HP*100)+"%";$("field").querySelectorAll(".mob,.minerPack,.farmIcon,.farmLane,.trainingBadge").forEach(x=>x.remove());$("board").querySelectorAll(".readyDeploy,.siegePark").forEach(x=>x.remove());renderArmies();renderReady();updateLaneTargets();renderSiege();renderFarmsAndMiners();if(v===side&&p.trainQ.length){let d=document.createElement("div");d.className="trainingBadge";d.textContent="TRAINING "+p.trainQ[0].type.toUpperCase()+" "+Math.ceil(p.trainQ[0].left)+"s • QUEUE "+p.trainQ.length;$("field").appendChild(d)}let openCount=state.frontier.filter(l=>l.opened).length;$("route").textContent=(vsComputer?("VIEW "+v.toUpperCase()+" • "):"")+openCount+"/9 LANES OPEN • DOUBLE-DISTANCE KINGDOM";let m=Math.floor(state.time/60),s=Math.floor(state.time%60).toString().padStart(2,"0");$("timer").textContent=m+":"+s;$("log").textContent=state.logs.slice(-3).join(" • ");$("win").classList.toggle("show",!!state.winner);if(state.winner)$("winText").textContent=state.winner==="draw"?"DRAW":state.winner.toUpperCase()+" WINS"}
 $("board").addEventListener("pointerdown",e=>{if(!vsComputer)return;swipeX=e.clientX;swipeY=e.clientY});
 $("board").addEventListener("pointerup",e=>{
   if(!vsComputer||swipeX===null)return;
