@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Color War v0.13 — Manual Economy Lanes + Respawn</title>
+<title>Color War v0.14 — Siege Balance Pass</title>
 <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#081019;color:#fff;font-family:Arial,sans-serif}button,input{font:inherit}button{touch-action:manipulation}
@@ -66,7 +66,7 @@ input{width:100%;background:#08111c;color:#fff;border:1px solid #ffffff33;border
 </head>
 <body><div class="wrap">
 <section id="lobby" class="lobby">
-<div class="card"><h1>COLOR WAR — v0.13</h1><div class="muted">Play across two phones, or play Blue against the computer on one device.</div></div>
+<div class="card"><h1>COLOR WAR — v0.14</h1><div class="muted">Play across two phones, or play Blue against the computer on one device.</div></div>
 <div class="grid2">
 <div class="card"><h3>BLUE PHONE</h3><button id="createBtn" class="btn blueBtn">CREATE GAME</button><div id="hostArea" class="hidden"><div class="muted" style="text-align:center;margin-top:10px">ROOM CODE</div><div id="roomCode" class="code">----</div></div></div>
 <div class="card"><h3>RED PHONE</h3><input id="joinCode" maxlength="4" inputmode="numeric" placeholder="4-digit code"><button id="joinBtn" class="btn redBtn" style="margin-top:8px;width:100%">JOIN GAME</button></div>
@@ -89,7 +89,7 @@ input{width:100%;background:#08111c;color:#fff;border:1px solid #ffffff33;border
 </main></section></div>
 <script>
 (()=>{
-const P="cw-test-",LANE_MAX=8,TIME=900,CAP=36,CASTLE_HP=500,R=["wood","stone","iron"],LANE_RES=["wood","stone","iron","stone","wood","iron","iron","wood","stone"],Y=[5.55,16.66,27.77,38.88,50,61.11,72.22,83.33,94.44],WORLD_EDGE=200,WORLD_MAX=400,FARM_COOLDOWN=45,FARM_BUILD=8,FARM_LIFE=420,MAX_FARMS=9,MAX_MINERS=9,RESOURCE_RESPAWN=60,MINER_TIME=8,FOOD_TIME=8,MINER_TRAVEL=4,MINER_MINE=4,SIEGE_FIRE=8,SIEGE_DAMAGE=6;
+const P="cw-test-",LANE_MAX=8,TIME=900,CAP=36,CASTLE_HP=500,R=["wood","stone","iron"],LANE_RES=["wood","stone","iron","stone","wood","iron","iron","wood","stone"],Y=[5.55,16.66,27.77,38.88,50,61.11,72.22,83.33,94.44],WORLD_EDGE=200,WORLD_MAX=400,FARM_COOLDOWN=45,FARM_BUILD=8,FARM_LIFE=420,MAX_FARMS=9,MAX_MINERS=9,RESOURCE_RESPAWN=60,MINER_TIME=8,FOOD_TIME=12,MINER_TRAVEL=4,MINER_MINE=4,SIEGE_FIRE=8,SIEGE_DAMAGE=4;
 const S={soldier:{icon:"●",cost:{food:2,wood:1},hp:24,a:4,c:1,train:9},heavy:{icon:"■",cost:{food:3,iron:2},hp:55,a:3,c:2,train:14},siege:{icon:"▲",cost:{food:4,wood:2,iron:1},hp:30,a:0,c:0,train:22}};
 let peer,conn,host=false,side=null,state,last=0,lastSend=0,lastPanelPaint=0,audio,prev=null,vsComputer=false,aiClock=0;
 const $=x=>document.getElementById(x),other=s=>s==="blue"?"red":"blue";
@@ -177,6 +177,7 @@ function siegeFire(dt){
       sg.clock+=dt;
       if(sg.clock<SIEGE_FIRE)return;
       sg.clock-=SIEGE_FIRE;
+      if(!state.frontier[sg.lane].opened){lg(s.toUpperCase()+" SIEGE L"+(sg.lane+1)+" waiting for OPEN lane");return}
       if(p.stone<=0){lg(s.toUpperCase()+" SIEGE L"+(sg.lane+1)+" needs ROCKS");return}
       p.stone--;
       state[opp].castle-=SIEGE_DAMAGE;
