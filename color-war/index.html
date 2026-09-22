@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Color War v0.12 — Manual Deployment + Farm Lifespan</title>
+<title>Color War v0.13 — Manual Economy Lanes + Respawn</title>
 <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#081019;color:#fff;font-family:Arial,sans-serif}button,input{font:inherit}button{touch-action:manipulation}
@@ -25,7 +25,7 @@ input{width:100%;background:#08111c;color:#fff;border:1px solid #ffffff33;border
 .timer{position:absolute;right:18px;top:20px;z-index:14;font-size:19px;font-weight:900}.route{position:absolute;top:56px;left:50%;transform:translateX(-50%);z-index:14;font-size:10px;font-weight:900;color:#bdc8d6}
 .field{position:absolute;left:106px;right:18px;top:76px;bottom:56px;border:1px solid #ffffff1c;border-radius:12px;background:linear-gradient(90deg,#ffffff02,#ffffff06,#ffffff02)}.redView .field{left:18px;right:106px}.lane{position:absolute;left:0;right:0;height:11.111%;border-bottom:1px solid #ffffff15}.lane:after{content:attr(data-lane);position:absolute;left:4px;top:2px;color:#ffffff2e;font-size:8px;font-weight:900}.redView .lane:after{left:auto;right:4px}.barrier{position:absolute;top:calc(var(--lane)*11.111% + 1.05%);width:90px;height:9%;min-height:31px;border-radius:9px;z-index:8;display:flex;align-items:center;gap:4px;padding:2px 5px;text-align:left;font-size:8px;font-weight:900;border:1px solid #ffffff45;box-shadow:0 4px 10px #0008,inset 0 0 14px #0005;overflow:hidden}.blueView .barrier{right:-2px}.redView .barrier{left:-2px}.barrier:before{content:"";position:absolute;left:0;right:0;bottom:0;height:26%;background:linear-gradient(180deg,transparent,#0006);pointer-events:none}.resourceArt{position:relative;flex:0 0 45px;height:27px;z-index:2}.resourceArt i{position:absolute;display:block;transition:opacity .25s,transform .25s}.barrier.wood{background:linear-gradient(#203e20,#172e18)}.wood .resourceArt i{width:5px;height:17px;background:linear-gradient(90deg,#5d371d,#9b6334,#4b2d18);bottom:1px;border-radius:2px;box-shadow:0 1px 2px #0008}.wood .resourceArt i:before{content:"";position:absolute;left:-7px;top:-9px;width:19px;height:15px;border-radius:50%;background:radial-gradient(circle at 45% 35%,#74a84d,#3f762f 58%,#285523 60%);box-shadow:-6px 5px 0 -3px #477f36,6px 5px 0 -3px #35682b}.wood .resourceArt i:nth-child(1){left:6px;height:15px}.wood .resourceArt i:nth-child(2){left:20px;height:20px}.wood .resourceArt i:nth-child(3){left:34px;height:14px}
 .barrier.stone{background:linear-gradient(#555b62,#383d43)}.stone .resourceArt i{bottom:2px;width:17px;height:15px;background:linear-gradient(145deg,#aab0b6,#707780 55%,#484f56);clip-path:polygon(22% 5%,75% 0,100% 46%,75% 100%,12% 88%,0 36%);box-shadow:inset 3px 2px 0 #d9dde044,0 2px 3px #0008}.stone .resourceArt i:nth-child(1){left:1px;transform:scale(.88)}.stone .resourceArt i:nth-child(2){left:14px;bottom:4px;transform:scale(1.1)}.stone .resourceArt i:nth-child(3){left:29px;transform:scale(.8)}
-.barrier.iron{background:linear-gradient(#503025,#2f1d19)}.iron .resourceArt i{bottom:2px;width:18px;height:15px;background:linear-gradient(145deg,#6b5a50,#3f3834);clip-path:polygon(15% 5%,79% 0,100% 40%,80% 100%,10% 85%,0 35%);box-shadow:inset 0 0 0 1px #d2723b44,0 2px 3px #0008}.iron .resourceArt i:before{content:"";position:absolute;left:2px;right:2px;top:5px;height:3px;background:linear-gradient(90deg,#7c351f,#f08b4c,#7c351f);transform:rotate(-18deg);box-shadow:0 0 4px #d86f39}.iron .resourceArt i:nth-child(1){left:1px}.iron .resourceArt i:nth-child(2){left:14px;bottom:5px;transform:scale(1.08)}.iron .resourceArt i:nth-child(3){left:30px;transform:scale(.78)}.barrier.stage2 .resourceArt i:nth-child(3){opacity:.16;transform:translateY(5px) scale(.65)}.barrier.stage1 .resourceArt i:nth-child(2),.barrier.stage1 .resourceArt i:nth-child(3){opacity:.12;transform:translateY(6px) scale(.55)}.barrier.stage1 .resourceArt{filter:saturate(.55) brightness(.82)}.barrier.open{background:linear-gradient(#163b23,#0d2817);color:#9bf3ae;border-color:#64d48288;justify-content:center;box-shadow:inset 0 0 18px #2a9f5230}.barrier.open:after{content:"";position:absolute;left:7px;right:7px;top:50%;height:2px;background:#6be38f44;box-shadow:0 0 8px #6be38f}.resMeta{display:flex;flex-direction:column;line-height:1.05;z-index:3;text-shadow:0 1px 2px #000}.resMeta b{font-size:7px;letter-spacing:.04em}.resMeta small{font-size:10px;color:#fff}.resMeta .deplete{font-size:6px;color:#c8d1dc;margin-top:1px}.barrier.open .resourceArt{display:none}.barrier.open .resMeta b{font-size:9px}.barrier.open .resMeta small,.barrier.open .deplete{display:none}
+.barrier.iron{background:linear-gradient(#503025,#2f1d19)}.iron .resourceArt i{bottom:2px;width:18px;height:15px;background:linear-gradient(145deg,#6b5a50,#3f3834);clip-path:polygon(15% 5%,79% 0,100% 40%,80% 100%,10% 85%,0 35%);box-shadow:inset 0 0 0 1px #d2723b44,0 2px 3px #0008}.iron .resourceArt i:before{content:"";position:absolute;left:2px;right:2px;top:5px;height:3px;background:linear-gradient(90deg,#7c351f,#f08b4c,#7c351f);transform:rotate(-18deg);box-shadow:0 0 4px #d86f39}.iron .resourceArt i:nth-child(1){left:1px}.iron .resourceArt i:nth-child(2){left:14px;bottom:5px;transform:scale(1.08)}.iron .resourceArt i:nth-child(3){left:30px;transform:scale(.78)}.barrier.stage2 .resourceArt i:nth-child(3){opacity:.16;transform:translateY(5px) scale(.65)}.barrier.stage1 .resourceArt i:nth-child(2),.barrier.stage1 .resourceArt i:nth-child(3){opacity:.12;transform:translateY(6px) scale(.55)}.barrier.stage1 .resourceArt{filter:saturate(.55) brightness(.82)}.barrier.open{background:linear-gradient(#163b23,#0d2817);color:#9bf3ae;border-color:#64d48288;justify-content:center;box-shadow:inset 0 0 18px #2a9f5230}.barrier.open:after{content:"";position:absolute;left:7px;right:7px;top:50%;height:2px;background:#6be38f44;box-shadow:0 0 8px #6be38f}.resMeta{display:flex;flex-direction:column;line-height:1.05;z-index:3;text-shadow:0 1px 2px #000}.resMeta b{font-size:7px;letter-spacing:.04em}.resMeta small{font-size:10px;color:#fff}.resMeta .deplete{font-size:6px;color:#c8d1dc;margin-top:1px}.barrier.open .resourceArt{display:none}.barrier.open .resMeta b{font-size:9px}.barrier.open .resMeta small,.barrier.open .deplete{display:none}.barrier.open.stocked{justify-content:flex-start;background:linear-gradient(#163b23aa,#0d2817aa)}.barrier.open.stocked .resourceArt{display:block;transform:scale(.72);transform-origin:left center}.barrier.open.stocked .resMeta b{font-size:6px}.barrier.open.stocked .resMeta small,.barrier.open.stocked .deplete{display:block}.laneTarget:disabled{opacity:.22;box-shadow:none;border-color:#ffffff22;background:#111;color:#777}
 .mob{position:absolute;z-index:12;transform:translate(-50%,-50%);width:78px;height:70px}.mobLabel{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:900;background:#0009;padding:2px 5px;border-radius:5px;white-space:nowrap}.unit{position:absolute;width:20px;height:22px;transform:translate(-50%,-50%);cursor:pointer}.shape{width:17px;height:17px;border:2px solid #ffffff88}.unit.blue .shape{background:#2468ef}.unit.red .shape{background:#d62b37}.soldier .shape{border-radius:50%}.heavy .shape{border-radius:4px}.siege .shape{clip-path:polygon(50% 0,0 100%,100% 100%)}.minerPack{position:absolute;z-index:10;background:#090d14dd;border:1px solid #e5bc6488;border-radius:7px;padding:4px 6px;font-size:10px;font-weight:900;transform:translate(-50%,-50%)}.farmIcon,.trainingBadge{position:absolute;z-index:10;background:#0a111bdf;border:1px solid #ffffff28;border-radius:8px;padding:5px 7px;font-size:10px;font-weight:900}.farmIcon.blue{left:13%;bottom:24%}.farmIcon.red{right:13%;bottom:24%}.trainingBadge{left:50%;bottom:17%;transform:translateX(-50%);white-space:nowrap}
 .mob{width:62px;height:34px}.mobLabel{top:-11px;font-size:7px;padding:1px 3px}.unit{width:14px;height:14px}.shape{width:11px;height:11px;border-width:1px}.readyDeploy{position:absolute;z-index:22;top:50%;transform:translateY(-50%);width:74px;min-height:62px;border-radius:11px;background:#07101be8;border:2px solid #ffffff55;box-shadow:0 0 16px #84b4ff55;padding:5px;text-align:center;font-size:8px;font-weight:900}.readyDeploy.blue{left:7%}.readyDeploy.red{right:7%;box-shadow:0 0 16px #ff777f55}.readyDeploy .miniChar{height:35px;display:flex;align-items:center;justify-content:center}.readyDeploy .miniChar .char{transform:scale(.68)}.readyDeploy strong{display:block;font-size:8px}.readyDeploy small{display:block;color:#b8c5d4;font-size:6px;margin-top:2px}.laneTarget{position:absolute;z-index:21;transform:translate(-50%,-50%);width:25px;height:25px;border-radius:50%;border:1px solid #cfe1ff;background:#173763e8;color:#fff;font-size:8px;font-weight:1000;box-shadow:0 0 9px #82b4ff88;display:flex;align-items:center;justify-content:center;padding:0}.panel.red~.board .laneTarget{background:#63222ae8;border-color:#ffc5c9;box-shadow:0 0 9px #ff788088}.laneTarget.blue{left:9%}.laneTarget.red{left:91%}.laneTarget.openLane{border-color:#80f0a0;box-shadow:0 0 10px #61db8388}.siegePark{position:absolute;z-index:19;top:67%;width:92px;min-height:45px;border-radius:9px;background:#0a1018cc;border:1px solid #ffffff35;padding:4px 5px;font-size:7px;font-weight:900;display:flex;align-items:center;gap:4px}.siegePark.blue{left:6%}.siegePark.red{right:6%}.siegeSlots{display:flex;gap:2px}.siegeMini{width:29px;height:35px;transform:scale(.68);transform-origin:center}.siegeAmmo{line-height:1.15}.rockShot{position:absolute;z-index:35;width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#b7bcc1,#656b71 55%,#2f3438);box-shadow:0 2px 4px #000,0 0 5px #ffffff22;pointer-events:none}.rockBurst{position:absolute;z-index:34;width:28px;height:28px;border-radius:50%;border:2px solid #ffffff99;opacity:0;pointer-events:none}.ammoFlash{animation:ammoPulse .45s}@keyframes ammoPulse{0%{filter:brightness(2)}100%{filter:brightness(1)}}.log{position:absolute;left:18px;right:18px;bottom:10px;min-height:38px;background:#0009;border-radius:8px;padding:6px;font-size:10px;color:#bdc8d6;z-index:14}.win{display:none;position:absolute;inset:0;background:#000d;z-index:30;align-items:center;justify-content:center;text-align:center}.win.show{display:flex}
 @media(max-width:820px){
@@ -66,7 +66,7 @@ input{width:100%;background:#08111c;color:#fff;border:1px solid #ffffff33;border
 </head>
 <body><div class="wrap">
 <section id="lobby" class="lobby">
-<div class="card"><h1>COLOR WAR — v0.12</h1><div class="muted">Play across two phones, or play Blue against the computer on one device.</div></div>
+<div class="card"><h1>COLOR WAR — v0.13</h1><div class="muted">Play across two phones, or play Blue against the computer on one device.</div></div>
 <div class="grid2">
 <div class="card"><h3>BLUE PHONE</h3><button id="createBtn" class="btn blueBtn">CREATE GAME</button><div id="hostArea" class="hidden"><div class="muted" style="text-align:center;margin-top:10px">ROOM CODE</div><div id="roomCode" class="code">----</div></div></div>
 <div class="card"><h3>RED PHONE</h3><input id="joinCode" maxlength="4" inputmode="numeric" placeholder="4-digit code"><button id="joinBtn" class="btn redBtn" style="margin-top:8px;width:100%">JOIN GAME</button></div>
@@ -89,12 +89,12 @@ input{width:100%;background:#08111c;color:#fff;border:1px solid #ffffff33;border
 </main></section></div>
 <script>
 (()=>{
-const P="cw-test-",LANE_MAX=8,TIME=900,CAP=36,CASTLE_HP=500,R=["wood","stone","iron"],LANE_RES=["wood","stone","iron","stone","wood","iron","iron","wood","stone"],Y=[5.55,16.66,27.77,38.88,50,61.11,72.22,83.33,94.44],FARM_TIME=8,FARM_COST=2,FARM_LIFE=90,MAX_FARMS=9,MINER_TIME=8,FOOD_TIME=8,MINER_TRAVEL=4,MINER_MINE=4,SIEGE_FIRE=8,SIEGE_DAMAGE=6;
+const P="cw-test-",LANE_MAX=8,TIME=900,CAP=36,CASTLE_HP=500,R=["wood","stone","iron"],LANE_RES=["wood","stone","iron","stone","wood","iron","iron","wood","stone"],Y=[5.55,16.66,27.77,38.88,50,61.11,72.22,83.33,94.44],WORLD_EDGE=200,WORLD_MAX=400,FARM_COOLDOWN=45,FARM_BUILD=8,FARM_LIFE=420,MAX_FARMS=9,MAX_MINERS=9,RESOURCE_RESPAWN=60,MINER_TIME=8,FOOD_TIME=8,MINER_TRAVEL=4,MINER_MINE=4,SIEGE_FIRE=8,SIEGE_DAMAGE=6;
 const S={soldier:{icon:"●",cost:{food:2,wood:1},hp:24,a:4,c:1,train:9},heavy:{icon:"■",cost:{food:3,iron:2},hp:55,a:3,c:2,train:14},siege:{icon:"▲",cost:{food:4,wood:2,iron:1},hp:30,a:0,c:0,train:22}};
 let peer,conn,host=false,side=null,state,last=0,lastSend=0,lastPanelPaint=0,audio,prev=null,vsComputer=false,aiClock=0;
 const $=x=>document.getElementById(x),other=s=>s==="blue"?"red":"blue";
-function fp(s){return{side:s,castle:CASTLE_HP,food:4,foodClock:0,wood:0,stone:0,iron:0,farms:[],farmBuild:0,farmEver:false,miners:0,minerBuild:0,minerX:s==="blue"?18:182,mine:0,ready:[],trainQ:[],sieges:[],lanes:Array.from({length:9},()=>({groups:[]})),aiCycle:0}}
-function fs(){return{blue:fp("blue"),red:fp("red"),frontier:LANE_RES.map((res,i)=>({res,amt:LANE_MAX,openedAt:null})),route:null,time:TIME,winner:null,logs:["Train troops, place them into L1–L9, and keep Siege supplied with mined Rocks."]}}
+function fp(s){return{side:s,castle:CASTLE_HP,food:4,foodClock:0,wood:0,stone:0,iron:0,farms:[],farmCooldown:0,miners:[],minerBuild:0,ready:[],trainQ:[],sieges:[],lanes:Array.from({length:9},()=>({groups:[]})),aiCycle:0}}
+function fs(){return{blue:fp("blue"),red:fp("red"),frontier:LANE_RES.map((res,i)=>({res,amt:LANE_MAX,opened:false,openedAt:null,respawn:0})),route:null,time:TIME,winner:null,logs:["Place Farms, Miners, and every combat unit into the lane you choose."]}}
 function unlock(){if(!audio)audio=new(AudioContext||webkitAudioContext)();if(audio.state==="suspended")audio.resume()}document.addEventListener("pointerdown",unlock,{passive:true});
 function fart(){unlock();if(!audio)return;let n=audio.currentTime,o=audio.createOscillator(),g=audio.createGain();o.type="sawtooth";o.frequency.setValueAtTime(125,n);o.frequency.exponentialRampToValueAtTime(52,n+.27);g.gain.setValueAtTime(.001,n);g.gain.exponentialRampToValueAtTime(.22,n+.02);g.gain.exponentialRampToValueAtTime(.001,n+.27);o.connect(g).connect(audio.destination);o.start(n);o.stop(n+.27)}
 function warp(n){unlock();if(audio)for(let i=0;i<Math.min(n,10);i++){let t=audio.currentTime+i*.05,o=audio.createOscillator(),g=audio.createGain();o.frequency.setValueAtTime(160,t);o.frequency.exponentialRampToValueAtTime(1000,t+.2);o.frequency.exponentialRampToValueAtTime(230,t+.4);g.gain.setValueAtTime(.001,t);g.gain.exponentialRampToValueAtTime(.05,t+.03);g.gain.exponentialRampToValueAtTime(.001,t+.4);o.connect(g).connect(audio.destination);o.start(t);o.stop(t+.42)}if(navigator.vibrate)navigator.vibrate(25);let e=$("edge");e.classList.remove("flash");void e.offsetWidth;e.classList.add("flash")}
@@ -121,10 +121,12 @@ function snap(force=0){if(!host||!conn?.open)return;let n=performance.now();if(!
 function recv(s){if(prev&&s[side].castle<prev[side].castle)hit(prev[side].castle-s[side].castle);state=s;prev=structuredClone(s);refreshPanel();render()}
 function send(a,x={}){if(host)act({t:"act",a,side,...x});else conn?.send({t:"act",a,side,...x})}
 function act(m){if(!state)return;if(m.a==="farm")bf(m.side);if(m.a==="miner")bm(m.side);if(m.a==="pawn")bp(m.side,m.p);if(m.a==="deploy")deploy(m.side,m.lane);if(m.a==="rematch"){state=fs();prev=null;aiClock=0;if(vsComputer)state.logs=["REMATCH VS COMPUTER"];snap(1)}}
-function canF(s){let p=state?.[s];return p&&p.farms.length<MAX_FARMS&&p.farmBuild<=0&&(!p.farmEver||p.wood>=FARM_COST)}
-function bf(s){if(!canF(s))return;let p=state[s];if(p.farmEver)p.wood-=FARM_COST;p.farmEver=true;p.farmBuild=FARM_TIME;lg(s.toUpperCase()+" FARM construction started");if(s===side)refreshPanel(true);snap(1)}
-function canM(s){let p=state?.[s];return p&&p.food>=2&&p.miners<5&&p.minerBuild<=0}
-function fieldCount(p){return p.ready.length+p.trainQ.length+p.sieges.length+p.lanes.reduce((n,l)=>n+l.groups.reduce((m,g)=>m+g.pawns.length,0),0)}
+function plannedFarms(p){return p.farms.length+p.ready.filter(x=>x.type==="farm").length}
+function canF(s){let p=state?.[s];return p&&plannedFarms(p)<MAX_FARMS&&p.farmCooldown<=0&&!p.ready.some(x=>x.type==="farm")}
+function bf(s){if(!canF(s))return;let p=state[s];p.ready.push({id:Math.random(),type:"farm"});p.farmCooldown=FARM_COOLDOWN;lg(s.toUpperCase()+" FARM ready — choose a lane");if(s===side)refreshPanel(true);snap(1)}
+function activeMinerCount(p){return p.miners.length+p.ready.filter(x=>x.type==="miner").length+(p.minerBuild>0?1:0)}
+function canM(s){let p=state?.[s];return p&&p.food>=2&&activeMinerCount(p)<MAX_MINERS&&p.minerBuild<=0}
+function fieldCount(p){return p.ready.filter(x=>["soldier","heavy","siege"].includes(x.type)).length+p.trainQ.length+p.sieges.length+p.lanes.reduce((n,l)=>n+l.groups.reduce((m,g)=>m+g.pawns.length,0),0)}
 function queuedSiege(p){return p.trainQ.filter(x=>x.type==="siege").length}
 function canP(s,t){let p=state?.[s];if(!p||fieldCount(p)>=CAP||p.trainQ.length>=3)return false;if(t==="siege"&&p.sieges.length+p.ready.filter(x=>x.type==="siege").length+queuedSiege(p)>=2)return false;return Object.entries(S[t].cost).every(([k,v])=>p[k]>=v)}
 function bm(s){if(!canM(s))return;let p=state[s];p.food-=2;p.minerBuild=MINER_TIME;lg(s.toUpperCase()+" MINER recruiting");if(s===side)refreshPanel(true);snap(1)}
@@ -133,32 +135,38 @@ function remaining(res){return state.frontier.reduce((n,l)=>n+(l.res===res?l.amt
 function targetLane(s){let p=state[s];if(p.sieges.length>0&&p.stone<6){let ri=state.frontier.findIndex(l=>l.res==="stone"&&l.amt>0);if(ri>=0)return ri}let types=R.filter(r=>state.frontier.some(l=>l.res===r&&l.amt>0));if(!types.length)return -1;types.sort((a,b)=>(p[a]-p[b])||R.indexOf(a)-R.indexOf(b));let res=types[0];return state.frontier.findIndex(l=>l.res===res&&l.amt>0)}
 function target(s){let i=targetLane(s);return i<0?null:state.frontier[i].res}
 function buildAndTrain(dt){["blue","red"].forEach(s=>{let p=state[s];
-  if(p.farmBuild>0){p.farmBuild-=dt;if(p.farmBuild<=0){p.farmBuild=0;p.farms.push(FARM_LIFE);lg(s.toUpperCase()+" FARM completed — "+FARM_LIFE+"s lifespan")}}
-  if(p.farms.length){
-    p.farms=p.farms.map(x=>x-dt).filter(x=>x>0);
-    p.foodClock+=dt*p.farms.length;
-    while(p.foodClock>=FOOD_TIME){p.foodClock-=FOOD_TIME;p.food=Math.min(99,p.food+1)}
-  }
-  if(p.minerBuild>0){p.minerBuild-=dt;if(p.minerBuild<=0){p.minerBuild=0;p.miners++;lg(s.toUpperCase()+" MINER ready and walking to frontier")}}
+  if(p.farmCooldown>0)p.farmCooldown=Math.max(0,p.farmCooldown-dt);
+  p.farms.forEach(f=>{if(f.build>0)f.build=Math.max(0,f.build-dt);else f.life-=dt});
+  p.farms=p.farms.filter(f=>f.build>0||f.life>0);
+  let activeFarms=p.farms.filter(f=>f.build<=0).length;
+  if(activeFarms){p.foodClock+=dt*activeFarms;while(p.foodClock>=FOOD_TIME){p.foodClock-=FOOD_TIME;p.food=Math.min(99,p.food+1)}}
+  if(p.minerBuild>0){p.minerBuild-=dt;if(p.minerBuild<=0){p.minerBuild=0;p.ready.push({id:Math.random(),type:"miner"});lg(s.toUpperCase()+" MINER ready — choose a lane")}}
   if(p.trainQ.length){p.trainQ[0].left-=dt;if(p.trainQ[0].left<=0){let t=p.trainQ.shift().type,q=S[t];p.ready.push({id:Math.random(),type:t,hp:q.hp});lg(s.toUpperCase()+" "+t.toUpperCase()+" ready — choose a lane")}}
 })}
-function miners(dt){["blue","red"].forEach(s=>{let p=state[s];if(!p.miners)return;let stop=s==="blue"?91:109;if((s==="blue"&&p.minerX<stop)||(s==="red"&&p.minerX>stop)){p.minerX+=(s==="blue"?1:-1)*MINER_TRAVEL*dt;if(s==="blue")p.minerX=Math.min(stop,p.minerX);else p.minerX=Math.max(stop,p.minerX);return}p.mine+=dt*p.miners;while(p.mine>=MINER_MINE){p.mine-=MINER_MINE;let i=targetLane(s);if(i<0)break;let lane=state.frontier[i];lane.amt--;p[lane.res]++;if(lane.amt===0){lane.openedAt=performance.now();route();lg("LANE "+(i+1)+" "+lane.res.toUpperCase()+" barrier OPEN")}}})}
-function route(){let open=state.frontier.map((l,i)=>({l,i})).filter(x=>x.l.amt===0).sort((a,b)=>(a.l.openedAt||1e15)-(b.l.openedAt||1e15));state.route=open.length?open[0].i:null}
-function deploy(s,lane){let p=state[s];lane=Number(lane);if(!p.ready.length||lane<0||lane>8)return;let unit=p.ready.shift();if(unit.type==="siege"){if(p.sieges.length>=2){p.ready.unshift(unit);return}p.sieges.push({lane,clock:0,id:unit.id});lg(s.toUpperCase()+" SIEGE parked at castle in L"+(lane+1))}else{let x=s==="blue"?10:190;p.lanes[lane].groups.push({x,pawns:[unit],atk:0,catk:0,crossed:false});lg(s.toUpperCase()+" "+unit.type.toUpperCase()+" deployed to L"+(lane+1))}if(s===side)refreshPanel(true);snap(1)}
+function respawnResources(dt){state.frontier.forEach((l,i)=>{if(l.amt===0&&l.respawn>0){l.respawn=Math.max(0,l.respawn-dt);if(l.respawn===0){l.amt=LANE_MAX;lg("L"+(i+1)+" "+l.res.toUpperCase()+" resource respawned")}}})}
+function miners(dt){["blue","red"].forEach(s=>{let p=state[s];p.miners.forEach(m=>{let stop=s==="blue"?188:212;if((s==="blue"&&m.x<stop)||(s==="red"&&m.x>stop)){m.x+=(s==="blue"?1:-1)*MINER_TRAVEL*dt;if(s==="blue")m.x=Math.min(stop,m.x);else m.x=Math.max(stop,m.x);return}let lane=state.frontier[m.lane];if(lane.amt<=0)return;m.mine+=dt;if(m.mine>=MINER_MINE){m.mine-=MINER_MINE;lane.amt--;p[lane.res]++;if(lane.amt===0){if(!lane.opened){lane.opened=true;lane.openedAt=performance.now();lg("LANE "+(m.lane+1)+" opened permanently")}lane.respawn=RESOURCE_RESPAWN;route()}}})})}
+function route(){let open=state.frontier.map((l,i)=>({l,i})).filter(x=>x.l.opened).sort((a,b)=>(a.l.openedAt||1e15)-(b.l.openedAt||1e15));state.route=open.length?open[0].i:null}
+function canDeployToLane(p,unit,lane){if(unit.type==="farm")return !p.farms.some(f=>f.lane===lane);return true}
+function deploy(s,lane){let p=state[s];lane=Number(lane);if(!p.ready.length||lane<0||lane>8)return;let unit=p.ready[0];if(!canDeployToLane(p,unit,lane))return;p.ready.shift();
+  if(unit.type==="farm"){p.farms.push({lane,build:FARM_BUILD,life:FARM_LIFE});lg(s.toUpperCase()+" FARM planted in L"+(lane+1))}
+  else if(unit.type==="miner"){p.miners.push({id:unit.id,lane,x:s==="blue"?36:364,mine:0});lg(s.toUpperCase()+" MINER assigned to L"+(lane+1))}
+  else if(unit.type==="siege"){if(p.sieges.length>=2){p.ready.unshift(unit);return}p.sieges.push({lane,clock:0,id:unit.id});lg(s.toUpperCase()+" SIEGE parked at castle in L"+(lane+1))}
+  else{let x=s==="blue"?20:380;p.lanes[lane].groups.push({x,pawns:[unit],atk:0,catk:0,crossed:false});lg(s.toUpperCase()+" "+unit.type.toUpperCase()+" deployed to L"+(lane+1))}
+  if(s===side)refreshPanel(true);snap(1)}
 function groupAtk(g){return g.pawns.reduce((n,x)=>n+S[x.type].a,0)}
 function groupCastle(g){return g.pawns.reduce((n,x)=>n+S[x.type].c,0)}
 function hurtGroup(g,d){while(d>0&&g.pawns.length){let q=g.pawns[0],x=Math.min(d,q.hp);q.hp-=x;d-=x;if(q.hp<=0)g.pawns.shift()}}
-function mergeSideGroups(p,lane){let a=p.lanes[lane].groups.filter(g=>g.pawns.length).sort((x,y)=>x.x-y.x),out=[];for(let g of a){let last=out[out.length-1];if(last&&Math.abs(last.x-g.x)<2.2){last.pawns.push(...g.pawns);last.x=(last.x+g.x)/2;last.atk=Math.max(last.atk,g.atk);last.catk=Math.max(last.catk,g.catk);last.crossed=last.crossed||g.crossed}else out.push(g)}p.lanes[lane].groups=out}
+function mergeSideGroups(p,lane){let a=p.lanes[lane].groups.filter(g=>g.pawns.length).sort((x,y)=>x.x-y.x),out=[];for(let g of a){let last=out[out.length-1];if(last&&Math.abs(last.x-g.x)<4.4){last.pawns.push(...g.pawns);last.x=(last.x+g.x)/2;last.atk=Math.max(last.atk,g.atk);last.catk=Math.max(last.catk,g.catk);last.crossed=last.crossed||g.crossed}else out.push(g)}p.lanes[lane].groups=out}
 function laneArmies(dt){
   for(let lane=0;lane<9;lane++){
-    let b=state.blue.lanes[lane],r=state.red.lanes[lane],open=state.frontier[lane].amt===0;
+    let b=state.blue.lanes[lane],r=state.red.lanes[lane],open=state.frontier[lane].opened;
     mergeSideGroups(state.blue,lane);mergeSideGroups(state.red,lane);
     let bg=b.groups.filter(g=>g.pawns.length),rg=r.groups.filter(g=>g.pawns.length);
     let bf=bg.length?bg.reduce((a,g)=>g.x>a.x?g:a,bg[0]):null,rf=rg.length?rg.reduce((a,g)=>g.x<a.x?g:a,rg[0]):null;
-    let clash=bf&&rf&&Math.abs(bf.x-rf.x)<=4.5;
+    let clash=bf&&rf&&Math.abs(bf.x-rf.x)<=9;
     if(clash){bf.atk+=dt;rf.atk+=dt;if(bf.atk>=2.8||rf.atk>=2.8){bf.atk%=2.8;rf.atk%=2.8;let ba=groupAtk(bf),ra=groupAtk(rf);hurtGroup(rf,ba);hurtGroup(bf,ra);lg("L"+(lane+1)+" armies clash")}}
-    for(let g of bg){if(!g.pawns.length||g===bf&&clash)continue;let limit=open?196:92;if(g.x<limit){let enemyTerritory=g.x>=100,spd=enemyTerritory?.85:1.35;g.x=Math.min(limit,g.x+spd*dt)}if(!g.crossed&&g.x>=100){g.crossed=true;if(vsComputer)warp(g.pawns.length);conn?.send({t:"event",e:"cross",to:"red",n:g.pawns.length,lane});lg("BLUE crossed L"+(lane+1))}if(g.x>=194){g.catk+=dt;if(g.catk>=6){g.catk%=6;let d=groupCastle(g);state.red.castle-=d;conn?.send({t:"event",e:"hit",to:"red",d});lg("BLUE L"+(lane+1)+" hits RED castle -"+d)}}}
-    for(let g of rg){if(!g.pawns.length||g===rf&&clash)continue;let limit=open?4:108;if(g.x>limit){let enemyTerritory=g.x<=100,spd=enemyTerritory?.85:1.35;g.x=Math.max(limit,g.x-spd*dt)}if(!g.crossed&&g.x<=100){g.crossed=true;warp(g.pawns.length);conn?.send({t:"event",e:"cross",to:"blue",n:g.pawns.length,lane});lg("RED crossed L"+(lane+1))}if(g.x<=6){g.catk+=dt;if(g.catk>=6){g.catk%=6;let d=groupCastle(g);state.blue.castle-=d;hit(d);conn?.send({t:"event",e:"hit",to:"blue",d});lg("RED L"+(lane+1)+" hits BLUE castle -"+d)}}}
+    for(let g of bg){if(!g.pawns.length||g===bf&&clash)continue;let limit=open?392:184;if(g.x<limit){let enemyTerritory=g.x>=WORLD_EDGE,spd=enemyTerritory?.85:1.35;g.x=Math.min(limit,g.x+spd*dt)}if(!g.crossed&&g.x>=WORLD_EDGE){g.crossed=true;if(vsComputer)warp(g.pawns.length);conn?.send({t:"event",e:"cross",to:"red",n:g.pawns.length,lane});lg("BLUE crossed L"+(lane+1))}if(g.x>=388){g.catk+=dt;if(g.catk>=6){g.catk%=6;let d=groupCastle(g);state.red.castle-=d;conn?.send({t:"event",e:"hit",to:"red",d});lg("BLUE L"+(lane+1)+" hits RED castle -"+d)}}}
+    for(let g of rg){if(!g.pawns.length||g===rf&&clash)continue;let limit=open?8:216;if(g.x>limit){let enemyTerritory=g.x<=WORLD_EDGE,spd=enemyTerritory?.85:1.35;g.x=Math.max(limit,g.x-spd*dt)}if(!g.crossed&&g.x<=WORLD_EDGE){g.crossed=true;warp(g.pawns.length);conn?.send({t:"event",e:"cross",to:"blue",n:g.pawns.length,lane});lg("RED crossed L"+(lane+1))}if(g.x<=12){g.catk+=dt;if(g.catk>=6){g.catk%=6;let d=groupCastle(g);state.blue.castle-=d;hit(d);conn?.send({t:"event",e:"hit",to:"blue",d});lg("RED L"+(lane+1)+" hits BLUE castle -"+d)}}}
     b.groups=b.groups.filter(g=>g.pawns.length);r.groups=r.groups.filter(g=>g.pawns.length);
   }
 }
@@ -179,7 +187,7 @@ function siegeFire(dt){
     })
   })
 }
-function aiDeploy(){let p=state.red;if(!p.ready.length)return false;let open=state.frontier.map((l,i)=>({l,i})).filter(x=>x.l.amt===0),lane;if(open.length)lane=open[(p.aiCycle||0)%open.length].i;else{let min=Math.min(...state.frontier.map(l=>l.amt));let candidates=state.frontier.map((l,i)=>({l,i})).filter(x=>x.l.amt===min);lane=candidates[(p.aiCycle||0)%candidates.length].i}deploy("red",lane);p.aiCycle=(p.aiCycle||0)+1;return true}
+function aiDeploy(){let p=state.red;if(!p.ready.length)return false;let unit=p.ready[0],lane;if(unit.type==="farm"){let free=[0,1,2,3,4,5,6,7,8].filter(i=>!p.farms.some(f=>f.lane===i));if(!free.length)return false;lane=free[(p.aiCycle||0)%free.length]}else if(unit.type==="miner"){lane=targetLane("red");if(lane<0)lane=(p.aiCycle||0)%9}else{let open=state.frontier.map((l,i)=>({l,i})).filter(x=>x.l.opened);if(open.length)lane=open[(p.aiCycle||0)%open.length].i;else{let min=Math.min(...state.frontier.map(l=>l.amt));let candidates=state.frontier.map((l,i)=>({l,i})).filter(x=>x.l.amt===min);lane=candidates[(p.aiCycle||0)%candidates.length].i}}deploy("red",lane);p.aiCycle=(p.aiCycle||0)+1;return true}
 function aiTryTrain(){
   let p=state.red;
   if(p.trainQ.length>=2)return false;
@@ -198,15 +206,13 @@ function computerAI(dt){
   aiClock=0;
   let p=state.red;
   if(aiDeploy())return;
-  if(p.farms.length===0&&p.farmBuild<=0){bf("red");return}
-  if(p.miners<2&&p.minerBuild<=0&&canM("red")){bm("red");return}
-  if(p.farms.length<4&&p.farmBuild<=0&&p.wood>=FARM_COST){bf("red");return}
-  if(p.miners<3&&p.minerBuild<=0&&p.farms.length>=1&&canM("red")){bm("red");return}
-  if(p.farms.length<7&&p.farmBuild<=0&&p.wood>=FARM_COST&&p.food<10){bf("red");return}
-  if(p.miners<4&&p.minerBuild<=0&&state.time<420&&canM("red")){bm("red");return}
+  if(canF("red")){bf("red");return}
+  if(p.miners.length<2&&p.minerBuild<=0&&canM("red")){bm("red");return}
+  if(p.miners.length<4&&p.minerBuild<=0&&p.farms.some(f=>f.build<=0)&&canM("red")){bm("red");return}
+  if(p.miners.length<6&&p.minerBuild<=0&&state.time<540&&canM("red")){bm("red");return}
   aiTryTrain();
 }
-function update(dt){computerAI(dt);buildAndTrain(dt);miners(dt);laneArmies(dt);siegeFire(dt);state.time=Math.max(0,state.time-dt);if(state.blue.castle<=0){state.blue.castle=0;state.winner="red"}if(state.red.castle<=0){state.red.castle=0;state.winner="blue"}if(state.time<=0&&!state.winner)state.winner=state.blue.castle>state.red.castle?"blue":state.red.castle>state.blue.castle?"red":"draw"}
+function update(dt){computerAI(dt);buildAndTrain(dt);respawnResources(dt);miners(dt);laneArmies(dt);siegeFire(dt);state.time=Math.max(0,state.time-dt);if(state.blue.castle<=0){state.blue.castle=0;state.winner="red"}if(state.red.castle<=0){state.red.castle=0;state.winner="blue"}if(state.time<=0&&!state.winner)state.winner=state.blue.castle>state.red.castle?"blue":state.red.castle>state.blue.castle?"red":"draw"}
 function loop(ts){let dt=Math.min(.15,(ts-last)/1000);last=ts;if(!state.winner)update(dt);refreshPanel();render();snap();requestAnimationFrame(loop)}function lg(x){state.logs.push(x);if(state.logs.length>15)state.logs.shift()}
 function charArt(type){
   if(type==="farm")return '<span class="charSlot"><span class="char farmArt"><i class="barn"></i><i class="roof"></i><i class="door"></i><i class="sun"></i><i class="crop1"></i><i class="crop2"></i><i class="crop3"></i></span></span>';
@@ -219,25 +225,25 @@ function pct(done,total){return Math.max(0,Math.min(100,Math.round(done/total*10
 function progressBits(percent){return percent>0&&percent<100?'<span class="prodTrack"><i style="width:'+percent+'%"></i></span><span class="prodPct">'+percent+'%</span>':''}
 function panel(){
   if(!state)return;
-  let p=state[side],train=p.trainQ[0],farmCost=!p.farmEver?"FREE":FARM_COST+"W",nextFarm=p.farms.length?Math.ceil(Math.min(...p.farms)):0;
-  let farmPct=p.farmBuild>0?pct(FARM_TIME-p.farmBuild,FARM_TIME):0;
+  let p=state[side],train=p.trainQ[0],activeFarms=p.farms.filter(f=>f.build<=0).length,nextFarm=p.farms.length?Math.ceil(Math.min(...p.farms.map(f=>f.build>0?f.build:f.life))):0;
+  let farmPct=p.farmCooldown>0?pct(FARM_COOLDOWN-p.farmCooldown,FARM_COOLDOWN):0;
   let minerPct=p.minerBuild>0?pct(MINER_TIME-p.minerBuild,MINER_TIME):0;
   $("panel").innerHTML=
     '<div class="panelHead"><div class="name '+side+'Text">'+side.toUpperCase()+' KINGDOM</div><div class="muted">'+(vsComputer?"VS COMPUTER":"● CONNECTED")+'</div></div>'+
     '<div class="quickStats">'+
       '<span><b>'+Math.floor(p.food)+'</b> FOOD</span>'+
-      '<span><b>'+p.farms.length+'</b>/'+MAX_FARMS+' FARM</span>'+
-      '<span><b>'+p.miners+'</b> ⛏</span>'+
+      '<span><b>'+activeFarms+'</b>/'+MAX_FARMS+' FARM</span>'+
+      '<span><b>'+p.miners.length+'</b> ⛏</span>'+
       '<span><b>'+fieldCount(p)+'</b> ARMY</span>'+
       '<span>'+(vsComputer?("CPU "+Math.ceil(state.red.castle)+"HP"):(train?train.type[0].toUpperCase()+" "+Math.ceil(train.left)+"s":"QUEUE "+p.trainQ.length))+'</span>'+
     '</div>'+
     '<div class="controls">'+
-      '<button id="farmBtn" class="controlBtn '+(p.farmBuild>0?"busy ":(canF(side)?"ready ":""))+'" '+(canF(side)?"":"disabled")+'>'+
-        charArt("farm")+'<b>'+(p.farmBuild>0?"BUILDING FARM":"PLANT FARM")+'</b><small>'+farmCost+' • '+FARM_LIFE+'s life'+(nextFarm?' • next '+nextFarm+'s':'')+'</small>'+
+      '<button id="farmBtn" class="controlBtn '+(p.farmCooldown>0?"busy ":(canF(side)?"ready ":""))+'" '+(canF(side)?"":"disabled")+'>'+
+        charArt("farm")+'<b>'+(p.farmCooldown>0?"NEXT FARM "+Math.ceil(p.farmCooldown)+"s":"PLACE FARM")+'</b><small>Choose L1–L9 • '+Math.round(FARM_LIFE/60)+' min life'+(nextFarm?' • next expiry '+nextFarm+'s':'')+'</small>'+
         (canF(side)?'<span class="readyTag">READY</span>':'')+progressBits(farmPct)+
       '</button>'+
       '<button id="minerBtn" class="controlBtn miner '+(p.minerBuild>0?"busy ":(canM(side)?"ready ":""))+'" '+(canM(side)?"":"disabled")+'>'+
-        charArt("miner")+'<b>'+(p.minerBuild>0?"RECRUITING":"RECRUIT MINER")+'</b><small>2F</small>'+
+        charArt("miner")+'<b>'+(p.minerBuild>0?"RECRUITING":"RECRUIT MINER")+'</b><small>2F • then choose lane</small>'+
         (canM(side)?'<span class="readyTag">READY</span>':'')+progressBits(minerPct)+
       '</button>'+
       Object.entries(S).map(([t,q])=>{
@@ -249,21 +255,21 @@ function panel(){
       }).join("")+
     '</div>'+
     '<div class="detailResources">'+R.map(r=>'<div class="resource"><b>'+(r==="stone"?"ROCKS":r.toUpperCase())+' STOCK '+p[r]+'</b> • frontier '+remaining(r)+'<div class="bar"><i style="width:'+(remaining(r)/(LANE_MAX*3)*100)+'%;background:'+(r==="wood"?"#4caf50":r==="stone"?"#999":"#c1622c")+'"></i></div></div>').join("")+'</div>'+
-    '<div class="muted helpDesk">Every trained unit waits for you to choose L1–L9. Siege then parks beside the castle in that chosen lane. Farms expire and must be replanted.</div>';
+    '<div class="muted helpDesk">Farms, Miners, Soldiers, Heavies, and Siege all wait for your lane choice. Resources respawn without re-closing opened lanes.</div>';
   const press=(el,fn)=>{if(!el)return;el.addEventListener("pointerdown",e=>{e.preventDefault();fn()},{passive:false})};
   press($("farmBtn"),()=>send("farm"));
   press($("minerBtn"),()=>send("miner"));
   document.querySelectorAll("[data-p]").forEach(b=>press(b,()=>send("pawn",{p:b.dataset.p})));
 }
 function barr(i){
-  let e=$("b"+i),l=state.frontier[i],open=l.amt===0,ratio=l.amt/LANE_MAX,stage=ratio<=.34?" stage1":ratio<=.67?" stage2":"";
-  e.className="barrier "+l.res+stage+(open?" open":"");
-  if(open){e.innerHTML='<span class="resMeta"><b>LANE '+(i+1)+'</b><small>OPEN ↔</small></span>';return}
-  let art='<span class="resourceArt"><i></i><i></i><i></i></span>';
-  let label=l.res==="wood"?"TIMBER":l.res==="stone"?"ROCKS":"IRON ORE";
+  let e=$("b"+i),l=state.frontier[i],ratio=l.amt/LANE_MAX,stage=ratio<=.34?" stage1":ratio<=.67?" stage2":"",stocked=l.opened&&l.amt>0;
+  e.className="barrier "+l.res+stage+(l.opened?" open":"")+(stocked?" stocked":"");
+  let art='<span class="resourceArt"><i></i><i></i><i></i></span>',label=l.res==="wood"?"TIMBER":l.res==="stone"?"ROCKS":"IRON ORE";
+  if(l.opened&&l.amt===0){e.innerHTML='<span class="resMeta"><b>L'+(i+1)+' OPEN ↔</b><small>RESPAWN '+Math.ceil(l.respawn)+'s</small></span>';return}
+  if(l.opened){e.innerHTML=art+'<span class="resMeta"><b>L'+(i+1)+' OPEN • '+label+'</b><small>'+l.amt+' / '+LANE_MAX+'</small><span class="deplete">PASSAGE STAYS OPEN</span></span>';return}
   e.innerHTML=art+'<span class="resMeta"><b>L'+(i+1)+' '+label+'</b><small>'+l.amt+' / '+LANE_MAX+'</small><span class="deplete">'+Math.round(ratio*100)+'% REMAINS</span></span>';
 }
-function lx(x){return side==="blue"?x:x-100}function vis(x){return side==="blue"?x>=0&&x<=100:x>=100&&x<=200}
+function lx(x){return side==="blue"?x/2:(x-WORLD_EDGE)/2}function vis(x){return side==="blue"?x>=0&&x<=WORLD_EDGE:x>=WORLD_EDGE&&x<=WORLD_MAX}
 function renderGroup(s,lane,g){
   if(!g.pawns.length||!vis(g.x))return;
   let d=document.createElement("div");d.className="mob";d.style.left=lx(g.x)+"%";d.style.top=Y[lane]+"%";
@@ -278,7 +284,7 @@ function renderReady(){
   let unit=p.ready[0],d=document.createElement("div");d.className="readyDeploy "+side;
   d.innerHTML='<div class="miniChar">'+charArt(unit.type)+'</div><strong>PLACE '+unit.type.toUpperCase()+'</strong><small>'+p.ready.length+' awaiting lane</small>';
   $("board").appendChild(d);
-  for(let i=0;i<9;i++){let b=document.createElement("button");b.className="laneTarget "+side+(state.frontier[i].amt===0?" openLane":"");b.style.top=Y[i]+"%";b.textContent=i+1;b.title="Deploy to lane "+(i+1);b.addEventListener("pointerdown",e=>{e.preventDefault();send("deploy",{lane:i})},{passive:false});$("field").appendChild(b)}
+  for(let i=0;i<9;i++){let allowed=canDeployToLane(p,unit,i),b=document.createElement("button");b.className="laneTarget "+side+(state.frontier[i].opened?" openLane":"");b.style.top=Y[i]+"%";b.textContent=allowed?(i+1):"×";b.disabled=!allowed;b.title=allowed?"Deploy to lane "+(i+1):"Farm already in lane "+(i+1);if(allowed)b.addEventListener("pointerdown",e=>{e.preventDefault();send("deploy",{lane:i})},{passive:false});$("field").appendChild(b)}
 }
 function renderSiege(){
   let p=state[side];if(!p.sieges.length)return;
@@ -296,7 +302,12 @@ function animateRock(from,to,count=1,lane=4){
   let y=Y[Math.max(0,Math.min(8,lane))];
   for(let i=0;i<count;i++){let r=document.createElement("div");r.className="rockShot";r.style.left=startX+"%";r.style.top=y+"%";$("field").appendChild(r);let dx=endX-startX;r.animate([{transform:"translate(0,0) scale(.85)"},{transform:"translate("+dx/2+"vw,-70px) scale(1.12)",offset:.5},{transform:"translate("+dx+"vw,0) scale(.92)"}],{duration:1600+i*110,easing:"cubic-bezier(.25,.5,.45,1)"}).onfinish=()=>r.remove()}
 }
-function render(){if(!state)return;for(let i=0;i<9;i++)barr(i);let p=state[side],h=Math.max(0,p.castle);$("hpNum").textContent=Math.ceil(h)+" / "+CASTLE_HP+" HP";$("hpFill").style.width=(h/CASTLE_HP*100)+"%";$("field").querySelectorAll(".mob,.minerPack,.farmIcon,.trainingBadge,.laneTarget").forEach(x=>x.remove());$("board").querySelectorAll(".readyDeploy,.siegePark").forEach(x=>x.remove());renderArmies();renderReady();renderSiege();let ti=targetLane(side),t=ti>=0?state.frontier[ti].res:null;if(p.miners&&ti>=0){let d=document.createElement("div");d.className="minerPack";d.style.top=Y[ti]+"%";d.style.left=(side==="blue"?p.minerX:(p.minerX-100))+"%";d.textContent=(Math.abs(p.minerX-(side==="blue"?91:109))<1?"⛏ "+t.toUpperCase()+" L"+(ti+1)+" ":"⛏ TRAVEL ")+p.miners;$("field").appendChild(d)}if(p.farms.length||p.farmBuild>0){let d=document.createElement("div");d.className="farmIcon "+side;let next=p.farms.length?Math.ceil(Math.min(...p.farms)):0;d.textContent=p.farmBuild>0?"▤ FARM BUILD "+Math.ceil(p.farmBuild)+"s":"▤ FARMS "+p.farms.length+"/"+MAX_FARMS+(next?" • next "+next+"s":"");$("field").appendChild(d)}if(p.trainQ.length){let d=document.createElement("div");d.className="trainingBadge";d.textContent="TRAINING "+p.trainQ[0].type.toUpperCase()+" "+Math.ceil(p.trainQ[0].left)+"s • QUEUE "+p.trainQ.length;$("field").appendChild(d)}let openCount=state.frontier.filter(l=>l.amt===0).length;$("route").textContent=(vsComputer?"VS COMPUTER • ":"")+openCount+"/9 LANES OPEN • INVASION SPEED SLOWS IN ENEMY TERRITORY";let m=Math.floor(state.time/60),s=Math.floor(state.time%60).toString().padStart(2,"0");$("timer").textContent=m+":"+s;$("log").textContent=state.logs.slice(-3).join(" • ");$("win").classList.toggle("show",!!state.winner);if(state.winner)$("winText").textContent=state.winner==="draw"?"DRAW":state.winner.toUpperCase()+" WINS"}
+function renderFarmsAndMiners(){
+  let p=state[side];
+  p.farms.forEach(f=>{let d=document.createElement("div");d.className="farmLane "+side;d.style.position="absolute";d.style.zIndex="11";d.style.top=Y[f.lane]+"%";d.style.left=side==="blue"?"14%":"86%";d.style.transform="translate(-50%,-50%) scale(.7)";d.innerHTML=charArt("farm")+'<span style="position:absolute;left:35px;top:8px;white-space:nowrap;font-size:7px;font-weight:900;background:#081019cc;padding:2px 4px;border-radius:5px">L'+(f.lane+1)+' '+(f.build>0?"BUILD "+Math.ceil(f.build)+"s":"FARM "+Math.ceil(f.life)+"s")+'</span>';$("field").appendChild(d)});
+  p.miners.forEach(m=>{let d=document.createElement("div");d.className="minerPack";d.style.top=Y[m.lane]+"%";d.style.left=lx(m.x)+"%";let atEdge=Math.abs(m.x-(side==="blue"?188:212))<1;d.textContent=(atEdge?"⛏ MINING L":"⛏ TRAVEL L")+(m.lane+1);$("field").appendChild(d)})
+}
+function render(){if(!state)return;for(let i=0;i<9;i++)barr(i);let p=state[side],h=Math.max(0,p.castle);$("hpNum").textContent=Math.ceil(h)+" / "+CASTLE_HP+" HP";$("hpFill").style.width=(h/CASTLE_HP*100)+"%";$("field").querySelectorAll(".mob,.minerPack,.farmIcon,.farmLane,.trainingBadge,.laneTarget").forEach(x=>x.remove());$("board").querySelectorAll(".readyDeploy,.siegePark").forEach(x=>x.remove());renderArmies();renderReady();renderSiege();renderFarmsAndMiners();if(p.trainQ.length){let d=document.createElement("div");d.className="trainingBadge";d.textContent="TRAINING "+p.trainQ[0].type.toUpperCase()+" "+Math.ceil(p.trainQ[0].left)+"s • QUEUE "+p.trainQ.length;$("field").appendChild(d)}let openCount=state.frontier.filter(l=>l.opened).length;$("route").textContent=(vsComputer?"VS COMPUTER • ":"")+openCount+"/9 LANES OPEN • DOUBLE-DISTANCE KINGDOM";let m=Math.floor(state.time/60),s=Math.floor(state.time%60).toString().padStart(2,"0");$("timer").textContent=m+":"+s;$("log").textContent=state.logs.slice(-3).join(" • ");$("win").classList.toggle("show",!!state.winner);if(state.winner)$("winText").textContent=state.winner==="draw"?"DRAW":state.winner.toUpperCase()+" WINS"}
 $("again").onclick=()=>send("rematch");
 })();
 </script></body></html>
