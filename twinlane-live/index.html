@@ -139,7 +139,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 <script>
 (() => {
   const API = 'https://qsmvgyyaemjmklceyikr.supabase.co/functions/v1/twinlane-api';
-  const PAGE = 'https://raw.githack.com/weldingworkforcealliance-sys/alpha/main/twinlane-live/index.html';
+  const PAGE = location.origin + location.pathname;
 
   const params = new URLSearchParams(location.search);
   const joinSession = params.get('session') || '';
