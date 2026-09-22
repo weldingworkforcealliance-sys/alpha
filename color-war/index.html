@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Color War Two Phone Test v0.7 — Slow Build</title>
+<title>Color War v0.8 — Two Player + Computer</title>
 <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#081019;color:#fff;font-family:Arial,sans-serif}button,input{font:inherit}button{touch-action:manipulation}
 .hidden{display:none!important}.wrap{padding:10px}.card,.panel,.board{background:#111a26;border:1px solid #ffffff1c;border-radius:16px}
 .lobby{max-width:760px;margin:20px auto;display:grid;gap:12px}.card{padding:16px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.btn{border:1px solid #ffffff28;border-radius:10px;background:#ffffff10;color:#fff;padding:10px;font-weight:800}.blueBtn{background:#1859c7}.redBtn{background:#a51f29}.btn:disabled{opacity:.25}
+.btn{border:1px solid #ffffff28;border-radius:10px;background:#ffffff10;color:#fff;padding:10px;font-weight:800}.blueBtn{background:#1859c7}.redBtn{background:#a51f29}.computerBtn{background:#5b3ab8}.btn:disabled{opacity:.25}
 input{width:100%;background:#08111c;color:#fff;border:1px solid #ffffff33;border-radius:10px;padding:12px;font-size:20px}.code{font-size:42px;font-weight:900;letter-spacing:.16em;text-align:center}
 .game{display:grid;grid-template-columns:260px 1fr;gap:10px}.panel{padding:12px;display:grid;gap:9px;align-content:start}.panelHead{display:flex;justify-content:space-between;align-items:center;gap:8px}.name{font-size:22px;font-weight:900}.blueText{color:#83aaff}.redText{color:#ff858d}.muted{color:#9ba9bb;font-size:11px}.big{font-size:23px;font-weight:900}.quickStats{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.quickStats span{background:#ffffff09;border-radius:8px;padding:7px;text-align:center;font-size:11px}.controls{display:grid;grid-template-columns:1fr;gap:7px}.controlBtn{position:relative;min-height:58px;text-align:left;border:2px solid #ffffff1b;background:#0d1622;color:#fff;border-radius:12px;padding:8px 10px;font-weight:900}.controlBtn.ready{border-color:#ffffff88;animation:p 1s infinite alternate}.controlBtn:disabled{opacity:.25;animation:none}.controlBtn b{display:block;font-size:15px}.controlBtn small{font-size:10px;color:#bac6d6}.controlBtn em{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:22px;font-style:normal}.controlBtn.miner{border-color:#d8b35d;background:#392d16}.detailResources{display:grid;gap:5px}.helpDesk{line-height:1.35}
 .row{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#ffffff09;border-radius:9px;padding:8px}.resource{background:#ffffff08;border-radius:8px;padding:7px;font-size:10px}.bar{height:6px;background:#0008;border-radius:5px;overflow:hidden;margin-top:4px}.bar i{display:block;height:100%}
@@ -55,11 +55,17 @@ input{width:100%;background:#08111c;color:#fff;border:1px solid #ffffff33;border
 </head>
 <body><div class="wrap">
 <section id="lobby" class="lobby">
-<div class="card"><h1>COLOR WAR — TWO PHONE TEST v0.7</h1><div class="muted">Blue phone sits on the left. Red phone sits on the right. Their touching screen edges are the kingdom border.</div></div>
+<div class="card"><h1>COLOR WAR — v0.8</h1><div class="muted">Play across two phones, or play Blue against the computer on one device.</div></div>
 <div class="grid2">
 <div class="card"><h3>BLUE PHONE</h3><button id="createBtn" class="btn blueBtn">CREATE GAME</button><div id="hostArea" class="hidden"><div class="muted" style="text-align:center;margin-top:10px">ROOM CODE</div><div id="roomCode" class="code">----</div></div></div>
 <div class="card"><h3>RED PHONE</h3><input id="joinCode" maxlength="4" inputmode="numeric" placeholder="4-digit code"><button id="joinBtn" class="btn redBtn" style="margin-top:8px;width:100%">JOIN GAME</button></div>
-</div><div id="status" class="muted" style="text-align:center">Not connected.</div>
+</div>
+<div class="card">
+  <h3>VS COMPUTER</h3>
+  <div class="muted" style="margin-bottom:10px">You are Blue. The computer controls Red using the same economy, build times, miners, training, and combat rules.</div>
+  <button id="computerBtn" class="btn computerBtn" style="width:100%">PLAY VS COMPUTER</button>
+</div>
+<div id="status" class="muted" style="text-align:center">Choose a game mode.</div>
 </section>
 <section id="game" class="game hidden">
 <aside id="panel" class="panel"></aside>
@@ -74,24 +80,36 @@ input{width:100%;background:#08111c;color:#fff;border:1px solid #ffffff33;border
 (()=>{
 const P="cw-test-",MAX=12,TIME=600,CAP=24,R=["wood","stone","iron"],Y=[16.5,50,83.5],FARM_TIME=15,MINER_TIME=8,FOOD_TIME=6,MINER_TRAVEL=4,MINER_MINE=4;
 const S={soldier:{icon:"●",cost:{food:2,wood:1},hp:20,a:4,c:1,train:8},heavy:{icon:"■",cost:{food:3,iron:2},hp:45,a:3,c:2,train:12},siege:{icon:"▲",cost:{food:4,wood:1,stone:1,iron:1},hp:26,a:1,c:7,train:18}};
-let peer,conn,host=false,side=null,state,last=0,lastSend=0,audio,prev=null;
+let peer,conn,host=false,side=null,state,last=0,lastSend=0,audio,prev=null,vsComputer=false,aiClock=0;
 const $=x=>document.getElementById(x),other=s=>s==="blue"?"red":"blue";
-function fp(s){return{side:s,castle:100,food:4,foodClock:0,wood:0,stone:0,iron:0,farms:0,farmBuild:0,miners:0,minerBuild:0,minerX:s==="blue"?18:182,mine:0,pawns:[],trainQ:[],x:s==="blue"?10:190,atk:0,catk:0}}
+function fp(s){return{side:s,castle:100,food:4,foodClock:0,wood:0,stone:0,iron:0,farms:0,farmBuild:0,miners:0,minerBuild:0,minerX:s==="blue"?18:182,mine:0,pawns:[],trainQ:[],x:s==="blue"?10:190,atk:0,catk:0,aiCycle:0}}
 function fs(){return{blue:fp("blue"),red:fp("red"),dep:{wood:MAX,stone:MAX,iron:MAX},open:{wood:null,stone:null,iron:null},route:null,time:TIME,winner:null,logs:["Build a farm. Recruit miners. Food and troops now take time."]}}
 function unlock(){if(!audio)audio=new(AudioContext||webkitAudioContext)();if(audio.state==="suspended")audio.resume()}document.addEventListener("pointerdown",unlock,{passive:true});
 function fart(){unlock();if(!audio)return;let n=audio.currentTime,o=audio.createOscillator(),g=audio.createGain();o.type="sawtooth";o.frequency.setValueAtTime(125,n);o.frequency.exponentialRampToValueAtTime(52,n+.27);g.gain.setValueAtTime(.001,n);g.gain.exponentialRampToValueAtTime(.22,n+.02);g.gain.exponentialRampToValueAtTime(.001,n+.27);o.connect(g).connect(audio.destination);o.start(n);o.stop(n+.27)}
 function warp(n){unlock();if(audio)for(let i=0;i<Math.min(n,10);i++){let t=audio.currentTime+i*.05,o=audio.createOscillator(),g=audio.createGain();o.frequency.setValueAtTime(160,t);o.frequency.exponentialRampToValueAtTime(1000,t+.2);o.frequency.exponentialRampToValueAtTime(230,t+.4);g.gain.setValueAtTime(.001,t);g.gain.exponentialRampToValueAtTime(.05,t+.03);g.gain.exponentialRampToValueAtTime(.001,t+.4);o.connect(g).connect(audio.destination);o.start(t);o.stop(t+.42)}if(navigator.vibrate)navigator.vibrate(25);let e=$("edge");e.classList.remove("flash");void e.offsetWidth;e.classList.add("flash")}
 function hit(d){let c=$("castle"),h=$("hitNum");h.textContent="-"+Math.round(d);h.classList.remove("show");c.classList.remove("hit");void h.offsetWidth;h.classList.add("show");c.classList.add("hit");setTimeout(()=>c.classList.remove("hit"),360)}
 function code(){return String(Math.floor(1000+Math.random()*9000))}function status(x){$("status").textContent=x}
-$("createBtn").onclick=()=>{unlock();if(peer)peer.destroy();host=true;side="blue";let c=code();peer=new Peer(P+c);peer.on("open",()=>{$("hostArea").classList.remove("hidden");$("roomCode").textContent=c;status("Waiting for Red phone…")});peer.on("connection",x=>{conn=x;wire()});peer.on("error",()=>status("Connection error. Try another room."))};
-$("joinBtn").onclick=()=>{unlock();let c=$("joinCode").value.trim();if(!/^\d{4}$/.test(c)){status("Enter the 4-digit code.");return}if(peer)peer.destroy();host=false;side="red";peer=new Peer();peer.on("open",()=>{conn=peer.connect(P+c,{reliable:true});wire();status("Connecting…")});peer.on("error",()=>status("Connection error."))};
+$("createBtn").onclick=()=>{unlock();if(peer)peer.destroy();vsComputer=false;host=true;side="blue";let c=code();peer=new Peer(P+c);peer.on("open",()=>{$("hostArea").classList.remove("hidden");$("roomCode").textContent=c;status("Waiting for Red phone…")});peer.on("connection",x=>{conn=x;wire()});peer.on("error",()=>status("Connection error. Try another room."))};
+$("joinBtn").onclick=()=>{unlock();vsComputer=false;let c=$("joinCode").value.trim();if(!/^\d{4}$/.test(c)){status("Enter the 4-digit code.");return}if(peer)peer.destroy();host=false;side="red";peer=new Peer();peer.on("open",()=>{conn=peer.connect(P+c,{reliable:true});wire();status("Connecting…")});peer.on("error",()=>status("Connection error."))};
+$("computerBtn").onclick=()=>{
+  unlock();
+  if(peer)peer.destroy();
+  conn=null;
+  vsComputer=true;
+  host=true;
+  side="blue";
+  aiClock=0;
+  state=fs();
+  state.logs=["VS COMPUTER — both kingdoms follow the same build rules."];
+  launch();
+};
 function wire(){conn.on("open",()=>{if(host){state=fs();conn.send({t:"hello"});snap(1);launch()}});conn.on("data",m=>{if(m.t==="hello"&&!host)launch();else if(m.t==="snap"&&!host)recv(m.s);else if(m.t==="act"&&host)act(m);else if(m.t==="event"){if(m.e==="cross"&&m.to===side)warp(m.n);if(m.e==="hit"&&m.to===side)hit(m.d)}});conn.on("close",()=>{$("log").textContent="Other phone disconnected."})}
 function launch(){$("lobby").classList.add("hidden");$("game").classList.remove("hidden");cfg();panel();render();if(host){last=performance.now();requestAnimationFrame(loop)}}
 function cfg(){$("panel").className="panel "+side;$("board").className="board "+side+"View";$("zone").className="zone "+side;$("edge").className="edge "+side;$("castle").className="castle "+side;$("castle").textContent=side.toUpperCase()+" CASTLE";$("hp").className="hp "+side;$("hitNum").className="hitNum "+side}
 function snap(force=0){if(!host||!conn?.open)return;let n=performance.now();if(!force&&n-lastSend<100)return;lastSend=n;conn.send({t:"snap",s:state})}
 function recv(s){if(prev&&s[side].castle<prev[side].castle)hit(prev[side].castle-s[side].castle);state=s;prev=structuredClone(s);panel();render()}
 function send(a,x={}){if(host)act({t:"act",a,side,...x});else conn?.send({t:"act",a,side,...x})}
-function act(m){if(!state)return;if(m.a==="farm")bf(m.side);if(m.a==="miner")bm(m.side);if(m.a==="pawn")bp(m.side,m.p);if(m.a==="rematch"){state=fs();prev=null;snap(1)}}
+function act(m){if(!state)return;if(m.a==="farm")bf(m.side);if(m.a==="miner")bm(m.side);if(m.a==="pawn")bp(m.side,m.p);if(m.a==="rematch"){state=fs();prev=null;aiClock=0;if(vsComputer)state.logs=["REMATCH VS COMPUTER"];snap(1)}}
 function canF(s){let p=state?.[s];return p&&p.farms<3&&p.farmBuild<=0&&(p.farms===0||p.wood>=4)}
 function bf(s){if(!canF(s))return;let p=state[s];if(p.farms>0)p.wood-=4;p.farmBuild=FARM_TIME;lg(s.toUpperCase()+" FARM construction started");snap(1)}
 function canM(s){let p=state?.[s];return p&&p.food>=2&&p.miners<5&&p.minerBuild<=0}
@@ -112,24 +130,49 @@ function mobs(dt){let b=state.blue,r=state.red;
   if(!state.route){if(b.pawns.length)b.x=Math.min(94,b.x+1.4*dt);if(r.pawns.length)r.x=Math.max(106,r.x-1.4*dt);return}
   if(b.pawns.length&&r.pawns.length&&Math.abs(b.x-r.x)<=6){b.atk+=dt;r.atk+=dt;if(b.atk>=2.5||r.atk>=2.5){b.atk%=2.5;r.atk%=2.5;let ba=atk(b),ra=atk(r);hurt(r,ba);hurt(b,ra);if(!b.pawns.length)b.x=10;if(!r.pawns.length)r.x=190;lg("MOBS CLASH")}return}
   let ob=b.x,or=r.x;if(b.pawns.length)b.x=Math.min(196,b.x+1.9*dt);else b.x=10;if(r.pawns.length)r.x=Math.max(4,r.x-1.9*dt);else r.x=190;
-  if(ob<100&&b.x>=100){conn?.send({t:"event",e:"cross",to:"red",n:b.pawns.length});lg("BLUE crossed border")}
+  if(ob<100&&b.x>=100){if(vsComputer)warp(b.pawns.length);conn?.send({t:"event",e:"cross",to:"red",n:b.pawns.length});lg("BLUE crossed border")}
   if(or>100&&r.x<=100){warp(r.pawns.length);conn?.send({t:"event",e:"cross",to:"blue",n:r.pawns.length});lg("RED crossed border")}
   if(b.pawns.length&&b.x>=194){b.catk+=dt;if(b.catk>=3){b.catk%=3;let d=cd(b);r.castle-=d;conn?.send({t:"event",e:"hit",to:"red",d});lg("BLUE hits RED castle -"+d)}}
   if(r.pawns.length&&r.x<=6){r.catk+=dt;if(r.catk>=3){r.catk%=3;let d=cd(r);b.castle-=d;hit(d);conn?.send({t:"event",e:"hit",to:"blue",d});lg("RED hits BLUE castle -"+d)}}
 }
-function update(dt){buildAndTrain(dt);miners(dt);mobs(dt);state.time=Math.max(0,state.time-dt);if(state.blue.castle<=0){state.blue.castle=0;state.winner="red"}if(state.red.castle<=0){state.red.castle=0;state.winner="blue"}if(state.time<=0&&!state.winner)state.winner=state.blue.castle>state.red.castle?"blue":state.red.castle>state.blue.castle?"red":"draw"}
+function aiTryTrain(){
+  let p=state.red;
+  if(p.trainQ.length>=2)return false;
+  let pattern=state.route?["siege","heavy","soldier","heavy"]:["soldier","heavy","soldier","siege"];
+  for(let i=0;i<pattern.length;i++){
+    let t=pattern[(p.aiCycle||0+i)%pattern.length];
+    if(canP("red",t)){p.aiCycle=(p.aiCycle||0)+1;bp("red",t);return true}
+  }
+  for(let t of ["soldier","heavy","siege"])if(canP("red",t)){p.aiCycle=(p.aiCycle||0)+1;bp("red",t);return true}
+  return false
+}
+function computerAI(dt){
+  if(!vsComputer||!state||state.winner)return;
+  aiClock+=dt;
+  if(aiClock<1.5)return;
+  aiClock=0;
+  let p=state.red;
+  if(p.farms===0&&p.farmBuild<=0){bf("red");return}
+  if(p.miners<2&&p.minerBuild<=0&&canM("red")){bm("red");return}
+  if(p.farms===1&&p.farmBuild<=0&&p.wood>=4){bf("red");return}
+  if(p.miners<3&&p.minerBuild<=0&&p.farms>=1&&canM("red")){bm("red");return}
+  if(p.farms===2&&p.farmBuild<=0&&p.wood>=4&&p.food<6){bf("red");return}
+  if(p.miners<4&&p.minerBuild<=0&&state.time<420&&canM("red")){bm("red");return}
+  aiTryTrain();
+}
+function update(dt){computerAI(dt);buildAndTrain(dt);miners(dt);mobs(dt);state.time=Math.max(0,state.time-dt);if(state.blue.castle<=0){state.blue.castle=0;state.winner="red"}if(state.red.castle<=0){state.red.castle=0;state.winner="blue"}if(state.time<=0&&!state.winner)state.winner=state.blue.castle>state.red.castle?"blue":state.red.castle>state.blue.castle?"red":"draw"}
 function loop(ts){let dt=Math.min(.15,(ts-last)/1000);last=ts;if(!state.winner)update(dt);panel();render();snap();requestAnimationFrame(loop)}function lg(x){state.logs.push(x);if(state.logs.length>15)state.logs.shift()}
 function panel(){
   if(!state)return;
   let p=state[side],t=target(side),train=p.trainQ[0],farmCost=p.farms===0?"FREE":"4W";
   $("panel").innerHTML=
-    '<div class="panelHead"><div class="name '+side+'Text">'+side.toUpperCase()+' KINGDOM</div><div class="muted">● CONNECTED</div></div>'+
+    '<div class="panelHead"><div class="name '+side+'Text">'+side.toUpperCase()+' KINGDOM</div><div class="muted">'+(vsComputer?"VS COMPUTER":"● CONNECTED")+'</div></div>'+
     '<div class="quickStats">'+
       '<span><b>'+Math.floor(p.food)+'</b> FOOD</span>'+
       '<span><b>'+p.farms+'</b> FARM</span>'+
       '<span><b>'+p.miners+'</b> ⛏</span>'+
       '<span><b>'+p.pawns.length+'</b> MOB</span>'+
-      '<span>'+(train?train.type[0].toUpperCase()+" "+Math.ceil(train.left)+"s":"QUEUE "+p.trainQ.length)+'</span>'+
+      '<span>'+(vsComputer?("CPU "+Math.ceil(state.red.castle)+"HP"):(train?train.type[0].toUpperCase()+" "+Math.ceil(train.left)+"s":"QUEUE "+p.trainQ.length))+'</span>'+
     '</div>'+
     '<div class="controls">'+
       '<button id="farmBtn" class="controlBtn '+(canF(side)?"ready":"")+'" '+(canF(side)?"":"disabled")+'><b>'+(p.farmBuild>0?"FARM "+Math.ceil(p.farmBuild)+"s":"BUILD FARM")+'</b><small>'+farmCost+'</small><em>▤</em></button>'+
@@ -144,7 +187,7 @@ function panel(){
 }
 function barr(r,id){let e=$(id),n=state.dep[r];e.className="barrier "+r+(n===0?" open":"");e.innerHTML=n===0?"OPEN ↔":r.toUpperCase()+" "+n}function lx(x){return side==="blue"?x:x-100}function vis(x){return side==="blue"?x>=0&&x<=100:x>=100&&x<=200}
 function mob(s){let p=state[s];if(!p.pawns.length||!vis(p.x))return;let d=document.createElement("div");d.className="mob";d.style.left=lx(p.x)+"%";d.style.top=Y[state.route?R.indexOf(state.route):1]+"%";let l=document.createElement("div");l.className="mobLabel";l.textContent=s.toUpperCase()+" MOB ×"+p.pawns.length;d.appendChild(l);p.pawns.forEach((q,i)=>{let u=document.createElement("div");u.className="unit "+s+" "+q.type;u.style.left=(18+(i%4)*20)+"px";u.style.top=(22+Math.floor(i/4)*18)+"px";u.innerHTML='<div class="shape"></div>';u.onclick=e=>{e.stopPropagation();fart()};d.appendChild(u)});$("field").appendChild(d)}
-function render(){if(!state)return;barr("wood","woodB");barr("stone","stoneB");barr("iron","ironB");let p=state[side],h=Math.max(0,p.castle);$("hpNum").textContent=Math.ceil(h)+" HP";$("hpFill").style.width=h+"%";$("field").querySelectorAll(".mob,.minerPack,.farmIcon,.trainingBadge").forEach(x=>x.remove());mob("blue");mob("red");let t=target(side);if(p.miners&&t){let d=document.createElement("div");d.className="minerPack";d.style.top=Y[R.indexOf(t)]+"%";d.style.left=(side==="blue"?p.minerX:(p.minerX-100))+"%";d.textContent=(Math.abs(p.minerX-(side==="blue"?91:109))<1?"⛏ MINING ":"⛏ TRAVEL ")+p.miners;$("field").appendChild(d)}if(p.farms||p.farmBuild>0){let d=document.createElement("div");d.className="farmIcon "+side;d.textContent=p.farmBuild>0?"▤ FARM BUILD "+Math.ceil(p.farmBuild)+"s":"▤ FARM ×"+p.farms;$("field").appendChild(d)}if(p.trainQ.length){let d=document.createElement("div");d.className="trainingBadge";d.textContent="TRAINING "+p.trainQ[0].type.toUpperCase()+" "+Math.ceil(p.trainQ[0].left)+"s • QUEUE "+p.trainQ.length;$("field").appendChild(d)}$("route").textContent=state.route?state.route.toUpperCase()+" PASSAGE OPEN":"NO ROUTE OPEN";let m=Math.floor(state.time/60),s=Math.floor(state.time%60).toString().padStart(2,"0");$("timer").textContent=m+":"+s;$("log").textContent=state.logs.slice(-3).join(" • ");$("win").classList.toggle("show",!!state.winner);if(state.winner)$("winText").textContent=state.winner==="draw"?"DRAW":state.winner.toUpperCase()+" WINS"}
+function render(){if(!state)return;barr("wood","woodB");barr("stone","stoneB");barr("iron","ironB");let p=state[side],h=Math.max(0,p.castle);$("hpNum").textContent=Math.ceil(h)+" HP";$("hpFill").style.width=h+"%";$("field").querySelectorAll(".mob,.minerPack,.farmIcon,.trainingBadge").forEach(x=>x.remove());mob("blue");mob("red");let t=target(side);if(p.miners&&t){let d=document.createElement("div");d.className="minerPack";d.style.top=Y[R.indexOf(t)]+"%";d.style.left=(side==="blue"?p.minerX:(p.minerX-100))+"%";d.textContent=(Math.abs(p.minerX-(side==="blue"?91:109))<1?"⛏ MINING ":"⛏ TRAVEL ")+p.miners;$("field").appendChild(d)}if(p.farms||p.farmBuild>0){let d=document.createElement("div");d.className="farmIcon "+side;d.textContent=p.farmBuild>0?"▤ FARM BUILD "+Math.ceil(p.farmBuild)+"s":"▤ FARM ×"+p.farms;$("field").appendChild(d)}if(p.trainQ.length){let d=document.createElement("div");d.className="trainingBadge";d.textContent="TRAINING "+p.trainQ[0].type.toUpperCase()+" "+Math.ceil(p.trainQ[0].left)+"s • QUEUE "+p.trainQ.length;$("field").appendChild(d)}$("route").textContent=(vsComputer?"VS COMPUTER • ":"")+(state.route?state.route.toUpperCase()+" PASSAGE OPEN":"NO ROUTE OPEN");let m=Math.floor(state.time/60),s=Math.floor(state.time%60).toString().padStart(2,"0");$("timer").textContent=m+":"+s;$("log").textContent=state.logs.slice(-3).join(" • ");$("win").classList.toggle("show",!!state.winner);if(state.winner)$("winText").textContent=state.winner==="draw"?"DRAW":state.winner.toUpperCase()+" WINS"}
 $("again").onclick=()=>send("rematch");
 })();
 </script></body></html>
