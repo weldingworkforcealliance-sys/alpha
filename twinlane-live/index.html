@@ -352,21 +352,9 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   let hapticsOn = localStorage.getItem('corvumor_haptics') !== 'off';
   let audioCtx = null;
   let audioUnlocked = false;
-  let impactAudioPool = [];
   let impactAudioReady = false;
-  let impactAudioSource = '';
-  const IMPACT_AUDIO_SOURCES=[
-    {
-      url:'https://upload.wikimedia.org/wikipedia/commons/3/35/Quick_Pool_Break.webm',
-      start:.55,
-      duration:.22
-    },
-    {
-      url:'https://upload.wikimedia.org/wikipedia/commons/transcoded/5/5d/Pool_Sounds.ogg/Pool_Sounds.ogg.mp3',
-      start:.35,
-      duration:.20
-    }
-  ];
+  let bocceImpactBuffer = null;
+  let pallinoImpactBuffer = null;
   let lastPresentationKey = '';
   let impactCounter = 0;
   let lastImpactType = 'impact';
@@ -445,54 +433,85 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     }
   }
 
-  function prepareImpactAudio(){
-    if(impactAudioPool.length)return;
+  function buildResinImpactBuffer(ctx,kind='bocce'){
+    const duration=kind==='pallino'?.075:.095;
+    const length=Math.max(1,Math.floor(ctx.sampleRate*duration));
+    const buffer=ctx.createBuffer(1,length,ctx.sampleRate);
+    const data=buffer.getChannelData(0);
 
-    let chosen=null;
-    for(const item of IMPACT_AUDIO_SOURCES){
-      const probe=document.createElement('audio');
-      const type=item.url.endsWith('.webm')?'audio/webm':'audio/mpeg';
-      if(probe.canPlayType(type)){
-        chosen=item;
-        break;
-      }
+    const bodyFreq=kind==='pallino'?980:640;
+    const upperFreq=kind==='pallino'?1850:1280;
+    const lowFreq=kind==='pallino'?260:185;
+
+    let peak=0;
+
+    for(let i=0;i<length;i++){
+      const t=i/ctx.sampleRate;
+
+      // Very fast contact transient, then a short resin/composite body.
+      const attack=Math.min(1,t/.0015);
+      const envFast=attack*Math.exp(-t*(kind==='pallino'?78:62));
+      const envBody=Math.exp(-t*(kind==='pallino'?48:40));
+
+      const noise=(Math.random()*2-1);
+      const contact=noise*envFast*.42;
+      const body=Math.sin(2*Math.PI*bodyFreq*t)*envBody*.32;
+      const upper=Math.sin(2*Math.PI*upperFreq*t+.45)*envFast*.20;
+      const low=Math.sin(2*Math.PI*lowFreq*t+.2)*envBody*.16;
+
+      // Tiny initial knock adds the hard-sphere "clack" without a metallic ring.
+      const click=t<.003 ? (1-t/.003)*.30 : 0;
+
+      const sample=(contact+body+upper+low+click);
+      data[i]=sample;
+      peak=Math.max(peak,Math.abs(sample));
     }
 
-    chosen=chosen||IMPACT_AUDIO_SOURCES[IMPACT_AUDIO_SOURCES.length-1];
-    impactAudioSource=chosen.url;
+    // Normalize once at creation. No compressor/network/decoding during gameplay.
+    const scale=peak>0 ? .88/peak : 1;
+    for(let i=0;i<length;i++)data[i]*=scale;
 
-    impactAudioPool=Array.from({length:3},()=>{
-      const a=new Audio();
-      a.preload='auto';
-      a.src=chosen.url;
-      a.volume=.95;
-      a.addEventListener('canplaythrough',()=>{impactAudioReady=true;},{once:true});
-      a.addEventListener('loadeddata',()=>{impactAudioReady=true;},{once:true});
-      try{a.load();}catch{}
-      return a;
-    });
+    return buffer;
+  }
+
+  function prepareImpactAudio(){
+    if(impactAudioReady)return;
+    const ctx=ensureAudio();
+    if(!ctx)return;
+
+    try{
+      bocceImpactBuffer=buildResinImpactBuffer(ctx,'bocce');
+      pallinoImpactBuffer=buildResinImpactBuffer(ctx,'pallino');
+      impactAudioReady=Boolean(bocceImpactBuffer&&pallinoImpactBuffer);
+    }catch{
+      impactAudioReady=false;
+    }
   }
 
   function playImpactAudio(kind='impact'){
-    if(!soundOn)return false;
+    if(!soundOn || !audioUnlocked)return false;
     prepareImpactAudio();
 
-    const cfg=IMPACT_AUDIO_SOURCES.find(x=>x.url===impactAudioSource)||IMPACT_AUDIO_SOURCES[0];
-    const a=impactAudioPool.find(x=>x.paused || x.ended) || impactAudioPool[0];
-    if(!a)return false;
+    const ctx=ensureAudio();
+    if(!ctx || ctx.state!=='running')return false;
+
+    const buffer=kind==='pallino_hit'?pallinoImpactBuffer:bocceImpactBuffer;
+    if(!buffer)return false;
 
     try{
-      a.pause();
-      a.currentTime=cfg.start;
-      a.volume=kind==='pallino_hit'?.65:.98;
-      a.playbackRate=kind==='pallino_hit'?1.08:1;
-      const p=a.play();
-      if(p&&typeof p.catch==='function')p.catch(()=>{});
-      setTimeout(()=>{
-        try{
-          if(!a.paused)a.pause();
-        }catch{}
-      },Math.round(cfg.duration*1000));
+      const src=ctx.createBufferSource();
+      const gain=ctx.createGain();
+
+      src.buffer=buffer;
+      src.playbackRate.value=kind==='pallino_hit'
+        ? .96+Math.random()*.08
+        : .94+Math.random()*.10;
+
+      gain.gain.value=kind==='pallino_hit'?.46:.72;
+
+      src.connect(gain);
+      gain.connect(ctx.destination);
+      src.start();
       return true;
     }catch{
       return false;
@@ -1180,7 +1199,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       }else if(isHost){
         setStatus('Waiting for Screen 2 to scan the QR and join.');
       }
-      const audioState=impactAudioReady?'impact audio ready':(soundOn?'impact audio priming':'sound off');
+      const audioState=impactAudioReady?'bocce clack ready':(soundOn?'bocce clack priming':'sound off');
       debugEl.textContent='Active ball ('+Number(s.ball_x||50).toFixed(1)+', '+Number(s.ball_y||8).toFixed(1)+') · '+(Array.isArray(s.settled_balls)?s.settled_balls.length:0)+' settled · Pallino ('+Number(s.pallino_x||52).toFixed(1)+', '+Number(s.pallino_y||82).toFixed(1)+') · '+audioState;
       render();
     }catch(e){debugEl.textContent='Poll error: '+e.message;}
