@@ -565,7 +565,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
       src.buffer=woodRailImpactBuffer;
       src.playbackRate.value=(isPallino?.08:1)+Math.random()*.08;
-      gain.gain.value=isPallino?.34:.58;
+      gain.gain.value=isPallino?.48:.86;
 
       src.connect(gain);
       gain.connect(ctx.destination);
@@ -1160,6 +1160,10 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       if(msg?.event==='broadcast' && msg?.topic===realtimeTopic){
         const p=msg?.payload;
         if(p?.event==='physics')applyRealtimePhysics(p.payload);
+        if(p?.event==='rail_hit'){
+          const railKind=p?.payload?.kind==='wood_pallino'?'wood_pallino':'wood';
+          feedback(railKind);
+        }
         if(p?.event==='pallino_complete'){
           applyPallinoComplete(p.payload);
           void poll();
@@ -1483,18 +1487,20 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       if(o.x-o.r<8){
         const wallSpeed=Math.abs(o.vx);
         o.x=8+o.r;o.vx=Math.abs(o.vx)*.20;
-        if(wallSpeed>1.2 && wallNow-lastWoodFeedbackAt>160){
+        if(wallSpeed>.40 && wallNow-lastWoodFeedbackAt>160){
           lastWoodFeedbackAt=wallNow;
           feedback('wood_pallino');
+          realtimeSend('rail_hit',{kind:'wood_pallino',sent_at:Date.now()});
         }
       }
 
       if(o.x+o.r>92){
         const wallSpeed=Math.abs(o.vx);
         o.x=92-o.r;o.vx=-Math.abs(o.vx)*.20;
-        if(wallSpeed>1.2 && wallNow-lastWoodFeedbackAt>160){
+        if(wallSpeed>.40 && wallNow-lastWoodFeedbackAt>160){
           lastWoodFeedbackAt=wallNow;
           feedback('wood_pallino');
+          realtimeSend('rail_hit',{kind:'wood_pallino',sent_at:Date.now()});
         }
       }
 
@@ -1780,18 +1786,22 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         if(o.x-rx<8){
           const wallSpeed=Math.abs(o.vx);
           o.x=8+rx;o.vx=Math.abs(o.vx)*.28;
-          if(wallSpeed>1.6 && wallNow-lastWoodFeedbackAt>160){
+          if(wallSpeed>.55 && wallNow-lastWoodFeedbackAt>160){
             lastWoodFeedbackAt=wallNow;
-            feedback(o.type==='pallino'?'wood_pallino':'wood');
+            const railKind=o.type==='pallino'?'wood_pallino':'wood';
+            feedback(railKind);
+            realtimeSend('rail_hit',{kind:railKind,sent_at:Date.now()});
           }
         }
 
         if(o.x+rx>92){
           const wallSpeed=Math.abs(o.vx);
           o.x=92-rx;o.vx=-Math.abs(o.vx)*.28;
-          if(wallSpeed>1.6 && wallNow-lastWoodFeedbackAt>160){
+          if(wallSpeed>.55 && wallNow-lastWoodFeedbackAt>160){
             lastWoodFeedbackAt=wallNow;
-            feedback(o.type==='pallino'?'wood_pallino':'wood');
+            const railKind=o.type==='pallino'?'wood_pallino':'wood';
+            feedback(railKind);
+            realtimeSend('rail_hit',{kind:railKind,sent_at:Date.now()});
           }
         }
 
