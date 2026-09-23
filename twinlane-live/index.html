@@ -390,11 +390,10 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   let pallinoImpactBuffer = null;
   let woodRailImpactBuffer = null;
   let lastPresentationKey = '';
-  let impactCounter = 0;
-  let lastImpactType = 'impact';
-  let lastRemoteImpactCounter = 0;
-  let lastImpactFeedbackAt = 0;
-  let lastWoodFeedbackAt = 0;
+  let soundEventSeq = 0;
+  const impactSoundTimes = new Map();
+  const woodSoundTimes = new Map();
+  const remoteSoundEventIds = new Set();
   const hapticsSupported = typeof navigator.vibrate === 'function';
 
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
@@ -512,7 +511,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       const envFast=attack*Math.exp(-t*(kind==='pallino'?78:62));
       const envBody=Math.exp(-t*(kind==='pallino'?48:40));
 
-      const noise=(Math.random()*2-1);
+      const noise=((Math.sin((i+1)*12.9898)*43758.5453)%1)*2-1;
       const contact=noise*envFast*.42;
       const body=Math.sin(2*Math.PI*bodyFreq*t)*envBody*.32;
       const upper=Math.sin(2*Math.PI*upperFreq*t+.45)*envFast*.20;
@@ -551,7 +550,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       const thump=Math.sin(2*Math.PI*165*t+.15)*envBody*.34;
       const body=Math.sin(2*Math.PI*315*t+.55)*envBody*.24;
       const upper=Math.sin(2*Math.PI*610*t+.25)*envFast*.12;
-      const contact=(Math.random()*2-1)*envFast*.20;
+      const contact=((((Math.sin((i+1)*78.233)*12345.6789)%1)*2)-1)*envFast*.20;
       const click=t<.0025 ? (1-t/.0025)*.24 : 0;
 
       const sample=thump+body+upper+contact+click;
@@ -579,7 +578,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     }
   }
 
-  function playImpactAudio(kind='impact'){
+  function playImpactAudio(kind='impact',strength=2){
     if(!soundOn || !audioUnlocked)return false;
     prepareImpactAudio();
 
@@ -592,13 +591,16 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     try{
       const src=ctx.createBufferSource();
       const gain=ctx.createGain();
+      const s=clamp(Number(strength||2),.5,12);
 
       src.buffer=buffer;
       src.playbackRate.value=kind==='pallino_hit'
-        ? .96+Math.random()*.08
-        : .94+Math.random()*.10;
+        ? clamp(.99+s*.004,.99,1.04)
+        : clamp(.96+s*.004,.96,1.03);
 
-      gain.gain.value=kind==='pallino_hit'?.46:.72;
+      gain.gain.value=kind==='pallino_hit'
+        ? clamp(.32+s*.035,.36,.66)
+        : clamp(.48+s*.040,.54,.90);
 
       src.connect(gain);
       gain.connect(ctx.destination);
@@ -609,7 +611,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     }
   }
 
-  function playWoodRailImpact(isPallino=false){
+  function playWoodRailImpact(isPallino=false,strength=2){
     if(!soundOn || !audioUnlocked)return false;
     prepareImpactAudio();
 
@@ -619,10 +621,15 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     try{
       const src=ctx.createBufferSource();
       const gain=ctx.createGain();
+      const s=clamp(Number(strength||2),.4,14);
 
       src.buffer=woodRailImpactBuffer;
-      src.playbackRate.value=(isPallino?.08:1)+Math.random()*.08;
-      gain.gain.value=isPallino?.48:.86;
+      src.playbackRate.value=isPallino
+        ? clamp(1.06+s*.003,1.06,1.11)
+        : clamp(.98+s*.003,.98,1.04);
+      gain.gain.value=isPallino
+        ? clamp(.30+s*.030,.34,.62)
+        : clamp(.55+s*.035,.62,.96);
 
       src.connect(gain);
       gain.connect(ctx.destination);
@@ -653,7 +660,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     try{return navigator.vibrate(pattern)!==false;}catch{return false;}
   }
 
-  function feedback(kind){
+  function feedback(kind,strength=2){
     if(kind==='place'){
       tone(520,.045,.055);
       haptic(10);
@@ -663,27 +670,21 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       tone(360,.05,.045,.035);
       haptic(14);
     }
-    if(kind==='incoming'){
-      tone(310,.045,.045);
-    }
     if(kind==='impact'){
-      if(!playImpactAudio('impact'))tone(185,.045,.055,0,'triangle');
+      if(!playImpactAudio('impact',strength))tone(185,.045,.055,0,'triangle');
       haptic(18);
     }
     if(kind==='pallino_hit'){
-      if(!playImpactAudio('pallino_hit'))tone(330,.04,.04,0,'triangle');
+      if(!playImpactAudio('pallino_hit',strength))tone(330,.04,.04,0,'triangle');
       haptic(12);
     }
     if(kind==='wood'){
-      if(!playWoodRailImpact(false))tone(170,.055,.05,0,'triangle');
+      if(!playWoodRailImpact(false,strength))tone(170,.055,.05,0,'triangle');
       haptic(10);
     }
     if(kind==='wood_pallino'){
-      if(!playWoodRailImpact(true))tone(235,.045,.035,0,'triangle');
+      if(!playWoodRailImpact(true,strength))tone(235,.045,.035,0,'triangle');
       haptic(7);
-    }
-    if(kind==='settle'){
-      tone(390,.045,.035);
     }
     if(kind==='end'){
       tone(420,.08,.075);
@@ -702,8 +703,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     soundOn=!soundOn;
     localStorage.setItem('corvumor_sound',soundOn?'on':'off');
     syncFeedbackButtons();
-  applyStandardSetup();
-  if(soundOn)document.addEventListener('pointerdown',prepareImpactAudio,{once:true,passive:true});
+    if(soundOn)document.addEventListener('pointerdown',prepareImpactAudio,{once:true,passive:true});
     if(soundOn){
       await unlockAudio();
       tone(520,.07,.08);
@@ -725,6 +725,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   [soundBtn,joinSoundBtn].filter(Boolean).forEach(b=>b.addEventListener('click',toggleSound));
   [hapticsBtn,joinHapticsBtn].filter(Boolean).forEach(b=>b.addEventListener('click',toggleHaptics));
   syncFeedbackButtons();
+  applyStandardSetup();
 
   function updateGameHud(){
     if(!state)return;
@@ -1020,6 +1021,42 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   requestAnimationFrame(animateDisplay);
 
 
+  function nextSoundEventId(){
+    soundEventSeq+=1;
+    return shotSeq+':'+soundEventSeq;
+  }
+
+  function rememberRemoteSoundEvent(id){
+    if(!id)return true;
+    if(remoteSoundEventIds.has(id))return false;
+    remoteSoundEventIds.add(id);
+    if(remoteSoundEventIds.size>96){
+      const first=remoteSoundEventIds.values().next().value;
+      remoteSoundEventIds.delete(first);
+    }
+    return true;
+  }
+
+  function scheduleRemotePhysicalSound(payload){
+    if(!payload || !rememberRemoteSoundEvent(payload.id))return;
+
+    const kind=String(payload.kind||'impact');
+    const strength=Number(payload.strength||2);
+    const sentAt=Number(payload.sent_at||Date.now());
+    const adaptiveBuffer=clamp(
+      REALTIME_BUFFER_MS+realtimeJitterMs*1.2,
+      REALTIME_BUFFER_MS,
+      REALTIME_BUFFER_MAX_MS
+    );
+
+    const senderNow=remoteClockOffsetMs==null
+      ? sentAt
+      : Date.now()-remoteClockOffsetMs;
+    const delay=clamp(sentAt+adaptiveBuffer-senderNow,0,REALTIME_BUFFER_MAX_MS+80);
+
+    setTimeout(()=>feedback(kind,strength),delay);
+  }
+
   function realtimeSend(event,payload){
     if(!realtimeSocket || realtimeSocket.readyState!==WebSocket.OPEN || !realtimeReady || !realtimeTopic)return;
     realtimeRef+=1;
@@ -1042,7 +1079,6 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       realtimeFrames=[];
       remoteClockOffsetMs=null;
       realtimeJitterMs=0;
-      feedback('incoming');
     }
 
     shotSeq=seq;
@@ -1097,7 +1133,6 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
   function applyShotComplete(payload){
     if(!payload)return;
-    feedback('settle');
     const seq=Number(payload.seq||shotSeq);
     shotSeq=Math.max(shotSeq,seq);
     lastRealtimeFrameAt=performance.now();
@@ -1228,10 +1263,8 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       if(msg?.event==='broadcast' && msg?.topic===realtimeTopic){
         const p=msg?.payload;
         if(p?.event==='physics')applyRealtimePhysics(p.payload);
-        if(p?.event==='rail_hit'){
-          const railKind=p?.payload?.kind==='wood_pallino'?'wood_pallino':'wood';
-          feedback(railKind);
-        }
+        if(p?.event==='impact_hit')scheduleRemotePhysicalSound(p.payload);
+        if(p?.event==='rail_hit')scheduleRemotePhysicalSound(p.payload);
         if(p?.event==='pallino_complete'){
           applyPallinoComplete(p.payload);
           void poll();
@@ -1541,6 +1574,8 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     localSim=true;
     shotSeq+=1;
     state.ball_moving=true;
+    impactSoundTimes.clear();
+    woodSoundTimes.clear();
 
     const pallino={x:startX,y:startY,vx:0,vy:0,r:1.14,type:'pallino'};
     const ang=clamp(Math.atan2(dx,dy),-.55,.55);
@@ -1567,20 +1602,28 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       if(o.x-o.r<8){
         const wallSpeed=Math.abs(o.vx);
         o.x=8+o.r;o.vx=Math.abs(o.vx)*.20;
-        if(wallSpeed>.40 && wallNow-lastWoodFeedbackAt>160){
-          lastWoodFeedbackAt=wallNow;
-          feedback('wood_pallino');
-          realtimeSend('rail_hit',{kind:'wood_pallino',sent_at:Date.now()});
+        const woodKey=String(o.id||o.type||'ball')+'|L';
+        const lastWoodSound=woodSoundTimes.get(woodKey)||-Infinity;
+        if(wallSpeed>.40 && wallNow-lastWoodSound>85){
+          woodSoundTimes.set(woodKey,wallNow);
+          const railKind='wood_pallino';
+          const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
+          feedback(railKind,wallSpeed);
+          realtimeSend('rail_hit',soundPayload);
         }
       }
 
       if(o.x+o.r>92){
         const wallSpeed=Math.abs(o.vx);
         o.x=92-o.r;o.vx=-Math.abs(o.vx)*.20;
-        if(wallSpeed>.40 && wallNow-lastWoodFeedbackAt>160){
-          lastWoodFeedbackAt=wallNow;
-          feedback('wood_pallino');
-          realtimeSend('rail_hit',{kind:'wood_pallino',sent_at:Date.now()});
+        const woodKey=String(o.id||o.type||'ball')+'|R';
+        const lastWoodSound=woodSoundTimes.get(woodKey)||-Infinity;
+        if(wallSpeed>.40 && wallNow-lastWoodSound>85){
+          woodSoundTimes.set(woodKey,wallNow);
+          const railKind='wood_pallino';
+          const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
+          feedback(railKind,wallSpeed);
+          realtimeSend('rail_hit',soundPayload);
         }
       }
 
@@ -1588,10 +1631,14 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       if(o.y+o.r>100){
         const wallSpeed=Math.abs(o.vy);
         o.y=100-o.r;o.vy=-Math.abs(o.vy)*.10;
-        if(wallSpeed>.40 && wallNow-lastWoodFeedbackAt>160){
-          lastWoodFeedbackAt=wallNow;
-          feedback('wood_pallino');
-          realtimeSend('rail_hit',{kind:'wood_pallino',sent_at:Date.now()});
+        const woodKey=String(o.id||o.type||'ball')+'|B';
+        const lastWoodSound=woodSoundTimes.get(woodKey)||-Infinity;
+        if(wallSpeed>.40 && wallNow-lastWoodSound>85){
+          woodSoundTimes.set(woodKey,wallNow);
+          const railKind='wood_pallino';
+          const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
+          feedback(railKind,wallSpeed);
+          realtimeSend('rail_hit',soundPayload);
         }
       }
     }
@@ -1709,6 +1756,8 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     localSim=true;
     shotSeq+=1;
     state.ball_moving=true;
+    impactSoundTimes.clear();
+    woodSoundTimes.clear();
 
     const physicsVp=viewport()||{y0:0,y1:50};
     const pxPerWorldX=Math.max(1,laneEl.clientWidth)/100;
@@ -1763,11 +1812,20 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
       const impactStrength=Math.abs(rel);
       const impactNow=performance.now();
-      if(impactStrength>1.25 && impactNow-lastImpactFeedbackAt>180){
-        lastImpactFeedbackAt=impactNow;
-        impactCounter+=1;
-        lastImpactType=(a.type==='pallino'||b.type==='pallino')?'pallino_hit':'impact';
-        feedback(lastImpactType);
+      const pairKey=[String(a.id),String(b.id)].sort().join('|');
+      const lastPairSound=impactSoundTimes.get(pairKey)||-Infinity;
+
+      if(impactStrength>1.25 && impactNow-lastPairSound>70){
+        impactSoundTimes.set(pairKey,impactNow);
+        const impactKind=(a.type==='pallino'||b.type==='pallino')?'pallino_hit':'impact';
+        const soundPayload={
+          id:nextSoundEventId(),
+          kind:impactKind,
+          strength:impactStrength,
+          sent_at:Date.now()
+        };
+        feedback(impactKind,impactStrength);
+        realtimeSend('impact_hit',soundPayload);
       }
 
       const farContact=((a.y+b.y)*.5)>55;
@@ -1874,22 +1932,28 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         if(o.x-rx<8){
           const wallSpeed=Math.abs(o.vx);
           o.x=8+rx;o.vx=Math.abs(o.vx)*.28;
-          if(wallSpeed>.55 && wallNow-lastWoodFeedbackAt>160){
-            lastWoodFeedbackAt=wallNow;
-            const railKind=o.type==='pallino'?'wood_pallino':'wood';
-            feedback(railKind);
-            realtimeSend('rail_hit',{kind:railKind,sent_at:Date.now()});
+          const woodKey=String(o.id||o.type||'ball')+'|L';
+          const lastWoodSound=woodSoundTimes.get(woodKey)||-Infinity;
+          if(wallSpeed>.55 && wallNow-lastWoodSound>85){
+            woodSoundTimes.set(woodKey,wallNow);
+            const railKind=(o.type==='pallino'?'wood_pallino':'wood');
+            const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
+            feedback(railKind,wallSpeed);
+            realtimeSend('rail_hit',soundPayload);
           }
         }
 
         if(o.x+rx>92){
           const wallSpeed=Math.abs(o.vx);
           o.x=92-rx;o.vx=-Math.abs(o.vx)*.28;
-          if(wallSpeed>.55 && wallNow-lastWoodFeedbackAt>160){
-            lastWoodFeedbackAt=wallNow;
-            const railKind=o.type==='pallino'?'wood_pallino':'wood';
-            feedback(railKind);
-            realtimeSend('rail_hit',{kind:railKind,sent_at:Date.now()});
+          const woodKey=String(o.id||o.type||'ball')+'|R';
+          const lastWoodSound=woodSoundTimes.get(woodKey)||-Infinity;
+          if(wallSpeed>.55 && wallNow-lastWoodSound>85){
+            woodSoundTimes.set(woodKey,wallNow);
+            const railKind=(o.type==='pallino'?'wood_pallino':'wood');
+            const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
+            feedback(railKind,wallSpeed);
+            realtimeSend('rail_hit',soundPayload);
           }
         }
 
@@ -1897,11 +1961,14 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         if(o.y+ry>100){
           const wallSpeed=Math.abs(o.vy);
           o.y=100-ry;o.vy=-Math.abs(o.vy)*.16;
-          if(wallSpeed>.55 && wallNow-lastWoodFeedbackAt>160){
-            lastWoodFeedbackAt=wallNow;
-            const railKind=o.type==='pallino'?'wood_pallino':'wood';
-            feedback(railKind);
-            realtimeSend('rail_hit',{kind:railKind,sent_at:Date.now()});
+          const woodKey=String(o.id||o.type||'ball')+'|B';
+          const lastWoodSound=woodSoundTimes.get(woodKey)||-Infinity;
+          if(wallSpeed>.55 && wallNow-lastWoodSound>85){
+            woodSoundTimes.set(woodKey,wallNow);
+            const railKind=(o.type==='pallino'?'wood_pallino':'wood');
+            const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
+            feedback(railKind,wallSpeed);
+            realtimeSend('rail_hit',soundPayload);
           }
         }
       }
