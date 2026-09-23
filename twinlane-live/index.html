@@ -277,6 +277,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   let realtimeJitterMs = 0;
   const settledEls = new Map();
   let gesture = null;
+  let placementReady = false;
   let localSim = false;
   let lastSend = 0;
   let shotSeq = 0;
@@ -496,10 +497,10 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       launchHelp.classList.toggle('hidden',!(g.phase==='pallino'||g.phase==='bocce')||state?.ball_moving);
       if(g.phase==='pallino'){
         throwTitleEl.textContent=teamName(g.starting_team)+' · Pallino';
-        throwHelpEl.textContent='Place the small pallino in the start area, then flick it forward. It must stop in the far half without reaching the back wall.';
+        throwHelpEl.textContent='Tap the start area to place the pallino. Then swipe upward from it to throw. Tap again to reposition before throwing.';
       }else if(g.phase==='bocce'){
         throwTitleEl.textContent=teamName(g.current_team)+' · Bocce';
-        throwHelpEl.textContent='Place the bocce ball in the start area, release it, then flick forward.';
+        throwHelpEl.textContent='Tap the start area to place the bocce ball. Then swipe upward from it to throw. Tap again to reposition before throwing.';
       }
     }
 
@@ -894,6 +895,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       displayedSettledBalls=[];
       realtimeFrames=[];
       realtimeJitterMs=0;
+      placementReady=false;
       hostCreate.classList.add('hidden');hostPanel.classList.remove('hidden');viewPanel.classList.remove('hidden');
       document.getElementById('sessionId').textContent=session;
       const joinUrl=PAGE+'?session='+encodeURIComponent(session)+'&join='+encodeURIComponent(data.join_token);
@@ -934,10 +936,26 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   laneEl.addEventListener('pointerdown',(e)=>{
     if(!canThrow())return;
     const w=pointerToWorld(e);if(!w)return;
-    const bx=throwingPallino()?Number(state.pallino_x||50):Number(state.ball_x||50);
-    const by=throwingPallino()?Number(state.pallino_y||8):Number(state.ball_y||8);
-    if(Math.hypot(w.x-bx,w.y-by)>8)return;
-    gesture={mode:'pending',startX:bx,startY:by,x:w.x,y:w.y,t0:performance.now(),pallino:throwingPallino()};
+
+    const pallinoMode=throwingPallino();
+    const bx=pallinoMode?Number(state.pallino_x||50):Number(state.ball_x||50);
+    const by=pallinoMode?Number(state.pallino_y||8):Number(state.ball_y||8);
+    const nearBall=Math.hypot(w.x-bx,w.y-by)<=6;
+
+    // If the object has been placed and the user starts on it, this gesture is a throw.
+    // Otherwise the gesture is treated as a tap-to-place candidate.
+    gesture={
+      mode:placementReady && nearBall ? 'throw' : 'tap',
+      startX:bx,
+      startY:by,
+      downX:w.x,
+      downY:w.y,
+      x:w.x,
+      y:w.y,
+      t0:performance.now(),
+      pallino:pallinoMode
+    };
+
     laneEl.setPointerCapture?.(e.pointerId);
   });
 
@@ -945,23 +963,10 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     if(!gesture||!canThrow())return;
     const w=pointerToWorld(e);if(!w)return;
     gesture.x=w.x;gesture.y=w.y;
-    if(gesture.mode==='pending')gesture.mode=w.y>17?'throw':'place';
-    if(gesture.mode==='place'&&w.y<=17){
-      const bx=clamp(w.x,15,85),by=clamp(w.y,5,14);
-      if(gesture.pallino){
-        state.pallino_x=bx;state.pallino_y=by;
-        displayedPallino={x:bx,y:by};targetPallino={x:bx,y:by};
-        setStatus('Pallino placed. Release here, then touch it again and flick forward.');
-      }else{
-        state.ball_x=bx;state.ball_y=by;
-        displayedBall={x:bx,y:by};targetBall={x:bx,y:by};
-        setStatus(teamName(game().current_team)+' ball placed. Release here, then touch it again and flick forward.');
-      }
-    }
-    if(gesture.mode==='place'&&w.y>17)gesture.mode='throw';
 
     if(gesture.mode==='throw'){
-      const p1=worldToLocal(gesture.startX,gesture.startY),p2=worldToLocal(w.x,w.y);
+      const p1=worldToLocal(gesture.startX,gesture.startY);
+      const p2=worldToLocal(w.x,w.y);
       const dx=p2.x-p1.x,dy=p2.y-p1.y;
       const len=Math.hypot(dx,dy);
       flickLineEl.classList.remove('hidden');
@@ -969,46 +974,67 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       flickLineEl.style.top=p1.y+'px';
       flickLineEl.style.width=len+'px';
       flickLineEl.style.transform='rotate('+Math.atan2(dy,dx)+'rad)';
-    }else{
-      flickLineEl.classList.add('hidden');
     }
-    render();
   });
 
   laneEl.addEventListener('pointerup',(e)=>{
     if(!gesture)return;
     const w=pointerToWorld(e);
-    const g=gesture;gesture=null;
+    const g=gesture;
+    gesture=null;
     flickLineEl.classList.add('hidden');
     laneEl.releasePointerCapture?.(e.pointerId);
     if(!w)return;
 
-    if(g.mode!=='throw'&&w.y<=17){
-      const bx=clamp(w.x,15,85),by=clamp(w.y,5,14);
-      if(g.pallino){
-        state.pallino_x=bx;state.pallino_y=by;
-        displayedPallino={x:bx,y:by};targetPallino={x:bx,y:by};
-        void sendPhysics(displayedBall,displayedPallino,Array.isArray(state.settled_balls)?state.settled_balls:[],false,shotSeq);
-        setStatus('Pallino placed. Touch it again and flick forward.');
-      }else{
-        state.ball_x=bx;state.ball_y=by;
-        displayedBall={x:bx,y:by};targetBall={x:bx,y:by};
-        void sendPhysics(displayedBall,displayedPallino,Array.isArray(state.settled_balls)?state.settled_balls:[],false,shotSeq);
-        setStatus(teamName(game().current_team)+' ball placed. Touch it again and flick forward.');
+    if(g.mode==='tap'){
+      const moved=Math.hypot(w.x-g.downX,w.y-g.downY);
+
+      // A short tap anywhere inside the start box places/repositions the object.
+      if(moved<=5 && w.y>=5 && w.y<=14){
+        const px=clamp(w.x,15,85);
+        const py=clamp(w.y,5,14);
+
+        if(g.pallino){
+          state.pallino_x=px;state.pallino_y=py;
+          displayedPallino={x:px,y:py};targetPallino={x:px,y:py};
+          setStatus('Pallino placed. Swipe upward from it to throw, or tap again to reposition.');
+        }else{
+          state.ball_x=px;state.ball_y=py;
+          displayedBall={x:px,y:py};targetBall={x:px,y:py};
+          setStatus(teamName(game().current_team)+' ball placed. Swipe upward from it to throw, or tap again to reposition.');
+        }
+
+        placementReady=true;
+        void sendPhysics(
+          displayedBall,
+          displayedPallino,
+          Array.isArray(state.settled_balls)?state.settled_balls:[],
+          false,
+          shotSeq
+        );
+        render();
       }
       return;
     }
 
-    const dx=w.x-g.startX,dy=w.y-g.startY;
+    const dx=w.x-g.startX;
+    const dy=w.y-g.startY;
     const dist=Math.hypot(dx,dy);
     const duration=Math.max(.08,(performance.now()-g.t0)/1000);
-    if(dy<4||dist<5){setStatus('Flick forward to throw.');return;}
+
+    if(dy<4 || dist<5){
+      setStatus('Swipe upward from the placed '+(g.pallino?'pallino':'ball')+' to throw.');
+      return;
+    }
+
+    placementReady=false;
     if(g.pallino)startPallinoShot(g.startX,g.startY,dx,dy,duration);
     else startShot(g.startX,g.startY,dx,dy,duration);
   });
 
   laneEl.addEventListener('pointercancel',()=>{
-    gesture=null;flickLineEl.classList.add('hidden');
+    gesture=null;
+    flickLineEl.classList.add('hidden');
   });
 
   async function startPallinoShot(startX,startY,dx,dy,duration){
@@ -1017,7 +1043,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     shotSeq+=1;
     state.ball_moving=true;
 
-    const pallino={x:startX,y:startY,vx:0,vy:0,r:1.08,type:'pallino'};
+    const pallino={x:startX,y:startY,vx:0,vy:0,r:1.14,type:'pallino'};
     const ang=clamp(Math.atan2(dx,dy),-.55,.55);
     const flickDistance=Math.hypot(dx,dy);
     const gestureSpeed=flickDistance/duration;
@@ -1058,6 +1084,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
         state.ball_moving=false;
         localSim=false;
+        placementReady=false;
         realtimeFrames=[];
         realtimeJitterMs=0;
 
@@ -1155,10 +1182,10 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     shotSeq+=1;
     state.ball_moving=true;
 
-    const active={id:'active',x:startX,y:startY,vx:0,vy:0,m:1,r:1.92,type:'active'};
-    const pallino={id:'pallino',x:Number(state.pallino_x||52),y:Number(state.pallino_y||82),vx:0,vy:0,m:.35,r:1.08,type:'pallino'};
+    const active={id:'active',x:startX,y:startY,vx:0,vy:0,m:1,r:2.06,type:'active'};
+    const pallino={id:'pallino',x:Number(state.pallino_x||52),y:Number(state.pallino_y||82),vx:0,vy:0,m:.35,r:1.14,type:'pallino'};
     const settled=(Array.isArray(state.settled_balls)?state.settled_balls:[]).map((b)=>({
-      id:Number(b.id),x:Number(b.x),y:Number(b.y),team:b.team==='B'?'B':'A',vx:0,vy:0,m:1,r:1.92,type:'settled'
+      id:Number(b.id),x:Number(b.x),y:Number(b.y),team:b.team==='B'?'B':'A',vx:0,vy:0,m:1,r:2.06,type:'settled'
     }));
 
     const ang=clamp(Math.atan2(dx,dy),-.55,.55);
@@ -1233,6 +1260,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         displayedBall=targetBall={x:50,y:8};
         displayedPallino=targetPallino={x:pallino.x,y:pallino.y};
         localSim=false;
+        placementReady=false;
         netSample=null;
         netVelocity={ball:{x:0,y:0},pallino:{x:0,y:0}};
 
@@ -1370,6 +1398,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       displayedSettledBalls=[];
       realtimeFrames=[];
       realtimeJitterMs=0;
+      placementReady=false;
       realtimeSend('pallino_complete',{
         legal:false,pallino_x:50,pallino_y:8,
         game_state:state?.game_state,seq:shotSeq+1,sent_at:Date.now()
