@@ -779,6 +779,9 @@ body[data-view-mode="immersive"] #matchHud::before{
   let position = 'first';
   let state = null;
   let pollTimer = null;
+  let pollInFlight = false;
+  let lastRecoveryPollAt = 0;
+  let remoteShotActive = false;
   let displayedBall = {x:50,y:8};
   let targetBall = {x:50,y:8};
   let displayedPallino = {x:52,y:82};
@@ -1367,21 +1370,22 @@ body[data-view-mode="immersive"] #matchHud::before{
     independentEl.classList.add('hidden');
     renderSettledBalls();
     const g=game();
+    const seamExtra=state?.ball_moving?1.6:.15;
     ballEl.classList.toggle('team-a',g.current_team!=='B');
     ballEl.classList.toggle('team-b',g.current_team==='B');
 
     if(g.phase==='pallino'){
       ballEl.style.display='none';
-      positionObject(pallinoEl,displayedPallino,.15);
+      positionObject(pallinoEl,displayedPallino,seamExtra);
     }else{
       if(g.phase==='bocce' && !state?.ball_moving && position==='first' && role==='launch'){
-        positionObject(ballEl,displayedBall,.15);
+        positionObject(ballEl,displayedBall,seamExtra);
       }else if(g.phase==='bocce' || state?.ball_moving){
-        positionObject(ballEl,displayedBall,.15);
+        positionObject(ballEl,displayedBall,seamExtra);
       }else{
         ballEl.style.display='none';
       }
-      positionObject(pallinoEl,displayedPallino,.15);
+      positionObject(pallinoEl,displayedPallino,seamExtra);
     }
 
     if(role==='launch'&&position==='first'){
@@ -1418,6 +1422,11 @@ body[data-view-mode="immersive"] #matchHud::before{
   function animateDisplay() {
     if (!localSim && !(placementReady && role==='launch' && position==='first')) {
       const now=performance.now();
+      const realtimeAge=now-lastRealtimeFrameAt;
+      if(position==='second' && (remoteShotActive || state?.ball_moving) && realtimeAge>140 && now-lastRecoveryPollAt>140){
+        lastRecoveryPollAt=now;
+        void poll();
+      }
       const adaptiveBuffer = clamp(
         REALTIME_BUFFER_MS + realtimeJitterMs * 1.2,
         REALTIME_BUFFER_MS,
@@ -1536,6 +1545,7 @@ body[data-view-mode="immersive"] #matchHud::before{
     const excessDelay=Math.max(0, observedOffset-(remoteClockOffsetMs??observedOffset));
     realtimeJitterMs=Math.max(realtimeJitterMs*.92, excessDelay);
     lastRealtimeFrameAt=now;
+    remoteShotActive=Boolean(payload.moving);
 
     const frame={
       recvAt:now,
@@ -1585,6 +1595,7 @@ body[data-view-mode="immersive"] #matchHud::before{
 
   function applyShotComplete(payload){
     if(!payload)return;
+    remoteShotActive=false;
     const seq=Number(payload.seq||shotSeq);
     shotSeq=Math.max(shotSeq,seq);
     lastRealtimeFrameAt=performance.now();
@@ -1631,6 +1642,7 @@ body[data-view-mode="immersive"] #matchHud::before{
 
   function applyPallinoComplete(payload){
     if(!payload)return;
+    remoteShotActive=false;
     realtimeFrames=[];
     remoteClockOffsetMs=null;
     realtimeJitterMs=0;
@@ -1769,7 +1781,8 @@ body[data-view-mode="immersive"] #matchHud::before{
   }
 
   async function poll() {
-    if(!session||!token)return;
+    if(!session||!token||pollInFlight)return;
+    pollInFlight=true;
     try{
       const s=await api('GET',null,'?api=state&session='+encodeURIComponent(session)+'&token='+encodeURIComponent(token));
       const now=performance.now();
@@ -1777,6 +1790,9 @@ body[data-view-mode="immersive"] #matchHud::before{
       const newPallino={x:Number(s.pallino_x||52),y:Number(s.pallino_y||82)};
 
       const realtimeFresh=(now-lastRealtimeFrameAt)<350;
+
+      if(Boolean(s.ball_moving))remoteShotActive=true;
+      else if(remoteShotActive && !realtimeFresh && (now-lastRealtimeFrameAt)>500)remoteShotActive=false;
 
       if(!realtimeFresh){
         netSample={t:now,ball:newBall,pallino:newPallino};
@@ -1833,6 +1849,7 @@ body[data-view-mode="immersive"] #matchHud::before{
       debugEl.textContent='Active ball ('+Number(s.ball_x||50).toFixed(1)+', '+Number(s.ball_y||8).toFixed(1)+') · '+(Array.isArray(s.settled_balls)?s.settled_balls.length:0)+' settled · Pallino ('+Number(s.pallino_x||52).toFixed(1)+', '+Number(s.pallino_y||82).toFixed(1)+') · '+audioState;
       render();
     }catch(e){debugEl.textContent='Poll error: '+e.message;}
+    finally{pollInFlight=false;}
   }
 
   function startPolling(ms){
@@ -1880,7 +1897,7 @@ body[data-view-mode="immersive"] #matchHud::before{
       document.getElementById('qr').src=qrUrl;
       setStatus('Match created. Pair Screen 2 to begin.');
       connectRealtime();
-      startPolling(500);
+      startPolling(localScreen===2?250:500);
     }catch(e){setStatus('Create failed: '+e.message);}
   });
 
@@ -1899,7 +1916,7 @@ body[data-view-mode="immersive"] #matchHud::before{
       viewPanel.classList.remove('hidden');
       setStatus('Connected. Loading court…');
       connectRealtime();
-      startPolling(500);
+      startPolling(localScreen===2?250:500);
     }catch(e){setStatus('Join failed: '+e.message);}
   });
 
