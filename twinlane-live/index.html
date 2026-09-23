@@ -1328,34 +1328,40 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         if(o.y+o.r>100){o.y=100-o.r;o.vy=-Math.abs(o.vy)*.16;}
       }
 
-      for(const o of objs){
-        o.x+=o.vx*dt;
-        o.y+=o.vy*dt;
+      // Run physics at micro-step resolution so fast contact chains cannot tunnel
+      // through a second object between animation frames.
+      const substeps=Math.max(1,Math.ceil(dt/(1/180)));
+      const subdt=dt/substeps;
 
-        // Linear rolling resistance avoids the long exponential "creep" tail.
-        // Bocce balls keep useful speed across the court, then settle decisively.
-        const speed=Math.hypot(o.vx,o.vy);
-        if(speed>0){
-          const baseDecel=o.type==='pallino' ? 8.8 : 9.2;
-          const farHalfBoost=o.y>55 ? 1.65 : 0;
-          const deepEndBoost=o.y>85 ? 1.85 : 0;
-          const decel=baseDecel+farHalfBoost+deepEndBoost;
-          const nextSpeed=Math.max(0,speed-decel*dt);
-          const scale=nextSpeed/speed;
-          o.vx*=scale;
-          o.vy*=scale;
-          if(nextSpeed<.42){o.vx=0;o.vy=0;}
+      for(let step=0;step<substeps;step++){
+        for(const o of objs){
+          o.x+=o.vx*subdt;
+          o.y+=o.vy*subdt;
+
+          const speed=Math.hypot(o.vx,o.vy);
+          if(speed>0){
+            const baseDecel=o.type==='pallino' ? 8.8 : 9.2;
+            const farHalfBoost=o.y>55 ? 1.65 : 0;
+            const deepEndBoost=o.y>85 ? 1.85 : 0;
+            const decel=baseDecel+farHalfBoost+deepEndBoost;
+            const nextSpeed=Math.max(0,speed-decel*subdt);
+            const scale=nextSpeed/speed;
+            o.vx*=scale;
+            o.vy*=scale;
+            if(nextSpeed<.42){o.vx=0;o.vy=0;}
+          }
+
+          contain(o);
         }
 
-        contain(o);
-      }
-
-      // Multiple solver passes prevent collision chains from leaving tiny overlaps.
-      for(let solve=0;solve<3;solve++){
-        for(let i=0;i<objs.length;i++){
-          for(let j=i+1;j<objs.length;j++)collide(objs[i],objs[j]);
+        // Resolve every contact several times at each micro-step. This is what lets
+        // ball -> pallino -> settled-ball chains transfer motion correctly.
+        for(let solve=0;solve<3;solve++){
+          for(let i=0;i<objs.length;i++){
+            for(let j=i+1;j<objs.length;j++)collide(objs[i],objs[j]);
+          }
+          for(const o of objs)contain(o);
         }
-        for(const o of objs)contain(o);
       }
 
       const maxSpeed=Math.max(...objs.map(o=>Math.hypot(o.vx,o.vy)));
