@@ -32,6 +32,17 @@ type WorkspaceGroup = {
   rows: WorkspaceRow[];
 };
 
+function levelOf(group: WorkspaceGroup) {
+  const codes = group.rows.map((row) => row.course_code ?? '');
+  if (codes.some((code) => /\b(?:205|210|214|215|220|250)\b/.test(code))) return 2;
+  if (codes.some((code) => /\b(?:105|110|114|115|120|150)\b/.test(code))) return 1;
+  return /level\s*2|lvl\s*2/i.test(group.name) ? 2 : 1;
+}
+
+function className(group: WorkspaceGroup) {
+  return group.name.replace(/\s*[-–]?\s*(?:level|lvl)\s*[12]\b/gi, '').trim();
+}
+
 function courseLabel(row: WorkspaceRow) {
   return row.course_code || row.course_name || 'Course';
 }
@@ -197,8 +208,15 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
           Select Class
         </div>
 
-        <div style={{ display: 'flex', gap: '9px', flexWrap: 'wrap' }}>
-          {groups.map((group) => {
+        {[1, 2].map((level) => {
+          const levelGroups = groups.filter((group) => levelOf(group) === level);
+          if (!levelGroups.length) return null;
+          return <div key={level} style={{ display: 'grid', gap: '7px' }}>
+            <div style={{ color: 'var(--ltg-muted)', fontSize: '12px', fontWeight: 850 }}>
+              Level {level}
+            </div>
+            <div style={{ display: 'flex', gap: '9px', flexWrap: 'wrap' }}>
+          {levelGroups.map((group) => {
             const active = selectedGroup?.id === group.id;
             return (
               <button
@@ -222,21 +240,27 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
                   cursor: 'pointer',
                 }}
               >
-                {group.name}
+                {className(group)}
               </button>
             );
           })}
-        </div>
+            </div>
+          </div>;
+        })}
 
         {selectedGroup && (
           <div
             style={{
-              display: 'flex',
+              display: 'grid',
               gap: '8px',
-              flexWrap: 'wrap',
-              paddingTop: '2px',
+              paddingTop: '10px',
+              borderTop: '1px solid var(--ltg-border-soft)',
             }}
           >
+            <div style={{ color: 'var(--ltg-muted)', fontSize: '12px', fontWeight: 850 }}>
+              {selectedGroup.name} · Select course
+            </div>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {selectedGroup.rows.map((row) => {
               const active = selectedSectionId === row.section_id;
               return (
@@ -268,6 +292,7 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
                 </button>
               );
             })}
+            </div>
           </div>
         )}
       </div>
