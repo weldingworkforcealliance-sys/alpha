@@ -355,11 +355,13 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   let impactAudioReady = false;
   let bocceImpactBuffer = null;
   let pallinoImpactBuffer = null;
+  let woodRailImpactBuffer = null;
   let lastPresentationKey = '';
   let impactCounter = 0;
   let lastImpactType = 'impact';
   let lastRemoteImpactCounter = 0;
   let lastImpactFeedbackAt = 0;
+  let lastWoodFeedbackAt = 0;
   const hapticsSupported = typeof navigator.vibrate === 'function';
 
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
@@ -474,6 +476,37 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     return buffer;
   }
 
+  function buildWoodRailBuffer(ctx){
+    const duration=.13;
+    const length=Math.max(1,Math.floor(ctx.sampleRate*duration));
+    const buffer=ctx.createBuffer(1,length,ctx.sampleRate);
+    const data=buffer.getChannelData(0);
+
+    let peak=0;
+
+    for(let i=0;i<length;i++){
+      const t=i/ctx.sampleRate;
+      const attack=Math.min(1,t/.0012);
+      const envFast=attack*Math.exp(-t*52);
+      const envBody=Math.exp(-t*27);
+
+      // Short hardwood knock: low body, muted upper resonance, little tail.
+      const thump=Math.sin(2*Math.PI*165*t+.15)*envBody*.34;
+      const body=Math.sin(2*Math.PI*315*t+.55)*envBody*.24;
+      const upper=Math.sin(2*Math.PI*610*t+.25)*envFast*.12;
+      const contact=(Math.random()*2-1)*envFast*.20;
+      const click=t<.0025 ? (1-t/.0025)*.24 : 0;
+
+      const sample=thump+body+upper+contact+click;
+      data[i]=sample;
+      peak=Math.max(peak,Math.abs(sample));
+    }
+
+    const scale=peak>0 ? .90/peak : 1;
+    for(let i=0;i<length;i++)data[i]*=scale;
+    return buffer;
+  }
+
   function prepareImpactAudio(){
     if(impactAudioReady)return;
     const ctx=ensureAudio();
@@ -482,7 +515,8 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     try{
       bocceImpactBuffer=buildResinImpactBuffer(ctx,'bocce');
       pallinoImpactBuffer=buildResinImpactBuffer(ctx,'pallino');
-      impactAudioReady=Boolean(bocceImpactBuffer&&pallinoImpactBuffer);
+      woodRailImpactBuffer=buildWoodRailBuffer(ctx);
+      impactAudioReady=Boolean(bocceImpactBuffer&&pallinoImpactBuffer&&woodRailImpactBuffer);
     }catch{
       impactAudioReady=false;
     }
@@ -508,6 +542,30 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         : .94+Math.random()*.10;
 
       gain.gain.value=kind==='pallino_hit'?.46:.72;
+
+      src.connect(gain);
+      gain.connect(ctx.destination);
+      src.start();
+      return true;
+    }catch{
+      return false;
+    }
+  }
+
+  function playWoodRailImpact(isPallino=false){
+    if(!soundOn || !audioUnlocked)return false;
+    prepareImpactAudio();
+
+    const ctx=ensureAudio();
+    if(!ctx || ctx.state!=='running' || !woodRailImpactBuffer)return false;
+
+    try{
+      const src=ctx.createBufferSource();
+      const gain=ctx.createGain();
+
+      src.buffer=woodRailImpactBuffer;
+      src.playbackRate.value=(isPallino?.08:1)+Math.random()*.08;
+      gain.gain.value=isPallino?.34:.58;
 
       src.connect(gain);
       gain.connect(ctx.destination);
@@ -558,6 +616,14 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     if(kind==='pallino_hit'){
       if(!playImpactAudio('pallino_hit'))tone(330,.04,.04,0,'triangle');
       haptic(12);
+    }
+    if(kind==='wood'){
+      if(!playWoodRailImpact(false))tone(170,.055,.05,0,'triangle');
+      haptic(10);
+    }
+    if(kind==='wood_pallino'){
+      if(!playWoodRailImpact(true))tone(235,.045,.035,0,'triangle');
+      haptic(7);
     }
     if(kind==='settle'){
       tone(390,.045,.035);
@@ -1412,8 +1478,26 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     let finishing=false;
 
     function contain(o){
-      if(o.x-o.r<8){o.x=8+o.r;o.vx=Math.abs(o.vx)*.20;}
-      if(o.x+o.r>92){o.x=92-o.r;o.vx=-Math.abs(o.vx)*.20;}
+      const wallNow=performance.now();
+
+      if(o.x-o.r<8){
+        const wallSpeed=Math.abs(o.vx);
+        o.x=8+o.r;o.vx=Math.abs(o.vx)*.20;
+        if(wallSpeed>1.2 && wallNow-lastWoodFeedbackAt>160){
+          lastWoodFeedbackAt=wallNow;
+          feedback('wood_pallino');
+        }
+      }
+
+      if(o.x+o.r>92){
+        const wallSpeed=Math.abs(o.vx);
+        o.x=92-o.r;o.vx=-Math.abs(o.vx)*.20;
+        if(wallSpeed>1.2 && wallNow-lastWoodFeedbackAt>160){
+          lastWoodFeedbackAt=wallNow;
+          feedback('wood_pallino');
+        }
+      }
+
       if(o.y-o.r<0){o.y=o.r;o.vy=Math.abs(o.vy)*.10;}
       if(o.y+o.r>100){o.y=100-o.r;o.vy=-Math.abs(o.vy)*.10;}
     }
@@ -1691,8 +1775,26 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       function contain(o){
         const rx=o.pr/pxPerWorldX;
         const ry=o.pr/pxPerWorldY;
-        if(o.x-rx<8){o.x=8+rx;o.vx=Math.abs(o.vx)*.28;}
-        if(o.x+rx>92){o.x=92-rx;o.vx=-Math.abs(o.vx)*.28;}
+        const wallNow=performance.now();
+
+        if(o.x-rx<8){
+          const wallSpeed=Math.abs(o.vx);
+          o.x=8+rx;o.vx=Math.abs(o.vx)*.28;
+          if(wallSpeed>1.6 && wallNow-lastWoodFeedbackAt>160){
+            lastWoodFeedbackAt=wallNow;
+            feedback(o.type==='pallino'?'wood_pallino':'wood');
+          }
+        }
+
+        if(o.x+rx>92){
+          const wallSpeed=Math.abs(o.vx);
+          o.x=92-rx;o.vx=-Math.abs(o.vx)*.28;
+          if(wallSpeed>1.6 && wallNow-lastWoodFeedbackAt>160){
+            lastWoodFeedbackAt=wallNow;
+            feedback(o.type==='pallino'?'wood_pallino':'wood');
+          }
+        }
+
         if(o.y-ry<0){o.y=ry;o.vy=Math.abs(o.vy)*.16;}
         if(o.y+ry>100){o.y=100-ry;o.vy=-Math.abs(o.vy)*.16;}
       }
