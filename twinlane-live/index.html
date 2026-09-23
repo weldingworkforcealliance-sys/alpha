@@ -447,7 +447,6 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
     if(seq>shotSeq){
       realtimeFrames=[];
-    remoteClockOffsetMs=null;
       remoteClockOffsetMs=null;
     }
     shotSeq=seq;
@@ -507,6 +506,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     // Completion is a state transition, not another movement frame.
     // Never interpolate the finished ball backward to the launch position.
     realtimeFrames=[];
+    remoteClockOffsetMs=null;
 
     const settled=Array.isArray(payload.settled_balls)
       ? payload.settled_balls.map(b=>({id:Number(b.id),x:Number(b.x),y:Number(b.y)}))
