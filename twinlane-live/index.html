@@ -1225,40 +1225,49 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     setStatus('Ball '+Number(state.next_ball_number||1)+' rolling…');
 
     function collide(a,b){
-      const dxPx=(b.x-a.x)*pxPerWorldX;
-      const dyPx=(b.y-a.y)*pxPerWorldY;
+      const dx=b.x-a.x,dy=b.y-a.y;
+      const dxPx=dx*pxPerWorldX;
+      const dyPx=dy*pxPerWorldY;
       const dPx=Math.hypot(dxPx,dyPx);
       const minPx=a.pr+b.pr;
       if(!dPx||dPx>=minPx)return;
 
-      const nx=dxPx/dPx,ny=dyPx/dPx,overPx=minPx-dPx;
+      // Contact is detected from the visible pixel rims.
+      // Momentum is resolved in world space so balls keep believable mass.
+      const dWorld=Math.hypot(dx,dy);
+      if(!dWorld)return;
+      const nx=dx/dWorld,ny=dy/dWorld;
       const i1=1/a.m,i2=1/b.m,sum=i1+i2;
 
-      // Separate in pixel space, then convert the correction back to world space.
-      a.x-=((nx*overPx*(i1/sum))/pxPerWorldX);
-      a.y-=((ny*overPx*(i1/sum))/pxPerWorldY);
-      b.x+=((nx*overPx*(i2/sum))/pxPerWorldX);
-      b.y+=((ny*overPx*(i2/sum))/pxPerWorldY);
+      // Convert the visual overlap back into world distance along this normal.
+      const pxPerWorldAlongNormal=Math.max(
+        .0001,
+        Math.hypot(nx*pxPerWorldX,ny*pxPerWorldY)
+      );
+      const overWorld=(minPx-dPx)/pxPerWorldAlongNormal;
 
-      // Resolve velocity in the same pixel metric the player sees.
-      const avxPx=a.vx*pxPerWorldX,avyPx=a.vy*pxPerWorldY;
-      const bvxPx=b.vx*pxPerWorldX,bvyPx=b.vy*pxPerWorldY;
-      const rel=(bvxPx-avxPx)*nx+(bvyPx-avyPx)*ny;
+      a.x-=nx*overWorld*(i1/sum);
+      a.y-=ny*overWorld*(i1/sum);
+      b.x+=nx*overWorld*(i2/sum);
+      b.y+=ny*overWorld*(i2/sum);
+
+      const rvx=b.vx-a.vx,rvy=b.vy-a.vy;
+      const rel=rvx*nx+rvy*ny;
       if(rel>=0)return;
 
       const farContact=((a.y+b.y)*.5)>55;
       const deepContact=((a.y+b.y)*.5)>85;
-      const restitution=deepContact ? .24 : farContact ? .31 : .44;
-      const impulse=-(1+restitution)*rel/sum;
-      const ixPx=impulse*nx,iyPx=impulse*ny;
 
-      a.vx-=(ixPx*i1)/pxPerWorldX;
-      a.vy-=(iyPx*i1)/pxPerWorldY;
-      b.vx+=(ixPx*i2)/pxPerWorldX;
-      b.vy+=(iyPx*i2)/pxPerWorldY;
+      // Keep target-side impacts controlled without killing the reaction.
+      const restitution=deepContact ? .34 : farContact ? .39 : .48;
+      const impulse=-(1+restitution)*rel/sum;
+      const ix=impulse*nx,iy=impulse*ny;
+
+      a.vx-=ix*i1;a.vy-=iy*i1;
+      b.vx+=ix*i2;b.vy+=iy*i2;
 
       if(farContact){
-        const damping=deepContact ? .78 : .87;
+        const damping=deepContact ? .90 : .94;
         a.vx*=damping;a.vy*=damping;
         b.vx*=damping;b.vy*=damping;
       }
@@ -1353,7 +1362,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
       // Run physics at micro-step resolution so fast contact chains cannot tunnel
       // through a second object between animation frames.
-      const substeps=Math.max(1,Math.ceil(dt/(1/180)));
+      const substeps=Math.max(1,Math.ceil(dt/(1/144)));
       const subdt=dt/substeps;
 
       for(let step=0;step<substeps;step++){
