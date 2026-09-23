@@ -202,6 +202,208 @@ body[data-view-mode="immersive"] #launchHelp{
   body[data-view-mode="immersive"] #viewPanel .lane{height:440px}
 }
 
+
+/* Living Kingdoms visual pass 2 — presentation only. */
+body[data-view-mode="immersive"] #matchHud{
+  border-color:#7c6037;
+  background:
+    linear-gradient(180deg,#17180fF2,#0a0b08F7),
+    linear-gradient(90deg,#5f3c1d22,#0000 28%,#0000 72%,#5f3c1d22);
+  box-shadow:0 16px 32px #0008,inset 0 1px #efd99326;
+}
+body[data-view-mode="immersive"] .scoreboard{
+  gap:8px;
+  align-items:start;
+}
+body[data-view-mode="immersive"] .score-team{
+  position:relative;
+  border-radius:8px 8px 18px 18px;
+  padding:9px 12px 12px;
+  overflow:hidden;
+  box-shadow:0 7px 14px #0007,inset 0 1px #fff2;
+  clip-path:polygon(0 0,100% 0,100% 78%,88% 100%,12% 100%,0 78%);
+}
+body[data-view-mode="immersive"] .score-team.a{
+  background:
+    linear-gradient(180deg,#5f1e15,#32110d 72%,#1e0a08);
+  border-color:#bd8550;
+}
+body[data-view-mode="immersive"] .score-team.b{
+  background:
+    linear-gradient(180deg,#17452f,#0c2d20 72%,#071b13);
+  border-color:#b49b61;
+}
+body[data-view-mode="immersive"] .score-team::before{
+  content:"";
+  position:absolute;
+  inset:4px;
+  pointer-events:none;
+  border:1px solid #e2c57d45;
+  border-radius:5px 5px 14px 14px;
+}
+body[data-view-mode="immersive"] .score-num{
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:39px;
+  color:#f0ddb0;
+}
+body[data-view-mode="immersive"] .score-team .small{
+  color:#ead7aa;
+  letter-spacing:.12em;
+  font-family:Georgia,"Times New Roman",serif;
+}
+body[data-view-mode="immersive"] .balls-left{
+  color:#c9bb93;
+}
+body[data-view-mode="immersive"] .turnbox{
+  margin-top:4px;
+  min-width:122px;
+  border:1px solid #8a6b3d;
+  border-radius:7px;
+  background:
+    linear-gradient(180deg,#242217,#12130d);
+  box-shadow:0 6px 14px #0007,inset 0 0 0 2px #332716,inset 0 1px #f4dda42b;
+}
+body[data-view-mode="immersive"] .turnbox::before{
+  content:"♛";
+  display:block;
+  color:#cda85a;
+  font-size:16px;
+  line-height:1;
+  margin-bottom:3px;
+}
+body[data-view-mode="immersive"] .game-banner{
+  border-radius:6px;
+  border-color:#84663a;
+  background:
+    linear-gradient(180deg,#2a2115,#15110c);
+  box-shadow:inset 0 0 0 2px #3a2a18,0 5px 12px #0006;
+  font-family:Georgia,"Times New Roman",serif;
+  letter-spacing:.045em;
+}
+body[data-view-mode="immersive"] #viewPanel{
+  position:relative;
+  border-width:1px;
+  box-shadow:0 18px 36px #0009,inset 0 0 0 1px #d9b66b1f;
+}
+body[data-view-mode="immersive"] #viewPanel::before{
+  content:"";
+  position:absolute;
+  inset:4px;
+  pointer-events:none;
+  border:1px solid #d1aa5a30;
+  border-radius:12px;
+}
+body[data-view-mode="immersive"] #viewPanel .lane{
+  box-shadow:
+    inset 0 0 34px #0007,
+    inset 0 0 0 1px #e0bd7224,
+    0 8px 18px #0007;
+}
+body[data-view-mode="immersive"] #viewPanel[data-skin-view="near"] .lane::before{
+  background-position:center top;
+  background-size:100% 100%;
+}
+body[data-view-mode="immersive"] #viewPanel[data-skin-view="far"] .lane::before{
+  background-position:center top;
+  background-size:100% 100%;
+}
+body[data-view-mode="immersive"] #viewPanel .rails{
+  border-left-width:5px;
+  border-right-width:5px;
+  border-left-color:#a36e39;
+  border-right-color:#a36e39;
+  box-shadow:
+    -12px 0 0 #4b2f1b,
+    12px 0 0 #4b2f1b,
+    -18px 0 22px #0008,
+    18px 0 22px #0008,
+    inset 7px 0 7px #d49a5330,
+    inset -7px 0 7px #d49a5330;
+}
+body[data-view-mode="immersive"] #viewPanel[data-skin-view="far"] .rails{
+  border-top:6px solid #704522;
+  box-shadow:
+    -12px 0 0 #4b2f1b,
+    12px 0 0 #4b2f1b,
+    0 -7px 0 #3d2718,
+    -18px 0 22px #0008,
+    18px 0 22px #0008;
+}
+body[data-view-mode="immersive"] #viewPanel[data-skin-view="near"]::after,
+body[data-view-mode="immersive"] #viewPanel[data-skin-view="far"]::after{
+  position:absolute;
+  right:18px;
+  top:66px;
+  z-index:4;
+  pointer-events:none;
+  padding:6px 11px;
+  border:2px solid #8c6738;
+  border-radius:4px;
+  background:
+    linear-gradient(180deg,#3a2718,#1c120c);
+  color:#f0deb4;
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:12px;
+  letter-spacing:.08em;
+  box-shadow:0 6px 12px #0008,inset 0 0 0 1px #d1ad6440;
+}
+body[data-view-mode="immersive"] #viewPanel[data-skin-view="near"]::after{
+  content:"THROW END";
+}
+body[data-view-mode="immersive"] #viewPanel[data-skin-view="far"]::after{
+  content:"PALLINO END";
+}
+body[data-view-mode="immersive"] #launchHelp{
+  position:relative;
+  border-radius:7px;
+  background:
+    linear-gradient(180deg,#173725F5,#0b1911F8);
+  box-shadow:0 8px 18px #0007,inset 0 0 0 2px #332716,inset 0 1px #eed79624;
+}
+body[data-view-mode="immersive"] #launchHelp::before{
+  content:"♛";
+  color:#d3ad5c;
+  font-size:19px;
+  position:absolute;
+  left:11px;
+  top:9px;
+}
+body[data-view-mode="immersive"] #launchHelp .row{
+  padding-left:24px;
+}
+body[data-view-mode="immersive"] #throwTitle{
+  font-family:Georgia,"Times New Roman",serif;
+  color:#eddbad;
+  letter-spacing:.06em;
+}
+body[data-view-mode="immersive"] #throwHelp{
+  color:#bcae88;
+}
+body[data-view-mode="immersive"] #screenName{
+  font-family:Georgia,"Times New Roman",serif;
+  color:#ead7a5;
+  letter-spacing:.055em;
+}
+body[data-view-mode="immersive"] #screenPosition{
+  color:#9f9475;
+}
+body[data-view-mode="immersive"] #screenMeta{
+  border-radius:5px;
+  font-family:Georgia,"Times New Roman",serif;
+  letter-spacing:.08em;
+}
+@media(max-width:600px){
+  body[data-view-mode="immersive"] #viewPanel[data-skin-view="near"]::after,
+  body[data-view-mode="immersive"] #viewPanel[data-skin-view="far"]::after{
+    top:62px;
+    right:13px;
+    font-size:10px;
+    padding:5px 8px;
+  }
+  body[data-view-mode="immersive"] .score-num{font-size:34px}
+  body[data-view-mode="immersive"] .turnbox{min-width:106px}
+}
+
 </style>
 </head>
 <body>
