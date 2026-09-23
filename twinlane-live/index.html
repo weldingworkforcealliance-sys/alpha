@@ -30,12 +30,12 @@ label{display:grid;gap:6px;font-size:14px;font-weight:700}
 .rails{position:absolute;inset:0 10%;border-left:2px solid #4b586b;border-right:2px solid #4b586b;pointer-events:none}
 .start-zone{position:absolute;border:2px dashed #607089;border-radius:10px;background:#60708914;pointer-events:none}
 .start-label{position:absolute;font-size:10px;color:#95a3b6;font-weight:800;letter-spacing:.08em;pointer-events:none}
-.ball{display:none;position:absolute;width:30px;height:30px;border-radius:50%;background:#eef3fa;border:3px solid #7f90a8;transform:translate(-50%,50%);box-shadow:0 8px 18px #0008;touch-action:none}
+.ball{display:none;position:absolute;width:30px;height:30px;border-radius:50%;background:#eef3fa;border:2px solid #d8e2ef;outline:1px solid #3d4a5d;transform:translate(-50%,50%);box-shadow:0 4px 8px #0007;touch-action:none}
 .ball.team-a,.settled-ball.team-a{background:#d66a43;border-color:#ffd0bd}
 .ball.team-b,.settled-ball.team-b{background:#4f83c2;border-color:#bfdcff}
-.settled-ball{position:absolute;width:30px;height:30px;border-radius:50%;background:#cbd6e5;border:3px solid #667991;transform:translate(-50%,50%);box-shadow:0 8px 18px #0008;pointer-events:none}
+.settled-ball{position:absolute;width:30px;height:30px;border-radius:50%;background:#cbd6e5;border:2px solid #d8e2ef;outline:1px solid #3d4a5d;transform:translate(-50%,50%);box-shadow:0 4px 8px #0007;pointer-events:none}
 .settled-number{position:absolute;inset:0;display:grid;place-items:center;color:#17202b;font-size:10px;font-weight:900}
-.pallino{position:absolute;width:17px;height:17px;border-radius:50%;background:#dac992;border:2px solid #fff1c4;transform:translate(-50%,50%);box-shadow:0 5px 12px #0008;pointer-events:none}
+.pallino{position:absolute;width:17px;height:17px;border-radius:50%;background:#dac992;border:2px solid #fff1c4;outline:1px solid #665b38;transform:translate(-50%,50%);box-shadow:0 3px 6px #0007;pointer-events:none}
 .flick-line{position:absolute;height:2px;background:#dce6f4;transform-origin:left center;opacity:.8;pointer-events:none}
 .tag{display:inline-block;border:1px solid #394555;border-radius:999px;padding:5px 9px;font-size:12px;color:#aab4c2}
 .hidden{display:none!important}
@@ -1017,7 +1017,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     shotSeq+=1;
     state.ball_moving=true;
 
-    const pallino={x:startX,y:startY,vx:0,vy:0,r:1.15,type:'pallino'};
+    const pallino={x:startX,y:startY,vx:0,vy:0,r:1.08,type:'pallino'};
     const ang=clamp(Math.atan2(dx,dy),-.55,.55);
     const gestureSpeed=Math.hypot(dx,dy)/duration;
     const power=clamp(28+Math.hypot(dx,dy)*1.8+gestureSpeed*.045,30,100);
@@ -1104,7 +1104,9 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
       const speed=Math.hypot(pallino.vx,pallino.vy);
       if(speed>0){
-        const nextSpeed=Math.max(0,speed-8.8*dt);
+        const farHalfBoost=pallino.y>55 ? 1.65 : 0;
+        const deepEndBoost=pallino.y>85 ? 1.85 : 0;
+        const nextSpeed=Math.max(0,speed-(8.8+farHalfBoost+deepEndBoost)*dt);
         const scale=nextSpeed/speed;
         pallino.vx*=scale;pallino.vy*=scale;
         if(nextSpeed<.42){pallino.vx=0;pallino.vy=0;}
@@ -1148,10 +1150,10 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     shotSeq+=1;
     state.ball_moving=true;
 
-    const active={id:'active',x:startX,y:startY,vx:0,vy:0,m:1,r:2.0,type:'active'};
-    const pallino={id:'pallino',x:Number(state.pallino_x||52),y:Number(state.pallino_y||82),vx:0,vy:0,m:.35,r:1.15,type:'pallino'};
+    const active={id:'active',x:startX,y:startY,vx:0,vy:0,m:1,r:1.92,type:'active'};
+    const pallino={id:'pallino',x:Number(state.pallino_x||52),y:Number(state.pallino_y||82),vx:0,vy:0,m:.35,r:1.08,type:'pallino'};
     const settled=(Array.isArray(state.settled_balls)?state.settled_balls:[]).map((b)=>({
-      id:Number(b.id),x:Number(b.x),y:Number(b.y),team:b.team==='B'?'B':'A',vx:0,vy:0,m:1,r:2.0,type:'settled'
+      id:Number(b.id),x:Number(b.x),y:Number(b.y),team:b.team==='B'?'B':'A',vx:0,vy:0,m:1,r:1.92,type:'settled'
     }));
 
     const ang=clamp(Math.atan2(dx,dy),-.55,.55);
@@ -1268,7 +1270,10 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         // Bocce balls keep useful speed across the court, then settle decisively.
         const speed=Math.hypot(o.vx,o.vy);
         if(speed>0){
-          const decel=o.type==='pallino' ? 8.8 : 9.2;
+          const baseDecel=o.type==='pallino' ? 8.8 : 9.2;
+          const farHalfBoost=o.y>55 ? 1.65 : 0;
+          const deepEndBoost=o.y>85 ? 1.85 : 0;
+          const decel=baseDecel+farHalfBoost+deepEndBoost;
           const nextSpeed=Math.max(0,speed-decel*dt);
           const scale=nextSpeed/speed;
           o.vx*=scale;
