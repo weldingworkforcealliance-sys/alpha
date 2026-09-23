@@ -821,6 +821,10 @@ body[data-view-mode="immersive"] #matchHud::before{
   let latestRemoteSentAt = 0;
   let pendingPhysicalSounds = [];
   let pendingRemoteTransitions = [];
+  let renderLaneRect = null;
+  let renderViewport = null;
+  let lastHudDomKey = '';
+  let lastScreenDomKey = '';
   let soundOn = localStorage.getItem('corvumor_sound') !== 'off';
   let viewMode = localStorage.getItem('corvumor_view_mode') || 'immersive';
   let hapticsOn = localStorage.getItem('corvumor_haptics') !== 'off';
@@ -1188,6 +1192,24 @@ body[data-view-mode="immersive"] #matchHud::before{
     if(!state)return;
     const g=game();
     matchHud.classList.remove('hidden');
+
+    const presentationKey=[g.phase,g.end_number,g.score_a,g.score_b,g.winner||''].join(':');
+    if(presentationKey!==lastPresentationKey){
+      if(g.phase==='end_complete')feedback('end');
+      if(g.phase==='match_over')feedback('win');
+      lastPresentationKey=presentationKey;
+    }
+
+    const hudKey=[
+      teamName('A'),teamName('B'),
+      g.score_a,g.score_b,g.balls_a,g.balls_b,
+      g.end_number,g.phase,g.current_team,g.starting_team,
+      g.end_scoring_team||'',g.end_score||0,g.winner||'',role
+    ].join('|');
+
+    if(hudKey===lastHudDomKey)return;
+    lastHudDomKey=hudKey;
+
     playerANameHud.textContent=teamName('A').toUpperCase();
     playerBNameHud.textContent=teamName('B').toUpperCase();
     scoreAEl.textContent=String(Number(g.score_a||0));
@@ -1198,13 +1220,6 @@ body[data-view-mode="immersive"] #matchHud::before{
 
     endResultEl.classList.add('hidden');
     nextEndBtn.classList.add('hidden');
-
-    const presentationKey=[g.phase,g.end_number,g.score_a,g.score_b,g.winner||''].join(':');
-    if(presentationKey!==lastPresentationKey){
-      if(g.phase==='end_complete')feedback('end');
-      if(g.phase==='match_over')feedback('win');
-      lastPresentationKey=presentationKey;
-    }
 
     if(g.phase==='pallino'){
       turnLabelEl.textContent='PALLINO';
@@ -1252,9 +1267,9 @@ body[data-view-mode="immersive"] #matchHud::before{
   }
 
   function worldToLocal(x,y) {
-    const vp=viewport();
+    const vp=renderViewport||viewport();
     if (!vp) return null;
-    const r=laneEl.getBoundingClientRect();
+    const r=renderLaneRect||laneEl.getBoundingClientRect();
     return {
       x:(x/100)*r.width,
       y:r.height-((y-vp.y0)/(vp.y1-vp.y0))*r.height
@@ -1272,21 +1287,23 @@ body[data-view-mode="immersive"] #matchHud::before{
   }
 
   function positionObject(el,obj,visibleExtra=0) {
-    const vp=viewport();
+    const vp=renderViewport||viewport();
     if (!vp || obj.y<vp.y0-visibleExtra || obj.y>vp.y1+visibleExtra) {
       el.style.display='none';return;
     }
     const p=worldToLocal(obj.x,obj.y);
     if (!p){el.style.display='none';return;}
+    const r=renderLaneRect||laneEl.getBoundingClientRect();
     el.style.display='block';
     el.style.left=p.x+'px';
-    el.style.bottom=(laneEl.clientHeight-p.y)+'px';
+    el.style.bottom=(r.height-p.y)+'px';
   }
 
   function renderSettledBalls() {
-    const vp=viewport();
+    const vp=renderViewport||viewport();
     const balls=Array.isArray(displayedSettledBalls)?displayedSettledBalls:[];
-    ballsOnCourtEl.textContent=String(balls.length);
+    const ballCount=String(balls.length);
+    if(ballsOnCourtEl.textContent!==ballCount)ballsOnCourtEl.textContent=ballCount;
 
     const liveIds=new Set(balls.map(b=>Number(b.id)));
 
@@ -1323,9 +1340,10 @@ body[data-view-mode="immersive"] #matchHud::before{
         continue;
       }
 
+      const r=renderLaneRect||laneEl.getBoundingClientRect();
       el.style.display='block';
       el.style.left=p.x+'px';
-      el.style.bottom=(laneEl.clientHeight-p.y)+'px';
+      el.style.bottom=(r.height-p.y)+'px';
     }
   }
 
@@ -1348,19 +1366,26 @@ body[data-view-mode="immersive"] #matchHud::before{
 
   function render() {
     const vp=viewport();
-    viewPanel.dataset.skinView=position==='second'?'far':position==='first'?'near':'display';
-    if(position==='first'){
-      screenNameEl.textContent='Throw End';
-      screenPositionEl.textContent='Near Player';
-      screenMetaEl.textContent='LIVING KINGDOMS';
-    }else if(position==='second'){
-      screenNameEl.textContent='Pallino End';
-      screenPositionEl.textContent='Far End';
-      screenMetaEl.textContent='LIVING KINGDOMS';
-    }else{
-      screenNameEl.textContent='Match Display';
-      screenPositionEl.textContent=nice(role);
-      screenMetaEl.textContent='LIVING KINGDOMS';
+    renderViewport=vp;
+    renderLaneRect=vp?laneEl.getBoundingClientRect():null;
+
+    const screenKey=position+'|'+role;
+    if(screenKey!==lastScreenDomKey){
+      lastScreenDomKey=screenKey;
+      viewPanel.dataset.skinView=position==='second'?'far':position==='first'?'near':'display';
+      if(position==='first'){
+        screenNameEl.textContent='Throw End';
+        screenPositionEl.textContent='Near Player';
+        screenMetaEl.textContent='LIVING KINGDOMS';
+      }else if(position==='second'){
+        screenNameEl.textContent='Pallino End';
+        screenPositionEl.textContent='Far End';
+        screenMetaEl.textContent='LIVING KINGDOMS';
+      }else{
+        screenNameEl.textContent='Match Display';
+        screenPositionEl.textContent=nice(role);
+        screenMetaEl.textContent='LIVING KINGDOMS';
+      }
     }
     updateGameHud();
 
@@ -1374,6 +1399,8 @@ body[data-view-mode="immersive"] #matchHud::before{
       startLabelEl.classList.add('hidden');
       launchHelp.classList.add('hidden');
       for(const el of settledEls.values())el.style.display='none';
+      renderLaneRect=null;
+      renderViewport=null;
       return;
     }
 
@@ -1414,6 +1441,8 @@ body[data-view-mode="immersive"] #matchHud::before{
     }
 
     renderStartZone();
+    renderLaneRect=null;
+    renderViewport=null;
   }
 
   function interpolateBalls(a,b,t){
@@ -1972,7 +2001,13 @@ body[data-view-mode="immersive"] #matchHud::before{
       const newBall={x:Number(s.ball_x||50),y:Number(s.ball_y||8)};
       const newPallino={x:Number(s.pallino_x||52),y:Number(s.pallino_y||82)};
 
-      const realtimeFresh=(now-lastRealtimeFrameAt)<350;
+      const realtimeAge=now-lastRealtimeFrameAt;
+      const realtimeFresh=realtimeAge<350;
+      const protectRemoteTimeline=
+        position==='second' &&
+        remoteShotActive &&
+        remotePlaybackTimeMs!=null &&
+        realtimeAge<700;
 
       if(Boolean(s.ball_moving)){
         remoteShotActive=true;
@@ -1980,13 +2015,28 @@ body[data-view-mode="immersive"] #matchHud::before{
         if(recoveryTeam==='A'||recoveryTeam==='B')activeShotTeam=recoveryTeam;
       }else if(remoteShotActive && !realtimeFresh && (now-lastRealtimeFrameAt)>500)remoteShotActive=false;
 
-      if(!realtimeFresh){
+      if(!realtimeFresh && !protectRemoteTimeline){
         netSample={t:now,ball:newBall,pallino:newPallino};
         realtimeFrames=[];
       }
 
-      state=s;
-      shotSeq=Math.max(shotSeq,Number(s.ball_seq||0));
+      if(protectRemoteTimeline && state){
+        state={
+          ...s,
+          ball_x:state.ball_x,
+          ball_y:state.ball_y,
+          pallino_x:state.pallino_x,
+          pallino_y:state.pallino_y,
+          ball_seq:state.ball_seq,
+          ball_moving:true,
+          settled_balls:state.settled_balls,
+          next_ball_number:state.next_ball_number,
+          game_state:state.game_state
+        };
+      }else{
+        state=s;
+        shotSeq=Math.max(shotSeq,Number(s.ball_seq||0));
+      }
 
       const preservePlacement = placementReady && placedObject && role==='launch' && position==='first';
       if(preservePlacement){
@@ -2001,12 +2051,12 @@ body[data-view-mode="immersive"] #matchHud::before{
           displayedBall={x:placedObject.x,y:placedObject.y};
           targetBall={x:placedObject.x,y:placedObject.y};
         }
-      }else if(!localSim && !realtimeFresh){
+      }else if(!localSim && !realtimeFresh && !protectRemoteTimeline){
         targetBall=newBall;
         targetPallino=newPallino;
       }
 
-      if(!localSim && !realtimeFresh){
+      if(!localSim && !realtimeFresh && !protectRemoteTimeline){
         displayedSettledBalls=Array.isArray(s.settled_balls)?s.settled_balls:[];
       }
       if(s.screen2_joined){
