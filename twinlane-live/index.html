@@ -132,20 +132,40 @@ body[data-view-mode="immersive"] #viewPanel .lane{
   isolation:isolate;
   border-radius:11px;
   border-color:#9a7444;
-  background-color:#b8945f;
+  background:#b8945f;
+}
+body[data-view-mode="immersive"] #viewPanel .lane::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
   background-repeat:no-repeat;
   background-position:center top;
   background-size:100% auto;
+  transform:translateZ(0);
+  backface-visibility:hidden;
+  will-change:transform;
 }
-body[data-view-mode="immersive"] #viewPanel[data-skin-view="near"] .lane{
+body[data-view-mode="immersive"] #viewPanel[data-skin-view="near"] .lane::before{
   background-image:
     linear-gradient(180deg,transparent 0 35%,#b89562ee 56%,#ba9664 100%),
     var(--lk-near-art);
 }
-body[data-view-mode="immersive"] #viewPanel[data-skin-view="far"] .lane{
+body[data-view-mode="immersive"] #viewPanel[data-skin-view="far"] .lane::before{
   background-image:
     linear-gradient(180deg,transparent 0 55%,#b89562ee 72%,#ba9664 100%),
     var(--lk-far-art);
+}
+body[data-view-mode="immersive"] #viewPanel .rails,
+body[data-view-mode="immersive"] #viewPanel .start-zone,
+body[data-view-mode="immersive"] #viewPanel .start-label,
+body[data-view-mode="immersive"] #viewPanel #settledLayer,
+body[data-view-mode="immersive"] #viewPanel .pallino,
+body[data-view-mode="immersive"] #viewPanel .ball,
+body[data-view-mode="immersive"] #viewPanel .flick-line,
+body[data-view-mode="immersive"] #viewPanel #independent{
+  z-index:1;
 }
 body[data-view-mode="immersive"] #viewPanel .rails{
   inset:0 8%;
