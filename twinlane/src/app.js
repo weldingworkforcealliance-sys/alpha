@@ -32,7 +32,7 @@ function frame(now){
   const state=buffer.sample(now);
   if(state){
     const local=render($('battlefield'),state,device,skin),v=viewport(device);
-    $('pause').textContent=latest?.running?'Pause':'Resume';
+    $('pause').textContent=latest?.running?'Pause':'Resume';$('mode').value=latest.mode;
     $('debug').textContent=`Device: ${device}\nViewport X: ${v.x0}–${v.x1}; Y: 0–800\nSession: ${session.credentials?.id}\nSkin: ${skin.id}\nShared ball X/Y: ${state.ball.x.toFixed(2)} / ${state.ball.y.toFixed(2)}\nLocal pixels X/Y: ${local.x.toFixed(2)} / ${local.y.toFixed(2)}\nTick: ${state.tick}\nSnapshot age: ${Math.round(now-lastReceived)} ms\nRender buffer: 120 ms`;
   }
   requestAnimationFrame(frame);
