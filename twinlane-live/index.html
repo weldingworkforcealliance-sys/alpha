@@ -1447,11 +1447,11 @@ body[data-view-mode="immersive"] #matchHud::before{
       if(position==='first'){
         screenNameEl.textContent='Throw End';
         screenPositionEl.textContent='Near Player';
-        screenMetaEl.textContent=monitorActive()?'LIVING KINGDOMS · MONITOR':'LIVING KINGDOMS';
+        screenMetaEl.textContent='LIVING KINGDOMS';
       }else if(position==='second'){
         screenNameEl.textContent='Pallino End';
         screenPositionEl.textContent='Far End';
-        screenMetaEl.textContent='LIVING KINGDOMS';
+        screenMetaEl.textContent=monitorActive()?'LIVING KINGDOMS · MONITOR':'LIVING KINGDOMS';
       }else{
         screenNameEl.textContent='Match Display';
         screenPositionEl.textContent=nice(role);
