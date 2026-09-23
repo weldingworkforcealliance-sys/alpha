@@ -1,0 +1,1801 @@
+{
+  "status": "staged_provisional_dated_draft_not_deployed",
+  "course_code": "WLD 150",
+  "guide_name": "WLD 150 Spring 6A 24-Day Instructor Guide Draft",
+  "planned_instructional_days": 24,
+  "calendar_basis": "PCCC Spring 2026 6A pattern shifted to Monday February 8 2027; 2027 dates unconfirmed",
+  "calendar_status": "provisional_awaiting_pccc_2027_confirmation",
+  "section_time": {
+    "start": "18:00",
+    "end": "21:45",
+    "minutes": 225
+  },
+  "paired_course": {
+    "course_code": "WLD 120",
+    "start": "17:00",
+    "end": "18:00",
+    "attendance_primary": true
+  },
+  "attendance_primary": false,
+  "grade_weights_from_supplied_syllabus": {
+    "primary_track_performance": 50,
+    "bend_test_plate_and_results": 25,
+    "advanced_fabrication_capstone": 15,
+    "professionalism_safety_attendance": 10
+  },
+  "protected_outcomes_from_supplied_syllabus": {
+    "CLO 1": "Demonstrate advanced proficiency in a selected welding process across multiple positions.",
+    "CLO 2": "Prepare certification-level groove test plates in the primary track.",
+    "CLO 3": "Complete destructive bend testing and interpret results.",
+    "CLO 4": "Execute accurate joint preparation and fit-up for multi-pass weldments.",
+    "CLO 5": "Apply pipe welding fundamentals safely and consistently.",
+    "CLO 6": "Compile a weld portfolio documenting progress and final performance in the primary track."
+  },
+  "days": [
+    {
+      "planner_day_number": 1,
+      "candidate_date": "2027-02-08",
+      "scheduled_date": "2027-02-08",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Refresh safety and assess starting skill",
+      "objective": "Refresh safety and assess starting skill",
+      "outcome_codes": [
+        "CLO 1"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: refresh safety and assess starting skill.",
+      "guided_practice": "Inspect stations and run a supervised baseline coupon in the candidate primary process.",
+      "independent_practice": "Inspect stations and run a supervised baseline coupon in the candidate primary process.",
+      "assessment": "Safety checklist and labeled baseline coupon",
+      "instructor_checks": "Safety checklist and labeled baseline coupon",
+      "evidence_check_for_understanding": "Safety checklist and labeled baseline coupon",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [
+        {
+          "source_filename": "03-occupational-orientation.pdf",
+          "access": "instructor_only",
+          "ltg_url": null
+        }
+      ],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Refresh safety and assess starting skill",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Inspect stations and run a supervised baseline coupon in the candidate primary process.",
+          "student_actions": "Inspect stations and run a supervised baseline coupon in the candidate primary process."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Inspect stations and run a supervised baseline coupon in the candidate primary process.",
+          "student_actions": "Inspect stations and run a supervised baseline coupon in the candidate primary process."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Safety checklist and labeled baseline coupon. Complete safe shutdown and handoff.",
+          "student_actions": "Submit safety checklist and labeled baseline coupon; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 2,
+      "candidate_date": "2027-02-09",
+      "scheduled_date": "2027-02-09",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Select primary specialization and performance targets",
+      "objective": "Select primary specialization and performance targets",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 6"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: select primary specialization and performance targets.",
+      "guided_practice": "Choose SMAW, GMAW, FCAW, or GTAW with instructor approval; identify positions and approved procedure.",
+      "independent_practice": "Choose SMAW, GMAW, FCAW, or GTAW with instructor approval; identify positions and approved procedure.",
+      "assessment": "Signed track plan and starting parameter log",
+      "instructor_checks": "Signed track plan and starting parameter log",
+      "evidence_check_for_understanding": "Signed track plan and starting parameter log",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Select primary specialization and performance targets",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Choose SMAW, GMAW, FCAW, or GTAW with instructor approval; identify positions and approved procedure.",
+          "student_actions": "Choose SMAW, GMAW, FCAW, or GTAW with instructor approval; identify positions and approved procedure."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Choose SMAW, GMAW, FCAW, or GTAW with instructor approval; identify positions and approved procedure.",
+          "student_actions": "Choose SMAW, GMAW, FCAW, or GTAW with instructor approval; identify positions and approved procedure."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Signed track plan and starting parameter log. Complete safe shutdown and handoff.",
+          "student_actions": "Submit signed track plan and starting parameter log; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 3,
+      "candidate_date": "2027-02-10",
+      "scheduled_date": "2027-02-10",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Prepare groove joint and fit-up variables",
+      "objective": "Prepare groove joint and fit-up variables",
+      "outcome_codes": [
+        "CLO 2",
+        "CLO 4"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: prepare groove joint and fit-up variables.",
+      "guided_practice": "Practice bevel, land, root gap, alignment, and tacking on training plates.",
+      "independent_practice": "Practice bevel, land, root gap, alignment, and tacking on training plates.",
+      "assessment": "Joint-preparation checklist",
+      "instructor_checks": "Joint-preparation checklist",
+      "evidence_check_for_understanding": "Joint-preparation checklist",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Prepare groove joint and fit-up variables",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Practice bevel, land, root gap, alignment, and tacking on training plates.",
+          "student_actions": "Practice bevel, land, root gap, alignment, and tacking on training plates."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Practice bevel, land, root gap, alignment, and tacking on training plates.",
+          "student_actions": "Practice bevel, land, root gap, alignment, and tacking on training plates."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Joint-preparation checklist. Complete safe shutdown and handoff.",
+          "student_actions": "Submit joint-preparation checklist; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 4,
+      "candidate_date": "2027-02-11",
+      "scheduled_date": "2027-02-11",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Run primary-track warm-up and first quality review",
+      "objective": "Run primary-track warm-up and first quality review",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 6"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: run primary-track warm-up and first quality review.",
+      "guided_practice": "Practice the selected process; identify one repeatable correction using the process rubric.",
+      "independent_practice": "Practice the selected process; identify one repeatable correction using the process rubric.",
+      "assessment": "Labeled coupon and instructor coaching note",
+      "instructor_checks": "Labeled coupon and instructor coaching note",
+      "evidence_check_for_understanding": "Labeled coupon and instructor coaching note",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Run primary-track warm-up and first quality review",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Practice the selected process; identify one repeatable correction using the process rubric.",
+          "student_actions": "Practice the selected process; identify one repeatable correction using the process rubric."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Practice the selected process; identify one repeatable correction using the process rubric.",
+          "student_actions": "Practice the selected process; identify one repeatable correction using the process rubric."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Labeled coupon and instructor coaching note. Complete safe shutdown and handoff.",
+          "student_actions": "Submit labeled coupon and instructor coaching note; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 5,
+      "candidate_date": "2027-02-15",
+      "scheduled_date": "2027-02-15",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Build repeatable root-pass technique",
+      "objective": "Build repeatable root-pass technique",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2",
+        "CLO 4"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: build repeatable root-pass technique.",
+      "guided_practice": "Prepare and weld groove coupons in the primary track under the approved WPS.",
+      "independent_practice": "Prepare and weld groove coupons in the primary track under the approved WPS.",
+      "assessment": "Root-pass visual check and parameters",
+      "instructor_checks": "Root-pass visual check and parameters",
+      "evidence_check_for_understanding": "Root-pass visual check and parameters",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Build repeatable root-pass technique",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Prepare and weld groove coupons in the primary track under the approved WPS.",
+          "student_actions": "Prepare and weld groove coupons in the primary track under the approved WPS."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Prepare and weld groove coupons in the primary track under the approved WPS.",
+          "student_actions": "Prepare and weld groove coupons in the primary track under the approved WPS."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Root-pass visual check and parameters. Complete safe shutdown and handoff.",
+          "student_actions": "Submit root-pass visual check and parameters; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 6,
+      "candidate_date": "2027-02-16",
+      "scheduled_date": "2027-02-16",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Control fill-pass sequence and interpass cleaning",
+      "objective": "Control fill-pass sequence and interpass cleaning",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2",
+        "CLO 4"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: control fill-pass sequence and interpass cleaning.",
+      "guided_practice": "Run multi-pass plates; inspect access, fusion, cleaning, and heat management between passes.",
+      "independent_practice": "Run multi-pass plates; inspect access, fusion, cleaning, and heat management between passes.",
+      "assessment": "Multi-pass log and instructor check",
+      "instructor_checks": "Multi-pass log and instructor check",
+      "evidence_check_for_understanding": "Multi-pass log and instructor check",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Control fill-pass sequence and interpass cleaning",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Run multi-pass plates; inspect access, fusion, cleaning, and heat management between passes.",
+          "student_actions": "Run multi-pass plates; inspect access, fusion, cleaning, and heat management between passes."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Run multi-pass plates; inspect access, fusion, cleaning, and heat management between passes.",
+          "student_actions": "Run multi-pass plates; inspect access, fusion, cleaning, and heat management between passes."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Multi-pass log and instructor check. Complete safe shutdown and handoff.",
+          "student_actions": "Submit multi-pass log and instructor check; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 7,
+      "candidate_date": "2027-02-17",
+      "scheduled_date": "2027-02-17",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Progress to the next approved position",
+      "objective": "Progress to the next approved position",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: progress to the next approved position.",
+      "guided_practice": "Repeat groove preparation and welding in the next position permitted by readiness and equipment.",
+      "independent_practice": "Repeat groove preparation and welding in the next position permitted by readiness and equipment.",
+      "assessment": "Position rubric and labeled plate",
+      "instructor_checks": "Position rubric and labeled plate",
+      "evidence_check_for_understanding": "Position rubric and labeled plate",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Progress to the next approved position",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Repeat groove preparation and welding in the next position permitted by readiness and equipment.",
+          "student_actions": "Repeat groove preparation and welding in the next position permitted by readiness and equipment."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Repeat groove preparation and welding in the next position permitted by readiness and equipment.",
+          "student_actions": "Repeat groove preparation and welding in the next position permitted by readiness and equipment."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Position rubric and labeled plate. Complete safe shutdown and handoff.",
+          "student_actions": "Submit position rubric and labeled plate; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 8,
+      "candidate_date": "2027-02-18",
+      "scheduled_date": "2027-02-18",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Diagnose discontinuities and correct technique",
+      "objective": "Diagnose discontinuities and correct technique",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2",
+        "CLO 6"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: diagnose discontinuities and correct technique.",
+      "guided_practice": "Compare inspected coupons with selected acceptance criteria; change one variable and retry.",
+      "independent_practice": "Compare inspected coupons with selected acceptance criteria; change one variable and retry.",
+      "assessment": "Defect and corrective-action record",
+      "instructor_checks": "Defect and corrective-action record",
+      "evidence_check_for_understanding": "Defect and corrective-action record",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [
+        {
+          "source_filename": "01-welding-inspection.pdf",
+          "access": "instructor_only",
+          "ltg_url": null
+        },
+        {
+          "source_filename": "02-visual-inspection.pdf",
+          "access": "instructor_only",
+          "ltg_url": null
+        },
+        {
+          "source_filename": "05-visual-inspection.pptx",
+          "access": "instructor_only",
+          "ltg_url": null
+        },
+        {
+          "source_filename": "06-ch-11-discontinuties.pptx",
+          "access": "instructor_only",
+          "ltg_url": null
+        }
+      ],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Diagnose discontinuities and correct technique",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Compare inspected coupons with selected acceptance criteria; change one variable and retry.",
+          "student_actions": "Compare inspected coupons with selected acceptance criteria; change one variable and retry."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Compare inspected coupons with selected acceptance criteria; change one variable and retry.",
+          "student_actions": "Compare inspected coupons with selected acceptance criteria; change one variable and retry."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Defect and corrective-action record. Complete safe shutdown and handoff.",
+          "student_actions": "Submit defect and corrective-action record; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 9,
+      "candidate_date": "2027-02-22",
+      "scheduled_date": "2027-02-22",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Refine primary-track groove quality",
+      "objective": "Refine primary-track groove quality",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: refine primary-track groove quality.",
+      "guided_practice": "Repeat the weakest assessed position and preserve the best plate for comparison.",
+      "independent_practice": "Repeat the weakest assessed position and preserve the best plate for comparison.",
+      "assessment": "Before/after plates and parameter log",
+      "instructor_checks": "Before/after plates and parameter log",
+      "evidence_check_for_understanding": "Before/after plates and parameter log",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Refine primary-track groove quality",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Repeat the weakest assessed position and preserve the best plate for comparison.",
+          "student_actions": "Repeat the weakest assessed position and preserve the best plate for comparison."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Repeat the weakest assessed position and preserve the best plate for comparison.",
+          "student_actions": "Repeat the weakest assessed position and preserve the best plate for comparison."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Before/after plates and parameter log. Complete safe shutdown and handoff.",
+          "student_actions": "Submit before/after plates and parameter log; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 10,
+      "candidate_date": "2027-02-23",
+      "scheduled_date": "2027-02-23",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Practice consistent joint prep across plates",
+      "objective": "Practice consistent joint prep across plates",
+      "outcome_codes": [
+        "CLO 2",
+        "CLO 4"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: practice consistent joint prep across plates.",
+      "guided_practice": "Reproduce bevel, land, root gap, and alignment without instructor adjustment.",
+      "independent_practice": "Reproduce bevel, land, root gap, and alignment without instructor adjustment.",
+      "assessment": "Fit-up checklist and measurement evidence",
+      "instructor_checks": "Fit-up checklist and measurement evidence",
+      "evidence_check_for_understanding": "Fit-up checklist and measurement evidence",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Practice consistent joint prep across plates",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Reproduce bevel, land, root gap, and alignment without instructor adjustment.",
+          "student_actions": "Reproduce bevel, land, root gap, and alignment without instructor adjustment."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Reproduce bevel, land, root gap, and alignment without instructor adjustment.",
+          "student_actions": "Reproduce bevel, land, root gap, and alignment without instructor adjustment."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Fit-up checklist and measurement evidence. Complete safe shutdown and handoff.",
+          "student_actions": "Submit fit-up checklist and measurement evidence; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 11,
+      "candidate_date": "2027-02-24",
+      "scheduled_date": "2027-02-24",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Complete a coached groove test rehearsal",
+      "objective": "Complete a coached groove test rehearsal",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: complete a coached groove test rehearsal.",
+      "guided_practice": "Perform a timed plate to the approved procedure; identify remaining quality gaps.",
+      "independent_practice": "Perform a timed plate to the approved procedure; identify remaining quality gaps.",
+      "assessment": "Rehearsal rubric and correction plan",
+      "instructor_checks": "Rehearsal rubric and correction plan",
+      "evidence_check_for_understanding": "Rehearsal rubric and correction plan",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [
+        {
+          "source_filename": "01-welding-inspection.pdf",
+          "access": "instructor_only",
+          "ltg_url": null
+        },
+        {
+          "source_filename": "02-visual-inspection.pdf",
+          "access": "instructor_only",
+          "ltg_url": null
+        },
+        {
+          "source_filename": "05-visual-inspection.pptx",
+          "access": "instructor_only",
+          "ltg_url": null
+        },
+        {
+          "source_filename": "06-ch-11-discontinuties.pptx",
+          "access": "instructor_only",
+          "ltg_url": null
+        }
+      ],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Complete a coached groove test rehearsal",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Perform a timed plate to the approved procedure; identify remaining quality gaps.",
+          "student_actions": "Perform a timed plate to the approved procedure; identify remaining quality gaps."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Perform a timed plate to the approved procedure; identify remaining quality gaps.",
+          "student_actions": "Perform a timed plate to the approved procedure; identify remaining quality gaps."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Rehearsal rubric and correction plan. Complete safe shutdown and handoff.",
+          "student_actions": "Submit rehearsal rubric and correction plan; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 12,
+      "candidate_date": "2027-02-25",
+      "scheduled_date": "2027-02-25",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Approve bend-test plate preparation",
+      "objective": "Approve bend-test plate preparation",
+      "outcome_codes": [
+        "CLO 2",
+        "CLO 4"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: approve bend-test plate preparation.",
+      "guided_practice": "Prepare the test plate and verify identification, fit-up, procedure, and inspection gate.",
+      "independent_practice": "Prepare the test plate and verify identification, fit-up, procedure, and inspection gate.",
+      "assessment": "Instructor-approved test plate record",
+      "instructor_checks": "Instructor-approved test plate record",
+      "evidence_check_for_understanding": "Instructor-approved test plate record",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [
+        {
+          "source_filename": "01-welding-inspection.pdf",
+          "access": "instructor_only",
+          "ltg_url": null
+        },
+        {
+          "source_filename": "02-visual-inspection.pdf",
+          "access": "instructor_only",
+          "ltg_url": null
+        },
+        {
+          "source_filename": "05-visual-inspection.pptx",
+          "access": "instructor_only",
+          "ltg_url": null
+        },
+        {
+          "source_filename": "06-ch-11-discontinuties.pptx",
+          "access": "instructor_only",
+          "ltg_url": null
+        }
+      ],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Approve bend-test plate preparation",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Prepare the test plate and verify identification, fit-up, procedure, and inspection gate.",
+          "student_actions": "Prepare the test plate and verify identification, fit-up, procedure, and inspection gate."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Prepare the test plate and verify identification, fit-up, procedure, and inspection gate.",
+          "student_actions": "Prepare the test plate and verify identification, fit-up, procedure, and inspection gate."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Instructor-approved test plate record. Complete safe shutdown and handoff.",
+          "student_actions": "Submit instructor-approved test plate record; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 13,
+      "candidate_date": "2027-03-01",
+      "scheduled_date": "2027-03-01",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Weld bend-test plate",
+      "objective": "Weld bend-test plate",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: weld bend-test plate.",
+      "guided_practice": "Complete supervised test weld and retain full traceability of parameters and passes.",
+      "independent_practice": "Complete supervised test weld and retain full traceability of parameters and passes.",
+      "assessment": "Labeled plate, WPS record, and visual check",
+      "instructor_checks": "Labeled plate, WPS record, and visual check",
+      "evidence_check_for_understanding": "Labeled plate, WPS record, and visual check",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [
+        {
+          "source_filename": "01-welding-inspection.pdf",
+          "access": "instructor_only",
+          "ltg_url": null
+        },
+        {
+          "source_filename": "02-visual-inspection.pdf",
+          "access": "instructor_only",
+          "ltg_url": null
+        },
+        {
+          "source_filename": "05-visual-inspection.pptx",
+          "access": "instructor_only",
+          "ltg_url": null
+        },
+        {
+          "source_filename": "06-ch-11-discontinuties.pptx",
+          "access": "instructor_only",
+          "ltg_url": null
+        }
+      ],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Weld bend-test plate",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Complete supervised test weld and retain full traceability of parameters and passes.",
+          "student_actions": "Complete supervised test weld and retain full traceability of parameters and passes."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Complete supervised test weld and retain full traceability of parameters and passes.",
+          "student_actions": "Complete supervised test weld and retain full traceability of parameters and passes."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Labeled plate, WPS record, and visual check. Complete safe shutdown and handoff.",
+          "student_actions": "Submit labeled plate, wps record, and visual check; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 14,
+      "candidate_date": "2027-03-02",
+      "scheduled_date": "2027-03-02",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Prepare destructive-test specimens",
+      "objective": "Prepare destructive-test specimens",
+      "outcome_codes": [
+        "CLO 2",
+        "CLO 3"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: prepare destructive-test specimens.",
+      "guided_practice": "Follow local cutting and specimen-preparation procedure; confirm identification and dimensions.",
+      "independent_practice": "Follow local cutting and specimen-preparation procedure; confirm identification and dimensions.",
+      "assessment": "Specimen preparation and chain-of-custody record",
+      "instructor_checks": "Specimen preparation and chain-of-custody record",
+      "evidence_check_for_understanding": "Specimen preparation and chain-of-custody record",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Prepare destructive-test specimens",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Follow local cutting and specimen-preparation procedure; confirm identification and dimensions.",
+          "student_actions": "Follow local cutting and specimen-preparation procedure; confirm identification and dimensions."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Follow local cutting and specimen-preparation procedure; confirm identification and dimensions.",
+          "student_actions": "Follow local cutting and specimen-preparation procedure; confirm identification and dimensions."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Specimen preparation and chain-of-custody record. Complete safe shutdown and handoff.",
+          "student_actions": "Submit specimen preparation and chain-of-custody record; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 15,
+      "candidate_date": "2027-03-03",
+      "scheduled_date": "2027-03-03",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Run destructive bends with instructor control",
+      "objective": "Run destructive bends with instructor control",
+      "outcome_codes": [
+        "CLO 3"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: run destructive bends with instructor control.",
+      "guided_practice": "Observe or perform authorized bending; record result against the selected test criteria.",
+      "independent_practice": "Observe or perform authorized bending; record result against the selected test criteria.",
+      "assessment": "Bend-test results and defect notes",
+      "instructor_checks": "Bend-test results and defect notes",
+      "evidence_check_for_understanding": "Bend-test results and defect notes",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [
+        {
+          "source_filename": "01-welding-inspection.pdf",
+          "access": "instructor_only",
+          "ltg_url": null
+        },
+        {
+          "source_filename": "02-visual-inspection.pdf",
+          "access": "instructor_only",
+          "ltg_url": null
+        },
+        {
+          "source_filename": "05-visual-inspection.pptx",
+          "access": "instructor_only",
+          "ltg_url": null
+        },
+        {
+          "source_filename": "06-ch-11-discontinuties.pptx",
+          "access": "instructor_only",
+          "ltg_url": null
+        }
+      ],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Run destructive bends with instructor control",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Observe or perform authorized bending; record result against the selected test criteria.",
+          "student_actions": "Observe or perform authorized bending; record result against the selected test criteria."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Observe or perform authorized bending; record result against the selected test criteria.",
+          "student_actions": "Observe or perform authorized bending; record result against the selected test criteria."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Bend-test results and defect notes. Complete safe shutdown and handoff.",
+          "student_actions": "Submit bend-test results and defect notes; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 16,
+      "candidate_date": "2027-03-04",
+      "scheduled_date": "2027-03-04",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Interpret bends and make a correction plan",
+      "objective": "Interpret bends and make a correction plan",
+      "outcome_codes": [
+        "CLO 3",
+        "CLO 6"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: interpret bends and make a correction plan.",
+      "guided_practice": "Identify failure location and likely causes; plan a targeted retest or improvement sequence.",
+      "independent_practice": "Identify failure location and likely causes; plan a targeted retest or improvement sequence.",
+      "assessment": "Result interpretation and corrective-action log",
+      "instructor_checks": "Result interpretation and corrective-action log",
+      "evidence_check_for_understanding": "Result interpretation and corrective-action log",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [
+        {
+          "source_filename": "01-welding-inspection.pdf",
+          "access": "instructor_only",
+          "ltg_url": null
+        },
+        {
+          "source_filename": "02-visual-inspection.pdf",
+          "access": "instructor_only",
+          "ltg_url": null
+        },
+        {
+          "source_filename": "05-visual-inspection.pptx",
+          "access": "instructor_only",
+          "ltg_url": null
+        },
+        {
+          "source_filename": "06-ch-11-discontinuties.pptx",
+          "access": "instructor_only",
+          "ltg_url": null
+        }
+      ],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Interpret bends and make a correction plan",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Identify failure location and likely causes; plan a targeted retest or improvement sequence.",
+          "student_actions": "Identify failure location and likely causes; plan a targeted retest or improvement sequence."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Identify failure location and likely causes; plan a targeted retest or improvement sequence.",
+          "student_actions": "Identify failure location and likely causes; plan a targeted retest or improvement sequence."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Result interpretation and corrective-action log. Complete safe shutdown and handoff.",
+          "student_actions": "Submit result interpretation and corrective-action log; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 17,
+      "candidate_date": "2027-03-08",
+      "scheduled_date": "2027-03-08",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Introduce pipe joint prep and 1G setup",
+      "objective": "Introduce pipe joint prep and 1G setup",
+      "outcome_codes": [
+        "CLO 4",
+        "CLO 5"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: introduce pipe joint prep and 1g setup.",
+      "guided_practice": "Inspect pipe material, prepare bevel/root gap, align and tack under supervision.",
+      "independent_practice": "Inspect pipe material, prepare bevel/root gap, align and tack under supervision.",
+      "assessment": "Pipe 1G fit-up and safety checklist",
+      "instructor_checks": "Pipe 1G fit-up and safety checklist",
+      "evidence_check_for_understanding": "Pipe 1G fit-up and safety checklist",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Introduce pipe joint prep and 1G setup",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Inspect pipe material, prepare bevel/root gap, align and tack under supervision.",
+          "student_actions": "Inspect pipe material, prepare bevel/root gap, align and tack under supervision."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Inspect pipe material, prepare bevel/root gap, align and tack under supervision.",
+          "student_actions": "Inspect pipe material, prepare bevel/root gap, align and tack under supervision."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Pipe 1G fit-up and safety checklist. Complete safe shutdown and handoff.",
+          "student_actions": "Submit pipe 1g fit-up and safety checklist; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 18,
+      "candidate_date": "2027-03-09",
+      "scheduled_date": "2027-03-09",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Practice 1G root quality",
+      "objective": "Practice 1G root quality",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 5"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: practice 1g root quality.",
+      "guided_practice": "Develop controlled root passes with the selected primary process and approved pipe procedure.",
+      "independent_practice": "Develop controlled root passes with the selected primary process and approved pipe procedure.",
+      "assessment": "Labeled 1G coupon and root inspection",
+      "instructor_checks": "Labeled 1G coupon and root inspection",
+      "evidence_check_for_understanding": "Labeled 1G coupon and root inspection",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Practice 1G root quality",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Develop controlled root passes with the selected primary process and approved pipe procedure.",
+          "student_actions": "Develop controlled root passes with the selected primary process and approved pipe procedure."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Develop controlled root passes with the selected primary process and approved pipe procedure.",
+          "student_actions": "Develop controlled root passes with the selected primary process and approved pipe procedure."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Labeled 1G coupon and root inspection. Complete safe shutdown and handoff.",
+          "student_actions": "Submit labeled 1g coupon and root inspection; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 19,
+      "candidate_date": "2027-03-10",
+      "scheduled_date": "2027-03-10",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Complete 1G fill and cap",
+      "objective": "Complete 1G fill and cap",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 5",
+        "CLO 6"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: complete 1g fill and cap.",
+      "guided_practice": "Manage pass sequence, cleaning, and profile; record process settings.",
+      "independent_practice": "Manage pass sequence, cleaning, and profile; record process settings.",
+      "assessment": "Completed 1G coupon and parameter record",
+      "instructor_checks": "Completed 1G coupon and parameter record",
+      "evidence_check_for_understanding": "Completed 1G coupon and parameter record",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Complete 1G fill and cap",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Manage pass sequence, cleaning, and profile; record process settings.",
+          "student_actions": "Manage pass sequence, cleaning, and profile; record process settings."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Manage pass sequence, cleaning, and profile; record process settings.",
+          "student_actions": "Manage pass sequence, cleaning, and profile; record process settings."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Completed 1G coupon and parameter record. Complete safe shutdown and handoff.",
+          "student_actions": "Submit completed 1g coupon and parameter record; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 20,
+      "candidate_date": "2027-03-11",
+      "scheduled_date": "2027-03-11",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Progress toward 2G pipe fundamentals",
+      "objective": "Progress toward 2G pipe fundamentals",
+      "outcome_codes": [
+        "CLO 4",
+        "CLO 5"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: progress toward 2g pipe fundamentals.",
+      "guided_practice": "Set up a 2G joint and practice root control only after 1G safety/fit-up sign-off.",
+      "independent_practice": "Set up a 2G joint and practice root control only after 1G safety/fit-up sign-off.",
+      "assessment": "2G setup and practice record",
+      "instructor_checks": "2G setup and practice record",
+      "evidence_check_for_understanding": "2G setup and practice record",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Progress toward 2G pipe fundamentals",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Set up a 2G joint and practice root control only after 1G safety/fit-up sign-off.",
+          "student_actions": "Set up a 2G joint and practice root control only after 1G safety/fit-up sign-off."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Set up a 2G joint and practice root control only after 1G safety/fit-up sign-off.",
+          "student_actions": "Set up a 2G joint and practice root control only after 1G safety/fit-up sign-off."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: 2G setup and practice record. Complete safe shutdown and handoff.",
+          "student_actions": "Submit 2g setup and practice record; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 21,
+      "candidate_date": "2027-03-15",
+      "scheduled_date": "2027-03-15",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Weld assigned capstone component",
+      "objective": "Weld assigned capstone component",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 6"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: weld assigned capstone component.",
+      "guided_practice": "Use the approved primary process on an instructor-released WLD 120 component or practice equivalent.",
+      "independent_practice": "Use the approved primary process on an instructor-released WLD 120 component or practice equivalent.",
+      "assessment": "Traceable component weld and quality record",
+      "instructor_checks": "Traceable component weld and quality record",
+      "evidence_check_for_understanding": "Traceable component weld and quality record",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Weld assigned capstone component",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Use the approved primary process on an instructor-released WLD 120 component or practice equivalent.",
+          "student_actions": "Use the approved primary process on an instructor-released WLD 120 component or practice equivalent."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Use the approved primary process on an instructor-released WLD 120 component or practice equivalent.",
+          "student_actions": "Use the approved primary process on an instructor-released WLD 120 component or practice equivalent."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Traceable component weld and quality record. Complete safe shutdown and handoff.",
+          "student_actions": "Submit traceable component weld and quality record; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 22,
+      "candidate_date": "2027-03-16",
+      "scheduled_date": "2027-03-16",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Refine capstone weld and portfolio evidence",
+      "objective": "Refine capstone weld and portfolio evidence",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 6"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: refine capstone weld and portfolio evidence.",
+      "guided_practice": "Correct documented weld issues and select coupons, photos, and parameter records.",
+      "independent_practice": "Correct documented weld issues and select coupons, photos, and parameter records.",
+      "assessment": "Accepted component and portfolio checklist",
+      "instructor_checks": "Accepted component and portfolio checklist",
+      "evidence_check_for_understanding": "Accepted component and portfolio checklist",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Refine capstone weld and portfolio evidence",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Correct documented weld issues and select coupons, photos, and parameter records.",
+          "student_actions": "Correct documented weld issues and select coupons, photos, and parameter records."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Correct documented weld issues and select coupons, photos, and parameter records.",
+          "student_actions": "Correct documented weld issues and select coupons, photos, and parameter records."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Accepted component and portfolio checklist. Complete safe shutdown and handoff.",
+          "student_actions": "Submit accepted component and portfolio checklist; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 23,
+      "candidate_date": "2027-03-17",
+      "scheduled_date": "2027-03-17",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Complete final skills check and portfolio",
+      "objective": "Complete final skills check and portfolio",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 3",
+        "CLO 5",
+        "CLO 6"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: complete final skills check and portfolio.",
+      "guided_practice": "Demonstrate primary-track quality and submit bend/pipe/capstone evidence with reflection.",
+      "independent_practice": "Demonstrate primary-track quality and submit bend/pipe/capstone evidence with reflection.",
+      "assessment": "Final skills rubric and verified portfolio",
+      "instructor_checks": "Final skills rubric and verified portfolio",
+      "evidence_check_for_understanding": "Final skills rubric and verified portfolio",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [
+        {
+          "source_filename": "01-welding-inspection.pdf",
+          "access": "instructor_only",
+          "ltg_url": null
+        },
+        {
+          "source_filename": "02-visual-inspection.pdf",
+          "access": "instructor_only",
+          "ltg_url": null
+        },
+        {
+          "source_filename": "05-visual-inspection.pptx",
+          "access": "instructor_only",
+          "ltg_url": null
+        },
+        {
+          "source_filename": "06-ch-11-discontinuties.pptx",
+          "access": "instructor_only",
+          "ltg_url": null
+        }
+      ],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Complete final skills check and portfolio",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Demonstrate primary-track quality and submit bend/pipe/capstone evidence with reflection.",
+          "student_actions": "Demonstrate primary-track quality and submit bend/pipe/capstone evidence with reflection."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Demonstrate primary-track quality and submit bend/pipe/capstone evidence with reflection.",
+          "student_actions": "Demonstrate primary-track quality and submit bend/pipe/capstone evidence with reflection."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Final skills rubric and verified portfolio. Complete safe shutdown and handoff.",
+          "student_actions": "Submit final skills rubric and verified portfolio; log corrections and leave the station safe."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 24,
+      "candidate_date": "2027-03-18",
+      "scheduled_date": "2027-03-18",
+      "date_status": "provisional_2027_spring_6a_projection",
+      "title": "Close project work and review individual growth",
+      "objective": "Close project work and review individual growth",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 6"
+      ],
+      "instructor_prep": "Prepare the approved project drawings, WPS/test criteria, equipment, material, and individual evidence records.",
+      "safety_focus": "PPE, ventilation, fire watch/hot-metal control, machine condition, and instructor release before operation. Stop work on unsafe setup or an unapproved procedure.",
+      "opening_review": "Review the prior checkpoint and today's release criteria.",
+      "demonstration": "Demonstrate the method and quality check for: close project work and review individual growth.",
+      "guided_practice": "Finish any approved rework, verify shutdown and tool accountability, and review next qualification steps.",
+      "independent_practice": "Finish any approved rework, verify shutdown and tool accountability, and review next qualification steps.",
+      "assessment": "Final portfolio and individual assessment record",
+      "instructor_checks": "Final portfolio and individual assessment record",
+      "evidence_check_for_understanding": "Final portfolio and individual assessment record",
+      "teaching_tips": "Coach one measurable correction at a time; retain labeled work and revision history.",
+      "materials_equipment": "Approved PPE, project/track drawings, WPS, station equipment, measuring tools, and labeled work records.",
+      "closeout": "Record evidence and open corrections; de-energize equipment, secure gas, control hot material, and clean the station.",
+      "instructor_only_resource_references": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety and demonstrate: Close project work and review individual growth",
+          "student_actions": "Identify hazards, review the prior checkpoint, and observe the demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and first attempt",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Supervise and coach: Finish any approved rework, verify shutdown and tool accountability, and review next qualification steps.",
+          "student_actions": "Finish any approved rework, verify shutdown and tool accountability, and review next qualification steps."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Welding practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Coach, inspect, and assess: Finish any approved rework, verify shutdown and tool accountability, and review next qualification steps.",
+          "student_actions": "Finish any approved rework, verify shutdown and tool accountability, and review next qualification steps."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Record evidence: Final portfolio and individual assessment record. Complete safe shutdown and handoff.",
+          "student_actions": "Submit final portfolio and individual assessment record; log corrections and leave the station safe."
+        }
+      ]
+    }
+  ]
+}
