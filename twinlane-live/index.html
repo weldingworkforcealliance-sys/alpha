@@ -31,6 +31,8 @@ label{display:grid;gap:6px;font-size:14px;font-weight:700}
 .start-zone{position:absolute;border:2px dashed #607089;border-radius:10px;background:#60708914;pointer-events:none}
 .start-label{position:absolute;font-size:10px;color:#95a3b6;font-weight:800;letter-spacing:.08em;pointer-events:none}
 .ball{display:none;position:absolute;width:30px;height:30px;border-radius:50%;background:#eef3fa;border:3px solid #7f90a8;transform:translate(-50%,50%);box-shadow:0 8px 18px #0008;touch-action:none}
+.ball.team-a,.settled-ball.team-a{background:#d66a43;border-color:#ffd0bd}
+.ball.team-b,.settled-ball.team-b{background:#4f83c2;border-color:#bfdcff}
 .settled-ball{position:absolute;width:30px;height:30px;border-radius:50%;background:#cbd6e5;border:3px solid #667991;transform:translate(-50%,50%);box-shadow:0 8px 18px #0008;pointer-events:none}
 .settled-number{position:absolute;inset:0;display:grid;place-items:center;color:#17202b;font-size:10px;font-weight:900}
 .pallino{position:absolute;width:17px;height:17px;border-radius:50%;background:#dac992;border:2px solid #fff1c4;transform:translate(-50%,50%);box-shadow:0 5px 12px #0008;pointer-events:none}
@@ -40,6 +42,14 @@ label{display:grid;gap:6px;font-size:14px;font-weight:700}
 code{word-break:break-all;font-size:12px;color:#9eacbd}
 .ready{background:#0d1712;border-color:#345642}
 .warn{background:#21180d;border-color:#6a4d29}
+.scoreboard{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch}
+.score-team{border:1px solid #303846;border-radius:14px;padding:12px;background:#0d1218}
+.score-team.a{border-color:#75422f}.score-team.b{border-color:#345273;text-align:right}
+.score-num{font-size:34px;font-weight:900;line-height:1}
+.turnbox{min-width:128px;display:grid;place-items:center;text-align:center;border:1px solid #394555;border-radius:14px;padding:10px;background:#141b24}
+.balls-left{font-size:12px;color:#98a6b8;margin-top:6px}
+.game-banner{margin-top:12px;padding:10px 12px;border-radius:12px;border:1px solid #394555;background:#0d1218;text-align:center;font-weight:800}
+.end-result{margin-top:12px;border:1px solid #536178;border-radius:14px;padding:14px;background:#101720;text-align:center}
 @media(max-width:600px){h1{font-size:24px}.qr{width:145px;height:145px}.three{grid-template-columns:1fr}.guide-box{min-width:105px}}
 </style>
 </head>
@@ -58,6 +68,33 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     <div class="guide-box"><strong>FAR END</strong><div class="small">target / pallino end</div></div>
   </div>
   <div class="small" style="margin-top:10px"><strong>SIDE DISPLAY</strong> means the device sits beside the court or on a TV. The ball never travels through it.</div>
+</section>
+
+<section id="matchHud" class="card hidden">
+  <div class="scoreboard">
+    <div class="score-team a">
+      <div class="small">PLAYER 1</div>
+      <div id="scoreA" class="score-num">0</div>
+      <div id="ballsA" class="balls-left">4 balls left</div>
+    </div>
+    <div class="turnbox">
+      <div>
+        <div class="small">END <span id="endNumber">1</span></div>
+        <div id="turnLabel" style="font-weight:900;margin-top:5px">PALLINO</div>
+      </div>
+    </div>
+    <div class="score-team b">
+      <div class="small">PLAYER 2</div>
+      <div id="scoreB" class="score-num">0</div>
+      <div id="ballsB" class="balls-left">4 balls left</div>
+    </div>
+  </div>
+  <div id="gameBanner" class="game-banner">Player 1 throws the pallino.</div>
+  <div id="endResult" class="end-result hidden">
+    <div id="endResultText" style="font-size:18px;font-weight:900"></div>
+    <button id="nextEndBtn" class="primary hidden" style="margin-top:12px">Start Next End</button>
+    <button id="newMatchBtn" style="width:100%;margin-top:10px">New Match</button>
+  </div>
 </section>
 
 <section id="hostCreate" class="card">
@@ -160,11 +197,10 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
   <div id="launchHelp" class="card hidden" style="margin-top:12px">
     <div class="row">
-      <strong>Ball <span id="ballNumber">1</span> ready</strong>
-      <span class="tag"><span id="ballsOnCourt">0</span> thrown</span>
+      <strong id="throwTitle">Throw</strong>
+      <span class="tag"><span id="ballsOnCourt">0</span> on court</span>
     </div>
-    <div class="small" style="margin-top:7px">Drag the new ball inside the start area, release it, then touch it again and flick forward. Previous balls stay on the court.</div>
-    <button id="resetFrameBtn" style="width:100%;margin-top:12px">Reset Entire Frame</button>
+    <div id="throwHelp" class="small" style="margin-top:7px">Place the ball, then flick forward.</div>
   </div>
 </section>
 
@@ -184,6 +220,18 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   const joinSession = params.get('session') || '';
   const joinToken = params.get('join') || '';
 
+  const matchHud = document.getElementById('matchHud');
+  const scoreAEl = document.getElementById('scoreA');
+  const scoreBEl = document.getElementById('scoreB');
+  const ballsAEl = document.getElementById('ballsA');
+  const ballsBEl = document.getElementById('ballsB');
+  const endNumberEl = document.getElementById('endNumber');
+  const turnLabelEl = document.getElementById('turnLabel');
+  const gameBannerEl = document.getElementById('gameBanner');
+  const endResultEl = document.getElementById('endResult');
+  const endResultTextEl = document.getElementById('endResultText');
+  const nextEndBtn = document.getElementById('nextEndBtn');
+  const newMatchBtn = document.getElementById('newMatchBtn');
   const hostCreate = document.getElementById('hostCreate');
   const hostPanel = document.getElementById('hostPanel');
   const joinPanel = document.getElementById('joinPanel');
@@ -204,9 +252,9 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   const screenPositionEl = document.getElementById('screenPosition');
   const screenMetaEl = document.getElementById('screenMeta');
   const launchHelp = document.getElementById('launchHelp');
-  const ballNumberEl = document.getElementById('ballNumber');
+  const throwTitleEl = document.getElementById('throwTitle');
+  const throwHelpEl = document.getElementById('throwHelp');
   const ballsOnCourtEl = document.getElementById('ballsOnCourt');
-  const resetFrameBtn = document.getElementById('resetFrameBtn');
 
   let session = '';
   let token = '';
@@ -246,6 +294,42 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
   const nice=(s)=>String(s||'').charAt(0).toUpperCase()+String(s||'').slice(1);
   const setStatus=(s)=>statusEl.textContent=s;
+  const defaultGame=()=>({phase:'pallino',end_number:1,starting_team:'A',current_team:'A',score_a:0,score_b:0,balls_a:0,balls_b:0,end_scoring_team:null,end_score:0,winner:null});
+  const game=()=>state?.game_state||defaultGame();
+  const teamName=(t)=>t==='B'?'Player 2':'Player 1';
+
+  function updateGameHud(){
+    if(!state)return;
+    const g=game();
+    matchHud.classList.remove('hidden');
+    scoreAEl.textContent=String(Number(g.score_a||0));
+    scoreBEl.textContent=String(Number(g.score_b||0));
+    ballsAEl.textContent=(4-Number(g.balls_a||0))+' balls left';
+    ballsBEl.textContent=(4-Number(g.balls_b||0))+' balls left';
+    endNumberEl.textContent=String(Number(g.end_number||1));
+
+    endResultEl.classList.add('hidden');
+    nextEndBtn.classList.add('hidden');
+
+    if(g.phase==='pallino'){
+      turnLabelEl.textContent='PALLINO';
+      gameBannerEl.textContent=teamName(g.starting_team)+' throws the pallino.';
+    }else if(g.phase==='bocce'){
+      turnLabelEl.textContent=teamName(g.current_team).toUpperCase();
+      gameBannerEl.textContent=teamName(g.current_team)+' to throw.';
+    }else if(g.phase==='end_complete'){
+      turnLabelEl.textContent='END COMPLETE';
+      gameBannerEl.textContent=teamName(g.end_scoring_team)+' scores '+Number(g.end_score||0)+'.';
+      endResultEl.classList.remove('hidden');
+      endResultTextEl.textContent=teamName(g.end_scoring_team)+' scores '+Number(g.end_score||0)+' point'+(Number(g.end_score||0)===1?'':'s')+'.';
+      if(role==='launch')nextEndBtn.classList.remove('hidden');
+    }else if(g.phase==='match_over'){
+      turnLabelEl.textContent='MATCH OVER';
+      gameBannerEl.textContent=teamName(g.winner)+' wins the match.';
+      endResultEl.classList.remove('hidden');
+      endResultTextEl.textContent=teamName(g.winner)+' wins '+Number(g.score_a||0)+'–'+Number(g.score_b||0)+'.';
+    }
+  }
 
   function localPositionLabel() {
     if (position==='first') return 'Near Player';
@@ -325,7 +409,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
       if(!el){
         el=document.createElement('div');
-        el.className='settled-ball';
+        el.className='settled-ball '+(b.team==='B'?'team-b':'team-a');
         const num=document.createElement('div');
         num.className='settled-number';
         num.textContent=String(id);
@@ -353,7 +437,8 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
   function renderStartZone() {
     const vp=viewport();
-    const show=role==='launch' && position==='first' && vp && !state?.ball_moving;
+    const g=game();
+    const show=role==='launch' && position==='first' && vp && !state?.ball_moving && (g.phase==='pallino'||g.phase==='bocce');
     launchHelp.classList.toggle('hidden',!show);
     startZoneEl.classList.toggle('hidden',!show);
     startLabelEl.classList.toggle('hidden',!show);
@@ -372,6 +457,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     screenNameEl.textContent='Screen '+localScreen+' · '+nice(kind);
     screenPositionEl.textContent='Physical position: '+localPositionLabel();
     screenMetaEl.textContent=vp?(role+' · Y '+vp.y0+'–'+vp.y1):(role+' · side display');
+    updateGameHud();
 
     if (!vp) {
       laneEl.style.background='#11161d';
@@ -389,8 +475,35 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     laneEl.style.background='repeating-linear-gradient(0deg,#141b24 0,#141b24 58px,#1a222d 59px,#1a222d 60px)';
     independentEl.classList.add('hidden');
     renderSettledBalls();
-    positionObject(ballEl,displayedBall,.15);
-    positionObject(pallinoEl,displayedPallino,.15);
+    const g=game();
+    ballEl.classList.toggle('team-a',g.current_team!=='B');
+    ballEl.classList.toggle('team-b',g.current_team==='B');
+
+    if(g.phase==='pallino'){
+      ballEl.style.display='none';
+      positionObject(pallinoEl,displayedPallino,.15);
+    }else{
+      if(g.phase==='bocce' && !state?.ball_moving && position==='first' && role==='launch'){
+        positionObject(ballEl,displayedBall,.15);
+      }else if(g.phase==='bocce' || state?.ball_moving){
+        positionObject(ballEl,displayedBall,.15);
+      }else{
+        ballEl.style.display='none';
+      }
+      positionObject(pallinoEl,displayedPallino,.15);
+    }
+
+    if(role==='launch'&&position==='first'){
+      launchHelp.classList.toggle('hidden',!(g.phase==='pallino'||g.phase==='bocce')||state?.ball_moving);
+      if(g.phase==='pallino'){
+        throwTitleEl.textContent=teamName(g.starting_team)+' · Pallino';
+        throwHelpEl.textContent='Place the small pallino in the start area, then flick it forward. It must cross center and stop before the back wall.';
+      }else if(g.phase==='bocce'){
+        throwTitleEl.textContent=teamName(g.current_team)+' · Bocce';
+        throwHelpEl.textContent='Place the bocce ball in the start area, release it, then flick forward.';
+      }
+    }
+
     renderStartZone();
   }
 
@@ -405,6 +518,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     }
     return [...byId.entries()].map(([id,pair])=>({
       id,
+      team:(pair.b.team||pair.a.team)==='B'?'B':'A',
       x:Number(pair.a.x)+(Number(pair.b.x)-Number(pair.a.x))*t,
       y:Number(pair.a.y)+(Number(pair.b.y)-Number(pair.a.y))*t
     }));
@@ -507,7 +621,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         y:Number(payload.pallino_y??targetPallino.y)
       },
       settled:Array.isArray(payload.settled_balls)?payload.settled_balls.map(b=>({
-        id:Number(b.id),x:Number(b.x),y:Number(b.y)
+        id:Number(b.id),x:Number(b.x),y:Number(b.y),team:b.team==='B'?'B':'A'
       })):[],
       moving:Boolean(payload.moving)
     };
@@ -545,7 +659,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     realtimeJitterMs=0;
 
     const settled=Array.isArray(payload.settled_balls)
-      ? payload.settled_balls.map(b=>({id:Number(b.id),x:Number(b.x),y:Number(b.y)}))
+      ? payload.settled_balls.map(b=>({id:Number(b.id),x:Number(b.x),y:Number(b.y),team:b.team==='B'?'B':'A'}))
       : [];
 
     const pallino={
@@ -706,13 +820,15 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       }
       if(s.screen2_joined){
         connectionCard.classList.add('ready');
-        if(role==='launch' && position==='first'){
-          if(s.ball_moving)setStatus('CONNECTED · Ball rolling.');
-          else setStatus('CONNECTED · Ball '+Number(s.next_ball_number||1)+' ready. Place it, then flick forward.');
-        }else if(role==='target'){
-          setStatus('CONNECTED · Pallino is live. Watch the incoming bocce ball.');
-        }else{
-          setStatus('CONNECTED / READY · '+nice(role)+' display.');
+        const g=game();
+        if(g.phase==='pallino'){
+          setStatus(role==='launch' ? teamName(g.starting_team)+' throws the pallino.' : 'Waiting for the pallino throw.');
+        }else if(g.phase==='bocce'){
+          setStatus(s.ball_moving ? teamName(g.current_team)+' ball rolling.' : teamName(g.current_team)+' to throw.');
+        }else if(g.phase==='end_complete'){
+          setStatus('End complete. '+teamName(g.end_scoring_team)+' scored '+Number(g.end_score||0)+'.');
+        }else if(g.phase==='match_over'){
+          setStatus(teamName(g.winner)+' wins the match.');
         }
       }else if(isHost){
         setStatus('Waiting for Screen 2 to scan the QR and join.');
@@ -738,10 +854,10 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       session=data.session;token=data.host_token;isHost=true;
       state={
         screen1_kind:kind,screen1_role:role,screen1_position:position,
-        screen2_joined:false,ball_x:50,ball_y:8,ball_seq:0,ball_moving:false,pallino_x:52,pallino_y:82,settled_balls:[],next_ball_number:1
+        screen2_joined:false,ball_x:50,ball_y:8,ball_seq:0,ball_moving:false,pallino_x:50,pallino_y:8,settled_balls:[],next_ball_number:1,game_state:defaultGame()
       };
       displayedBall=targetBall={x:50,y:8};
-      displayedPallino=targetPallino={x:52,y:82};
+      displayedPallino=targetPallino={x:50,y:8};
       displayedSettledBalls=[];
       realtimeFrames=[];
       realtimeJitterMs=0;
