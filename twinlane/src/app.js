@@ -3,6 +3,7 @@ import {SnapshotBuffer} from './multiplayer/sync.js';
 import {viewport} from './multiplayer/device-layout.js';
 import {resolveSkin} from './skins/registry.js';
 import {render} from './rendering/renderer.js';
+import {drawInviteQR} from './ui/invite-qr.js';
 const $=id=>document.getElementById(id),params=new URLSearchParams(location.hash.slice(1));
 const devPreview=new URLSearchParams(location.search).get('dev')==='1';
 const buffer=new SnapshotBuffer();let skin=resolveSkin('living-kingdoms'),latest=null,device=1,lastReceived=0;
@@ -14,6 +15,7 @@ function ready(credentials){
   $('placement').textContent=device===1?'Phone A · LEFT · inside edge →':'Phone B · RIGHT · ← inside edge';
   if(credentials.invite){
     $('sharing').hidden=false;const url=new URL(location.href);url.hash=new URLSearchParams({id:credentials.id,invite:credentials.invite});$('share').value=url.href;
+    drawInviteQR($('inviteQR'),url.href);
   }
   history.replaceState(null,'',location.pathname+location.search);
 }
@@ -22,6 +24,8 @@ $('create').onclick=()=>safely(async()=>{if(session.credentials)return;ready(awa
 if(params.has('invite'))$('invite').value=location.href;
 $('join').onclick=()=>safely(async()=>{if(session.credentials)return;const url=new URL($('invite').value);const p=new URLSearchParams(url.hash.slice(1));if(!p.get('id')||!p.get('invite'))throw new Error('Paste a complete TwinLane v2 invitation link.');ready(await session.join(p.get('id'),p.get('invite')));});
 $('launch').onclick=()=>safely(()=>session.send({type:'launch'}));
+$('showQR').onclick=()=>$('inviteDialog').showModal();
+$('closeQR').onclick=()=>$('inviteDialog').close();
 $('pause').onclick=()=>safely(()=>session.send({type:'run',value:!latest?.running}));
 $('mode').onchange=()=>safely(()=>session.send({type:'mode',value:$('mode').value}));
 $('unit').onclick=()=>safely(()=>session.send({type:'unit',lane:Number($('lane').value)}));
