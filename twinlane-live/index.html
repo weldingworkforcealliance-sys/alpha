@@ -876,7 +876,7 @@ body[data-view-mode="immersive"] #matchHud::before{
 
 
   function monitorActive(){
-    return monitorRequested && localScreen===2 && position==='second' && Boolean(session) && Boolean(token);
+    return monitorRequested && position==='second' && Boolean(session) && Boolean(token);
   }
 
   function monitorEvent(eventType,extra={}){
@@ -1442,6 +1442,7 @@ body[data-view-mode="immersive"] #matchHud::before{
 
     const screenKey=position+'|'+role;
     if(screenKey!==lastScreenDomKey){
+      if(position==='second')startMonitorIfNeeded();
       lastScreenDomKey=screenKey;
       viewPanel.dataset.skinView=position==='second'?'far':position==='first'?'near':'display';
       if(position==='first'){
@@ -2242,6 +2243,7 @@ body[data-view-mode="immersive"] #matchHud::before{
         skin:'living_kingdoms'
       });
       session=data.session;token=data.host_token;isHost=true;
+      startMonitorIfNeeded();
       state={
         screen1_kind:kind,screen1_role:role,screen1_position:position,
         screen2_joined:false,ball_x:50,ball_y:8,ball_seq:0,ball_moving:false,pallino_x:50,pallino_y:8,settled_balls:[],next_ball_number:1,
