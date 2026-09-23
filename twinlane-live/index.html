@@ -269,6 +269,14 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   const joinToken = params.get('join') || '';
 
   const matchHud = document.getElementById('matchHud');
+  const playerANameHud = document.getElementById('playerANameHud');
+  const playerBNameHud = document.getElementById('playerBNameHud');
+  const playerANameInput = document.getElementById('playerAName');
+  const playerBNameInput = document.getElementById('playerBName');
+  const soundBtn = document.getElementById('soundBtn');
+  const hapticsBtn = document.getElementById('hapticsBtn');
+  const joinSoundBtn = document.getElementById('joinSoundBtn');
+  const joinHapticsBtn = document.getElementById('joinHapticsBtn');
   const scoreAEl = document.getElementById('scoreA');
   const scoreBEl = document.getElementById('scoreB');
   const ballsAEl = document.getElementById('ballsA');
@@ -340,18 +348,102 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   let heartbeatTimer = null;
   let reconnectTimer = null;
   let lastRealtimeFrameAt = 0;
+  let soundOn = localStorage.getItem('corvumor_sound') !== 'off';
+  let hapticsOn = localStorage.getItem('corvumor_haptics') !== 'off';
+  let audioCtx = null;
+  let lastPresentationKey = '';
 
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
   const nice=(s)=>String(s||'').charAt(0).toUpperCase()+String(s||'').slice(1);
   const setStatus=(s)=>statusEl.textContent=s;
-  const defaultGame=()=>({phase:'pallino',end_number:1,starting_team:'A',current_team:'A',score_a:0,score_b:0,balls_a:0,balls_b:0,end_scoring_team:null,end_score:0,winner:null});
+  const cleanPlayerName=(s,fallback)=>{
+    const v=String(s||'').replace(/[<>]/g,'').replace(/\s+/g,' ').trim().slice(0,24);
+    return v||fallback;
+  };
+  const defaultGame=(opts={})=>({
+    player_a_name:cleanPlayerName(opts.player_a_name,'Player 1'),
+    player_b_name:cleanPlayerName(opts.player_b_name,'Player 2'),
+    skin:'living_kingdoms',
+    match_target:12,
+    phase:'pallino',end_number:1,starting_team:'A',current_team:'A',
+    score_a:0,score_b:0,balls_a:0,balls_b:0,end_scoring_team:null,end_score:0,winner:null
+  });
   const game=()=>state?.game_state||defaultGame();
-  const teamName=(t)=>t==='B'?'Player 2':'Player 1';
+  const teamName=(t)=>{
+    const g=game();
+    return t==='B'
+      ? cleanPlayerName(g.player_b_name,'Player 2')
+      : cleanPlayerName(g.player_a_name,'Player 1');
+  };
+
+  function syncFeedbackButtons(){
+    for(const b of [soundBtn,joinSoundBtn].filter(Boolean)) b.textContent='Sound: '+(soundOn?'On':'Off');
+    for(const b of [hapticsBtn,joinHapticsBtn].filter(Boolean)) b.textContent='Haptics: '+(hapticsOn?'On':'Off');
+  }
+
+  function ensureAudio(){
+    if(!soundOn)return null;
+    try{
+      if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+      if(audioCtx.state==='suspended') void audioCtx.resume();
+      return audioCtx;
+    }catch{return null;}
+  }
+
+  function tone(freq=220,duration=.05,volume=.025,delay=0){
+    if(!soundOn)return;
+    const ctx=ensureAudio();if(!ctx)return;
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    const start=ctx.currentTime+delay;
+    osc.type='sine';osc.frequency.setValueAtTime(freq,start);
+    gain.gain.setValueAtTime(volume,start);
+    gain.gain.exponentialRampToValueAtTime(.0001,start+duration);
+    osc.connect(gain);gain.connect(ctx.destination);
+    osc.start(start);osc.stop(start+duration+.01);
+  }
+
+  function haptic(pattern){
+    if(!hapticsOn || !navigator.vibrate)return;
+    try{navigator.vibrate(pattern);}catch{}
+  }
+
+  function feedback(kind){
+    if(kind==='place'){tone(260,.025,.018);haptic(8);}
+    if(kind==='throw'){tone(150,.04,.022);haptic(12);}
+    if(kind==='end'){
+      tone(320,.07,.025);tone(430,.08,.022,.08);
+      haptic([20,35,20]);
+    }
+    if(kind==='win'){
+      tone(300,.08,.026);tone(410,.08,.026,.09);tone(560,.12,.025,.18);
+      haptic([25,35,25,35,45]);
+    }
+  }
+
+  function toggleSound(){
+    soundOn=!soundOn;
+    localStorage.setItem('corvumor_sound',soundOn?'on':'off');
+    syncFeedbackButtons();
+    if(soundOn){ensureAudio();tone(300,.04,.02);}
+  }
+  function toggleHaptics(){
+    hapticsOn=!hapticsOn;
+    localStorage.setItem('corvumor_haptics',hapticsOn?'on':'off');
+    syncFeedbackButtons();
+    if(hapticsOn)haptic(10);
+  }
+
+  [soundBtn,joinSoundBtn].filter(Boolean).forEach(b=>b.addEventListener('click',toggleSound));
+  [hapticsBtn,joinHapticsBtn].filter(Boolean).forEach(b=>b.addEventListener('click',toggleHaptics));
+  syncFeedbackButtons();
 
   function updateGameHud(){
     if(!state)return;
     const g=game();
     matchHud.classList.remove('hidden');
+    playerANameHud.textContent=teamName('A').toUpperCase();
+    playerBNameHud.textContent=teamName('B').toUpperCase();
     scoreAEl.textContent=String(Number(g.score_a||0));
     scoreBEl.textContent=String(Number(g.score_b||0));
     ballsAEl.textContent=(4-Number(g.balls_a||0))+' balls left';
@@ -360,6 +452,13 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
     endResultEl.classList.add('hidden');
     nextEndBtn.classList.add('hidden');
+
+    const presentationKey=[g.phase,g.end_number,g.score_a,g.score_b,g.winner||''].join(':');
+    if(presentationKey!==lastPresentationKey){
+      if(g.phase==='end_complete')feedback('end');
+      if(g.phase==='match_over')feedback('win');
+      lastPresentationKey=presentationKey;
+    }
 
     if(g.phase==='pallino'){
       turnLabelEl.textContent='PALLINO';
@@ -947,13 +1046,21 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       kind=document.getElementById('s1Kind').value;
       role=document.getElementById('s1Role').value;
       position=document.getElementById('s1Position').value;
+      const playerAName=cleanPlayerName(playerANameInput?.value,'Player 1');
+      const playerBName=cleanPlayerName(playerBNameInput?.value,'Player 2');
       localScreen=1;
-      setStatus('Creating live Bocce session…');
-      const data=await api('POST',{action:'create',kind,role,position});
+      setStatus('Creating Living Kingdoms match…');
+      const data=await api('POST',{
+        action:'create',kind,role,position,
+        player_a_name:playerAName,
+        player_b_name:playerBName,
+        skin:'living_kingdoms'
+      });
       session=data.session;token=data.host_token;isHost=true;
       state={
         screen1_kind:kind,screen1_role:role,screen1_position:position,
-        screen2_joined:false,ball_x:50,ball_y:8,ball_seq:0,ball_moving:false,pallino_x:50,pallino_y:8,settled_balls:[],next_ball_number:1,game_state:defaultGame()
+        screen2_joined:false,ball_x:50,ball_y:8,ball_seq:0,ball_moving:false,pallino_x:50,pallino_y:8,settled_balls:[],next_ball_number:1,
+        game_state:defaultGame({player_a_name:playerAName,player_b_name:playerBName})
       };
       displayedBall=targetBall={x:50,y:8};
       displayedPallino=targetPallino={x:50,y:8};
@@ -1073,6 +1180,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
         placementReady=true;
         placedObject={pallino:g.pallino,x:px,y:py};
+        feedback('place');
         void sendPhysics(
           displayedBall,
           displayedPallino,
@@ -1097,6 +1205,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
     placementReady=false;
     placedObject=null;
+    feedback('throw');
     if(g.pallino)startPallinoShot(g.startX,g.startY,dx,dy,duration);
     else startShot(g.startX,g.startY,dx,dy,duration);
   });
