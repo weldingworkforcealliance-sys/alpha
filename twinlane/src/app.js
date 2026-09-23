@@ -43,3 +43,4 @@ function frame(now){
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
+$('restart').onclick=()=>safely(async()=>{await session.send({type:'restart'});status('Test restarted on both phones.');});

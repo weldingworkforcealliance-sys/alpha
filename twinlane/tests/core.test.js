@@ -38,3 +38,13 @@ test('buffer rejects stale snapshots, tolerates jitter and freezes during discon
   assert.equal(buffer.sample(9000).ball.x,510);assert.equal(b.ball.x,510);
   const c=structuredClone(b);c.tick=100;c.ball.x=600;buffer.push(c,9100);assert.equal(buffer.sample(9300).ball.x,600);
 });
+test('restart resets both scouts and preserves snapshot ordering',()=>{
+ const s=createState();command(s,1,{type:'mode',value:'lanes'});command(s,1,{type:'unit',lane:0});command(s,2,{type:'unit',lane:2});command(s,1,{type:'launch'});
+ for(let i=0;i<120;i++)step(s);
+ const buffer=new SnapshotBuffer();buffer.push(s,1000);const tick=s.tick;
+ assert.equal(command(s,2,{type:'restart'}),false);
+ assert.equal(command(s,1,{type:'restart'}),true);
+ assert.equal(s.tick,tick);assert.equal(s.mode,'lanes');assert.equal(s.running,true);assert.equal(s.ball.x,100);
+ assert.deepEqual(s.units.map(u=>[u.owner,u.lane,u.x,u.health]),[[1,0,70,100],[2,2,930,100]]);
+ step(s);assert.equal(buffer.push(s,1050),true);assert.equal(buffer.frames.length,1);assert.equal(buffer.sample(1050).ball.x,s.ball.x);
+});

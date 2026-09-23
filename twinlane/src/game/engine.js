@@ -1,9 +1,16 @@
 import {WORLD,STEP,LANES} from './rules.js';
-import {createUnit} from './state.js';
+import {createUnit,createState} from './state.js';
 // This module has no renderer, skin, browser, or networking dependencies.
 export function command(state,owner,input){
   if(!input || ![1,2].includes(owner)) return false;
-  if(input.type==='run' && owner===1 && typeof input.value==='boolean') state.running=input.value;
+  if(input.type==='restart' && owner===1){
+    const {tick,mode,units}=state;
+    const round=(state.round||0)+1;
+    Object.assign(state,createState(),{tick,mode,round});
+    state.units=units.map(unit=>createUnit(unit.owner,unit.lane));
+    state.running=true;
+  }
+  else if(input.type==='run' && owner===1 && typeof input.value==='boolean') state.running=input.value;
   else if(input.type==='mode' && owner===1 && ['ball','lanes'].includes(input.value)) state.mode=input.value;
   else if(input.type==='launch' && owner===1){state.ball.x=100;state.ball.vx=160;state.running=true;}
   else if(input.type==='unit' && Number.isInteger(input.lane) && input.lane>=0 && input.lane<LANES.length){

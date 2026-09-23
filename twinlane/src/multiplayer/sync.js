@@ -3,6 +3,7 @@ export class SnapshotBuffer{
   constructor(delay=120){this.delay=delay;this.frames=[];this.lastTick=-1;}
   push(state,receivedAt){
     if(!state || state.version!==1 || !Number.isInteger(state.tick) || state.tick<=this.lastTick)return false;
+    if(this.frames.length && (state.round||0)!==(this.frames.at(-1).state.round||0))this.frames=[];
     this.lastTick=state.tick;this.frames.push({state:structuredClone(state),at:receivedAt});
     if(this.frames.length>30)this.frames.shift();return true;
   }
