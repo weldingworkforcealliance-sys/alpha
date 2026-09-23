@@ -483,8 +483,9 @@ body[data-view-mode="immersive"] #launchHelp{
   let targetPallino = {x:52,y:82};
   let displayedSettledBalls = [];
   let realtimeFrames = [];
-  const REALTIME_BUFFER_MS = 140;
-  const REALTIME_BUFFER_MAX_MS = 280;
+  const REALTIME_BUFFER_MS = 70;
+  const REALTIME_BUFFER_MAX_MS = 150;
+  const REALTIME_CATCHUP_MS = 260;
   let remoteClockOffsetMs = null;
   let realtimeJitterMs = 0;
   const settledEls = new Map();
@@ -1256,7 +1257,15 @@ body[data-view-mode="immersive"] #launchHelp{
     if(last && last.seq===frame.seq && last.recvAt===frame.recvAt)return;
 
     realtimeFrames.push(frame);
-    if(realtimeFrames.length>24)realtimeFrames.splice(0,realtimeFrames.length-24);
+    if(realtimeFrames.length>10)realtimeFrames.splice(0,realtimeFrames.length-10);
+
+    // If transport falls behind, prefer current state over replaying stale motion.
+    if(excessDelay>REALTIME_CATCHUP_MS){
+      realtimeFrames.splice(0,Math.max(0,realtimeFrames.length-2));
+      displayedBall={...frame.ball};
+      displayedPallino={...frame.pallino};
+      displayedSettledBalls=frame.settled;
+    }
 
     targetBall={...frame.ball};
     targetPallino={...frame.pallino};
@@ -1864,7 +1873,7 @@ body[data-view-mode="immersive"] #launchHelp{
       displayedPallino=targetPallino={x:pallino.x,y:pallino.y};
       state.pallino_x=pallino.x;state.pallino_y=pallino.y;
 
-      if(now-lastSend>16){
+      if(now-lastSend>32){
         lastSend=now;
         const framePayload={
           ball_x:Number(state.ball_x||50),ball_y:Number(state.ball_y||8),
@@ -2162,7 +2171,7 @@ body[data-view-mode="immersive"] #launchHelp{
       state.settled_balls=settledPayload;
       displayedSettledBalls=settledPayload;
 
-      if(now-lastSend>16){
+      if(now-lastSend>32){
         lastSend=now;
         const frame={
           ball_x:displayedBall.x,ball_y:displayedBall.y,
