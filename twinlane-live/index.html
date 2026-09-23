@@ -1019,9 +1019,14 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
     const pallino={x:startX,y:startY,vx:0,vy:0,r:1.08,type:'pallino'};
     const ang=clamp(Math.atan2(dx,dy),-.55,.55);
-    const gestureSpeed=Math.hypot(dx,dy)/duration;
-    const power=clamp(28+Math.hypot(dx,dy)*1.8+gestureSpeed*.045,30,100);
-    const v=28+power*.34;
+    const flickDistance=Math.hypot(dx,dy);
+    const gestureSpeed=flickDistance/duration;
+
+    // Pallino uses a deliberately softer launch curve than bocce balls.
+    // Light flicks should land just into the legal far half; hard flicks travel deep.
+    const pallinoIntent=clamp(flickDistance*.70+gestureSpeed*.020,0,50);
+    const v=29+pallinoIntent*.28;
+
     pallino.vx=Math.sin(ang)*v;
     pallino.vy=Math.cos(ang)*v;
     setStatus(teamName(game().starting_team)+' pallino rolling…');
