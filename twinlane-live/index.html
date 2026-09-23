@@ -948,6 +948,13 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       const dt=Math.min(.025,(now-last)/1000||.016);last=now;
       const objs=[active,pallino,...settled];
 
+      function contain(o){
+        if(o.x-o.r<8){o.x=8+o.r;o.vx=Math.abs(o.vx)*.28;}
+        if(o.x+o.r>92){o.x=92-o.r;o.vx=-Math.abs(o.vx)*.28;}
+        if(o.y-o.r<0){o.y=o.r;o.vy=Math.abs(o.vy)*.16;}
+        if(o.y+o.r>100){o.y=100-o.r;o.vy=-Math.abs(o.vy)*.16;}
+      }
+
       for(const o of objs){
         o.x+=o.vx*dt;
         o.y+=o.vy*dt;
@@ -964,14 +971,15 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
           if(nextSpeed<.42){o.vx=0;o.vy=0;}
         }
 
-        if(o.x-o.r<8){o.x=8+o.r;o.vx=Math.abs(o.vx)*.28;}
-        if(o.x+o.r>92){o.x=92-o.r;o.vx=-Math.abs(o.vx)*.28;}
-        if(o.y-o.r<0){o.y=o.r;o.vy=Math.abs(o.vy)*.16;}
-        if(o.y+o.r>100){o.y=100-o.r;o.vy=-Math.abs(o.vy)*.16;}
+        contain(o);
       }
 
-      for(let i=0;i<objs.length;i++){
-        for(let j=i+1;j<objs.length;j++)collide(objs[i],objs[j]);
+      // Multiple solver passes prevent collision chains from leaving tiny overlaps.
+      for(let solve=0;solve<3;solve++){
+        for(let i=0;i<objs.length;i++){
+          for(let j=i+1;j<objs.length;j++)collide(objs[i],objs[j]);
+        }
+        for(const o of objs)contain(o);
       }
 
       const maxSpeed=Math.max(...objs.map(o=>Math.hypot(o.vx,o.vy)));
