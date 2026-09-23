@@ -714,11 +714,13 @@ body[data-view-mode="immersive"] #matchHud::before{
 <script>
 (() => {
   const API = 'https://qsmvgyyaemjmklceyikr.supabase.co/functions/v1/twinlane-api';
+  const MONITOR_API = 'https://qsmvgyyaemjmklceyikr.supabase.co/functions/v1/twinlane-monitor';
   const PAGE = location.origin + location.pathname;
   const REALTIME_URL = 'wss://qsmvgyyaemjmklceyikr.supabase.co/realtime/v1/websocket?apikey=sb_publishable_pvvIlRcj-vro31h1Hng1jA_WL3oItk0&vsn=1.0.0';
   const params = new URLSearchParams(location.search);
   const joinSession = params.get('session') || '';
   const joinToken = params.get('join') || '';
+  const monitorRequested = params.get('monitor') !== '0';
 
   const matchHud = document.getElementById('matchHud');
   const playFlowCard = document.getElementById('playFlowCard');
@@ -825,6 +827,14 @@ body[data-view-mode="immersive"] #matchHud::before{
   let renderViewport = null;
   let lastHudDomKey = '';
   let lastScreenDomKey = '';
+  let monitorQueue = [];
+  let monitorFlushTimer = null;
+  let monitorSending = false;
+  let monitorLastRenderSampleAt = 0;
+  let monitorLastRxSampleAt = 0;
+  let monitorLastRafAt = performance.now();
+  let monitorLastLongFrameAt = 0;
+  let monitorSeamSeq = -1;
   let soundOn = localStorage.getItem('corvumor_sound') !== 'off';
   let viewMode = localStorage.getItem('corvumor_view_mode') || 'immersive';
   let hapticsOn = localStorage.getItem('corvumor_haptics') !== 'off';
@@ -863,6 +873,67 @@ body[data-view-mode="immersive"] #matchHud::before{
       ? cleanPlayerName(g.player_b_name,'Player 2')
       : cleanPlayerName(g.player_a_name,'Player 1');
   };
+
+
+  function monitorActive(){
+    return monitorRequested && localScreen===2 && position==='second' && Boolean(session) && Boolean(token);
+  }
+
+  function monitorEvent(eventType,extra={}){
+    if(!monitorActive())return;
+    const now=performance.now();
+    const evt={
+      shot_seq:Number(shotSeq||0),
+      event_type:String(eventType||'event').slice(0,40),
+      screen_position:position,
+      client_wall_ms:Date.now(),
+      perf_ms:now,
+      source_sent_at:Number.isFinite(Number(extra.source_sent_at))?Number(extra.source_sent_at):null,
+      playback_ms:Number.isFinite(Number(remotePlaybackTimeMs))?Number(remotePlaybackTimeMs):null,
+      ball_x:Number.isFinite(Number(displayedBall?.x))?Number(displayedBall.x):null,
+      ball_y:Number.isFinite(Number(displayedBall?.y))?Number(displayedBall.y):null,
+      pallino_x:Number.isFinite(Number(displayedPallino?.x))?Number(displayedPallino.x):null,
+      pallino_y:Number.isFinite(Number(displayedPallino?.y))?Number(displayedPallino.y):null,
+      team:(activeShotTeam==='B'?'B':'A'),
+      realtime_age_ms:lastRealtimeFrameAt?Math.max(0,now-lastRealtimeFrameAt):null,
+      frame_delta_ms:Number.isFinite(Number(extra.frame_delta_ms))?Number(extra.frame_delta_ms):null,
+      payload:extra.payload&&typeof extra.payload==='object'?extra.payload:{}
+    };
+    monitorQueue.push(evt);
+    if(monitorQueue.length>120)monitorQueue.splice(0,monitorQueue.length-100);
+    if(monitorQueue.length>=24)void flushMonitor();
+  }
+
+  async function flushMonitor(){
+    if(!monitorActive()||monitorSending||!monitorQueue.length)return;
+    const batch=monitorQueue.splice(0,100);
+    monitorSending=true;
+    try{
+      await fetch(MONITOR_API,{
+        method:'POST',
+        headers:{'content-type':'application/json'},
+        body:JSON.stringify({session,token,events:batch}),
+        keepalive:true
+      });
+    }catch{}
+    finally{
+      monitorSending=false;
+      if(monitorQueue.length>=24)void flushMonitor();
+    }
+  }
+
+  function startMonitorIfNeeded(){
+    if(!monitorActive())return;
+    if(!monitorFlushTimer)monitorFlushTimer=setInterval(()=>{void flushMonitor();},1000);
+    monitorEvent('monitor_start',{
+      payload:{
+        ua:navigator.userAgent.slice(0,160),
+        width:window.innerWidth,
+        height:window.innerHeight,
+        dpr:window.devicePixelRatio||1
+      }
+    });
+  }
 
   function detectDeviceKind(){
     const w=Math.min(window.innerWidth||9999,window.screen?.width||9999);
@@ -1376,7 +1447,7 @@ body[data-view-mode="immersive"] #matchHud::before{
       if(position==='first'){
         screenNameEl.textContent='Throw End';
         screenPositionEl.textContent='Near Player';
-        screenMetaEl.textContent='LIVING KINGDOMS';
+        screenMetaEl.textContent=monitorActive()?'LIVING KINGDOMS · MONITOR':'LIVING KINGDOMS';
       }else if(position==='second'){
         screenNameEl.textContent='Pallino End';
         screenPositionEl.textContent='Far End';
@@ -1465,12 +1536,20 @@ body[data-view-mode="immersive"] #matchHud::before{
   function animateDisplay() {
     if (!localSim && !(placementReady && role==='launch' && position==='first')) {
       const now=performance.now();
+      const frameDelta=now-monitorLastRafAt;
+      monitorLastRafAt=now;
       const realtimeAge=now-lastRealtimeFrameAt;
+
+      if(monitorActive() && frameDelta>42 && now-monitorLastLongFrameAt>250){
+        monitorLastLongFrameAt=now;
+        monitorEvent('long_frame',{frame_delta_ms:frameDelta});
+      }
 
       // Durable state is emergency recovery only. It must not compete with
       // healthy realtime motion.
       if(position==='second' && (remoteShotActive || state?.ball_moving) && realtimeAge>450 && now-lastRecoveryPollAt>250){
         lastRecoveryPollAt=now;
+        monitorEvent('recovery_poll',{payload:{realtime_age_ms:realtimeAge}});
         void poll();
       }
 
@@ -1528,6 +1607,28 @@ body[data-view-mode="immersive"] #matchHud::before{
         };
         displayedSettledBalls=interpolateBalls(a.settled,b.settled,t);
 
+        if(monitorActive() && shotSeq!==monitorSeamSeq && displayedBall.y>=50){
+          monitorSeamSeq=shotSeq;
+          monitorEvent('seam_visible',{
+            source_sent_at:b.sentAt,
+            payload:{queue:realtimeFrames.length,gap_ms:latestFrame.sentAt-playbackRemote}
+          });
+        }
+
+        if(monitorActive() && now-monitorLastRenderSampleAt>=100){
+          monitorLastRenderSampleAt=now;
+          monitorEvent('render_sample',{
+            source_sent_at:b.sentAt,
+            frame_delta_ms:frameDelta,
+            payload:{
+              t,
+              queue:realtimeFrames.length,
+              playback_gap_ms:latestFrame.sentAt-playbackRemote,
+              realtime_ready:realtimeReady
+            }
+          });
+        }
+
         flushRemoteTimelineEvents(playbackRemote);
       }else{
         displayedBall.x+=(targetBall.x-displayedBall.x)*.24;
@@ -1564,11 +1665,19 @@ body[data-view-mode="immersive"] #matchHud::before{
   function flushRemoteTimelineEvents(playbackTime){
     while(pendingPhysicalSounds.length && pendingPhysicalSounds[0].sentAt<=playbackTime){
       const evt=pendingPhysicalSounds.shift();
+      monitorEvent('sound_played',{
+        source_sent_at:evt.sentAt,
+        payload:{kind:evt.kind,strength:evt.strength,av_offset_ms:playbackTime-evt.sentAt}
+      });
       feedback(evt.kind,evt.strength);
     }
 
     while(pendingRemoteTransitions.length && pendingRemoteTransitions[0].sentAt<=playbackTime){
       const evt=pendingRemoteTransitions.shift();
+      monitorEvent('transition_applied',{
+        source_sent_at:evt.sentAt,
+        payload:{type:evt.type}
+      });
       if(evt.type==='shot_complete')applyShotComplete(evt.payload);
       if(evt.type==='pallino_complete')applyPallinoComplete(evt.payload);
       void poll();
@@ -1592,6 +1701,10 @@ body[data-view-mode="immersive"] #matchHud::before{
 
     pendingPhysicalSounds.push(evt);
     pendingPhysicalSounds.sort((a,b)=>a.sentAt-b.sentAt);
+    monitorEvent('sound_queued',{
+      source_sent_at:evt.sentAt,
+      payload:{kind:evt.kind,strength:evt.strength,queue:pendingPhysicalSounds.length}
+    });
     flushRemoteTimelineEvents(remotePlaybackTimeMs);
   }
 
@@ -1608,6 +1721,10 @@ body[data-view-mode="immersive"] #matchHud::before{
 
     pendingRemoteTransitions.push({type,payload,sentAt});
     pendingRemoteTransitions.sort((a,b)=>a.sentAt-b.sentAt);
+    monitorEvent('transition_queued',{
+      source_sent_at:sentAt,
+      payload:{type,queue:pendingRemoteTransitions.length}
+    });
     flushRemoteTimelineEvents(remotePlaybackTimeMs);
   }
 
@@ -1673,6 +1790,11 @@ body[data-view-mode="immersive"] #matchHud::before{
 
     remoteShotActive=true;
     lastRealtimeFrameAt=now;
+    monitorSeamSeq=-1;
+    monitorEvent('shot_start',{
+      source_sent_at:sentAt,
+      payload:{kind:payload.kind||'unknown',team:activeShotTeam}
+    });
 
     const anchor={
       recvAt:now,
@@ -1779,6 +1901,14 @@ body[data-view-mode="immersive"] #matchHud::before{
 
     realtimeFrames.push(frame);
     if(realtimeFrames.length>12)realtimeFrames.splice(0,realtimeFrames.length-12);
+
+    if(monitorActive() && now-monitorLastRxSampleAt>=120){
+      monitorLastRxSampleAt=now;
+      monitorEvent('physics_rx',{
+        source_sent_at:sentAt,
+        payload:{queue:realtimeFrames.length,excess_delay_ms:excessDelay}
+      });
+    }
 
     targetBall={...frame.ball};
     targetPallino={...frame.pallino};
@@ -1935,6 +2065,7 @@ body[data-view-mode="immersive"] #matchHud::before{
       if(msg?.event==='phx_reply' && msg?.topic===realtimeTopic && msg?.payload?.status==='ok'){
         realtimeReady=true;
         debugEl.textContent='Realtime motion connected.';
+        monitorEvent('realtime_open');
         return;
       }
       if(msg?.event==='broadcast' && msg?.topic===realtimeTopic){
@@ -1953,6 +2084,7 @@ body[data-view-mode="immersive"] #matchHud::before{
     });
 
     ws.addEventListener('close',()=>{
+      monitorEvent('realtime_close');
       realtimeReady=false;
       if(heartbeatTimer){clearInterval(heartbeatTimer);heartbeatTimer=null;}
       if(session)reconnectTimer=setTimeout(connectRealtime,800);
@@ -2147,6 +2279,7 @@ body[data-view-mode="immersive"] #matchHud::before{
       setStatus('Joining live Bocce session…');
       await api('POST',{action:'join',session:joinSession,join_token:joinToken,kind,role,position});
       session=joinSession;token=joinToken;isHost=false;
+      startMonitorIfNeeded();
       joinPanel.classList.add('hidden');
       playFlowCard?.classList.add('hidden');
       viewPanel.classList.remove('hidden');
@@ -2852,6 +2985,8 @@ body[data-view-mode="immersive"] #matchHud::before{
     if(pollTimer)clearInterval(pollTimer);
     if(heartbeatTimer)clearInterval(heartbeatTimer);
     if(reconnectTimer)clearTimeout(reconnectTimer);
+    if(monitorFlushTimer)clearInterval(monitorFlushTimer);
+    void flushMonitor();
     try{realtimeSocket?.close();}catch{}
   });
 })();
