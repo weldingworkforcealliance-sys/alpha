@@ -496,7 +496,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       launchHelp.classList.toggle('hidden',!(g.phase==='pallino'||g.phase==='bocce')||state?.ball_moving);
       if(g.phase==='pallino'){
         throwTitleEl.textContent=teamName(g.starting_team)+' · Pallino';
-        throwHelpEl.textContent='Place the small pallino in the start area, then flick it forward. It must cross center and stop before the back wall.';
+        throwHelpEl.textContent='Place the small pallino in the start area, then flick it forward. It must stop in the far half without reaching the back wall.';
       }else if(g.phase==='bocce'){
         throwTitleEl.textContent=teamName(g.current_team)+' · Bocce';
         throwHelpEl.textContent='Place the bocce ball in the start area, release it, then flick forward.';
@@ -1059,11 +1059,14 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         if(!result.legal){
           state.pallino_x=50;state.pallino_y=8;
           displayedPallino=targetPallino={x:50,y:8};
+          shotSeq=Number(result.ball_seq||shotSeq+1);
+          state.ball_seq=shotSeq;
+          state.game_state=result.game_state||state.game_state;
           realtimeSend('pallino_complete',{
             legal:false,pallino_x:50,pallino_y:8,
-            game_state:result.game_state,seq:shotSeq,sent_at:Date.now()
+            game_state:state.game_state,seq:shotSeq,sent_at:Date.now()
           });
-          setStatus('Pallino must cross center and stop before the back wall. Throw again.');
+          setStatus('Pallino was too short or too deep. It has reset. Throw again.');
           render();
           return;
         }
