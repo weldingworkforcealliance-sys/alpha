@@ -223,7 +223,8 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   let targetPallino = {x:52,y:82};
   let displayedSettledBalls = [];
   let realtimeFrames = [];
-  const REALTIME_BUFFER_MS = 75;
+  const REALTIME_BUFFER_MS = 65;
+  let remoteClockOffsetMs = null;
   let gesture = null;
   let localSim = false;
   let lastSend = 0;
@@ -385,18 +386,22 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   function animateDisplay() {
     if (!localSim) {
       const now=performance.now();
-      const playback=now-REALTIME_BUFFER_MS;
+      const playbackRemote = remoteClockOffsetMs==null
+        ? null
+        : Date.now()-remoteClockOffsetMs-REALTIME_BUFFER_MS;
 
-      while(realtimeFrames.length>2 && realtimeFrames[1].recvAt<=playback){
-        realtimeFrames.shift();
+      if(playbackRemote!=null){
+        while(realtimeFrames.length>2 && realtimeFrames[1].sentAt<=playbackRemote){
+          realtimeFrames.shift();
+        }
       }
 
       if(realtimeFrames.length){
         const a=realtimeFrames[0];
         const b=realtimeFrames[1]||a;
         let t=0;
-        if(b.recvAt>a.recvAt){
-          t=clamp((playback-a.recvAt)/(b.recvAt-a.recvAt),0,1);
+        if(playbackRemote!=null && b.sentAt>a.sentAt){
+          t=clamp((playbackRemote-a.sentAt)/(b.sentAt-a.sentAt),0,1);
         }
 
         displayedBall={
@@ -442,13 +447,22 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
     if(seq>shotSeq){
       realtimeFrames=[];
+    remoteClockOffsetMs=null;
+      remoteClockOffsetMs=null;
     }
     shotSeq=seq;
     const now=performance.now();
+    const recvWall=Date.now();
+    const sentAt=Number(payload.sent_at||recvWall);
+    const observedOffset=recvWall-sentAt;
+    if(remoteClockOffsetMs==null || observedOffset<remoteClockOffsetMs){
+      remoteClockOffsetMs=observedOffset;
+    }
     lastRealtimeFrameAt=now;
 
     const frame={
       recvAt:now,
+      sentAt,
       seq,
       ball:{
         x:Number(payload.ball_x??targetBall.x),
@@ -797,10 +811,10 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     shotSeq+=1;
     state.ball_moving=true;
 
-    const active={id:'active',x:startX,y:startY,vx:0,vy:0,m:1,r:2.8,type:'active'};
-    const pallino={id:'pallino',x:Number(state.pallino_x||52),y:Number(state.pallino_y||82),vx:0,vy:0,m:.35,r:1.6,type:'pallino'};
+    const active={id:'active',x:startX,y:startY,vx:0,vy:0,m:1,r:2.0,type:'active'};
+    const pallino={id:'pallino',x:Number(state.pallino_x||52),y:Number(state.pallino_y||82),vx:0,vy:0,m:.35,r:1.15,type:'pallino'};
     const settled=(Array.isArray(state.settled_balls)?state.settled_balls:[]).map((b)=>({
-      id:Number(b.id),x:Number(b.x),y:Number(b.y),vx:0,vy:0,m:1,r:2.8,type:'settled'
+      id:Number(b.id),x:Number(b.x),y:Number(b.y),vx:0,vy:0,m:1,r:2.0,type:'settled'
     }));
 
     const ang=clamp(Math.atan2(dx,dy),-.55,.55);
