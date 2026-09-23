@@ -3,20 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#090d12">
-<title>TwinLane Live Bocce Trial</title>
+<meta name="theme-color" content="#0b1511">
+<title>Corvu Mor Bocce · Living Kingdoms</title>
 <style>
 :root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 *{box-sizing:border-box}
-body{margin:0;background:#090d12;color:#f3f5f7;min-height:100vh}
+body{margin:0;background:
+radial-gradient(circle at 50% -10%,#26352a 0,#101a15 34%,#080d0b 72%),
+#080d0b;color:#f3f5f7;min-height:100vh}
 main{max-width:760px;margin:0 auto;padding:18px 14px 42px}
-.eyebrow{font-size:12px;letter-spacing:.14em;font-weight:800;color:#8793a4}
+.eyebrow{font-size:12px;letter-spacing:.16em;font-weight:800;color:#aa9b72}
 h1{font-size:28px;margin:6px 0 4px} h2{font-size:18px;margin:0 0 10px}
 p{color:#aab4c2;line-height:1.45}
-.card{border:1px solid #303846;border-radius:16px;background:#11161d;padding:16px;margin-top:14px}
-button,select{min-height:48px;border-radius:12px;border:1px solid #3c4656;background:#1b2430;color:#f3f5f7;padding:10px 14px;font-weight:700;font-size:16px}
+.card{border:1px solid #34413a;border-radius:16px;background:linear-gradient(180deg,#121b17f5,#0d1411f5);padding:16px;margin-top:14px;box-shadow:0 14px 36px #0004}
+button,select,input{min-height:48px;border-radius:12px;border:1px solid #3c4656;background:#151d1a;color:#f3f5f7;padding:10px 14px;font-weight:700;font-size:16px}
+input::placeholder{color:#738178}
 button{cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}
-.primary{background:#e7edf6;color:#10151c;border-color:#e7edf6;width:100%}
+.primary{background:linear-gradient(180deg,#d9c99a,#ad9660);color:#17150f;border-color:#eadcae;width:100%;box-shadow:inset 0 1px #fff6}
 .grid{display:grid;gap:12px}
 .three{grid-template-columns:repeat(3,minmax(0,1fr))}
 label{display:grid;gap:6px;font-size:14px;font-weight:700}
@@ -26,9 +29,14 @@ label{display:grid;gap:6px;font-size:14px;font-weight:700}
 .guide{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:14px;border:1px solid #303846;border-radius:14px;background:#0d1218}
 .guide-box{min-width:122px;padding:12px;border:1px solid #435064;border-radius:12px;text-align:center;background:#141b24}
 .guide-arrow{font-size:24px;color:#748197}
-.lane{height:390px;position:relative;overflow:hidden;border-radius:14px;border:1px solid #303846;background:repeating-linear-gradient(0deg,#141b24 0,#141b24 58px,#1a222d 59px,#1a222d 60px);touch-action:none}
-.rails{position:absolute;inset:0 10%;border-left:2px solid #4b586b;border-right:2px solid #4b586b;pointer-events:none}
-.start-zone{position:absolute;border:2px dashed #607089;border-radius:10px;background:#60708914;pointer-events:none}
+.lane{height:390px;position:relative;overflow:hidden;border-radius:14px;border:1px solid #49584e;background:
+linear-gradient(90deg,#17201a 0 8%,transparent 8% 92%,#17201a 92%),
+radial-gradient(circle at 18% 22%,#31403066 0 3%,transparent 3.5%),
+radial-gradient(circle at 76% 65%,#33453255 0 4%,transparent 4.5%),
+repeating-linear-gradient(0deg,#1b251f 0,#1b251f 57px,#253129 58px,#253129 60px);
+touch-action:none;box-shadow:inset 0 0 45px #0009}
+.rails{position:absolute;inset:0 10%;border-left:2px solid #8b7c5599;border-right:2px solid #8b7c5599;pointer-events:none;box-shadow:inset 14px 0 20px #0002,inset -14px 0 20px #0002}
+.start-zone{position:absolute;border:2px dashed #aa9869;border-radius:10px;background:#aa986912;pointer-events:none}
 .start-label{position:absolute;font-size:10px;color:#95a3b6;font-weight:800;letter-spacing:.08em;pointer-events:none}
 .ball{display:none;position:absolute;width:30px;height:30px;border-radius:50%;background:#eef3fa;border:2px solid #d8e2ef;outline:1px solid #3d4a5d;transform:translate(-50%,50%);box-shadow:0 4px 8px #0007;touch-action:none}
 .ball.team-a,.settled-ball.team-a{background:#d66a43;border-color:#ffd0bd}
@@ -44,20 +52,35 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 .warn{background:#21180d;border-color:#6a4d29}
 .scoreboard{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch}
 .score-team{border:1px solid #303846;border-radius:14px;padding:12px;background:#0d1218}
-.score-team.a{border-color:#75422f}.score-team.b{border-color:#345273;text-align:right}
+.score-team.a{border-color:#8a4d35;background:linear-gradient(180deg,#251712,#15110f)}.score-team.b{border-color:#3d5f7f;background:linear-gradient(180deg,#101b25,#0e1318);text-align:right}
 .score-num{font-size:34px;font-weight:900;line-height:1}
 .turnbox{min-width:128px;display:grid;place-items:center;text-align:center;border:1px solid #394555;border-radius:14px;padding:10px;background:#141b24}
 .balls-left{font-size:12px;color:#98a6b8;margin-top:6px}
-.game-banner{margin-top:12px;padding:10px 12px;border-radius:12px;border:1px solid #394555;background:#0d1218;text-align:center;font-weight:800}
-.end-result{margin-top:12px;border:1px solid #536178;border-radius:14px;padding:14px;background:#101720;text-align:center}
-@media(max-width:600px){h1{font-size:24px}.qr{width:145px;height:145px}.three{grid-template-columns:1fr}.guide-box{min-width:105px}}
+.game-banner{margin-top:12px;padding:10px 12px;border-radius:12px;border:1px solid #5a604c;background:#111812;text-align:center;font-weight:800}
+.end-result{margin-top:12px;border:1px solid #766a49;border-radius:14px;padding:14px;background:linear-gradient(180deg,#1d2119,#11150f);text-align:center}
+.brandbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:2px}
+.brand-title{font-size:30px;font-weight:950;letter-spacing:.02em;line-height:1}
+.skin-chip{display:inline-flex;gap:6px;align-items:center;border:1px solid #71684d;border-radius:999px;padding:6px 10px;background:#191c14;color:#d9c99a;font-size:11px;font-weight:900;letter-spacing:.08em}
+.setup-title{font-size:13px;letter-spacing:.12em;color:#aa9b72;font-weight:900;margin-bottom:9px}
+.player-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.feedback-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.feedback-btn{min-height:38px;padding:7px 11px;font-size:12px}
+.skin-card{margin-top:12px;padding:12px;border:1px solid #5d654e;border-radius:12px;background:linear-gradient(135deg,#1b261d,#121812);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.skin-card strong{color:#e0d1a3}
+.match-rule{font-size:11px;color:#7f8d83;margin-top:4px}
+@media(max-width:600px){h1{font-size:24px}.qr{width:145px;height:145px}.three{grid-template-columns:1fr}.guide-box{min-width:105px}.player-inputs{grid-template-columns:1fr}.brand-title{font-size:25px}}
 </style>
 </head>
 <body>
 <main>
-<div class="eyebrow">CORVU MOR · TWINLANE LIVE BOCCE</div>
-<h1>Two-screen playable trial</h1>
-<p>The device number does not decide where it sits. You choose the physical position for each screen.</p>
+<div class="brandbar">
+  <div>
+    <div class="eyebrow">CORVU MOR · TWINLANE</div>
+    <div class="brand-title">BOCCE</div>
+  </div>
+  <div class="skin-chip">LIVING KINGDOMS · ORIGINAL</div>
+</div>
+<p>Two screens become one court. First to 12 points wins.</p>
 
 <section class="card">
   <h2>What “physical position” means</h2>
@@ -73,7 +96,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 <section id="matchHud" class="card hidden">
   <div class="scoreboard">
     <div class="score-team a">
-      <div class="small">PLAYER 1</div>
+      <div id="playerANameHud" class="small">PLAYER 1</div>
       <div id="scoreA" class="score-num">0</div>
       <div id="ballsA" class="balls-left">4 balls left</div>
     </div>
@@ -84,7 +107,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       </div>
     </div>
     <div class="score-team b">
-      <div class="small">PLAYER 2</div>
+      <div id="playerBNameHud" class="small">PLAYER 2</div>
       <div id="scoreB" class="score-num">0</div>
       <div id="ballsB" class="balls-left">4 balls left</div>
     </div>
@@ -98,7 +121,28 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 </section>
 
 <section id="hostCreate" class="card">
-  <h2>Configure Screen 1</h2>
+  <div class="setup-title">NEW MATCH</div>
+  <div class="player-inputs">
+    <label>Player 1
+      <input id="playerAName" maxlength="24" value="Player 1" autocomplete="off">
+    </label>
+    <label>Player 2
+      <input id="playerBName" maxlength="24" value="Player 2" autocomplete="off">
+    </label>
+  </div>
+  <div class="skin-card">
+    <div>
+      <strong>Living Kingdoms</strong>
+      <div class="small">Original Corvu Mor court · included</div>
+    </div>
+    <span class="tag">FREE</span>
+  </div>
+  <div class="match-rule">4 balls per side · automatic scoring · first to 12</div>
+  <div class="feedback-row">
+    <button id="soundBtn" class="feedback-btn" type="button">Sound: On</button>
+    <button id="hapticsBtn" class="feedback-btn" type="button">Haptics: On</button>
+  </div>
+  <h2 style="margin-top:18px">Configure Screen 1</h2>
   <div class="grid three">
     <label>Device
       <select id="s1Kind">
@@ -125,7 +169,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       </select>
     </label>
   </div>
-  <button id="createBtn" class="primary" style="margin-top:14px">Create Live Bocce Session</button>
+  <button id="createBtn" class="primary" style="margin-top:14px">Create Match & Pair Screen 2</button>
 </section>
 
 <section id="hostPanel" class="card hidden">
@@ -168,7 +212,11 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       </select>
     </label>
   </div>
-  <button id="joinBtn" class="primary" style="margin-top:14px">Join Live Bocce Session</button>
+  <div class="feedback-row">
+    <button id="joinSoundBtn" class="feedback-btn" type="button">Sound: On</button>
+    <button id="joinHapticsBtn" class="feedback-btn" type="button">Haptics: On</button>
+  </div>
+  <button id="joinBtn" class="primary" style="margin-top:14px">Join Match</button>
 </section>
 
 <section id="viewPanel" class="card hidden">
