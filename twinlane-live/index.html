@@ -223,8 +223,9 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   let targetPallino = {x:52,y:82};
   let displayedSettledBalls = [];
   let realtimeFrames = [];
-  const REALTIME_BUFFER_MS = 65;
+  const REALTIME_BUFFER_MS = 75;
   let remoteClockOffsetMs = null;
+  const settledEls = new Map();
   let gesture = null;
   let localSim = false;
   let lastSend = 0;
@@ -302,25 +303,49 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   }
 
   function renderSettledBalls() {
-    settledLayerEl.innerHTML='';
     const vp=viewport();
     const balls=Array.isArray(displayedSettledBalls)?displayedSettledBalls:[];
     ballsOnCourtEl.textContent=String(balls.length);
     ballNumberEl.textContent=String(Number(state?.next_ball_number||1));
-    if(!vp)return;
+
+    const liveIds=new Set(balls.map(b=>Number(b.id)));
+
+    for(const [id,el] of settledEls){
+      if(!liveIds.has(id)){
+        el.remove();
+        settledEls.delete(id);
+      }
+    }
+
     for(const b of balls){
-      if(Number(b.y)<vp.y0-3||Number(b.y)>vp.y1+3)continue;
+      const id=Number(b.id);
+      let el=settledEls.get(id);
+
+      if(!el){
+        el=document.createElement('div');
+        el.className='settled-ball';
+        const num=document.createElement('div');
+        num.className='settled-number';
+        num.textContent=String(id);
+        el.appendChild(num);
+        settledLayerEl.appendChild(el);
+        settledEls.set(id,el);
+      }
+
+      if(!vp || Number(b.y)<vp.y0-.15 || Number(b.y)>vp.y1+.15){
+        el.style.display='none';
+        continue;
+      }
+
       const p=worldToLocal(Number(b.x),Number(b.y));
-      if(!p)continue;
-      const el=document.createElement('div');
-      el.className='settled-ball';
+      if(!p){
+        el.style.display='none';
+        continue;
+      }
+
+      el.style.display='block';
       el.style.left=p.x+'px';
       el.style.bottom=(laneEl.clientHeight-p.y)+'px';
-      const num=document.createElement('div');
-      num.className='settled-number';
-      num.textContent=String(b.id||'');
-      el.appendChild(num);
-      settledLayerEl.appendChild(el);
     }
   }
 
@@ -355,7 +380,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       startZoneEl.classList.add('hidden');
       startLabelEl.classList.add('hidden');
       launchHelp.classList.add('hidden');
-      settledLayerEl.innerHTML='';
+      for(const el of settledEls.values())el.style.display='none';
       return;
     }
 
