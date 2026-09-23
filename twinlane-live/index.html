@@ -404,6 +404,106 @@ body[data-view-mode="immersive"] #screenMeta{
   body[data-view-mode="immersive"] .turnbox{min-width:106px}
 }
 
+
+/* Living Kingdoms visual pass 3 — static depth and heraldry only. */
+body[data-view-mode="immersive"] #viewPanel .lane::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:57%;
+  width:86px;
+  height:86px;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  pointer-events:none;
+  z-index:0;
+  opacity:.22;
+  background:
+    radial-gradient(circle at 50% 50%,transparent 0 42%,#5b431f55 43% 45%,transparent 46%),
+    conic-gradient(from 45deg,#6d4f2444 0 12.5%,transparent 12.5% 25%,#6d4f2444 25% 37.5%,transparent 37.5% 50%,#6d4f2444 50% 62.5%,transparent 62.5% 75%,#6d4f2444 75% 87.5%,transparent 87.5%);
+  box-shadow:inset 0 0 0 2px #6c4b2050;
+}
+body[data-view-mode="immersive"] #viewPanel[data-skin-view="far"] .lane::after{
+  top:64%;
+  opacity:.16;
+}
+body[data-view-mode="immersive"] #viewPanel::after{
+  box-shadow:
+    0 6px 12px #0008,
+    inset 0 0 0 1px #d1ad6440,
+    0 0 18px #d39d4530;
+}
+body[data-view-mode="immersive"] #viewPanel[data-skin-view="far"]{
+  background:
+    radial-gradient(circle at 18% 18%,#d39f3c16 0 5%,transparent 12%),
+    radial-gradient(circle at 82% 22%,#d39f3c16 0 5%,transparent 12%),
+    linear-gradient(180deg,#15180f,#0a0c08);
+}
+body[data-view-mode="immersive"] #viewPanel[data-skin-view="near"]{
+  background:
+    radial-gradient(circle at 12% 20%,#d39f3c13 0 4%,transparent 10%),
+    radial-gradient(circle at 88% 20%,#d39f3c13 0 4%,transparent 10%),
+    linear-gradient(180deg,#15180f,#0a0c08);
+}
+body[data-view-mode="immersive"] #viewPanel[data-skin-view="far"] .lane{
+  border-top:2px solid #8e6636;
+}
+body[data-view-mode="immersive"] #viewPanel[data-skin-view="far"] .rails::before{
+  content:"LIVING KINGDOMS";
+  position:absolute;
+  left:50%;
+  top:4px;
+  transform:translateX(-50%);
+  padding:4px 12px 5px;
+  border:1px solid #8d6a3d;
+  border-radius:3px;
+  background:linear-gradient(180deg,#3a2818,#1d130c);
+  color:#e5cf99;
+  font:700 10px/1 Georgia,"Times New Roman",serif;
+  letter-spacing:.12em;
+  white-space:nowrap;
+  box-shadow:0 4px 8px #0007,inset 0 0 0 1px #c49b5533;
+}
+body[data-view-mode="immersive"] #viewPanel[data-skin-view="near"] .rails::before{
+  content:"";
+  position:absolute;
+  left:12%;
+  right:12%;
+  bottom:4px;
+  height:2px;
+  background:linear-gradient(90deg,transparent,#d1a25255 25%,#d1a25255 75%,transparent);
+}
+body[data-view-mode="immersive"] .game-banner::before,
+body[data-view-mode="immersive"] .game-banner::after{
+  color:#b88d4f;
+  font-size:11px;
+}
+body[data-view-mode="immersive"] .game-banner::before{content:"❧  ";}
+body[data-view-mode="immersive"] .game-banner::after{content:"  ❧";}
+body[data-view-mode="immersive"] .skin-chip{
+  box-shadow:inset 0 1px #fff1,0 0 12px #c69b3f18;
+}
+body[data-view-mode="immersive"] #matchHud{
+  position:relative;
+}
+body[data-view-mode="immersive"] #matchHud::before{
+  content:"";
+  position:absolute;
+  inset:5px;
+  border:1px solid #c7a25a1a;
+  border-radius:11px;
+  pointer-events:none;
+}
+@media(max-width:600px){
+  body[data-view-mode="immersive"] #matchHud{padding:12px}
+  body[data-view-mode="immersive"] .scoreboard{gap:6px}
+  body[data-view-mode="immersive"] .score-team{padding:8px 9px 10px}
+  body[data-view-mode="immersive"] .score-team .small{font-size:10px}
+  body[data-view-mode="immersive"] .balls-left{font-size:10px}
+  body[data-view-mode="immersive"] .turnbox{padding:8px 6px}
+  body[data-view-mode="immersive"] .game-banner{font-size:13px}
+}
+
 </style>
 </head>
 <body>
