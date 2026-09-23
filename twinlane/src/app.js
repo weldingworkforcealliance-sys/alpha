@@ -32,7 +32,13 @@ $('unit').onclick=()=>safely(()=>session.send({type:'unit',lane:Number($('lane')
 $('leave').onclick=()=>{session.close();location.href=location.pathname+location.search;};
 if(devPreview){$('skin').options[1].disabled=false;$('skin').options[1].textContent='Ironhold · development preview';$('preview').hidden=false;}
 $('skin').onchange=()=>{skin=resolveSkin($('skin').value,{devPreview});$('skin').value=skin.id;document.querySelector('h1').textContent=skin.name;};
-const saved=session.restore();if(saved)ready(saved);
+$('create').disabled=true;$('join').disabled=true;
+void safely(async()=>{
+  try{
+    const saved=await session.restore(params.get('id'));
+    if(saved)ready(saved);
+  }finally{$('create').disabled=false;$('join').disabled=false;}
+});
 function frame(now){
   const state=buffer.sample(now);
   if(state){
