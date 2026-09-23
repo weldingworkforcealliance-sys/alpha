@@ -1522,6 +1522,27 @@ body[data-view-mode="immersive"] #matchHud::before{
     }));
   }
 
+  function applyShotStart(payload){
+    if(!payload || localSim)return;
+    const seq=Number(payload.seq||0);
+    if(seq<shotSeq)return;
+
+    if(seq>shotSeq){
+      realtimeFrames=[];
+      remoteClockOffsetMs=null;
+      realtimeJitterMs=0;
+    }
+
+    shotSeq=Math.max(shotSeq,seq);
+    remoteShotActive=true;
+    lastRealtimeFrameAt=performance.now();
+
+    if(state){
+      state.ball_moving=true;
+      state.ball_seq=shotSeq;
+    }
+  }
+
   function applyRealtimePhysics(payload){
     if(!payload || localSim)return;
     const seq=Number(payload.seq||0);
@@ -1726,6 +1747,7 @@ body[data-view-mode="immersive"] #matchHud::before{
       }
       if(msg?.event==='broadcast' && msg?.topic===realtimeTopic){
         const p=msg?.payload;
+        if(p?.event==='shot_start')applyShotStart(p.payload);
         if(p?.event==='physics')applyRealtimePhysics(p.payload);
         if(p?.event==='impact_hit')scheduleRemotePhysicalSound(p.payload);
         if(p?.event==='rail_hit')scheduleRemotePhysicalSound(p.payload);
@@ -2046,6 +2068,16 @@ body[data-view-mode="immersive"] #matchHud::before{
     impactSoundTimes.clear();
     woodSoundTimes.clear();
 
+    const shotStartPayload={
+      seq:shotSeq,kind:'pallino',
+      ball_x:Number(state.ball_x||50),ball_y:Number(state.ball_y||8),
+      pallino_x:startX,pallino_y:startY,
+      settled_balls:[],
+      moving:true,sent_at:Date.now()
+    };
+    realtimeSend('shot_start',shotStartPayload);
+    void api('POST',{action:'physics',session,token,...shotStartPayload}).catch(()=>{});
+
     const pallino={x:startX,y:startY,vx:0,vy:0,r:1.14,type:'pallino'};
     const ang=clamp(Math.atan2(dx,dy),-.55,.55);
     const flickDistance=Math.hypot(dx,dy);
@@ -2227,6 +2259,16 @@ body[data-view-mode="immersive"] #matchHud::before{
     state.ball_moving=true;
     impactSoundTimes.clear();
     woodSoundTimes.clear();
+
+    const shotStartPayload={
+      seq:shotSeq,kind:'bocce',
+      ball_x:startX,ball_y:startY,
+      pallino_x:Number(state.pallino_x||52),pallino_y:Number(state.pallino_y||82),
+      settled_balls:Array.isArray(state.settled_balls)?state.settled_balls:[],
+      moving:true,sent_at:Date.now()
+    };
+    realtimeSend('shot_start',shotStartPayload);
+    void api('POST',{action:'physics',session,token,...shotStartPayload}).catch(()=>{});
 
     const physicsVp=viewport()||{y0:0,y1:50};
     const pxPerWorldX=Math.max(1,laneEl.clientWidth)/100;
