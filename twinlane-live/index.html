@@ -392,7 +392,6 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     const vp=viewport();
     const balls=Array.isArray(displayedSettledBalls)?displayedSettledBalls:[];
     ballsOnCourtEl.textContent=String(balls.length);
-    ballNumberEl.textContent=String(Number(state?.next_ball_number||1));
 
     const liveIds=new Set(balls.map(b=>Number(b.id)));
 
