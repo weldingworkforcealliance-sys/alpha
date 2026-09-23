@@ -1204,10 +1204,16 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     shotSeq+=1;
     state.ball_moving=true;
 
-    const active={id:'active',x:startX,y:startY,vx:0,vy:0,m:1,r:2.06,type:'active'};
-    const pallino={id:'pallino',x:Number(state.pallino_x||52),y:Number(state.pallino_y||82),vx:0,vy:0,m:.35,r:1.14,type:'pallino'};
+    const physicsVp=viewport()||{y0:0,y1:50};
+    const pxPerWorldX=Math.max(1,laneEl.clientWidth)/100;
+    const pxPerWorldY=Math.max(1,laneEl.clientHeight)/Math.max(1,physicsVp.y1-physicsVp.y0);
+
+    // Collision geometry is defined in rendered pixels so visible rims and
+    // physical contact stay aligned even though world X/Y use different scales.
+    const active={id:'active',x:startX,y:startY,vx:0,vy:0,m:1,pr:15,type:'active'};
+    const pallino={id:'pallino',x:Number(state.pallino_x||52),y:Number(state.pallino_y||82),vx:0,vy:0,m:.35,pr:8.5,type:'pallino'};
     const settled=(Array.isArray(state.settled_balls)?state.settled_balls:[]).map((b)=>({
-      id:Number(b.id),x:Number(b.x),y:Number(b.y),team:b.team==='B'?'B':'A',vx:0,vy:0,m:1,r:2.06,type:'settled'
+      id:Number(b.id),x:Number(b.x),y:Number(b.y),team:b.team==='B'?'B':'A',vx:0,vy:0,m:1,pr:15,type:'settled'
     }));
 
     const ang=clamp(Math.atan2(dx,dy),-.55,.55);
@@ -1219,23 +1225,38 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     setStatus('Ball '+Number(state.next_ball_number||1)+' rolling…');
 
     function collide(a,b){
-      let dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy),min=a.r+b.r;
-      if(!d||d>=min)return;
-      const nx=dx/d,ny=dy/d,over=min-d;
+      const dxPx=(b.x-a.x)*pxPerWorldX;
+      const dyPx=(b.y-a.y)*pxPerWorldY;
+      const dPx=Math.hypot(dxPx,dyPx);
+      const minPx=a.pr+b.pr;
+      if(!dPx||dPx>=minPx)return;
+
+      const nx=dxPx/dPx,ny=dyPx/dPx,overPx=minPx-dPx;
       const i1=1/a.m,i2=1/b.m,sum=i1+i2;
-      a.x-=nx*over*(i1/sum);a.y-=ny*over*(i1/sum);
-      b.x+=nx*over*(i2/sum);b.y+=ny*over*(i2/sum);
-      const rvx=b.vx-a.vx,rvy=b.vy-a.vy,rel=rvx*nx+rvy*ny;
+
+      // Separate in pixel space, then convert the correction back to world space.
+      a.x-=((nx*overPx*(i1/sum))/pxPerWorldX);
+      a.y-=((ny*overPx*(i1/sum))/pxPerWorldY);
+      b.x+=((nx*overPx*(i2/sum))/pxPerWorldX);
+      b.y+=((ny*overPx*(i2/sum))/pxPerWorldY);
+
+      // Resolve velocity in the same pixel metric the player sees.
+      const avxPx=a.vx*pxPerWorldX,avyPx=a.vy*pxPerWorldY;
+      const bvxPx=b.vx*pxPerWorldX,bvyPx=b.vy*pxPerWorldY;
+      const rel=(bvxPx-avxPx)*nx+(bvyPx-avyPx)*ny;
       if(rel>=0)return;
+
       const farContact=((a.y+b.y)*.5)>55;
       const deepContact=((a.y+b.y)*.5)>85;
       const restitution=deepContact ? .24 : farContact ? .31 : .44;
       const impulse=-(1+restitution)*rel/sum;
-      const ix=impulse*nx,iy=impulse*ny;
-      a.vx-=ix*i1;a.vy-=iy*i1;
-      b.vx+=ix*i2;b.vy+=iy*i2;
+      const ixPx=impulse*nx,iyPx=impulse*ny;
 
-      // Target-side surface loses more energy after impacts.
+      a.vx-=(ixPx*i1)/pxPerWorldX;
+      a.vy-=(iyPx*i1)/pxPerWorldY;
+      b.vx+=(ixPx*i2)/pxPerWorldX;
+      b.vy+=(iyPx*i2)/pxPerWorldY;
+
       if(farContact){
         const damping=deepContact ? .78 : .87;
         a.vx*=damping;a.vy*=damping;
@@ -1322,10 +1343,12 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       const objs=[active,pallino,...settled];
 
       function contain(o){
-        if(o.x-o.r<8){o.x=8+o.r;o.vx=Math.abs(o.vx)*.28;}
-        if(o.x+o.r>92){o.x=92-o.r;o.vx=-Math.abs(o.vx)*.28;}
-        if(o.y-o.r<0){o.y=o.r;o.vy=Math.abs(o.vy)*.16;}
-        if(o.y+o.r>100){o.y=100-o.r;o.vy=-Math.abs(o.vy)*.16;}
+        const rx=o.pr/pxPerWorldX;
+        const ry=o.pr/pxPerWorldY;
+        if(o.x-rx<8){o.x=8+rx;o.vx=Math.abs(o.vx)*.28;}
+        if(o.x+rx>92){o.x=92-rx;o.vx=-Math.abs(o.vx)*.28;}
+        if(o.y-ry<0){o.y=ry;o.vy=Math.abs(o.vy)*.16;}
+        if(o.y+ry>100){o.y=100-ry;o.vy=-Math.abs(o.vy)*.16;}
       }
 
       // Run physics at micro-step resolution so fast contact chains cannot tunnel
