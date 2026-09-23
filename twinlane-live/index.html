@@ -223,8 +223,10 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   let targetPallino = {x:52,y:82};
   let displayedSettledBalls = [];
   let realtimeFrames = [];
-  const REALTIME_BUFFER_MS = 75;
+  const REALTIME_BUFFER_MS = 85;
+  const REALTIME_BUFFER_MAX_MS = 170;
   let remoteClockOffsetMs = null;
+  let realtimeJitterMs = 0;
   const settledEls = new Map();
   let gesture = null;
   let localSim = false;
@@ -411,9 +413,14 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   function animateDisplay() {
     if (!localSim) {
       const now=performance.now();
+      const adaptiveBuffer = clamp(
+        REALTIME_BUFFER_MS + realtimeJitterMs * .85,
+        REALTIME_BUFFER_MS,
+        REALTIME_BUFFER_MAX_MS
+      );
       const playbackRemote = remoteClockOffsetMs==null
         ? null
-        : Date.now()-remoteClockOffsetMs-REALTIME_BUFFER_MS;
+        : Date.now()-remoteClockOffsetMs-adaptiveBuffer;
 
       if(playbackRemote!=null){
         while(realtimeFrames.length>2 && realtimeFrames[1].sentAt<=playbackRemote){
@@ -473,6 +480,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     if(seq>shotSeq){
       realtimeFrames=[];
       remoteClockOffsetMs=null;
+      realtimeJitterMs=0;
     }
     shotSeq=seq;
     const now=performance.now();
@@ -482,6 +490,8 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     if(remoteClockOffsetMs==null || observedOffset<remoteClockOffsetMs){
       remoteClockOffsetMs=observedOffset;
     }
+    const excessDelay=Math.max(0, observedOffset-(remoteClockOffsetMs??observedOffset));
+    realtimeJitterMs=Math.max(realtimeJitterMs*.92, excessDelay);
     lastRealtimeFrameAt=now;
 
     const frame={
@@ -532,6 +542,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     // Never interpolate the finished ball backward to the launch position.
     realtimeFrames=[];
     remoteClockOffsetMs=null;
+    realtimeJitterMs=0;
 
     const settled=Array.isArray(payload.settled_balls)
       ? payload.settled_balls.map(b=>({id:Number(b.id),x:Number(b.x),y:Number(b.y)}))
@@ -733,6 +744,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       displayedPallino=targetPallino={x:52,y:82};
       displayedSettledBalls=[];
       realtimeFrames=[];
+      realtimeJitterMs=0;
       hostCreate.classList.add('hidden');hostPanel.classList.remove('hidden');viewPanel.classList.remove('hidden');
       document.getElementById('sessionId').textContent=session;
       const joinUrl=PAGE+'?session='+encodeURIComponent(session)+'&join='+encodeURIComponent(data.join_token);
@@ -1010,6 +1022,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         state.settled_balls=[];state.next_ball_number=1;
         displayedSettledBalls=[];
         realtimeFrames=[];
+        realtimeJitterMs=0;
       }
       setStatus('New frame ready. Ball 1 is waiting at the Near Player end.');
       render();
