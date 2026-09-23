@@ -223,8 +223,8 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   let targetPallino = {x:52,y:82};
   let displayedSettledBalls = [];
   let realtimeFrames = [];
-  const REALTIME_BUFFER_MS = 105;
-  const REALTIME_BUFFER_MAX_MS = 210;
+  const REALTIME_BUFFER_MS = 140;
+  const REALTIME_BUFFER_MAX_MS = 280;
   let remoteClockOffsetMs = null;
   let realtimeJitterMs = 0;
   const settledEls = new Map();
@@ -414,7 +414,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     if (!localSim) {
       const now=performance.now();
       const adaptiveBuffer = clamp(
-        REALTIME_BUFFER_MS + realtimeJitterMs * 1.1,
+        REALTIME_BUFFER_MS + realtimeJitterMs * 1.2,
         REALTIME_BUFFER_MS,
         REALTIME_BUFFER_MAX_MS
       );
