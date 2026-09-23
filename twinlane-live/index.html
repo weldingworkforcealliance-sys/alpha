@@ -631,7 +631,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     if(last && last.seq===frame.seq && last.recvAt===frame.recvAt)return;
 
     realtimeFrames.push(frame);
-    if(realtimeFrames.length>12)realtimeFrames.splice(0,realtimeFrames.length-12);
+    if(realtimeFrames.length>24)realtimeFrames.splice(0,realtimeFrames.length-24);
 
     targetBall={...frame.ball};
     targetPallino={...frame.pallino};
@@ -1170,7 +1170,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       displayedPallino=targetPallino={x:pallino.x,y:pallino.y};
       state.pallino_x=pallino.x;state.pallino_y=pallino.y;
 
-      if(now-lastSend>34){
+      if(now-lastSend>16){
         lastSend=now;
         const framePayload={
           ball_x:Number(state.ball_x||50),ball_y:Number(state.ball_y||8),
@@ -1376,7 +1376,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       state.settled_balls=settledPayload;
       displayedSettledBalls=settledPayload;
 
-      if(now-lastSend>34){
+      if(now-lastSend>16){
         lastSend=now;
         const frame={
           ball_x:displayedBall.x,ball_y:displayedBall.y,
