@@ -890,9 +890,19 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
   function render() {
     const vp=viewport();
-    screenNameEl.textContent='Screen '+localScreen+' · '+nice(kind);
-    screenPositionEl.textContent='Physical position: '+localPositionLabel();
-    screenMetaEl.textContent=vp?(role+' · Y '+vp.y0+'–'+vp.y1):(role+' · side display');
+    if(position==='first'){
+      screenNameEl.textContent='Throw End';
+      screenPositionEl.textContent='Near Player';
+      screenMetaEl.textContent='LIVING KINGDOMS';
+    }else if(position==='second'){
+      screenNameEl.textContent='Pallino End';
+      screenPositionEl.textContent='Far End';
+      screenMetaEl.textContent='LIVING KINGDOMS';
+    }else{
+      screenNameEl.textContent='Match Display';
+      screenPositionEl.textContent=nice(role);
+      screenMetaEl.textContent='LIVING KINGDOMS';
+    }
     updateGameHud();
 
     if (!vp) {
@@ -1318,6 +1328,9 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
           pairStatusEl.innerHTML='<span class="paired-badge">✓ Screen 2 connected</span>';
           hostPanel?.classList.add('ready');
         }
+        if(isHost && hostPanel && !hostPanel.classList.contains('hidden')){
+          setTimeout(()=>hostPanel.classList.add('hidden'),650);
+        }
         const g=game();
         if(g.phase==='pallino'){
           setStatus(role==='launch' ? teamName(g.starting_team)+' throws the pallino.' : 'Waiting for the pallino throw.');
@@ -1329,7 +1342,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
           setStatus(teamName(g.winner)+' wins the match.');
         }
       }else if(isHost){
-        setStatus('Waiting for Screen 2 to scan the QR and join.');
+        setStatus('Waiting for the far-end screen to connect.');
       }
       const audioState=impactAudioReady?'bocce clack ready':(soundOn?'bocce clack priming':'sound off');
       debugEl.textContent='Active ball ('+Number(s.ball_x||50).toFixed(1)+', '+Number(s.ball_y||8).toFixed(1)+') · '+(Array.isArray(s.settled_balls)?s.settled_balls.length:0)+' settled · Pallino ('+Number(s.pallino_x||52).toFixed(1)+', '+Number(s.pallino_y||82).toFixed(1)+') · '+audioState;
