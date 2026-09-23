@@ -355,7 +355,10 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   let realBallAudio = null;
   let realBallImpactOffsets = [];
   let realBallAudioLoading = null;
-  const REAL_BALL_AUDIO_URL='https://upload.wikimedia.org/wikipedia/commons/5/5d/Pool_Sounds.ogg';
+  const REAL_BALL_AUDIO_URLS=[
+    'https://upload.wikimedia.org/wikipedia/commons/transcoded/5/5d/Pool_Sounds.ogg/Pool_Sounds.ogg.mp3',
+    'https://upload.wikimedia.org/wikipedia/commons/5/5d/Pool_Sounds.ogg'
+  ];
   let lastPresentationKey = '';
   let impactCounter = 0;
   let lastImpactType = 'impact';
@@ -445,10 +448,22 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         const ctx=ensureAudio();
         if(!ctx)return null;
 
-        const res=await fetch(REAL_BALL_AUDIO_URL,{mode:'cors',cache:'force-cache'});
-        if(!res.ok)throw new Error('Recorded ball audio unavailable');
-        const bytes=await res.arrayBuffer();
-        const decoded=await ctx.decodeAudioData(bytes.slice(0));
+        let decoded=null;
+        let lastError=null;
+
+        for(const url of REAL_BALL_AUDIO_URLS){
+          try{
+            const res=await fetch(url,{mode:'cors',cache:'force-cache'});
+            if(!res.ok)throw new Error('HTTP '+res.status);
+            const bytes=await res.arrayBuffer();
+            decoded=await ctx.decodeAudioData(bytes.slice(0));
+            if(decoded)break;
+          }catch(e){
+            lastError=e;
+          }
+        }
+
+        if(!decoded)throw lastError||new Error('Recorded ball audio unavailable');
         realBallAudio=decoded;
 
         // Find short, isolated transients automatically from the real recording.
@@ -477,6 +492,12 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         }
 
         realBallImpactOffsets=chosen.sort((a,b)=>a-b);
+
+        if(!realBallImpactOffsets.length){
+          realBallImpactOffsets=[1.2,3.6,6.1,9.4,12.7,16.3,20.1,24.0,27.4,30.0]
+            .filter(t=>t<decoded.duration-.3);
+        }
+
         return decoded;
       }catch(e){
         console.warn('Real ball sound load failed',e);
@@ -1232,7 +1253,8 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       }else if(isHost){
         setStatus('Waiting for Screen 2 to scan the QR and join.');
       }
-      debugEl.textContent='Active ball ('+Number(s.ball_x||50).toFixed(1)+', '+Number(s.ball_y||8).toFixed(1)+') · '+(Array.isArray(s.settled_balls)?s.settled_balls.length:0)+' settled · Pallino ('+Number(s.pallino_x||52).toFixed(1)+', '+Number(s.pallino_y||82).toFixed(1)+')';
+      const audioState=realBallAudio?'recorded impacts ready':(soundOn?'recorded impacts loading':'sound off');
+      debugEl.textContent='Active ball ('+Number(s.ball_x||50).toFixed(1)+', '+Number(s.ball_y||8).toFixed(1)+') · '+(Array.isArray(s.settled_balls)?s.settled_balls.length:0)+' settled · Pallino ('+Number(s.pallino_x||52).toFixed(1)+', '+Number(s.pallino_y||82).toFixed(1)+') · '+audioState;
       render();
     }catch(e){debugEl.textContent='Poll error: '+e.message;}
   }
@@ -1617,7 +1639,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
       const impactStrength=Math.abs(rel);
       const impactNow=performance.now();
-      if(impactStrength>4 && impactNow-lastImpactFeedbackAt>90){
+      if(impactStrength>.45 && impactNow-lastImpactFeedbackAt>75){
         lastImpactFeedbackAt=impactNow;
         impactCounter+=1;
         lastImpactType=(a.type==='pallino'||b.type==='pallino')?'pallino_hit':'impact';
