@@ -68,6 +68,20 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 .skin-card{margin-top:12px;padding:12px;border:1px solid #5d654e;border-radius:12px;background:linear-gradient(135deg,#1b261d,#121812);display:flex;justify-content:space-between;align-items:center;gap:12px}
 .skin-card strong{color:#e0d1a3}
 .match-rule{font-size:11px;color:#7f8d83;margin-top:4px}
+.hero-card{text-align:center;padding:22px 16px}
+.hero-title{font-size:22px;font-weight:950;margin-bottom:4px}
+.hero-sub{font-size:13px;color:#91a096;line-height:1.45}
+.pair-flow{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:14px}
+.pair-step{border:1px solid #3e4a42;border-radius:13px;background:#101713;padding:12px;text-align:center}
+.pair-arrow{font-size:22px;color:#998b63}
+.advanced{margin-top:14px;border-top:1px solid #2e3932;padding-top:10px}
+.advanced summary{cursor:pointer;color:#7e8d83;font-size:12px;font-weight:800}
+.join-hero{text-align:center}
+.join-hero h2{margin-bottom:5px}
+.diag{margin-top:10px}
+.diag summary{cursor:pointer;color:#76857a;font-size:11px}
+.paired-badge{display:inline-flex;align-items:center;gap:7px;border:1px solid #3f6d50;border-radius:999px;padding:6px 10px;background:#102018;color:#b9dcc4;font-size:12px;font-weight:900}
+@media(max-width:600px)
 @media(max-width:600px){h1{font-size:24px}.qr{width:145px;height:145px}.three{grid-template-columns:1fr}.guide-box{min-width:105px}.player-inputs{grid-template-columns:1fr}.brand-title{font-size:25px}}
 </style>
 </head>
@@ -82,15 +96,14 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 </div>
 <p>Two screens become one court. First to 12 points wins.</p>
 
-<section class="card">
-  <h2>What “physical position” means</h2>
-  <div class="guide">
-    <div><div class="small" style="text-align:center;margin-bottom:5px">PLAYER</div><div style="font-size:26px;text-align:center">⬆</div></div>
-    <div class="guide-box"><strong>NEAR PLAYER</strong><div class="small">start / launch end</div></div>
-    <div class="guide-arrow">→</div>
-    <div class="guide-box"><strong>FAR END</strong><div class="small">target / pallino end</div></div>
+<section id="playFlowCard" class="card hero-card">
+  <div class="hero-title">Two devices. One court.</div>
+  <div class="hero-sub">Put the first device near the players. Scan the QR with the second device and place it directly beyond the first.</div>
+  <div class="pair-flow">
+    <div class="pair-step"><strong>SCREEN 1</strong><div class="small">Near Player · Throw Here</div></div>
+    <div class="pair-arrow">→</div>
+    <div class="pair-step"><strong>SCREEN 2</strong><div class="small">Far End · Pallino Side</div></div>
   </div>
-  <div class="small" style="margin-top:10px"><strong>SIDE DISPLAY</strong> means the device sits beside the court or on a TV. The ball never travels through it.</div>
 </section>
 
 <section id="matchHud" class="card hidden">
@@ -142,81 +155,95 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     <button id="soundBtn" class="feedback-btn" type="button">Sound: On</button>
     <button id="hapticsBtn" class="feedback-btn" type="button">Haptics: On</button>
   </div>
-  <h2 style="margin-top:18px">Configure Screen 1</h2>
-  <div class="grid three">
-    <label>Device
-      <select id="s1Kind">
-        <option value="phone" selected>Phone</option>
-        <option value="tablet">Tablet</option>
-        <option value="laptop">Laptop</option>
-        <option value="tv">TV / browser display</option>
-      </select>
-    </label>
-    <label>Role
-      <select id="s1Role">
-        <option value="launch" selected>Launch / throw from here</option>
-        <option value="lane">Lane</option>
-        <option value="target">Target / pallino end</option>
-        <option value="scoreboard">Scoreboard</option>
-        <option value="spectator">Spectator</option>
-      </select>
-    </label>
-    <label>Physical position
-      <select id="s1Position">
-        <option value="first" selected>Near Player</option>
-        <option value="second">Far End</option>
-        <option value="independent">Side Display</option>
-      </select>
-    </label>
-  </div>
-  <button id="createBtn" class="primary" style="margin-top:14px">Create Match & Pair Screen 2</button>
+  <button id="createBtn" class="primary" style="margin-top:16px">Start Match</button>
+  <details class="advanced">
+    <summary>Advanced Setup</summary>
+    <div class="grid three" style="margin-top:10px">
+      <label>Device
+        <select id="s1Kind">
+          <option value="phone">Phone</option>
+          <option value="tablet">Tablet</option>
+          <option value="laptop">Laptop</option>
+          <option value="tv">TV / browser display</option>
+        </select>
+      </label>
+      <label>Role
+        <select id="s1Role">
+          <option value="launch" selected>Launch</option>
+          <option value="lane">Lane</option>
+          <option value="target">Target</option>
+          <option value="scoreboard">Scoreboard</option>
+          <option value="spectator">Spectator</option>
+        </select>
+      </label>
+      <label>Position
+        <select id="s1Position">
+          <option value="first" selected>Near Player</option>
+          <option value="second">Far End</option>
+          <option value="independent">Side Display</option>
+        </select>
+      </label>
+    </div>
+  </details>
 </section>
 
 <section id="hostPanel" class="card hidden">
   <div class="row">
     <div>
-      <div class="small">SESSION</div>
-      <strong id="sessionId"></strong>
-      <div class="small" style="margin-top:8px">Scan with Screen 2</div>
+      <div class="setup-title">PAIR SCREEN 2</div>
+      <strong>Scan this QR with the second device</strong>
+      <div class="small" style="margin-top:7px">Then place Screen 2 directly beyond this one at the far end of the court.</div>
+      <div id="pairStatus" class="small" style="margin-top:9px">Waiting for Screen 2…</div>
     </div>
-    <img id="qr" class="qr" alt="QR code to join TwinLane">
+    <img id="qr" class="qr" alt="QR code to join Corvu Mor Bocce">
   </div>
-  <div style="margin-top:10px"><code id="joinLink"></code></div>
+  <details class="diag">
+    <summary>Pairing details</summary>
+    <div class="small" style="margin-top:8px">Session <span id="sessionId"></span></div>
+    <div style="margin-top:6px"><code id="joinLink"></code></div>
+  </details>
 </section>
 
 <section id="joinPanel" class="card hidden">
-  <h2>Configure Screen 2</h2>
-  <div class="grid three">
-    <label>Device
-      <select id="s2Kind">
-        <option value="phone" selected>Phone</option>
-        <option value="tablet">Tablet</option>
-        <option value="laptop">Laptop</option>
-        <option value="tv">TV / browser display</option>
-      </select>
-    </label>
-    <label>Role
-      <select id="s2Role">
-        <option value="launch">Launch / throw from here</option>
-        <option value="lane">Lane</option>
-        <option value="target" selected>Target / pallino end</option>
-        <option value="scoreboard">Scoreboard</option>
-        <option value="spectator">Spectator</option>
-      </select>
-    </label>
-    <label>Physical position
-      <select id="s2Position">
-        <option value="first">Near Player</option>
-        <option value="second" selected>Far End</option>
-        <option value="independent">Side Display</option>
-      </select>
-    </label>
+  <div class="join-hero">
+    <div class="setup-title">SCREEN 2</div>
+    <h2 id="joinMatchTitle">Join Bocce Match</h2>
+    <div id="joinMatchNames" class="small">Place this device at the far end of Screen 1.</div>
   </div>
-  <div class="feedback-row">
+  <div class="feedback-row" style="justify-content:center">
     <button id="joinSoundBtn" class="feedback-btn" type="button">Sound: On</button>
     <button id="joinHapticsBtn" class="feedback-btn" type="button">Haptics: On</button>
   </div>
   <button id="joinBtn" class="primary" style="margin-top:14px">Join Match</button>
+  <details class="advanced">
+    <summary>Advanced Setup</summary>
+    <div class="grid three" style="margin-top:10px">
+      <label>Device
+        <select id="s2Kind">
+          <option value="phone">Phone</option>
+          <option value="tablet">Tablet</option>
+          <option value="laptop">Laptop</option>
+          <option value="tv">TV / browser display</option>
+        </select>
+      </label>
+      <label>Role
+        <select id="s2Role">
+          <option value="launch">Launch</option>
+          <option value="lane">Lane</option>
+          <option value="target" selected>Target</option>
+          <option value="scoreboard">Scoreboard</option>
+          <option value="spectator">Spectator</option>
+        </select>
+      </label>
+      <label>Position
+        <select id="s2Position">
+          <option value="first">Near Player</option>
+          <option value="second" selected>Far End</option>
+          <option value="independent">Side Display</option>
+        </select>
+      </label>
+    </div>
+  </details>
 </section>
 
 <section id="viewPanel" class="card hidden">
@@ -253,9 +280,11 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 </section>
 
 <section id="connectionCard" class="card">
-  <strong>Status</strong>
-  <div id="status" class="status" style="margin-top:6px">Ready.</div>
-  <div id="debug" class="small" style="margin-top:8px"></div>
+  <div id="status" class="status">Ready.</div>
+  <details class="diag">
+    <summary>Diagnostics</summary>
+    <div id="debug" class="small" style="margin-top:8px"></div>
+  </details>
 </section>
 </main>
 
@@ -269,6 +298,10 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   const joinToken = params.get('join') || '';
 
   const matchHud = document.getElementById('matchHud');
+  const playFlowCard = document.getElementById('playFlowCard');
+  const pairStatusEl = document.getElementById('pairStatus');
+  const joinMatchTitleEl = document.getElementById('joinMatchTitle');
+  const joinMatchNamesEl = document.getElementById('joinMatchNames');
   const playerANameHud = document.getElementById('playerANameHud');
   const playerBNameHud = document.getElementById('playerBNameHud');
   const playerANameInput = document.getElementById('playerAName');
@@ -386,6 +419,30 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       ? cleanPlayerName(g.player_b_name,'Player 2')
       : cleanPlayerName(g.player_a_name,'Player 1');
   };
+
+  function detectDeviceKind(){
+    const w=Math.min(window.innerWidth||9999,window.screen?.width||9999);
+    const coarse=window.matchMedia?.('(pointer:coarse)')?.matches;
+    if(coarse && w<=700)return 'phone';
+    if(coarse && w<=1200)return 'tablet';
+    return 'laptop';
+  }
+
+  function applyStandardSetup(){
+    const detected=detectDeviceKind();
+    const s1Kind=document.getElementById('s1Kind');
+    const s2Kind=document.getElementById('s2Kind');
+    if(s1Kind)s1Kind.value=detected;
+    if(s2Kind)s2Kind.value=detected;
+    const s1Role=document.getElementById('s1Role');
+    const s1Pos=document.getElementById('s1Position');
+    const s2Role=document.getElementById('s2Role');
+    const s2Pos=document.getElementById('s2Position');
+    if(s1Role)s1Role.value='launch';
+    if(s1Pos)s1Pos.value='first';
+    if(s2Role)s2Role.value='target';
+    if(s2Pos)s2Pos.value='second';
+  }
 
   function syncFeedbackButtons(){
     for(const b of [soundBtn,joinSoundBtn].filter(Boolean)){
@@ -645,6 +702,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     soundOn=!soundOn;
     localStorage.setItem('corvumor_sound',soundOn?'on':'off');
     syncFeedbackButtons();
+  applyStandardSetup();
   if(soundOn)document.addEventListener('pointerdown',prepareImpactAudio,{once:true,passive:true});
     if(soundOn){
       await unlockAudio();
@@ -1256,6 +1314,10 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       }
       if(s.screen2_joined){
         connectionCard.classList.add('ready');
+        if(pairStatusEl){
+          pairStatusEl.innerHTML='<span class="paired-badge">✓ Screen 2 connected</span>';
+          hostPanel?.classList.add('ready');
+        }
         const g=game();
         if(g.phase==='pallino'){
           setStatus(role==='launch' ? teamName(g.starting_team)+' throws the pallino.' : 'Waiting for the pallino throw.');
@@ -1309,13 +1371,16 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       realtimeJitterMs=0;
       placementReady=false;
       placedObject=null;
-      hostCreate.classList.add('hidden');hostPanel.classList.remove('hidden');viewPanel.classList.remove('hidden');
+      hostCreate.classList.add('hidden');
+      playFlowCard?.classList.add('hidden');
+      hostPanel.classList.remove('hidden');
+      viewPanel.classList.remove('hidden');
       document.getElementById('sessionId').textContent=session;
       const joinUrl=PAGE+'?session='+encodeURIComponent(session)+'&join='+encodeURIComponent(data.join_token);
       const qrUrl=API+'?api=qr&session='+encodeURIComponent(session)+'&join='+encodeURIComponent(data.join_token)+'&target='+encodeURIComponent(PAGE);
       document.getElementById('joinLink').textContent=joinUrl;
       document.getElementById('qr').src=qrUrl;
-      setStatus('Screen 1 ready. Scan the QR with Screen 2.');
+      setStatus('Match created. Pair Screen 2 to begin.');
       connectRealtime();
       startPolling(500);
     }catch(e){setStatus('Create failed: '+e.message);}
@@ -1331,7 +1396,9 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       setStatus('Joining live Bocce session…');
       await api('POST',{action:'join',session:joinSession,join_token:joinToken,kind,role,position});
       session=joinSession;token=joinToken;isHost=false;
-      joinPanel.classList.add('hidden');viewPanel.classList.remove('hidden');
+      joinPanel.classList.add('hidden');
+      playFlowCard?.classList.add('hidden');
+      viewPanel.classList.remove('hidden');
       setStatus('Connected. Loading court…');
       connectRealtime();
       startPolling(500);
@@ -1957,8 +2024,20 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   });
 
   if(joinSession&&joinToken){
-    hostCreate.classList.add('hidden');joinPanel.classList.remove('hidden');
-    setStatus('Configure Screen 2, then join.');
+    hostCreate.classList.add('hidden');
+    playFlowCard?.classList.add('hidden');
+    joinPanel.classList.remove('hidden');
+    setStatus('Ready to join as the far-end screen.');
+
+    void api('GET',null,'?api=state&session='+encodeURIComponent(joinSession)+'&token='+encodeURIComponent(joinToken))
+      .then(s=>{
+        const g=s?.game_state||{};
+        const a=cleanPlayerName(g.player_a_name,'Player 1');
+        const b=cleanPlayerName(g.player_b_name,'Player 2');
+        if(joinMatchTitleEl)joinMatchTitleEl.textContent=a+' vs '+b;
+        if(joinMatchNamesEl)joinMatchNamesEl.textContent='Place this device at the far end, then tap Join Match.';
+      })
+      .catch(()=>{});
   }
 
   window.addEventListener('beforeunload',()=>{
