@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>WLD 114 Torchmate Operator and Troubleshooting Hub</title>
+  <style>
+    :root{color-scheme:dark;font:16px/1.5 system-ui;background:#101821;color:#edf3f5}
+    body{max-width:1050px;margin:auto;padding:24px 16px 70px}h1,h2{line-height:1.2}h1{font-size:2rem}h2{margin-top:2rem}
+    a{color:#75dbe8}a:focus-visible{outline:3px solid #ffc978;outline-offset:3px}
+    .lead{color:#c7d1d8}.note{border-left:4px solid #ffbd69;background:#293340;padding:12px 16px;margin:20px 0}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px}.card{background:#1a2732;border:1px solid #36505f;border-radius:9px;padding:14px}
+    .card h3{margin:0 0 8px}.card p{margin:6px 0}table{border-collapse:collapse;width:100%}th,td{border:1px solid #53636d;padding:10px;vertical-align:top;text-align:left}th{background:#263745}
+    .scroll{overflow-x:auto}small{color:#c0cbd1}details{background:#1a2732;border:1px solid #36505f;border-radius:9px;padding:10px 14px;margin:10px 0}summary{cursor:pointer;font-weight:700}details ol{columns:2;column-gap:30px}details li{break-inside:avoid;margin:4px 0}@media(max-width:650px){details ol{columns:1}}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>WLD 114 · Torchmate operator hub</h1>
+    <p class="lead">The full <strong>5:00–6:00 PM</strong> WLD 114 class follows <a href="https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan">Lincoln Electric Learning · Torchmate 4000 learning plan</a> videos on the <strong>Torchmate 4800 with FlexCut 80</strong>. The instructor alone accesses and plays the videos; students watch together and follow along in CAD or at the machine. Complete the nameplate on Days 5–7, welcome sign on Days 7–9 and capstone on Days 9–15; all seven Academy courses and the three projects are due by <strong>Day 15 · December 7</strong>. Approved cutting slots may rotate into the paired 6:00–9:45 PM WLD 115 lab while classmates continue welding, subject to direct instructor supervision and separate course evidence. Verify the installed torch, consumables and approved cut chart for the material and thickness before cutting; 80 A identifies the power-source rating, not a universal cutting setting. The Academy links on this page are for the signed-in instructor; students do not need Academy accounts.</p>
+    <div class="note"><strong>Instructor release gate:</strong> Students do not energize, move, or cut until the instructor checks the equipment, file, toolpath, plate, air supply, consumables, grounding, cut envelope, and people clear of the table. Stop and isolate a machine with an unexpected motion, electrical, air, or torch fault. Service work belongs to authorized personnel.</div>
+
+    <h2>Daily workflow</h2>
+    <ol>
+      <li><strong>Before startup:</strong> identify the exact table and plasma source; check approved PPE, extraction, machine area, cable routing, dry air, consumables, plate stability, work return and visible damage.</li>
+      <li><strong>Prepare:</strong> name and save the file; check dimensions, kerf offset, cut order, leads, small features, pierce locations and stock margin. Preview the path and have the instructor approve it.</li>
+      <li><strong>First motion:</strong> follow the machine-specific VMD SP2 startup and reference procedure. Dry-run/trace the job where the approved machine setup permits it. Confirm travel and plate alignment before any live cut.</li>
+      <li><strong>Cut and inspect:</strong> supervise the run, stay at the controls, stop if motion or arc behavior is abnormal; let hot material cool before handling. Label the sample and log material, consumable, settings, dimensions, defect and one corrective action.</li>
+      <li><strong>Closeout:</strong> follow the machine's shutdown procedure, remove scrap safely, clean the work area, inspect consumables and leave a machine status note. Use only the lubrication procedure for the exact installed machine.</li>
+    </ol>
+
+    <h2>Instructor reference library</h2>
+    <div class="grid">
+      <article class="card"><h3>Torchmate 4800 manual</h3><p>The public 4000 Series guide covers the installed 4800 table. Use its startup, VMD, machine maintenance and fault sections; verify the plasma source separately.</p><p><a href="https://torchmate.com/support">Torchmate product support</a> · <a href="https://torchmate.com/uploads/downloads/4000-series/4000-Series-User-Guide.pdf">4000 Series user guide</a></p><small>Days 1–3, 13–14, 21–22</small></article>
+      <article class="card"><h3>VMD operation</h3><p>Use the manufacturer's job setup, IHS, dry run and stop instructions for the installed software version.</p><p><a href="https://torchmate.com/uploads/downloads/driver_software/Torchmate%20VMD%20Software%20User%20Manual%200.2.pdf">VMD user manual</a></p><small>Days 3–4, 7–12, 21–22</small></article>
+      <article class="card"><h3>FlexCut 80 consumables and settings</h3><p>Confirm the installed torch and nozzle marking. Use the FlexCut 80 operator manual and approved cut chart to select amperage and matching consumables for the actual material and thickness, and verify air requirements. The 80 A model rating does not mean every cut uses 80 A.</p><p><a href="https://torchmate.com/uploads/downloads/4000-series/4000-Series-User-Guide.pdf">Official 4000 Series guide</a> · <a href="https://torchmate.com/support">Power-source support</a></p><small>Days 5–8, 12–14</small></article>
+      <article class="card"><h3>First cuts and cut quality</h3><p>Compare the test coupon with cut-chart guidance before changing one variable at a time.</p><p><a href="https://torchmate.com/machine-help/Basic-Cut-Troubleshooting">Basic cut troubleshooting</a></p><small>Days 7–8, 12–13, 21–22</small></article>
+      <article class="card"><h3>CAD toolpaths</h3><p>Check outside/inside offsets, kerf and lead placement against the actual part dimensions.</p><p><a href="https://torchmate.com/cad-cam-7-8-9/FAQs-Tool-Paths">Toolpath FAQs</a></p><small>Days 15–22</small></article>
+      <article class="card"><h3>Fault isolation</h3><p>Use manufacturer troubleshooting documents by symptom; stop at the boundary between operator checks and authorized service.</p><p><a href="https://torchmate.com/troubleshooting">Troubleshooting library and flowchart</a></p><small>Days 13–14, 21–22</small></article>
+    </div>
+
+    <h2>Lincoln Electric Learning video guide</h2>
+    <p>The signed-in <a href="https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan/courses/750/4000-machine-operation-4000-learning-plan">4000 Machine Operation course</a> lists these videos. The instructor opens the course and chooses the named lesson; students view it together in class. These are lesson pointers, not copies of the videos.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>WLD 114 days</th><th>Academy videos to locate</th><th>Classroom use</th></tr></thead>
+      <tbody>
+        <tr><td>1–7</td><td>Getting to Know 4000 Series; Start Up, Shut Down; SP2 Log On VI; FlexCut 80; Grounding Power Water Air; Test Cut; Cut Quality</td><td>Nameplate Days 5–7, including approved cut and measured QC. The course also lists FlexCut 125; that lesson describes a different source.</td></tr>
+        <tr><td>7–9</td><td>AVHC and Dashboard; Plate Alignment; Laser Operation; Shape Liberty</td><td>Welcome sign Days 7–9 with a traced/vector element, dimensions and QC.</td></tr>
+        <tr><td>9–15</td><td>How to Mirror Scale Rotate; How to Rows and Columns; Nesting; Daily/As Needed/Monthly Maintenance; Test Cut, plus selected CAD and troubleshooting lessons</td><td>Capstone Days 9–15 with dimensional drawing and array/badge/nesting evidence. Confirm video duration and assign only features fitted to the table.</td></tr>
+        <tr><td>16–22</td><td>Revisit relevant lessons as needed</td><td>Document corrections, reinforce operator skills and support approved WLD 115 part preparation.</td></tr>
+      </tbody>
+    </table></div>
+    <p>The learning plan also lists <strong>4000 Troubleshooting</strong> lessons for gantry binding, end of travel before detection, IHS failing to detect the torch, no movement signal after torch fires, datum flags, torch diving, and torch not firing. Use the <a href="https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan">learning plan</a> to open that course when a relevant symptom arises. Do not use a video as authorization to bypass an interlock or perform service.</p>
+
+    <h2>Day 1–15 Academy assignment map</h2>
+    <p>These are lessons from the signed-in course outlines. The full learning plan has <strong>69 lessons in seven courses</strong>, targeted for completion by Day 15. All 900 minutes of Days 1–15 are available for watching and following the videos; this allows about <strong>13 minutes per lesson including pauses and practice</strong>. The Academy records the instructor account’s progress through the videos, while LTG records individual student participation and project evidence. Verify class pacing daily; supervised project cuts may continue during WLD 115.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Academy course</th><th>Lessons</th><th>Target checkpoint</th></tr></thead>
+      <tbody>
+        <tr><td>VMD SP2 Operation</td><td>10</td><td>Day 4</td></tr>
+        <tr><td>TM CAD Basics</td><td>8</td><td>Day 7</td></tr>
+        <tr><td>4000 Machine Operation</td><td>22</td><td>Day 12</td></tr>
+        <tr><td>TM CAD Basic Training</td><td>11</td><td>Day 12</td></tr>
+        <tr><td>CAD Setup Overview</td><td>3</td><td>Day 13</td></tr>
+        <tr><td>Torchmate TM CAD Additional How-Tos</td><td>8</td><td>Day 13</td></tr>
+        <tr><td>4000 Troubleshooting</td><td>7</td><td>Day 14</td></tr>
+        <tr><th>All courses</th><th>69</th><th>Verify instructor playback and each student’s LTG evidence on Day 15</th></tr>
+      </tbody>
+    </table></div>
+    <p><strong>Verified lesson links:</strong> <a href="https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan/courses/750/4000-machine-operation-4000-learning-plan/lessons/3060/getting-to-know-4000-series">Getting to Know 4000 Series</a> · <a href="https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan/courses/750/4000-machine-operation-4000-learning-plan/lessons/3079/start-up-shut-down">Start Up, Shut Down</a> · <a href="https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan/courses/750/4000-machine-operation-4000-learning-plan/lessons/3069/flexcut-80">FlexCut 80</a> · <a href="https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan/courses/750/4000-machine-operation-4000-learning-plan/lessons/3070/grounding-power-water-air">Grounding Power Water Air</a> · <a href="https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan/courses/750/4000-machine-operation-4000-learning-plan/lessons/3080/test-cut">Test Cut</a>. These links opened in the signed-in instructor account and are for instructor playback only.</p>
+    <p>The FlexCut 80 player reports <strong>3:48</strong> and Start Up, Shut Down reports <strong>2:32</strong>. These are video lengths only; allow additional time for discussion and practice. Other lesson durations have not been verified.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Days</th><th>Academy course and named lessons</th><th>Check in class</th></tr></thead>
+      <tbody>
+        <tr><td>1–2</td><td>4000 Machine Operation: Getting to Know 4000 Series; Start Up, Shut Down; Grounding Power Water Air. VMD SP2 Operation: VMD Overview; Start Up and Shut Down.</td><td>Student identifies stop controls, describes pre-use checks and walks through supervised startup.</td></tr>
+        <tr><td>3–4</td><td>TM CAD Basics: Basic Tools; Plate Name. TM CAD Basic Training: How to Draw Basic Shapes; The Importance of Saving Your Files; Create Tool Path and Outputting a GM. Machine Operation: FlexCut 80; Test Cut.</td><td>Save and preview practice geometry; distinguish the installed FlexCut 80 from the separate FlexCut 125 lesson.</td></tr>
+        <tr><td>5–7 · nameplate</td><td>VMD SP2 Operation: Process Setup Tab; Test Cut; AVHC and Dashboard. TM CAD Additional How-Tos: CAD Kerf Compensation Tutorial. Machine Operation: Cut Quality.</td><td>Instructor-approved nameplate path, supervised cut, measured part and settings/QC record.</td></tr>
+        <tr><td>7–9 · welcome sign</td><td>TM CAD Additional How-Tos: CAD Methods for Auto Scanning and Tracing; CAD Welding Bridges Inside of the Letters in Torchmate. VMD SP2 Operation: Plate Alignment; Shape Library; Laser Operation where fitted.</td><td>Clean vector paths, protected small features, approved sign cut and measurement.</td></tr>
+        <tr><td>9–12 · capstone design</td><td>TM CAD Basic Training: How to Array Parts; Using the Badge Tool to Nest Your Parts in Blocks; Create Tool Path and Outputting a GM. TM CAD Basics: Badging; Nesting. VMD SP2 Operation: How to Mirror Scale Rotate; How to Rows and Columns.</td><td>Dimensioned drawing, nested layout, file version and instructor-approved toolpath.</td></tr>
+        <tr><td>12–15 · capstone cut</td><td>4000 Troubleshooting: IHS Failed to Detect Torch; Torch Diving During Cut; Torch Not Firing; Biding of the Gantry (Academy title). Machine Operation: Daily Maintenance; As Needed Maintenance; Cut Quality.</td><td>Safe fault response, supervised capstone cut, measurement, correction and Academy evidence review by Day 15.</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Full Academy lesson checklist</h2>
+    <p>Use these titles to locate each video in the <a href="https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan">Torchmate 4000 learning plan</a>. Check playback in the instructor Academy account and individual participation in LTG; this list is an instructor reference, not a student completion record. Titles are reproduced as displayed, including apparent spelling errors. Lessons about FlexCut 125, oxyfuel, or installing software are viewed for awareness only; operate only the installed FlexCut 80 and do not install software on restricted school devices.</p>
+    <details><summary>VMD SP2 Operation · 10 lessons · target Day 4</summary>
+      <ol>
+        <li>AVHC and Dashboard</li>
+        <li>How to Mirror Scale Rotate</li>
+        <li>How to Rows and Columns</li>
+        <li>Laser Operation</li>
+        <li>Plate Alignment</li>
+        <li>Process Setup Tab</li>
+        <li>Start Up and Shut Down</li>
+        <li>Shape Library</li>
+        <li>Test Cut</li>
+        <li>VMD Overview</li>
+      </ol>
+    </details>
+    <details><summary>TM CAD Basics · 8 lessons · target Day 7</summary>
+      <ol>
+        <li>Basic Tools</li>
+        <li>Plate Name</li>
+        <li>Introduction to Torchmate CAD Part 2</li>
+        <li>Introduction to Torchmate CAD Part 3</li>
+        <li>Introduction to Torchmate CAD Part 4</li>
+        <li>Introduction to Torchmate CAD Part 5</li>
+        <li>Badging</li>
+        <li>Nesting</li>
+      </ol>
+    </details>
+    <details><summary>4000 Machine Operation · 22 lessons · target Day 12</summary>
+      <ol>
+        <li>AVHC and Dashboard</li>
+        <li>Cut Quality</li>
+        <li>Getting to Know 4000 Series</li>
+        <li>How to Mirror Scale Rotate</li>
+        <li>How to Rows and Columns</li>
+        <li>Laser Operation</li>
+        <li>As Needed Maintenance</li>
+        <li>Cut Quality</li>
+        <li>Daily Maintenance</li>
+        <li>FlexCut 125</li>
+        <li>FlexCut 80</li>
+        <li>Grounding Power Water Air</li>
+        <li>Monthly Maintenance</li>
+        <li>Nesting</li>
+        <li>Plate Alignment</li>
+        <li>Plate Marker Offset</li>
+        <li>Plate Marker OP</li>
+        <li>Process Set Up Tab</li>
+        <li>Shape Liberty</li>
+        <li>SP2 Log On VI</li>
+        <li>Start Up, Shut Down</li>
+        <li>Test Cut</li>
+      </ol>
+    </details>
+    <details><summary>TM CAD Basic Training · 11 lessons · target Day 12</summary>
+      <ol>
+        <li>Using the Custom Parts Library in Torchmate</li>
+        <li>3 Ways to Round Corners in Torchmate</li>
+        <li>How to Array Parts in Torchmate CAD</li>
+        <li>How to Create Guidelines in Torchmate CAD</li>
+        <li>How to Draw Basic Shapes in Torchmate CAD</li>
+        <li>How to Rotate Objects in Torchmate CAD</li>
+        <li>How to Use the Weld Tools in Torchmate CAD</li>
+        <li>The Importance of Saving Your Files</li>
+        <li>The Importance of Show Fill and Make Path Functions</li>
+        <li>Using the Badge Tool to Nest Your Parts in Blocks</li>
+        <li>Create Tool Path and Outputting a GM</li>
+      </ol>
+    </details>
+    <details><summary>CAD Setup Overview · 3 lessons · target Day 13</summary>
+      <ol>
+        <li>Basic Setup for New Torchmate CAD Installation</li>
+        <li>How to Download and Install to Torchmate CAD</li>
+        <li>How to Install Fonts and ClipArt in Torchmate CAD</li>
+      </ol>
+    </details>
+    <details><summary>Torchmate TM CAD Additional How-Tos · 8 lessons · target Day 13</summary>
+      <ol>
+        <li>CAD Kerf Compensation Tutorial</li>
+        <li>CAD Methods for Auto Scanning and Tracing</li>
+        <li>CAD Multi-Tool Setup in Torchmate CAD and MVD</li>
+        <li>CAD Nesting and Layer in Visual Machine Designer</li>
+        <li>CAD Oxyfuel Setup and Training</li>
+        <li>CAD Welding Bridges Inside of the Letters in Torchmate</li>
+        <li>Advanced - Fit Text to Arc and Fit Text to Path Functions</li>
+        <li>Advanced - How to Create an Offset or Wireframe Design</li>
+      </ol>
+    </details>
+    <details><summary>4000 Troubleshooting · 7 lessons · target Day 14</summary>
+      <ol>
+        <li>Biding of the Gantry</li>
+        <li>End of Travel Reached Before Detection</li>
+        <li>IHS Failed to Detect Torch</li>
+        <li>No Movement Signal After Torch Fires</li>
+        <li>Squaring Datum Flags</li>
+        <li>Torch Diving During Cut</li>
+        <li>Torch Not Firing</li>
+      </ol>
+    </details>
+
+    <h2>Three project evidence gates</h2>
+    <div class="scroll"><table>
+      <thead><tr><th>Project and window</th><th>Before any cut</th><th>Completion evidence</th></tr></thead>
+      <tbody>
+        <tr><td>Nameplate · Days 5–7</td><td>Student file saved and named; dimensions, path, kerf, material and FlexCut 80 chart checked by the instructor.</td><td>Individual approved file, supervised part, measured dimension, settings and one cut-quality observation.</td></tr>
+        <tr><td>Welcome sign · Days 7–9</td><td>Vector paths closed and scaled; bridges and small features protected; plate alignment and cut order approved.</td><td>Individual sign file and supervised part with traced feature, measurement and QC record.</td></tr>
+        <tr><td>Capstone · Days 9–15</td><td>Concept and dimensioned drawing approved; nesting/array or badge evidence; cut preview and dry check signed off.</td><td>Individual completed artifact, file and path, settings, measurement, defect/correction log and short walk-through.</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>WLD 115 cutting rotation:</strong> Assign each learner a CNC slot and a separate welding task. The instructor calls the learner to the table, checks the WLD 114 cut gate, supervises the cut and records WLD 114 evidence; classmates keep welding under adequate shop supervision. Stop the rotation whenever supervision, machine readiness or welding instruction is compromised. The next learner does not approach until the prior cut is safe and the station is ready.</p>
+
+    <h2>Troubleshooting practice cards</h2>
+    <div class="scroll"><table>
+      <thead><tr><th>What the student observes</th><th>Safe first checks</th><th>Evidence to record / escalation</th></tr></thead>
+      <tbody>
+        <tr><td>Cut does not go through</td><td>Stop the job; check approved chart selection, clean dry air, consumable condition, work return, height and any torch contact.</td><td>Keep the failed coupon and settings. Instructor checks the model-specific chart before a controlled retry. <a href="https://torchmate.com/machine-help/Basic-Cut-Troubleshooting">Source</a></td></tr>
+        <tr><td>Excess bevel, dross, or uneven edge</td><td>Review torch perpendicularity, height, air quality, cut direction, speed and wear; change one variable on a matched test coupon.</td><td>Photograph/label the two cuts and log the single change. <a href="https://torchmate.com/machine-help/Basic-Cut-Troubleshooting">Source</a></td></tr>
+        <tr><td>Part dimensions are off</td><td>Check CAD scale, kerf compensation, inside/outside path, plate alignment and the measured cut, then preview the path.</td><td>Record intended size, measured size, material, kerf and path type. Instructor approves any new toolpath. <a href="https://torchmate.com/cad-cam-7-8-9/FAQs-Tool-Paths">Source</a></td></tr>
+        <tr><td>IHS fails, torch dives, or Z limit error</td><td>Stop and keep clear. Check the displayed fault and visible plate/sensor/torch condition against the installed VMD manual; do not bypass a sensor or limit.</td><td>Record the exact message, step, position and configuration. Instructor follows the <a href="https://torchmate.com/uploads/downloads/driver_software/Torchmate%20VMD%20Software%20User%20Manual%200.2.pdf">VMD manual</a> or <a href="https://torchmate.com/troubleshooting">fault guide</a>; service if unresolved.</td></tr>
+        <tr><td>Path misses its starting point or machine binds</td><td>Stop motion; inspect for visible obstruction or loose components without opening powered equipment.</td><td>Save the job and observed axis/position. Instructor uses the <a href="https://torchmate.com/machine-help/Basic-Cut-Troubleshooting">machine cut guide</a> and calls authorized service as needed.</td></tr>
+        <tr><td>Torch unexpectedly keeps firing</td><td>Use the approved emergency stop and isolate energy under the shop procedure. Do not restart to reproduce the fault.</td><td>Escalate immediately to the instructor and the <a href="https://torchmate.com/troubleshooting">manufacturer fault guide</a> / service team.</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Maintenance boundary</h2>
+    <p>Daily student closeout means visual inspection, scrap and debris control, consumable check and a clean station. The 4000 Series user guide describes cleaning the breakaway assembly and a separate lubrication method for rail cassettes; it does not establish a universal daily WD-40 rail-spray instruction. The WLD 114 source planner's WD-40 instruction is therefore held for model-specific review. Do not spray the AVHC or substitute a lubricant without the approved manual. <a href="https://torchmate.com/uploads/downloads/4000-series/4000-Series-User-Guide.pdf">4000 Series maintenance reference</a></p>
+    <p><small>Academy module and lesson titles were checked in the signed-in Lincoln Electric Learning syllabus. This page does not reproduce their slides, quizzes, videos, or instructions. Verify the installed machine and software before using any model-specific item.</small></p>
+  </main>
+</body>
+</html>

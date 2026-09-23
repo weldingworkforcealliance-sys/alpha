@@ -1,0 +1,1483 @@
+{
+  "status": "staged_draft_not_deployed",
+  "course_code": "WLD 115",
+  "guide_name": "WLD 115 Night Level 1 22-Day Instructor Guide",
+  "planned_instructional_days": 22,
+  "window": {
+    "start_date": "2026-11-09",
+    "end_date": "2026-12-19",
+    "recess": [
+      "2026-11-25",
+      "2026-11-29"
+    ]
+  },
+  "section_time": {
+    "start": "18:00",
+    "end": "21:45",
+    "minutes": 225
+  },
+  "paired_course": {
+    "course_code": "WLD 114",
+    "start": "17:00",
+    "end": "18:00",
+    "attendance_primary": true
+  },
+  "grade_weights_from_supplied_syllabus": {
+    "GTAW": 35,
+    "GMAW": 35,
+    "FCAW": 20,
+    "attendance_and_shop_conduct": 10
+  },
+  "protected_outcomes_from_supplied_syllabus": {
+    "CLO 1": "Perform safety inspections for GMAW, FCAW, and GTAW equipment.",
+    "CLO 2": "Correctly set up GMAW, FCAW, and GTAW power sources, guns, torches, and gas systems.",
+    "CLO 3": "Produce GMAW stringer beads and fillet welds in 1F–4F positions.",
+    "CLO 4": "Produce FCAW stringer beads and fillet welds following proper parameter control.",
+    "CLO 5": "Perform GTAW autogenous welds and filler-metal welds on ferrous and non-ferrous metals.",
+    "CLO 6": "Interpret weld quality indicators and apply corrective adjustments to improve technique."
+  },
+  "days": [
+    {
+      "planner_day_number": 1,
+      "scheduled_date": "2026-11-09",
+      "title": "GTAW — Inspect GTAW stations and gas cylinders",
+      "objective": "Inspect GTAW stations and gas cylinders; identify nonconsumable tungsten, torch components, shielding, emergency stops, and the authorized setup sequence.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Inspect GTAW stations and gas cylinders; identify nonconsumable tungsten, torch components, shielding, emergency stops, and the authorized setup sequence.",
+      "guided_practice": "Instructor checks every station before energizing. Students dry-run torch position and safe shutdown, then establish short, controlled autogenous arcs on clean steel.",
+      "independent_practice": "Instructor checks every station before energizing. Students dry-run torch position and safe shutdown, then establish short, controlled autogenous arcs on clean steel.",
+      "assessment": "Signed safety/setup checklist; label one baseline coupon. Coach arc length and hand support before speed.",
+      "instructor_checks": "Signed safety/setup checklist; label one baseline coupon. Coach arc length and hand support before speed.",
+      "evidence_check_for_understanding": "Signed safety/setup checklist; label one baseline coupon. Coach arc length and hand support before speed.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2",
+        "CLO 5"
+      ],
+      "instructor_only_slide_crosswalk": "GTAW 4–16, 23–44, 94–100",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Inspect GTAW stations and gas cylinders; identify nonconsumable tungsten, torch components, shielding, emergency stops, and the authorized setup sequence.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Instructor checks every station before energizing. Students dry-run torch position and safe shutdown, then establish short, controlled autogenous arcs on clean steel.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Instructor checks every station before energizing. Students dry-run torch position and safe shutdown, then establish short, controlled autogenous arcs on clean steel.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: Signed safety/setup checklist; label one baseline coupon. Coach arc length and hand support before speed. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 2,
+      "scheduled_date": "2026-11-10",
+      "title": "GTAW — Demonstrate tungsten selection/preparation, contamination recognition, and clean material preparation",
+      "objective": "Demonstrate tungsten selection/preparation, contamination recognition, and clean material preparation.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Demonstrate tungsten selection/preparation, contamination recognition, and clean material preparation.",
+      "guided_practice": "Prepare approved tungsten and steel coupons; repeat autogenous beads with consistent torch angle and travel. Stop and correct contaminated tips.",
+      "independent_practice": "Prepare approved tungsten and steel coupons; repeat autogenous beads with consistent torch angle and travel. Stop and correct contaminated tips.",
+      "assessment": "Record settings and one before/after bead; explain why a contaminated tip must be corrected.",
+      "instructor_checks": "Record settings and one before/after bead; explain why a contaminated tip must be corrected.",
+      "evidence_check_for_understanding": "Record settings and one before/after bead; explain why a contaminated tip must be corrected.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2",
+        "CLO 5",
+        "CLO 6"
+      ],
+      "instructor_only_slide_crosswalk": "GTAW 46–64, 83–88, 91–93",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Demonstrate tungsten selection/preparation, contamination recognition, and clean material preparation.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Prepare approved tungsten and steel coupons; repeat autogenous beads with consistent torch angle and travel. Stop and correct contaminated tips.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Prepare approved tungsten and steel coupons; repeat autogenous beads with consistent torch angle and travel. Stop and correct contaminated tips.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: Record settings and one before/after bead; explain why a contaminated tip must be corrected. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 3,
+      "scheduled_date": "2026-11-11",
+      "title": "GTAW — Demonstrate current/polarity selection for the approved material, arc initiation, and heat control",
+      "objective": "Demonstrate current/polarity selection for the approved material, arc initiation, and heat control.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Demonstrate current/polarity selection for the approved material, arc initiation, and heat control.",
+      "guided_practice": "Run autogenous stringers, holding joint fit-up and arc length constant; compare heat input and bead profile.",
+      "independent_practice": "Run autogenous stringers, holding joint fit-up and arc length constant; compare heat input and bead profile.",
+      "assessment": "Two labeled samples plus a parameter log; coach puddle observation and steady travel.",
+      "instructor_checks": "Two labeled samples plus a parameter log; coach puddle observation and steady travel.",
+      "evidence_check_for_understanding": "Two labeled samples plus a parameter log; coach puddle observation and steady travel.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 2",
+        "CLO 5",
+        "CLO 6"
+      ],
+      "instructor_only_slide_crosswalk": "GTAW 16–22, 78–88",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Demonstrate current/polarity selection for the approved material, arc initiation, and heat control.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Run autogenous stringers, holding joint fit-up and arc length constant; compare heat input and bead profile.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Run autogenous stringers, holding joint fit-up and arc length constant; compare heat input and bead profile.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: Two labeled samples plus a parameter log; coach puddle observation and steady travel. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 4,
+      "scheduled_date": "2026-11-12",
+      "title": "GTAW — Demonstrate compatible filler identification, feed angle, and timing on clean ferrous coupons",
+      "objective": "Demonstrate compatible filler identification, feed angle, and timing on clean ferrous coupons.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Demonstrate compatible filler identification, feed angle, and timing on clean ferrous coupons.",
+      "guided_practice": "Add filler to established puddles; alternate short coached passes and independent repetition, stopping on contamination.",
+      "independent_practice": "Add filler to established puddles; alternate short coached passes and independent repetition, stopping on contamination.",
+      "assessment": "One filler-metal coupon with settings and a marked correction; separate torch control from filler timing during coaching.",
+      "instructor_checks": "One filler-metal coupon with settings and a marked correction; separate torch control from filler timing during coaching.",
+      "evidence_check_for_understanding": "One filler-metal coupon with settings and a marked correction; separate torch control from filler timing during coaching.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 2",
+        "CLO 5",
+        "CLO 6"
+      ],
+      "instructor_only_slide_crosswalk": "GTAW 65–69, 83–90",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Demonstrate compatible filler identification, feed angle, and timing on clean ferrous coupons.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Add filler to established puddles; alternate short coached passes and independent repetition, stopping on contamination.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Add filler to established puddles; alternate short coached passes and independent repetition, stopping on contamination.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: One filler-metal coupon with settings and a marked correction; separate torch control from filler timing during coaching. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 5,
+      "scheduled_date": "2026-11-16",
+      "title": "GTAW — Demonstrate fillet fit-up and tie-in while preserving gas coverage through the end of each weld",
+      "objective": "Demonstrate fillet fit-up and tie-in while preserving gas coverage through the end of each weld.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Demonstrate fillet fit-up and tie-in while preserving gas coverage through the end of each weld.",
+      "guided_practice": "Build fillet welds on approved steel joints; adjust one variable at a time for profile and fusion.",
+      "independent_practice": "Build fillet welds on approved steel joints; adjust one variable at a time for profile and fusion.",
+      "assessment": "Labeled fillet coupon and instructor notes on tie-in, contamination, and bead consistency.",
+      "instructor_checks": "Labeled fillet coupon and instructor notes on tie-in, contamination, and bead consistency.",
+      "evidence_check_for_understanding": "Labeled fillet coupon and instructor notes on tie-in, contamination, and bead consistency.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2",
+        "CLO 5",
+        "CLO 6"
+      ],
+      "instructor_only_slide_crosswalk": "GTAW 71–90",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Demonstrate fillet fit-up and tie-in while preserving gas coverage through the end of each weld.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Build fillet welds on approved steel joints; adjust one variable at a time for profile and fusion.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Build fillet welds on approved steel joints; adjust one variable at a time for profile and fusion.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: Labeled fillet coupon and instructor notes on tie-in, contamination, and bead consistency. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 6,
+      "scheduled_date": "2026-11-17",
+      "title": "GTAW — Compare ferrous and approved non-ferrous setup requirements, cleaning, current choices, and filler compatibility",
+      "objective": "Compare ferrous and approved non-ferrous setup requirements, cleaning, current choices, and filler compatibility.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Compare ferrous and approved non-ferrous setup requirements, cleaning, current choices, and filler compatibility.",
+      "guided_practice": "Instructor demonstration first; students perform non-ferrous trials only on available, approved equipment and material. Continue ferrous fillets if that station is unavailable.",
+      "independent_practice": "Instructor demonstration first; students perform non-ferrous trials only on available, approved equipment and material. Continue ferrous fillets if that station is unavailable.",
+      "assessment": "Record which metals were practiced, setup checks, and a quality comparison; do not claim non-ferrous proficiency from observation alone.",
+      "instructor_checks": "Record which metals were practiced, setup checks, and a quality comparison; do not claim non-ferrous proficiency from observation alone.",
+      "evidence_check_for_understanding": "Record which metals were practiced, setup checks, and a quality comparison; do not claim non-ferrous proficiency from observation alone.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2",
+        "CLO 5",
+        "CLO 6"
+      ],
+      "instructor_only_slide_crosswalk": "GTAW 59–80, 89–93",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Compare ferrous and approved non-ferrous setup requirements, cleaning, current choices, and filler compatibility.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Instructor demonstration first; students perform non-ferrous trials only on available, approved equipment and material. Continue ferrous fillets if that station is unavailable.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Instructor demonstration first; students perform non-ferrous trials only on available, approved equipment and material. Continue ferrous fillets if that station is unavailable.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: Record which metals were practiced, setup checks, and a quality comparison; do not claim non-ferrous proficiency from observation alone. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 7,
+      "scheduled_date": "2026-11-18",
+      "title": "GTAW — Model correction of tungsten inclusion, shielding loss, poor fit-up, and excessive heat",
+      "objective": "Model correction of tungsten inclusion, shielding loss, poor fit-up, and excessive heat.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Model correction of tungsten inclusion, shielding loss, poor fit-up, and excessive heat.",
+      "guided_practice": "Diagnose an actual coupon, choose one corrective adjustment, rerun on matched material, and repeat the required ferrous/non-ferrous applications.",
+      "independent_practice": "Diagnose an actual coupon, choose one corrective adjustment, rerun on matched material, and repeat the required ferrous/non-ferrous applications.",
+      "assessment": "Before/after labeled coupons and parameter log; instructor verifies the cause and corrective action.",
+      "instructor_checks": "Before/after labeled coupons and parameter log; instructor verifies the cause and corrective action.",
+      "evidence_check_for_understanding": "Before/after labeled coupons and parameter log; instructor verifies the cause and corrective action.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2",
+        "CLO 5",
+        "CLO 6"
+      ],
+      "instructor_only_slide_crosswalk": "GTAW 77–93",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Model correction of tungsten inclusion, shielding loss, poor fit-up, and excessive heat.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Diagnose an actual coupon, choose one corrective adjustment, rerun on matched material, and repeat the required ferrous/non-ferrous applications.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Diagnose an actual coupon, choose one corrective adjustment, rerun on matched material, and repeat the required ferrous/non-ferrous applications.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: Before/after labeled coupons and parameter log; instructor verifies the cause and corrective action. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 8,
+      "scheduled_date": "2026-11-19",
+      "title": "GTAW — Review safety/setup, autogenous and filler-metal work",
+      "objective": "Review safety/setup, autogenous and filler-metal work; demonstrate the practical assessment sequence.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Review safety/setup, autogenous and filler-metal work; demonstrate the practical assessment sequence.",
+      "guided_practice": "Complete GTAW skill checks on available approved ferrous and non-ferrous joints; provide targeted supervised retry time and GMAW transition orientation.",
+      "independent_practice": "Complete GTAW skill checks on available approved ferrous and non-ferrous joints; provide targeted supervised retry time and GMAW transition orientation.",
+      "assessment": "Record process-specific skills and missing evidence; keep the syllabus GTAW category at 35%, without inventing a passing threshold.",
+      "instructor_checks": "Record process-specific skills and missing evidence; keep the syllabus GTAW category at 35%, without inventing a passing threshold.",
+      "evidence_check_for_understanding": "Record process-specific skills and missing evidence; keep the syllabus GTAW category at 35%, without inventing a passing threshold.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2",
+        "CLO 5",
+        "CLO 6"
+      ],
+      "instructor_only_slide_crosswalk": "GTAW 94–100",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review safety/setup, autogenous and filler-metal work; demonstrate the practical assessment sequence.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Complete GTAW skill checks on available approved ferrous and non-ferrous joints; provide targeted supervised retry time and GMAW transition orientation.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Complete GTAW skill checks on available approved ferrous and non-ferrous joints; provide targeted supervised retry time and GMAW transition orientation.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: Record process-specific skills and missing evidence; keep the syllabus GTAW category at 35%, without inventing a passing threshold. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 9,
+      "scheduled_date": "2026-11-23",
+      "title": "GMAW — Inspect GMAW equipment and gas, identify gun, contact tip, liner, feeder, CV source, wire and approved DCEP setup",
+      "objective": "Inspect GMAW equipment and gas, identify gun, contact tip, liner, feeder, CV source, wire and approved DCEP setup.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Inspect GMAW equipment and gas, identify gun, contact tip, liner, feeder, CV source, wire and approved DCEP setup.",
+      "guided_practice": "Instructor validates cylinder, ventilation, wire path, work connection and settings; establish baseline steel stringers.",
+      "independent_practice": "Instructor validates cylinder, ventilation, wire path, work connection and settings; establish baseline steel stringers.",
+      "assessment": "Safety/setup checklist and baseline coupon with wire/gas/voltage/feed log.",
+      "instructor_checks": "Safety/setup checklist and baseline coupon with wire/gas/voltage/feed log.",
+      "evidence_check_for_understanding": "Safety/setup checklist and baseline coupon with wire/gas/voltage/feed log.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2",
+        "CLO 3"
+      ],
+      "instructor_only_slide_crosswalk": "GMAW 4–14, 32–59, 103–110",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Inspect GMAW equipment and gas, identify gun, contact tip, liner, feeder, CV source, wire and approved DCEP setup.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Instructor validates cylinder, ventilation, wire path, work connection and settings; establish baseline steel stringers.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Instructor validates cylinder, ventilation, wire path, work connection and settings; establish baseline steel stringers.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: Safety/setup checklist and baseline coupon with wire/gas/voltage/feed log. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 10,
+      "scheduled_date": "2026-11-24",
+      "title": "GMAW — Demonstrate short-circuit transfer and the effects of wire feed, voltage, contact-tip-to-work distance, and travel",
+      "objective": "Demonstrate short-circuit transfer and the effects of wire feed, voltage, contact-tip-to-work distance, and travel.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Demonstrate short-circuit transfer and the effects of wire feed, voltage, contact-tip-to-work distance, and travel.",
+      "guided_practice": "Repeat flat stringers while changing one approved parameter at a time; keep material and wire constant for comparison.",
+      "independent_practice": "Repeat flat stringers while changing one approved parameter at a time; keep material and wire constant for comparison.",
+      "assessment": "Paired coupons and cause/effect note; coach steady stick-out and direction.",
+      "instructor_checks": "Paired coupons and cause/effect note; coach steady stick-out and direction.",
+      "evidence_check_for_understanding": "Paired coupons and cause/effect note; coach steady stick-out and direction.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 2",
+        "CLO 3",
+        "CLO 6"
+      ],
+      "instructor_only_slide_crosswalk": "GMAW 14–29, 79–93",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Demonstrate short-circuit transfer and the effects of wire feed, voltage, contact-tip-to-work distance, and travel.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Repeat flat stringers while changing one approved parameter at a time; keep material and wire constant for comparison.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Repeat flat stringers while changing one approved parameter at a time; keep material and wire constant for comparison.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: Paired coupons and cause/effect note; coach steady stick-out and direction. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 11,
+      "scheduled_date": "2026-11-30",
+      "title": "GMAW — Demonstrate joint cleaning, fit-up, fillet gun angle and toe tie-in for 1F",
+      "objective": "Demonstrate joint cleaning, fit-up, fillet gun angle and toe tie-in for 1F.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Demonstrate joint cleaning, fit-up, fillet gun angle and toe tie-in for 1F.",
+      "guided_practice": "Build 1F fillet coupons with controlled travel and starts/stops; inspect for porosity, overlap, and undercut.",
+      "independent_practice": "Build 1F fillet coupons with controlled travel and starts/stops; inspect for porosity, overlap, and undercut.",
+      "assessment": "Labeled 1F coupon and one targeted correction.",
+      "instructor_checks": "Labeled 1F coupon and one targeted correction.",
+      "evidence_check_for_understanding": "Labeled 1F coupon and one targeted correction.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 3",
+        "CLO 6"
+      ],
+      "instructor_only_slide_crosswalk": "GMAW 7–13, 89–102",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Demonstrate joint cleaning, fit-up, fillet gun angle and toe tie-in for 1F.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Build 1F fillet coupons with controlled travel and starts/stops; inspect for porosity, overlap, and undercut.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Build 1F fillet coupons with controlled travel and starts/stops; inspect for porosity, overlap, and undercut.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: Labeled 1F coupon and one targeted correction. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 12,
+      "scheduled_date": "2026-12-01",
+      "title": "GMAW — Demonstrate 2F positioning and appropriate puddle control under the selected WPS",
+      "objective": "Demonstrate 2F positioning and appropriate puddle control under the selected WPS.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Demonstrate 2F positioning and appropriate puddle control under the selected WPS.",
+      "guided_practice": "Progress to 2F fillets; compare the same student's 1F and 2F results, repeat until settings and technique are stable.",
+      "independent_practice": "Progress to 2F fillets; compare the same student's 1F and 2F results, repeat until settings and technique are stable.",
+      "assessment": "2F coupon and short parameter log; coach toe fusion and travel angle.",
+      "instructor_checks": "2F coupon and short parameter log; coach toe fusion and travel angle.",
+      "evidence_check_for_understanding": "2F coupon and short parameter log; coach toe fusion and travel angle.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 2",
+        "CLO 3",
+        "CLO 6"
+      ],
+      "instructor_only_slide_crosswalk": "GMAW 89–102",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Demonstrate 2F positioning and appropriate puddle control under the selected WPS.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Progress to 2F fillets; compare the same student's 1F and 2F results, repeat until settings and technique are stable.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Progress to 2F fillets; compare the same student's 1F and 2F results, repeat until settings and technique are stable.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: 2F coupon and short parameter log; coach toe fusion and travel angle. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 13,
+      "scheduled_date": "2026-12-02",
+      "title": "GMAW — Explain transfer modes as applicable to actual equipment and demonstrate 3F control with approved parameters",
+      "objective": "Explain transfer modes as applicable to actual equipment and demonstrate 3F control with approved parameters.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Explain transfer modes as applicable to actual equipment and demonstrate 3F control with approved parameters.",
+      "guided_practice": "Start 3F practice with short passes and instructor checks; retain 1F/2F repair stations for students needing correction.",
+      "independent_practice": "Start 3F practice with short passes and instructor checks; retain 1F/2F repair stations for students needing correction.",
+      "assessment": "First 3F sample and a documented plan for the next attempt.",
+      "instructor_checks": "First 3F sample and a documented plan for the next attempt.",
+      "evidence_check_for_understanding": "First 3F sample and a documented plan for the next attempt.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 2",
+        "CLO 3",
+        "CLO 6"
+      ],
+      "instructor_only_slide_crosswalk": "GMAW 14–29, 79–98",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Explain transfer modes as applicable to actual equipment and demonstrate 3F control with approved parameters.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Start 3F practice with short passes and instructor checks; retain 1F/2F repair stations for students needing correction.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Start 3F practice with short passes and instructor checks; retain 1F/2F repair stations for students needing correction.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: First 3F sample and a documented plan for the next attempt. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 14,
+      "scheduled_date": "2026-12-03",
+      "title": "GMAW — Demonstrate 4F setup and overhead PPE/position checks",
+      "objective": "Demonstrate 4F setup and overhead PPE/position checks; reinforce ventilation, spatter, and burn controls.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Demonstrate 4F setup and overhead PPE/position checks; reinforce ventilation, spatter, and burn controls.",
+      "guided_practice": "Progress through 4F under supervision, or revisit 3F first when readiness checks fail.",
+      "independent_practice": "Progress through 4F under supervision, or revisit 3F first when readiness checks fail.",
+      "assessment": "Labeled overhead coupon or explicit readiness hold with corrective work logged.",
+      "instructor_checks": "Labeled overhead coupon or explicit readiness hold with corrective work logged.",
+      "evidence_check_for_understanding": "Labeled overhead coupon or explicit readiness hold with corrective work logged.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2",
+        "CLO 3",
+        "CLO 6"
+      ],
+      "instructor_only_slide_crosswalk": "GMAW 95–109",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Demonstrate 4F setup and overhead PPE/position checks; reinforce ventilation, spatter, and burn controls.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Progress through 4F under supervision, or revisit 3F first when readiness checks fail.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Progress through 4F under supervision, or revisit 3F first when readiness checks fail.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: Labeled overhead coupon or explicit readiness hold with corrective work logged. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 15,
+      "scheduled_date": "2026-12-07",
+      "title": "GMAW — Diagnose lack of tie-in, excessive convexity, spatter, porosity, and inconsistent restarts across 1F–4F",
+      "objective": "Diagnose lack of tie-in, excessive convexity, spatter, porosity, and inconsistent restarts across 1F–4F.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Diagnose lack of tie-in, excessive convexity, spatter, porosity, and inconsistent restarts across 1F–4F.",
+      "guided_practice": "Conduct matched before/after correction sets; practice the position with the weakest evidence.",
+      "independent_practice": "Conduct matched before/after correction sets; practice the position with the weakest evidence.",
+      "assessment": "Four-position evidence inventory and one documented parameter or technique correction.",
+      "instructor_checks": "Four-position evidence inventory and one documented parameter or technique correction.",
+      "evidence_check_for_understanding": "Four-position evidence inventory and one documented parameter or technique correction.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2",
+        "CLO 3",
+        "CLO 6"
+      ],
+      "instructor_only_slide_crosswalk": "GMAW 79–110",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Diagnose lack of tie-in, excessive convexity, spatter, porosity, and inconsistent restarts across 1F–4F.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Conduct matched before/after correction sets; practice the position with the weakest evidence.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Conduct matched before/after correction sets; practice the position with the weakest evidence.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: Four-position evidence inventory and one documented parameter or technique correction. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 16,
+      "scheduled_date": "2026-12-08",
+      "title": "GMAW — Review process setup, transfer limits, position selection, and safe closeout",
+      "objective": "Review process setup, transfer limits, position selection, and safe closeout; demonstrate assessment criteria.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Review process setup, transfer limits, position selection, and safe closeout; demonstrate assessment criteria.",
+      "guided_practice": "Complete 1F–4F GMAW skills check with supervised correction window; preview FCAW gas/flux and slag differences.",
+      "independent_practice": "Complete 1F–4F GMAW skills check with supervised correction window; preview FCAW gas/flux and slag differences.",
+      "assessment": "Four labeled position results and missing-evidence list; keep syllabus GMAW category at 35%.",
+      "instructor_checks": "Four labeled position results and missing-evidence list; keep syllabus GMAW category at 35%.",
+      "evidence_check_for_understanding": "Four labeled position results and missing-evidence list; keep syllabus GMAW category at 35%.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2",
+        "CLO 3",
+        "CLO 6"
+      ],
+      "instructor_only_slide_crosswalk": "GMAW 14–29, 98–110",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review process setup, transfer limits, position selection, and safe closeout; demonstrate assessment criteria.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Complete 1F–4F GMAW skills check with supervised correction window; preview FCAW gas/flux and slag differences.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Complete 1F–4F GMAW skills check with supervised correction window; preview FCAW gas/flux and slag differences.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: Four labeled position results and missing-evidence list; keep syllabus GMAW category at 35%. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 17,
+      "scheduled_date": "2026-12-09",
+      "title": "FCAW — Distinguish FCAW-S and FCAW-G",
+      "objective": "Distinguish FCAW-S and FCAW-G; inspect feeder, gun, selected wire, shielding and polarity according to its label/WPS.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Distinguish FCAW-S and FCAW-G; inspect feeder, gun, selected wire, shielding and polarity according to its label/WPS.",
+      "guided_practice": "Instructor confirms the *actual* electrode requirements before live work. Run first stringers on clean steel; demonstrate slag removal and hot-metal control.",
+      "independent_practice": "Instructor confirms the *actual* electrode requirements before live work. Run first stringers on clean steel; demonstrate slag removal and hot-metal control.",
+      "assessment": "Safety/setup checklist and baseline coupon with wire designation, polarity and gas if applicable.",
+      "instructor_checks": "Safety/setup checklist and baseline coupon with wire designation, polarity and gas if applicable.",
+      "evidence_check_for_understanding": "Safety/setup checklist and baseline coupon with wire designation, polarity and gas if applicable.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2",
+        "CLO 4"
+      ],
+      "instructor_only_slide_crosswalk": "FCAW 4–29, 39–50, 60–67",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Distinguish FCAW-S and FCAW-G; inspect feeder, gun, selected wire, shielding and polarity according to its label/WPS.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Instructor confirms the *actual* electrode requirements before live work. Run first stringers on clean steel; demonstrate slag removal and hot-metal control.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Instructor confirms the *actual* electrode requirements before live work. Run first stringers on clean steel; demonstrate slag removal and hot-metal control.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: Safety/setup checklist and baseline coupon with wire designation, polarity and gas if applicable. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 18,
+      "scheduled_date": "2026-12-10",
+      "title": "FCAW — Demonstrate electrode extension, travel angle, feed/current relationship, and interpass cleaning",
+      "objective": "Demonstrate electrode extension, travel angle, feed/current relationship, and interpass cleaning.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Demonstrate electrode extension, travel angle, feed/current relationship, and interpass cleaning.",
+      "guided_practice": "Repeat flat stringers and first fillets; compare one controlled variable and clean every pass before inspection.",
+      "independent_practice": "Repeat flat stringers and first fillets; compare one controlled variable and clean every pass before inspection.",
+      "assessment": "Labeled coupon, parameter log, and a slag-inclusion prevention check.",
+      "instructor_checks": "Labeled coupon, parameter log, and a slag-inclusion prevention check.",
+      "evidence_check_for_understanding": "Labeled coupon, parameter log, and a slag-inclusion prevention check.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 2",
+        "CLO 4",
+        "CLO 6"
+      ],
+      "instructor_only_slide_crosswalk": "FCAW 28–33, 49–58",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Demonstrate electrode extension, travel angle, feed/current relationship, and interpass cleaning.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Repeat flat stringers and first fillets; compare one controlled variable and clean every pass before inspection.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Repeat flat stringers and first fillets; compare one controlled variable and clean every pass before inspection.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: Labeled coupon, parameter log, and a slag-inclusion prevention check. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 19,
+      "scheduled_date": "2026-12-14",
+      "title": "FCAW — Demonstrate flat fillet preparation, root/tie-in observation, and slag line inspection",
+      "objective": "Demonstrate flat fillet preparation, root/tie-in observation, and slag line inspection.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Demonstrate flat fillet preparation, root/tie-in observation, and slag line inspection.",
+      "guided_practice": "Build consistent flat fillets, inspect each pass, identify one defect and repair it with approval.",
+      "independent_practice": "Build consistent flat fillets, inspect each pass, identify one defect and repair it with approval.",
+      "assessment": "Before/after flat fillet coupons and instructor inspection notes.",
+      "instructor_checks": "Before/after flat fillet coupons and instructor inspection notes.",
+      "evidence_check_for_understanding": "Before/after flat fillet coupons and instructor inspection notes.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 4",
+        "CLO 6"
+      ],
+      "instructor_only_slide_crosswalk": "FCAW 44–58",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Demonstrate flat fillet preparation, root/tie-in observation, and slag line inspection.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Build consistent flat fillets, inspect each pass, identify one defect and repair it with approval.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Build consistent flat fillets, inspect each pass, identify one defect and repair it with approval.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: Before/after flat fillet coupons and instructor inspection notes. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 20,
+      "scheduled_date": "2026-12-15",
+      "title": "FCAW — Demonstrate horizontal fillet positioning, puddle support, and interpass control",
+      "objective": "Demonstrate horizontal fillet positioning, puddle support, and interpass control.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Demonstrate horizontal fillet positioning, puddle support, and interpass control.",
+      "guided_practice": "Produce horizontal fillets and compare profile with flat samples; log settings, travel and cleaning sequence.",
+      "independent_practice": "Produce horizontal fillets and compare profile with flat samples; log settings, travel and cleaning sequence.",
+      "assessment": "Horizontal coupon with explanation of one quality adjustment.",
+      "instructor_checks": "Horizontal coupon with explanation of one quality adjustment.",
+      "evidence_check_for_understanding": "Horizontal coupon with explanation of one quality adjustment.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 2",
+        "CLO 4",
+        "CLO 6"
+      ],
+      "instructor_only_slide_crosswalk": "FCAW 49–59",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Demonstrate horizontal fillet positioning, puddle support, and interpass control.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Produce horizontal fillets and compare profile with flat samples; log settings, travel and cleaning sequence.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Produce horizontal fillets and compare profile with flat samples; log settings, travel and cleaning sequence.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: Horizontal coupon with explanation of one quality adjustment. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 21,
+      "scheduled_date": "2026-12-16",
+      "title": "FCAW — Explain FCAW-G versus FCAW-S limits, shielding disruption, storage, porosity, slag inclusion, and worm tracking as applicable",
+      "objective": "Explain FCAW-G versus FCAW-S limits, shielding disruption, storage, porosity, slag inclusion, and worm tracking as applicable.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Explain FCAW-G versus FCAW-S limits, shielding disruption, storage, porosity, slag inclusion, and worm tracking as applicable.",
+      "guided_practice": "Troubleshoot real samples, repeat the most deficient approved fillet exercise, and verify consumable condition.",
+      "independent_practice": "Troubleshoot real samples, repeat the most deficient approved fillet exercise, and verify consumable condition.",
+      "assessment": "Defect diagnosis and matched corrected coupon.",
+      "instructor_checks": "Defect diagnosis and matched corrected coupon.",
+      "evidence_check_for_understanding": "Defect diagnosis and matched corrected coupon.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2",
+        "CLO 4",
+        "CLO 6"
+      ],
+      "instructor_only_slide_crosswalk": "FCAW 29–39, 49–67",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Explain FCAW-G versus FCAW-S limits, shielding disruption, storage, porosity, slag inclusion, and worm tracking as applicable.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Troubleshoot real samples, repeat the most deficient approved fillet exercise, and verify consumable condition.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Troubleshoot real samples, repeat the most deficient approved fillet exercise, and verify consumable condition.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: Defect diagnosis and matched corrected coupon. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 22,
+      "scheduled_date": "2026-12-17",
+      "title": "FCAW — Review FCAW electrode classification, polarity and parameter control",
+      "objective": "Review FCAW electrode classification, polarity and parameter control; demonstrate the practical check and final shutdown sequence.",
+      "safety_focus": "Check PPE, ventilation, cylinder and electrical setup; stop unsafe work and obtain instructor clearance.",
+      "instructor_prep": "Confirm the approved WPS, equipment, consumables, coupons, and supervised practice stations.",
+      "opening_review": "Review the prior day's settings, quality evidence, and one corrective action.",
+      "demonstration": "Review FCAW electrode classification, polarity and parameter control; demonstrate the practical check and final shutdown sequence.",
+      "guided_practice": "Complete the FCAW skill assessment and targeted supervised corrections. Reconcile GTAW, GMAW and FCAW records; count, clean and store equipment.",
+      "independent_practice": "Complete the FCAW skill assessment and targeted supervised corrections. Reconcile GTAW, GMAW and FCAW records; count, clean and store equipment.",
+      "assessment": "Final labeled FCAW samples, parameter/inspection logs, GTAW 35% / GMAW 35% / FCAW 20% / attendance and shop conduct 10% grade record, and missing-outcome flags.",
+      "instructor_checks": "Final labeled FCAW samples, parameter/inspection logs, GTAW 35% / GMAW 35% / FCAW 20% / attendance and shop conduct 10% grade record, and missing-outcome flags.",
+      "evidence_check_for_understanding": "Final labeled FCAW samples, parameter/inspection logs, GTAW 35% / GMAW 35% / FCAW 20% / attendance and shop conduct 10% grade record, and missing-outcome flags.",
+      "teaching_tips": "Coach one observable correction at a time; log settings and label coupons.",
+      "materials_equipment": "Approved WPS, PPE, process-specific power source and torch/gun, consumables, gas where applicable, and practice coupons.",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2",
+        "CLO 3",
+        "CLO 4",
+        "CLO 5",
+        "CLO 6"
+      ],
+      "instructor_only_slide_crosswalk": "FCAW 41–68",
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "demonstration",
+          "segment_title": "Toolbox talk and demonstration",
+          "start_minute": 0,
+          "end_minute": 25,
+          "planned_minutes": 25,
+          "instructor_actions": "Review FCAW electrode classification, polarity and parameter control; demonstrate the practical check and final shutdown sequence.",
+          "student_actions": "Identify the hazard and observe the process demonstration."
+        },
+        {
+          "sequence_number": 2,
+          "segment_type": "guided_practice",
+          "segment_title": "Guided setup and practice",
+          "start_minute": 25,
+          "end_minute": 60,
+          "planned_minutes": 35,
+          "instructor_actions": "Demonstrate, then coach: Complete the FCAW skill assessment and targeted supervised corrections. Reconcile GTAW, GMAW and FCAW records; count, clean and store equipment.",
+          "student_actions": "Complete supervised setup and first attempt."
+        },
+        {
+          "sequence_number": 3,
+          "segment_type": "independent_practice",
+          "segment_title": "Practice, coaching, and assessment",
+          "start_minute": 60,
+          "end_minute": 200,
+          "planned_minutes": 140,
+          "instructor_actions": "Complete the FCAW skill assessment and targeted supervised corrections. Reconcile GTAW, GMAW and FCAW records; count, clean and store equipment.",
+          "student_actions": "Practice, adjust one variable, and retain labeled work."
+        },
+        {
+          "sequence_number": 4,
+          "segment_type": "other",
+          "segment_title": "Evidence and safe closeout",
+          "start_minute": 200,
+          "end_minute": 225,
+          "planned_minutes": 25,
+          "instructor_actions": "Check and record: Final labeled FCAW samples, parameter/inspection logs, GTAW 35% / GMAW 35% / FCAW 20% / attendance and shop conduct 10% grade record, and missing-outcome flags. Shut down and account for equipment.",
+          "student_actions": "Log evidence, shut down safely, and clean the station."
+        }
+      ]
+    }
+  ]
+}

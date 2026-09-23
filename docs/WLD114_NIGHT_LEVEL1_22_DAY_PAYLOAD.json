@@ -1,0 +1,932 @@
+{
+  "status": "staged_draft_not_deployed",
+  "course_code": "WLD 114",
+  "guide_name": "WLD 114 Night Level 1 22-Day Instructor Guide",
+  "planned_instructional_days": 22,
+  "window": {
+    "start_date": "2026-11-09",
+    "end_date": "2026-12-19",
+    "recess": [
+      "2026-11-25",
+      "2026-11-29"
+    ]
+  },
+  "section_time": {
+    "start": "17:00",
+    "end": "18:00",
+    "minutes": 60
+  },
+  "paired_course": {
+    "course_code": "WLD 115",
+    "start": "18:00",
+    "end": "21:45",
+    "attendance_primary": false
+  },
+  "academy_delivery": {
+    "access": "instructor_only",
+    "mode": "whole_class_video_follow_along",
+    "courses": 7,
+    "lessons": 69,
+    "target_completion_day": 15
+  },
+  "project_windows": {
+    "nameplate": {
+      "start_day": 5,
+      "end_day": 7
+    },
+    "welcome_sign": {
+      "start_day": 7,
+      "end_day": 9
+    },
+    "capstone": {
+      "start_day": 9,
+      "end_day": 15
+    }
+  },
+  "protected_outcomes_from_supplied_syllabus": {
+    "CLO 1": "Safely operate Torchmate 4X00 CNC plasma equipment following Torchmate Academy standards.",
+    "CLO 2": "Configure FlexCut 80 consumables and settings for various materials and thicknesses.",
+    "CLO 3": "Use VMD SP2 to perform startup, shutdown, alignment, AVHC adjustments, nesting, and first-cut procedures.",
+    "CLO 4": "Create and modify CAD files using Torchmate CAD including shapes, paths, offsets, nesting, and GM-file output.",
+    "CLO 5": "Diagnose and correct cut-quality issues such as bevel, dross, kerf variation, and torch misfires.",
+    "CLO 6": "Perform daily, monthly, and as-needed maintenance procedures based on Torchmate Academy modules.",
+    "CLO 7": "Produce a CNC-cut project demonstrating dimensional accuracy and proper toolpath preparation."
+  },
+  "grade_weights_from_supplied_syllabus": {
+    "safety_machine_operation_assessments": 20,
+    "torchmate_academy_quizzes": 25,
+    "torchmate_cad_project_series": 25,
+    "machine_operation_practical_exam": 15,
+    "final_cnc_cut_capstone_project": 15
+  },
+  "days": [
+    {
+      "planner_day_number": 1,
+      "scheduled_date": "2026-11-09",
+      "title": "Torchmate Academy — Begin Academy 4000/VMD orientation videos",
+      "objective": "Begin Academy 4000/VMD orientation videos; pause to identify safety zones, stop controls and the installed 4800/FlexCut 80.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "Begin Academy 4000/VMD orientation videos; pause to identify safety zones, stop controls and the installed 4800/FlexCut 80.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "Safety and machine identification check.",
+      "instructor_checks": "Safety and machine identification check.",
+      "evidence_check_for_understanding": "Safety and machine identification check.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 1"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [],
+      "project_due": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: Begin Academy 4000/VMD orientation videos; pause to identify safety zones, stop controls and the installed 4800/FlexCut 80.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: Safety and machine identification check."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 2,
+      "scheduled_date": "2026-11-10",
+      "title": "Torchmate Academy — Inspection, startup/shutdown, SP2 login and file naming.",
+      "objective": "Inspection, startup/shutdown, SP2 login and file naming.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "Inspection, startup/shutdown, SP2 login and file naming.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "Signed setup check and saved starter file.",
+      "instructor_checks": "Signed setup check and saved starter file.",
+      "evidence_check_for_understanding": "Signed setup check and saved starter file.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 3"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [],
+      "project_due": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: Inspection, startup/shutdown, SP2 login and file naming.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: Signed setup check and saved starter file."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 3,
+      "scheduled_date": "2026-11-11",
+      "title": "Torchmate Academy — CAD basic shapes, guidelines, scale and toolpath preview.",
+      "objective": "CAD basic shapes, guidelines, scale and toolpath preview.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "CAD basic shapes, guidelines, scale and toolpath preview.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "Save a practice file; introduce the upcoming nameplate brief.",
+      "instructor_checks": "Save a practice file; introduce the upcoming nameplate brief.",
+      "evidence_check_for_understanding": "Save a practice file; introduce the upcoming nameplate brief.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 4"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [],
+      "project_due": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: CAD basic shapes, guidelines, scale and toolpath preview.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: Save a practice file; introduce the upcoming nameplate brief."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 4,
+      "scheduled_date": "2026-11-12",
+      "title": "Torchmate Academy — Follow FlexCut 80, Grounding Power Water Air and Test Cut videos",
+      "objective": "Follow FlexCut 80, Grounding Power Water Air and Test Cut videos; instructor gates any live machine step.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "Follow FlexCut 80, Grounding Power Water Air and Test Cut videos; instructor gates any live machine step.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "First-cut observation and project safety gate.",
+      "instructor_checks": "First-cut observation and project safety gate.",
+      "evidence_check_for_understanding": "First-cut observation and project safety gate.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2",
+        "CLO 3"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [],
+      "project_due": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: Follow FlexCut 80, Grounding Power Water Air and Test Cut videos; instructor gates any live machine step.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: First-cut observation and project safety gate."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 5,
+      "scheduled_date": "2026-11-16",
+      "title": "Torchmate Academy — Begin nameplate: draw, dimension, save and preview.",
+      "objective": "**Begin nameplate:** draw, dimension, save and preview.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "**Begin nameplate:** draw, dimension, save and preview.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "Project 1 draft; queue an instructor-approved cut in WLD 114 or supervised WLD 115 lab.",
+      "instructor_checks": "Project 1 draft; queue an instructor-approved cut in WLD 114 or supervised WLD 115 lab.",
+      "evidence_check_for_understanding": "Project 1 draft; queue an instructor-approved cut in WLD 114 or supervised WLD 115 lab.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 4",
+        "CLO 7"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [
+        "nameplate"
+      ],
+      "project_due": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: **Begin nameplate:** draw, dimension, save and preview.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: Project 1 draft; queue an instructor-approved cut in WLD 114 or supervised WLD 115 lab."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 6,
+      "scheduled_date": "2026-11-17",
+      "title": "Torchmate Academy — Cut Quality and AVHC",
+      "objective": "Cut Quality and AVHC; nameplate kerf, cut and measurement.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "Cut Quality and AVHC; nameplate kerf, cut and measurement.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "Project 1 cut/QC underway; record settings and any correction.",
+      "instructor_checks": "Project 1 cut/QC underway; record settings and any correction.",
+      "evidence_check_for_understanding": "Project 1 cut/QC underway; record settings and any correction.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 2",
+        "CLO 5",
+        "CLO 7"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [
+        "nameplate"
+      ],
+      "project_due": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: Cut Quality and AVHC; nameplate kerf, cut and measurement.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: Project 1 cut/QC underway; record settings and any correction."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 7,
+      "scheduled_date": "2026-11-18",
+      "title": "Torchmate Academy — Finish nameplate",
+      "objective": "**Finish nameplate; begin welcome sign:** plate alignment, tracing and feature protection.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "**Finish nameplate; begin welcome sign:** plate alignment, tracing and feature protection.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "**Project 1 complete** with file, part and QC log; Project 2 design draft.",
+      "instructor_checks": "**Project 1 complete** with file, part and QC log; Project 2 design draft.",
+      "evidence_check_for_understanding": "**Project 1 complete** with file, part and QC log; Project 2 design draft.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 4",
+        "CLO 7"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [
+        "nameplate",
+        "welcome_sign"
+      ],
+      "project_due": [
+        "nameplate"
+      ],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: **Finish nameplate; begin welcome sign:** plate alignment, tracing and feature protection.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: **Project 1 complete** with file, part and QC log; Project 2 design draft."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 8,
+      "scheduled_date": "2026-11-19",
+      "title": "Torchmate Academy — Welcome sign vector cleanup, kerf, path approval and supervised cutting rotation.",
+      "objective": "Welcome sign vector cleanup, kerf, path approval and supervised cutting rotation.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "Welcome sign vector cleanup, kerf, path approval and supervised cutting rotation.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "Project 2 approved file; cut/QC underway.",
+      "instructor_checks": "Project 2 approved file; cut/QC underway.",
+      "evidence_check_for_understanding": "Project 2 approved file; cut/QC underway.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 4",
+        "CLO 7"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [
+        "welcome_sign"
+      ],
+      "project_due": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: Welcome sign vector cleanup, kerf, path approval and supervised cutting rotation.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: Project 2 approved file; cut/QC underway."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 9,
+      "scheduled_date": "2026-11-23",
+      "title": "Torchmate Academy — Finish welcome sign",
+      "objective": "**Finish welcome sign; begin capstone:** inspect sign, then choose capstone concept.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "**Finish welcome sign; begin capstone:** inspect sign, then choose capstone concept.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "**Project 2 complete** with traced element, measured part and QC; Project 3 proposal.",
+      "instructor_checks": "**Project 2 complete** with traced element, measured part and QC; Project 3 proposal.",
+      "evidence_check_for_understanding": "**Project 2 complete** with traced element, measured part and QC; Project 3 proposal.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 4",
+        "CLO 7"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [
+        "welcome_sign",
+        "capstone"
+      ],
+      "project_due": [
+        "welcome_sign"
+      ],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: **Finish welcome sign; begin capstone:** inspect sign, then choose capstone concept.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: **Project 2 complete** with traced element, measured part and QC; Project 3 proposal."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 10,
+      "scheduled_date": "2026-11-24",
+      "title": "Torchmate Academy — Rows/columns, mirror/rotate and nesting for the capstone.",
+      "objective": "Rows/columns, mirror/rotate and nesting for the capstone.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "Rows/columns, mirror/rotate and nesting for the capstone.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "Capstone dimensional drawing and layout.",
+      "instructor_checks": "Capstone dimensional drawing and layout.",
+      "evidence_check_for_understanding": "Capstone dimensional drawing and layout.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 3",
+        "CLO 4"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [
+        "capstone"
+      ],
+      "project_due": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: Rows/columns, mirror/rotate and nesting for the capstone.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: Capstone dimensional drawing and layout."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 11,
+      "scheduled_date": "2026-11-30",
+      "title": "Torchmate Academy — CAD array/badge/nest practice and toolpath output.",
+      "objective": "CAD array/badge/nest practice and toolpath output.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "CAD array/badge/nest practice and toolpath output.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "Capstone design with vector cleanup and nested layout.",
+      "instructor_checks": "Capstone design with vector cleanup and nested layout.",
+      "evidence_check_for_understanding": "Capstone design with vector cleanup and nested layout.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 4",
+        "CLO 7"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [
+        "capstone"
+      ],
+      "project_due": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: CAD array/badge/nest practice and toolpath output.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: Capstone design with vector cleanup and nested layout."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 12,
+      "scheduled_date": "2026-12-01",
+      "title": "Torchmate Academy — Troubleshooting: IHS, no arc, diving, gantry",
+      "objective": "Troubleshooting: IHS, no arc, diving, gantry; operator checks versus service.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "Troubleshooting: IHS, no arc, diving, gantry; operator checks versus service.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "Fault response check and capstone toolpath approval.",
+      "instructor_checks": "Fault response check and capstone toolpath approval.",
+      "evidence_check_for_understanding": "Fault response check and capstone toolpath approval.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 3",
+        "CLO 5"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [
+        "capstone"
+      ],
+      "project_due": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: Troubleshooting: IHS, no arc, diving, gantry; operator checks versus service.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: Fault response check and capstone toolpath approval."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 13,
+      "scheduled_date": "2026-12-02",
+      "title": "Torchmate Academy — Model-specific maintenance",
+      "objective": "Model-specific maintenance; capstone dry runs and cutting slots.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "Model-specific maintenance; capstone dry runs and cutting slots.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "Capstone first supervised cut and settings log.",
+      "instructor_checks": "Capstone first supervised cut and settings log.",
+      "evidence_check_for_understanding": "Capstone first supervised cut and settings log.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 3",
+        "CLO 6",
+        "CLO 7"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [
+        "capstone"
+      ],
+      "project_due": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: Model-specific maintenance; capstone dry runs and cutting slots.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: Capstone first supervised cut and settings log."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 14,
+      "scheduled_date": "2026-12-03",
+      "title": "Torchmate Academy — Continue staggered capstone cuts and measurement",
+      "objective": "Continue staggered capstone cuts and measurement; correct a defect if necessary.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "Continue staggered capstone cuts and measurement; correct a defect if necessary.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "Capstone cut, dimensions and recorded correction.",
+      "instructor_checks": "Capstone cut, dimensions and recorded correction.",
+      "evidence_check_for_understanding": "Capstone cut, dimensions and recorded correction.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 5",
+        "CLO 7"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [
+        "capstone"
+      ],
+      "project_due": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: Continue staggered capstone cuts and measurement; correct a defect if necessary.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: Capstone cut, dimensions and recorded correction."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 15,
+      "scheduled_date": "2026-12-07",
+      "title": "Torchmate Academy — Complete capstone finish and brief walk-through",
+      "objective": "Complete capstone finish and brief walk-through; verify the instructor video log and each student’s three projects.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "Complete capstone finish and brief walk-through; verify the instructor video log and each student’s three projects.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "**Project 3 capstone and class video sequence due:** finished part, archived files, instructor video log and individual LTG evidence check. Log any unfinished item honestly.",
+      "instructor_checks": "**Project 3 capstone and class video sequence due:** finished part, archived files, instructor video log and individual LTG evidence check. Log any unfinished item honestly.",
+      "evidence_check_for_understanding": "**Project 3 capstone and class video sequence due:** finished part, archived files, instructor video log and individual LTG evidence check. Log any unfinished item honestly.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 4",
+        "CLO 7"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [
+        "capstone"
+      ],
+      "project_due": [
+        "capstone"
+      ],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: Complete capstone finish and brief walk-through; verify the instructor video log and each student’s three projects.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: **Project 3 capstone and class video sequence due:** finished part, archived files, instructor video log and individual LTG evidence check. Log any unfinished item honestly."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 16,
+      "scheduled_date": "2026-12-08",
+      "title": "Torchmate Academy — Review cut quality and controlled retests.",
+      "objective": "Review cut quality and controlled retests.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "Review cut quality and controlled retests.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "Compare original and corrected samples.",
+      "instructor_checks": "Compare original and corrected samples.",
+      "evidence_check_for_understanding": "Compare original and corrected samples.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 2",
+        "CLO 5"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [],
+      "project_due": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: Review cut quality and controlled retests.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: Compare original and corrected samples."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 17,
+      "scheduled_date": "2026-12-09",
+      "title": "Torchmate Academy — VMD SP2 operator practice.",
+      "objective": "VMD SP2 operator practice.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "VMD SP2 operator practice.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "Approved setup, preview and dry run record.",
+      "instructor_checks": "Approved setup, preview and dry run record.",
+      "evidence_check_for_understanding": "Approved setup, preview and dry run record.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 3"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [],
+      "project_due": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: VMD SP2 operator practice.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: Approved setup, preview and dry run record."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 18,
+      "scheduled_date": "2026-12-10",
+      "title": "Torchmate Academy — CAD precision clinic and project improvement.",
+      "objective": "CAD precision clinic and project improvement.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "CAD precision clinic and project improvement.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "Revised file and measured improvement.",
+      "instructor_checks": "Revised file and measured improvement.",
+      "evidence_check_for_understanding": "Revised file and measured improvement.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 4",
+        "CLO 7"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [],
+      "project_due": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: CAD precision clinic and project improvement.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: Revised file and measured improvement."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 19,
+      "scheduled_date": "2026-12-14",
+      "title": "Torchmate Academy — Troubleshooting practice and maintenance boundary.",
+      "objective": "Troubleshooting practice and maintenance boundary.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "Troubleshooting practice and maintenance boundary.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "Symptom-to-action and escalation record.",
+      "instructor_checks": "Symptom-to-action and escalation record.",
+      "evidence_check_for_understanding": "Symptom-to-action and escalation record.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 5",
+        "CLO 6"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [],
+      "project_due": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: Troubleshooting practice and maintenance boundary.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: Symptom-to-action and escalation record."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 20,
+      "scheduled_date": "2026-12-15",
+      "title": "Torchmate Academy — Approved WLD 115 practice-part preparation if time and capacity permit.",
+      "objective": "Approved WLD 115 practice-part preparation if time and capacity permit.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "Approved WLD 115 practice-part preparation if time and capacity permit.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "Nested file/parts and labels as needed; separate course records.",
+      "instructor_checks": "Nested file/parts and labels as needed; separate course records.",
+      "evidence_check_for_understanding": "Nested file/parts and labels as needed; separate course records.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 3",
+        "CLO 4"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [],
+      "project_due": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: Approved WLD 115 practice-part preparation if time and capacity permit.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: Nested file/parts and labels as needed; separate course records."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 21,
+      "scheduled_date": "2026-12-16",
+      "title": "Torchmate Academy — Complete independent operator cycle under instructor gates.",
+      "objective": "Complete independent operator cycle under instructor gates.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "Complete independent operator cycle under instructor gates.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "Inspection, approved cut, QC and safe closeout.",
+      "instructor_checks": "Inspection, approved cut, QC and safe closeout.",
+      "evidence_check_for_understanding": "Inspection, approved cut, QC and safe closeout.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 2",
+        "CLO 3"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [],
+      "project_due": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: Complete independent operator cycle under instructor gates.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: Inspection, approved cut, QC and safe closeout."
+        }
+      ]
+    },
+    {
+      "planner_day_number": 22,
+      "scheduled_date": "2026-12-17",
+      "title": "Torchmate Academy — Final reflection and portfolio check.",
+      "objective": "Final reflection and portfolio check.",
+      "safety_focus": "Use the installed Torchmate 4800/FlexCut 80 procedures. Instructor approves every live cut and stops unsafe work.",
+      "instructor_prep": "Sign in to Torchmate Academy; queue the named videos, ready the CAD station, and review approved machine settings and the supervised cut queue.",
+      "opening_review": "Recall the prior video, current project status, and one safety or quality check.",
+      "demonstration": "Play and pause the instructor-only Academy videos for whole-class follow-along; no separate lecture block.",
+      "guided_practice": "Final reflection and portfolio check.",
+      "independent_practice": "Follow the Academy procedure in CAD or at the machine under instructor direction. CNC cuts may rotate during WLD 115 with direct supervision.",
+      "assessment": "Three project records, LTG participation evidence and any remaining deficiencies.",
+      "instructor_checks": "Three project records, LTG participation evidence and any remaining deficiencies.",
+      "evidence_check_for_understanding": "Three project records, LTG participation evidence and any remaining deficiencies.",
+      "teaching_tips": "Record class video playback separately from each student's participation and project evidence. Academy login belongs to the instructor only.",
+      "materials_equipment": "Instructor Academy access; display/audio; Torchmate 4800; FlexCut 80; installed CAD/VMD; approved PPE, stock, cut chart and consumables.",
+      "outcome_codes": [
+        "CLO 1",
+        "CLO 4",
+        "CLO 7"
+      ],
+      "academy_access": "instructor_only_whole_class_playback",
+      "academy_learning_plan_url": "https://lincolnelectric.docebosaas.com/learn/learning-plans/87/torchmate-4000-learning-plan",
+      "resource_url": "/resources/wld114/torchmate-operator-hub.html",
+      "active_projects": [],
+      "project_due": [],
+      "segments": [
+        {
+          "sequence_number": 1,
+          "segment_type": "guided_practice",
+          "segment_title": "Instructor-played Academy videos and follow-along",
+          "start_minute": 0,
+          "end_minute": 60,
+          "planned_minutes": 60,
+          "instructor_actions": "Play/pause the relevant Academy videos and coach the class: Final reflection and portfolio check.",
+          "student_actions": "Watch together, follow the steps, and retain individual evidence: Three project records, LTG participation evidence and any remaining deficiencies."
+        }
+      ]
+    }
+  ]
+}
