@@ -10,6 +10,7 @@ const status=message=>$('status').textContent=message;
 const session=new Session(s=>{latest=s;lastReceived=performance.now();buffer.push(s,lastReceived);},status);
 function ready(credentials){
   device=credentials.device;$('lobby').hidden=true;$('play').hidden=false;$('hostControls').hidden=device!==1;
+  $('modeControl').hidden=device!==1;$('guestHelp').hidden=device!==2;
   $('placement').textContent=device===1?'Phone A · LEFT · inside edge →':'Phone B · RIGHT · ← inside edge';
   if(credentials.invite){
     $('sharing').hidden=false;const url=new URL(location.href);url.hash=new URLSearchParams({id:credentials.id,invite:credentials.invite});$('share').value=url.href;
