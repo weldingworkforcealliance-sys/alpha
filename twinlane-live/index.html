@@ -684,10 +684,40 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       if(payload.next_ball_number!=null){
         state.next_ball_number=Number(payload.next_ball_number);
       }
+      if(payload.game_state)state.game_state=payload.game_state;
     }
 
     netSample=null;
     netVelocity={ball:{x:0,y:0},pallino:{x:0,y:0}};
+    render();
+  }
+
+  function applyPallinoComplete(payload){
+    if(!payload)return;
+    realtimeFrames=[];
+    remoteClockOffsetMs=null;
+    realtimeJitterMs=0;
+    localSim=false;
+
+    const legal=payload.legal!==false;
+    const px=legal?Number(payload.pallino_x||50):50;
+    const py=legal?Number(payload.pallino_y||8):8;
+    displayedPallino=targetPallino={x:px,y:py};
+    displayedBall=targetBall={x:50,y:8};
+
+    if(state){
+      state.pallino_x=px;
+      state.pallino_y=py;
+      state.ball_x=50;
+      state.ball_y=8;
+      state.ball_moving=false;
+      if(payload.game_state)state.game_state=payload.game_state;
+      if(payload.seq!=null){
+        shotSeq=Math.max(shotSeq,Number(payload.seq));
+        state.ball_seq=shotSeq;
+      }
+    }
+
     render();
   }
 
@@ -748,6 +778,10 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       if(msg?.event==='broadcast' && msg?.topic===realtimeTopic){
         const p=msg?.payload;
         if(p?.event==='physics')applyRealtimePhysics(p.payload);
+        if(p?.event==='pallino_complete'){
+          applyPallinoComplete(p.payload);
+          void poll();
+        }
         if(p?.event==='shot_complete'){
           applyShotComplete(p.payload);
           void poll();
@@ -890,15 +924,21 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   });
 
   function canThrow(){
-    return role==='launch' && position==='first' && state && !state.ball_moving && viewport();
+    const phase=game().phase;
+    return role==='launch' && position==='first' && state && !state.ball_moving && viewport() && (phase==='pallino'||phase==='bocce');
+  }
+
+  function throwingPallino(){
+    return game().phase==='pallino';
   }
 
   laneEl.addEventListener('pointerdown',(e)=>{
     if(!canThrow())return;
     const w=pointerToWorld(e);if(!w)return;
-    const bx=Number(state.ball_x||50),by=Number(state.ball_y||8);
+    const bx=throwingPallino()?Number(state.pallino_x||50):Number(state.ball_x||50);
+    const by=throwingPallino()?Number(state.pallino_y||8):Number(state.ball_y||8);
     if(Math.hypot(w.x-bx,w.y-by)>8)return;
-    gesture={mode:'pending',startX:bx,startY:by,x:w.x,y:w.y,t0:performance.now()};
+    gesture={mode:'pending',startX:bx,startY:by,x:w.x,y:w.y,t0:performance.now(),pallino:throwingPallino()};
     laneEl.setPointerCapture?.(e.pointerId);
   });
 
@@ -909,9 +949,15 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     if(gesture.mode==='pending')gesture.mode=w.y>17?'throw':'place';
     if(gesture.mode==='place'&&w.y<=17){
       const bx=clamp(w.x,15,85),by=clamp(w.y,5,14);
-      state.ball_x=bx;state.ball_y=by;
-      displayedBall={x:bx,y:by};targetBall={x:bx,y:by};
-      setStatus('Ball placed. Release here, then touch it again and flick forward.');
+      if(gesture.pallino){
+        state.pallino_x=bx;state.pallino_y=by;
+        displayedPallino={x:bx,y:by};targetPallino={x:bx,y:by};
+        setStatus('Pallino placed. Release here, then touch it again and flick forward.');
+      }else{
+        state.ball_x=bx;state.ball_y=by;
+        displayedBall={x:bx,y:by};targetBall={x:bx,y:by};
+        setStatus(teamName(game().current_team)+' ball placed. Release here, then touch it again and flick forward.');
+      }
     }
     if(gesture.mode==='place'&&w.y>17)gesture.mode='throw';
 
@@ -940,23 +986,159 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
 
     if(g.mode!=='throw'&&w.y<=17){
       const bx=clamp(w.x,15,85),by=clamp(w.y,5,14);
-      state.ball_x=bx;state.ball_y=by;
-      displayedBall={x:bx,y:by};targetBall={x:bx,y:by};
-      void sendPhysics(displayedBall,displayedPallino,Array.isArray(state.settled_balls)?state.settled_balls:[],false,shotSeq);
-      setStatus('Ball placed. Touch it again and flick forward to throw.');
+      if(g.pallino){
+        state.pallino_x=bx;state.pallino_y=by;
+        displayedPallino={x:bx,y:by};targetPallino={x:bx,y:by};
+        void sendPhysics(displayedBall,displayedPallino,Array.isArray(state.settled_balls)?state.settled_balls:[],false,shotSeq);
+        setStatus('Pallino placed. Touch it again and flick forward.');
+      }else{
+        state.ball_x=bx;state.ball_y=by;
+        displayedBall={x:bx,y:by};targetBall={x:bx,y:by};
+        void sendPhysics(displayedBall,displayedPallino,Array.isArray(state.settled_balls)?state.settled_balls:[],false,shotSeq);
+        setStatus(teamName(game().current_team)+' ball placed. Touch it again and flick forward.');
+      }
       return;
     }
 
     const dx=w.x-g.startX,dy=w.y-g.startY;
     const dist=Math.hypot(dx,dy);
     const duration=Math.max(.08,(performance.now()-g.t0)/1000);
-    if(dy<4||dist<5){setStatus('Flick forward from the ball to throw.');return;}
-    startShot(g.startX,g.startY,dx,dy,duration);
+    if(dy<4||dist<5){setStatus('Flick forward to throw.');return;}
+    if(g.pallino)startPallinoShot(g.startX,g.startY,dx,dy,duration);
+    else startShot(g.startX,g.startY,dx,dy,duration);
   });
 
   laneEl.addEventListener('pointercancel',()=>{
     gesture=null;flickLineEl.classList.add('hidden');
   });
+
+  async function startPallinoShot(startX,startY,dx,dy,duration){
+    if(localSim)return;
+    localSim=true;
+    shotSeq+=1;
+    state.ball_moving=true;
+
+    const pallino={x:startX,y:startY,vx:0,vy:0,r:1.15,type:'pallino'};
+    const ang=clamp(Math.atan2(dx,dy),-.55,.55);
+    const gestureSpeed=Math.hypot(dx,dy)/duration;
+    const power=clamp(28+Math.hypot(dx,dy)*1.8+gestureSpeed*.045,30,100);
+    const v=28+power*.34;
+    pallino.vx=Math.sin(ang)*v;
+    pallino.vy=Math.cos(ang)*v;
+    setStatus(teamName(game().starting_team)+' pallino rolling…');
+
+    let last=performance.now();
+    const started=last;
+    let stableFrames=0;
+    let finishing=false;
+
+    function contain(o){
+      if(o.x-o.r<8){o.x=8+o.r;o.vx=Math.abs(o.vx)*.20;}
+      if(o.x+o.r>92){o.x=92-o.r;o.vx=-Math.abs(o.vx)*.20;}
+      if(o.y-o.r<0){o.y=o.r;o.vy=Math.abs(o.vy)*.10;}
+      if(o.y+o.r>100){o.y=100-o.r;o.vy=-Math.abs(o.vy)*.10;}
+    }
+
+    async function finish(){
+      if(finishing)return;
+      finishing=true;
+      pallino.vx=0;pallino.vy=0;
+
+      try{
+        const result=await api('POST',{
+          action:'complete_pallino',
+          session,token,
+          pallino_x:pallino.x,pallino_y:pallino.y,
+          seq:shotSeq
+        });
+
+        state.ball_moving=false;
+        localSim=false;
+        realtimeFrames=[];
+        realtimeJitterMs=0;
+
+        if(!result.legal){
+          state.pallino_x=50;state.pallino_y=8;
+          displayedPallino=targetPallino={x:50,y:8};
+          realtimeSend('pallino_complete',{
+            legal:false,pallino_x:50,pallino_y:8,
+            game_state:result.game_state,seq:shotSeq,sent_at:Date.now()
+          });
+          setStatus('Pallino must cross center and stop before the back wall. Throw again.');
+          render();
+          return;
+        }
+
+        state.pallino_x=Number(result.pallino_x);
+        state.pallino_y=Number(result.pallino_y);
+        displayedPallino=targetPallino={x:state.pallino_x,y:state.pallino_y};
+        state.ball_x=50;state.ball_y=8;
+        displayedBall=targetBall={x:50,y:8};
+        state.game_state=result.game_state||state.game_state;
+        shotSeq=Number(result.ball_seq||shotSeq+1);
+        state.ball_seq=shotSeq;
+
+        realtimeSend('pallino_complete',{
+          legal:true,
+          pallino_x:state.pallino_x,pallino_y:state.pallino_y,
+          game_state:state.game_state,seq:shotSeq,sent_at:Date.now()
+        });
+
+        await poll();
+        setStatus(teamName(game().current_team)+' throws the first bocce ball.');
+        render();
+      }catch(e){
+        localSim=false;
+        state.ball_moving=false;
+        setStatus('Pallino throw failed: '+e.message);
+      }
+    }
+
+    async function frame(now){
+      if(finishing)return;
+      const dt=Math.min(.025,(now-last)/1000||.016);last=now;
+      pallino.x+=pallino.vx*dt;
+      pallino.y+=pallino.vy*dt;
+
+      const speed=Math.hypot(pallino.vx,pallino.vy);
+      if(speed>0){
+        const nextSpeed=Math.max(0,speed-8.8*dt);
+        const scale=nextSpeed/speed;
+        pallino.vx*=scale;pallino.vy*=scale;
+        if(nextSpeed<.42){pallino.vx=0;pallino.vy=0;}
+      }
+      contain(pallino);
+
+      displayedPallino=targetPallino={x:pallino.x,y:pallino.y};
+      state.pallino_x=pallino.x;state.pallino_y=pallino.y;
+
+      if(now-lastSend>34){
+        lastSend=now;
+        const framePayload={
+          ball_x:Number(state.ball_x||50),ball_y:Number(state.ball_y||8),
+          pallino_x:pallino.x,pallino_y:pallino.y,
+          settled_balls:[],moving:true,seq:shotSeq,sent_at:Date.now()
+        };
+        realtimeSend('physics',framePayload);
+        if(!state._lastSnapshotAt || now-state._lastSnapshotAt>220){
+          state._lastSnapshotAt=now;
+          void api('POST',{action:'physics',session,token,...framePayload}).catch(()=>{});
+        }
+      }
+
+      const moving=Math.hypot(pallino.vx,pallino.vy)>.01;
+      if(!moving)stableFrames+=1;else stableFrames=0;
+      render();
+
+      if(stableFrames>=6 || now-started>7000){
+        void finish();
+        return;
+      }
+      requestAnimationFrame(frame);
+    }
+
+    requestAnimationFrame(frame);
+  }
 
   async function startShot(startX,startY,dx,dy,duration){
     if(localSim)return;
@@ -967,7 +1149,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     const active={id:'active',x:startX,y:startY,vx:0,vy:0,m:1,r:2.0,type:'active'};
     const pallino={id:'pallino',x:Number(state.pallino_x||52),y:Number(state.pallino_y||82),vx:0,vy:0,m:.35,r:1.15,type:'pallino'};
     const settled=(Array.isArray(state.settled_balls)?state.settled_balls:[]).map((b)=>({
-      id:Number(b.id),x:Number(b.x),y:Number(b.y),vx:0,vy:0,m:1,r:2.0,type:'settled'
+      id:Number(b.id),x:Number(b.x),y:Number(b.y),team:b.team==='B'?'B':'A',vx:0,vy:0,m:1,r:2.0,type:'settled'
     }));
 
     const ang=clamp(Math.atan2(dx,dy),-.55,.55);
@@ -1006,7 +1188,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         o.vx=0;o.vy=0;
       }
 
-      const settledPayload=settled.map(b=>({id:b.id,x:b.x,y:b.y}));
+      const settledPayload=settled.map(b=>({id:b.id,x:b.x,y:b.y,team:b.team==='B'?'B':'A'}));
       displayedBall={x:active.x,y:active.y};targetBall=displayedBall;
       displayedPallino={x:pallino.x,y:pallino.y};targetPallino=displayedPallino;
 
@@ -1025,6 +1207,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         displayedSettledBalls=state.settled_balls;
         realtimeFrames=[];
         state.next_ball_number=Number(result.next_ball_number||Number(state.next_ball_number||1)+1);
+        if(result.game_state)state.game_state=result.game_state;
         shotSeq=Number(result.ball_seq||shotSeq+1);
         state.ball_seq=shotSeq;
         state.ball_x=50;state.ball_y=8;
@@ -1040,16 +1223,20 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
           settled_balls:state.settled_balls,
           moving:false,seq:shotSeq,
           next_ball_number:state.next_ball_number,
+          game_state:state.game_state,
           sent_at:Date.now()
         });
 
         await poll();
 
-        setStatus(
-          reason==='watchdog'
-            ? 'Shot resolved automatically. Ball '+state.next_ball_number+' is ready.'
-            : 'Ball '+state.next_ball_number+' ready automatically. Previous balls stay where they stopped.'
-        );
+        const g=game();
+        if(g.phase==='end_complete'){
+          setStatus(teamName(g.end_scoring_team)+' scores '+Number(g.end_score||0)+'. End complete.');
+        }else if(g.phase==='match_over'){
+          setStatus(teamName(g.winner)+' wins the match.');
+        }else{
+          setStatus(teamName(g.current_team)+' to throw.');
+        }
         render();
       }catch(e){
         localSim=false;
@@ -1102,7 +1289,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       if(maxSpeed<.70)stableFrames+=1;
       else stableFrames=0;
 
-      const settledPayload=settled.map(b=>({id:b.id,x:b.x,y:b.y}));
+      const settledPayload=settled.map(b=>({id:b.id,x:b.x,y:b.y,team:b.team==='B'?'B':'A'}));
       displayedBall={x:active.x,y:active.y};targetBall=displayedBall;
       displayedPallino={x:pallino.x,y:pallino.y};targetPallino=displayedPallino;
       state.ball_x=active.x;state.ball_y=active.y;
@@ -1146,23 +1333,48 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     requestAnimationFrame(frame);
   }
 
-  resetFrameBtn.addEventListener('click',async()=>{
+  nextEndBtn.addEventListener('click',async()=>{
     if(role!=='launch')return;
     try{
-      await api('POST',{action:'reset_frame',session,token});
-      displayedBall=targetBall={x:50,y:8};
-      displayedPallino=targetPallino={x:52,y:82};
+      const result=await api('POST',{action:'start_next_end',session,token});
       if(state){
+        state.game_state=result.game_state||state.game_state;
         state.ball_x=50;state.ball_y=8;state.ball_moving=false;
-        state.pallino_x=52;state.pallino_y=82;
+        state.pallino_x=50;state.pallino_y=8;
         state.settled_balls=[];state.next_ball_number=1;
-        displayedSettledBalls=[];
-        realtimeFrames=[];
-        realtimeJitterMs=0;
       }
-      setStatus('New frame ready. Ball 1 is waiting at the Near Player end.');
+      displayedBall=targetBall={x:50,y:8};
+      displayedPallino=targetPallino={x:50,y:8};
+      displayedSettledBalls=[];
+      realtimeFrames=[];
+      realtimeJitterMs=0;
+      realtimeSend('pallino_complete',{
+        legal:false,pallino_x:50,pallino_y:8,
+        game_state:state?.game_state,seq:shotSeq+1,sent_at:Date.now()
+      });
+      await poll();
       render();
-    }catch(e){setStatus('Frame reset failed: '+e.message);}
+    }catch(e){setStatus('Could not start next end: '+e.message);}
+  });
+
+  newMatchBtn.addEventListener('click',async()=>{
+    if(role!=='launch')return;
+    try{
+      const result=await api('POST',{action:'reset_match',session,token});
+      if(state){
+        state.game_state=result.game_state||defaultGame();
+        state.ball_x=50;state.ball_y=8;state.ball_moving=false;
+        state.pallino_x=50;state.pallino_y=8;
+        state.settled_balls=[];state.next_ball_number=1;
+      }
+      displayedBall=targetBall={x:50,y:8};
+      displayedPallino=targetPallino={x:50,y:8};
+      displayedSettledBalls=[];
+      realtimeFrames=[];
+      realtimeJitterMs=0;
+      await poll();
+      render();
+    }catch(e){setStatus('Could not reset match: '+e.message);}
   });
 
   if(joinSession&&joinToken){
