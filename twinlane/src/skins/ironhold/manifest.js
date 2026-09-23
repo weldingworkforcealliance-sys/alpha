@@ -1,0 +1,1 @@
+export default Object.freeze({id:'ironhold',name:'Ironhold (proof skin)',assets:Object.freeze({terrain:'#202c35',laneGround:'#465864',blueCastle:'#829aaa',redCastle:'#9d7771',frontier:'#ffa94b',timber:'#59636b',brass:'#c2cbd0'})});
