@@ -1604,7 +1604,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         o.x=8+o.r;o.vx=Math.abs(o.vx)*.20;
         const woodKey=String(o.id||o.type||'ball')+'|L';
         const lastWoodSound=woodSoundTimes.get(woodKey)||-Infinity;
-        if(wallSpeed>.40 && wallNow-lastWoodSound>85){
+        if(wallSpeed>.40 && wallNow-lastWoodSound>65){
           woodSoundTimes.set(woodKey,wallNow);
           const railKind='wood_pallino';
           const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
@@ -1618,7 +1618,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         o.x=92-o.r;o.vx=-Math.abs(o.vx)*.20;
         const woodKey=String(o.id||o.type||'ball')+'|R';
         const lastWoodSound=woodSoundTimes.get(woodKey)||-Infinity;
-        if(wallSpeed>.40 && wallNow-lastWoodSound>85){
+        if(wallSpeed>.40 && wallNow-lastWoodSound>65){
           woodSoundTimes.set(woodKey,wallNow);
           const railKind='wood_pallino';
           const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
@@ -1633,7 +1633,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         o.y=100-o.r;o.vy=-Math.abs(o.vy)*.10;
         const woodKey=String(o.id||o.type||'ball')+'|B';
         const lastWoodSound=woodSoundTimes.get(woodKey)||-Infinity;
-        if(wallSpeed>.40 && wallNow-lastWoodSound>85){
+        if(wallSpeed>.40 && wallNow-lastWoodSound>65){
           woodSoundTimes.set(woodKey,wallNow);
           const railKind='wood_pallino';
           const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
@@ -1815,7 +1815,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       const pairKey=[String(a.id),String(b.id)].sort().join('|');
       const lastPairSound=impactSoundTimes.get(pairKey)||-Infinity;
 
-      if(impactStrength>1.25 && impactNow-lastPairSound>70){
+      if(impactStrength>1.25 && impactNow-lastPairSound>40){
         impactSoundTimes.set(pairKey,impactNow);
         const impactKind=(a.type==='pallino'||b.type==='pallino')?'pallino_hit':'impact';
         const soundPayload={
@@ -1934,7 +1934,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
           o.x=8+rx;o.vx=Math.abs(o.vx)*.28;
           const woodKey=String(o.id||o.type||'ball')+'|L';
           const lastWoodSound=woodSoundTimes.get(woodKey)||-Infinity;
-          if(wallSpeed>.55 && wallNow-lastWoodSound>85){
+          if(wallSpeed>.55 && wallNow-lastWoodSound>65){
             woodSoundTimes.set(woodKey,wallNow);
             const railKind=(o.type==='pallino'?'wood_pallino':'wood');
             const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
@@ -1948,7 +1948,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
           o.x=92-rx;o.vx=-Math.abs(o.vx)*.28;
           const woodKey=String(o.id||o.type||'ball')+'|R';
           const lastWoodSound=woodSoundTimes.get(woodKey)||-Infinity;
-          if(wallSpeed>.55 && wallNow-lastWoodSound>85){
+          if(wallSpeed>.55 && wallNow-lastWoodSound>65){
             woodSoundTimes.set(woodKey,wallNow);
             const railKind=(o.type==='pallino'?'wood_pallino':'wood');
             const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
@@ -1963,7 +1963,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
           o.y=100-ry;o.vy=-Math.abs(o.vy)*.16;
           const woodKey=String(o.id||o.type||'ball')+'|B';
           const lastWoodSound=woodSoundTimes.get(woodKey)||-Infinity;
-          if(wallSpeed>.55 && wallNow-lastWoodSound>85){
+          if(wallSpeed>.55 && wallNow-lastWoodSound>65){
             woodSoundTimes.set(woodKey,wallNow);
             const railKind=(o.type==='pallino'?'wood_pallino':'wood');
             const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
