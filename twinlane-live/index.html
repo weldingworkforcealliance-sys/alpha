@@ -782,6 +782,7 @@ body[data-view-mode="immersive"] #matchHud::before{
   let pollInFlight = false;
   let lastRecoveryPollAt = 0;
   let remoteShotActive = false;
+  let activeShotTeam = 'A';
   let displayedBall = {x:50,y:8};
   let targetBall = {x:50,y:8};
   let displayedPallino = {x:52,y:82};
@@ -1375,8 +1376,11 @@ body[data-view-mode="immersive"] #matchHud::before{
     renderSettledBalls();
     const g=game();
     const seamExtra=state?.ball_moving?1.6:.15;
-    ballEl.classList.toggle('team-a',g.current_team!=='B');
-    ballEl.classList.toggle('team-b',g.current_team==='B');
+    const renderedBallTeam=(state?.ball_moving||remoteShotActive)
+      ? activeShotTeam
+      : (g.current_team==='B'?'B':'A');
+    ballEl.classList.toggle('team-a',renderedBallTeam==='A');
+    ballEl.classList.toggle('team-b',renderedBallTeam==='B');
 
     if(g.phase==='pallino'){
       ballEl.style.display='none';
@@ -1562,6 +1566,9 @@ body[data-view-mode="immersive"] #matchHud::before{
     }
 
     shotSeq=Math.max(shotSeq,seq);
+    if(payload.kind==='bocce'){
+      activeShotTeam=payload.team==='B'?'B':'A';
+    }
     remoteShotActive=true;
     lastRealtimeFrameAt=performance.now();
 
@@ -1603,6 +1610,9 @@ body[data-view-mode="immersive"] #matchHud::before{
     realtimeJitterMs=Math.max(realtimeJitterMs*.92, excessDelay);
     lastRealtimeFrameAt=now;
     remoteShotActive=Boolean(payload.moving);
+    if(payload.team==='A'||payload.team==='B'){
+      activeShotTeam=payload.team;
+    }
 
     const frame={
       recvAt:now,
@@ -1853,8 +1863,11 @@ body[data-view-mode="immersive"] #matchHud::before{
 
       const realtimeFresh=(now-lastRealtimeFrameAt)<350;
 
-      if(Boolean(s.ball_moving))remoteShotActive=true;
-      else if(remoteShotActive && !realtimeFresh && (now-lastRealtimeFrameAt)>500)remoteShotActive=false;
+      if(Boolean(s.ball_moving)){
+        remoteShotActive=true;
+        const recoveryTeam=s?.game_state?.current_team;
+        if(recoveryTeam==='A'||recoveryTeam==='B')activeShotTeam=recoveryTeam;
+      }else if(remoteShotActive && !realtimeFresh && (now-lastRealtimeFrameAt)>500)remoteShotActive=false;
 
       if(!realtimeFresh){
         netSample={t:now,ball:newBall,pallino:newPallino};
@@ -2300,8 +2313,9 @@ body[data-view-mode="immersive"] #matchHud::before{
     impactSoundTimes.clear();
     woodSoundTimes.clear();
 
+    activeShotTeam=game().current_team==='B'?'B':'A';
     const shotStartPayload={
-      seq:shotSeq,kind:'bocce',
+      seq:shotSeq,kind:'bocce',team:activeShotTeam,
       ball_x:startX,ball_y:startY,
       pallino_x:Number(state.pallino_x||52),pallino_y:Number(state.pallino_y||82),
       settled_balls:Array.isArray(state.settled_balls)?state.settled_balls:[],
@@ -2578,6 +2592,7 @@ body[data-view-mode="immersive"] #matchHud::before{
           ball_x:displayedBall.x,ball_y:displayedBall.y,
           pallino_x:displayedPallino.x,pallino_y:displayedPallino.y,
           settled_balls:settledPayload,
+          team:activeShotTeam,
           moving:true,seq:shotSeq,
           sent_at:Date.now()
         };
