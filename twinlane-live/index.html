@@ -810,6 +810,10 @@ body[data-view-mode="immersive"] #matchHud::before{
   let heartbeatTimer = null;
   let reconnectTimer = null;
   let lastRealtimeFrameAt = 0;
+  let lastPhysicsSeq = -1;
+  let lastPhysicsSentAt = 0;
+  let recoverySnapshotInFlight = false;
+  let pendingRecoverySnapshot = null;
   let soundOn = localStorage.getItem('corvumor_sound') !== 'off';
   let viewMode = localStorage.getItem('corvumor_view_mode') || 'immersive';
   let hapticsOn = localStorage.getItem('corvumor_haptics') !== 'off';
@@ -1522,6 +1526,28 @@ body[data-view-mode="immersive"] #matchHud::before{
     }));
   }
 
+  function queueRecoverySnapshot(payload){
+    if(!payload)return;
+    pendingRecoverySnapshot={...payload};
+    if(recoverySnapshotInFlight)return;
+    void flushRecoverySnapshot();
+  }
+
+  async function flushRecoverySnapshot(){
+    if(recoverySnapshotInFlight || !pendingRecoverySnapshot)return;
+    const payload=pendingRecoverySnapshot;
+    pendingRecoverySnapshot=null;
+    recoverySnapshotInFlight=true;
+    try{
+      await api('POST',{action:'physics',session,token,...payload});
+    }catch(e){
+      debugEl.textContent='Snapshot error: '+e.message;
+    }finally{
+      recoverySnapshotInFlight=false;
+      if(pendingRecoverySnapshot)void flushRecoverySnapshot();
+    }
+  }
+
   function applyShotStart(payload){
     if(!payload || localSim)return;
     const seq=Number(payload.seq||0);
@@ -1531,6 +1557,8 @@ body[data-view-mode="immersive"] #matchHud::before{
       realtimeFrames=[];
       remoteClockOffsetMs=null;
       realtimeJitterMs=0;
+      lastPhysicsSeq=seq;
+      lastPhysicsSentAt=0;
     }
 
     shotSeq=Math.max(shotSeq,seq);
@@ -1559,6 +1587,14 @@ body[data-view-mode="immersive"] #matchHud::before{
     const now=performance.now();
     const recvWall=Date.now();
     const sentAt=Number(payload.sent_at||recvWall);
+
+    if(seq===lastPhysicsSeq && sentAt<=lastPhysicsSentAt)return;
+    if(seq!==lastPhysicsSeq){
+      lastPhysicsSeq=seq;
+      lastPhysicsSentAt=0;
+    }
+    lastPhysicsSentAt=sentAt;
+
     const observedOffset=recvWall-sentAt;
     if(remoteClockOffsetMs==null || observedOffset<remoteClockOffsetMs){
       remoteClockOffsetMs=observedOffset;
@@ -1617,6 +1653,8 @@ body[data-view-mode="immersive"] #matchHud::before{
   function applyShotComplete(payload){
     if(!payload)return;
     remoteShotActive=false;
+    lastPhysicsSeq=-1;
+    lastPhysicsSentAt=0;
     const seq=Number(payload.seq||shotSeq);
     shotSeq=Math.max(shotSeq,seq);
     lastRealtimeFrameAt=performance.now();
@@ -1664,6 +1702,8 @@ body[data-view-mode="immersive"] #matchHud::before{
   function applyPallinoComplete(payload){
     if(!payload)return;
     remoteShotActive=false;
+    lastPhysicsSeq=-1;
+    lastPhysicsSentAt=0;
     realtimeFrames=[];
     remoteClockOffsetMs=null;
     realtimeJitterMs=0;
@@ -2076,7 +2116,7 @@ body[data-view-mode="immersive"] #matchHud::before{
       moving:true,sent_at:Date.now()
     };
     realtimeSend('shot_start',shotStartPayload);
-    void api('POST',{action:'physics',session,token,...shotStartPayload}).catch(()=>{});
+    queueRecoverySnapshot(shotStartPayload);
 
     const pallino={x:startX,y:startY,vx:0,vy:0,r:1.14,type:'pallino'};
     const ang=clamp(Math.atan2(dx,dy),-.55,.55);
@@ -2234,7 +2274,7 @@ body[data-view-mode="immersive"] #matchHud::before{
         realtimeSend('physics',framePayload);
         if(!state._lastSnapshotAt || now-state._lastSnapshotAt>220){
           state._lastSnapshotAt=now;
-          void api('POST',{action:'physics',session,token,...framePayload}).catch(()=>{});
+          queueRecoverySnapshot(framePayload);
         }
       }
 
@@ -2268,7 +2308,7 @@ body[data-view-mode="immersive"] #matchHud::before{
       moving:true,sent_at:Date.now()
     };
     realtimeSend('shot_start',shotStartPayload);
-    void api('POST',{action:'physics',session,token,...shotStartPayload}).catch(()=>{});
+    queueRecoverySnapshot(shotStartPayload);
 
     const physicsVp=viewport()||{y0:0,y1:50};
     const pxPerWorldX=Math.max(1,laneEl.clientWidth)/100;
@@ -2546,8 +2586,7 @@ body[data-view-mode="immersive"] #matchHud::before{
         // Save a recovery snapshot only every ~220ms.
         if(!state._lastSnapshotAt || now-state._lastSnapshotAt>220){
           state._lastSnapshotAt=now;
-          void api('POST',{action:'physics',session,token,...frame})
-            .catch(e=>{debugEl.textContent='Snapshot error: '+e.message;});
+          queueRecoverySnapshot(frame);
         }
       }
 
