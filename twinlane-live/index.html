@@ -1173,10 +1173,20 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       b.x+=nx*over*(i2/sum);b.y+=ny*over*(i2/sum);
       const rvx=b.vx-a.vx,rvy=b.vy-a.vy,rel=rvx*nx+rvy*ny;
       if(rel>=0)return;
-      const impulse=-(1+.44)*rel/sum;
+      const farContact=((a.y+b.y)*.5)>55;
+      const deepContact=((a.y+b.y)*.5)>85;
+      const restitution=deepContact ? .24 : farContact ? .31 : .44;
+      const impulse=-(1+restitution)*rel/sum;
       const ix=impulse*nx,iy=impulse*ny;
       a.vx-=ix*i1;a.vy-=iy*i1;
       b.vx+=ix*i2;b.vy+=iy*i2;
+
+      // Target-side surface loses more energy after impacts.
+      if(farContact){
+        const damping=deepContact ? .78 : .87;
+        a.vx*=damping;a.vy*=damping;
+        b.vx*=damping;b.vy*=damping;
+      }
     }
 
     let last=performance.now();
