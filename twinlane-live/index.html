@@ -278,6 +278,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   const settledEls = new Map();
   let gesture = null;
   let placementReady = false;
+  let placedObject = null;
   let localSim = false;
   let lastSend = 0;
   let shotSeq = 0;
@@ -525,7 +526,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
   }
 
   function animateDisplay() {
-    if (!localSim) {
+    if (!localSim && !(placementReady && role==='launch' && position==='first')) {
       const now=performance.now();
       const adaptiveBuffer = clamp(
         REALTIME_BUFFER_MS + realtimeJitterMs * 1.2,
@@ -847,9 +848,25 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       state=s;
       shotSeq=Math.max(shotSeq,Number(s.ball_seq||0));
 
-      if(!localSim && !realtimeFresh){
+      const preservePlacement = placementReady && placedObject && role==='launch' && position==='first';
+      if(preservePlacement){
+        if(placedObject.pallino){
+          state.pallino_x=placedObject.x;
+          state.pallino_y=placedObject.y;
+          displayedPallino={x:placedObject.x,y:placedObject.y};
+          targetPallino={x:placedObject.x,y:placedObject.y};
+        }else{
+          state.ball_x=placedObject.x;
+          state.ball_y=placedObject.y;
+          displayedBall={x:placedObject.x,y:placedObject.y};
+          targetBall={x:placedObject.x,y:placedObject.y};
+        }
+      }else if(!localSim && !realtimeFresh){
         targetBall=newBall;
         targetPallino=newPallino;
+      }
+
+      if(!localSim && !realtimeFresh){
         displayedSettledBalls=Array.isArray(s.settled_balls)?s.settled_balls:[];
       }
       if(s.screen2_joined){
@@ -896,6 +913,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       realtimeFrames=[];
       realtimeJitterMs=0;
       placementReady=false;
+      placedObject=null;
       hostCreate.classList.add('hidden');hostPanel.classList.remove('hidden');viewPanel.classList.remove('hidden');
       document.getElementById('sessionId').textContent=session;
       const joinUrl=PAGE+'?session='+encodeURIComponent(session)+'&join='+encodeURIComponent(data.join_token);
@@ -938,8 +956,9 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     const w=pointerToWorld(e);if(!w)return;
 
     const pallinoMode=throwingPallino();
-    const bx=pallinoMode?Number(state.pallino_x||50):Number(state.ball_x||50);
-    const by=pallinoMode?Number(state.pallino_y||8):Number(state.ball_y||8);
+    const localPlaced = placementReady && placedObject && placedObject.pallino===pallinoMode ? placedObject : null;
+    const bx=localPlaced ? Number(localPlaced.x) : (pallinoMode?Number(state.pallino_x||50):Number(state.ball_x||50));
+    const by=localPlaced ? Number(localPlaced.y) : (pallinoMode?Number(state.pallino_y||8):Number(state.ball_y||8));
     const nearBall=Math.hypot(w.x-bx,w.y-by)<=6;
 
     // If the object has been placed and the user starts on it, this gesture is a throw.
@@ -1005,6 +1024,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         }
 
         placementReady=true;
+        placedObject={pallino:g.pallino,x:px,y:py};
         void sendPhysics(
           displayedBall,
           displayedPallino,
@@ -1028,6 +1048,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
     }
 
     placementReady=false;
+    placedObject=null;
     if(g.pallino)startPallinoShot(g.startX,g.startY,dx,dy,duration);
     else startShot(g.startX,g.startY,dx,dy,duration);
   });
@@ -1085,6 +1106,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         state.ball_moving=false;
         localSim=false;
         placementReady=false;
+        placedObject=null;
         realtimeFrames=[];
         realtimeJitterMs=0;
 
@@ -1261,6 +1283,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
         displayedPallino=targetPallino={x:pallino.x,y:pallino.y};
         localSim=false;
         placementReady=false;
+        placedObject=null;
         netSample=null;
         netVelocity={ball:{x:0,y:0},pallino:{x:0,y:0}};
 
@@ -1399,6 +1422,7 @@ code{word-break:break-all;font-size:12px;color:#9eacbd}
       realtimeFrames=[];
       realtimeJitterMs=0;
       placementReady=false;
+      placedObject=null;
       realtimeSend('pallino_complete',{
         legal:false,pallino_x:50,pallino_y:8,
         game_state:state?.game_state,seq:shotSeq+1,sent_at:Date.now()
