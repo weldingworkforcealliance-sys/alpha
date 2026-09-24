@@ -1,0 +1,35 @@
+{
+  "id": "skee_ball",
+  "name": "Corvu Mor Skee Ball",
+  "platform": "long_toss_platform",
+  "platform_version": "1.0.0",
+  "status": "prototype",
+  "players": 2,
+  "balls_per_player": 9,
+  "win_condition": "highest_score_after_18_total_throws",
+  "scoring": [
+    10,
+    20,
+    30,
+    40,
+    50,
+    100
+  ],
+  "owns": [
+    "skee_ball_physics",
+    "target_geometry",
+    "hole_scoring",
+    "turn_rotation",
+    "match_state",
+    "arcade_visuals",
+    "skee_ball_audio"
+  ],
+  "inherits": [
+    "two_device_pairing",
+    "normalized_world",
+    "realtime_transport",
+    "monotonic_remote_playback",
+    "recovery_snapshots",
+    "shot_sequence_ordering"
+  ]
+}
