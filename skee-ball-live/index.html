@@ -461,7 +461,7 @@ function handleTargetGeometry(sim){
     const holeM=cupMetric(cup,sim.x,sim.y,false);
     const rimM=cupMetric(cup,sim.x,sim.y,true);
 
-    if(holeM<=1 && sim.z<=.105 && sim.vz<=.18){
+    if(holeM<=1.08 && sim.z<=.115 && sim.vz<=0){
       sim.phase='captured';
       sim.cup=cup;
       sim.score=cup.score;
@@ -473,7 +473,7 @@ function handleTargetGeometry(sim){
       return;
     }
 
-    if(rimM<=1.04 && holeM>1 && sim.z<=.16 && sim.elapsed-sim.lastRingHitAt>.075){
+    if(rimM<=1.02 && holeM>1.08 && sim.z<=.045 && sim.vz<0 && sim.elapsed-sim.lastRingHitAt>.075){
       reflectFromRing(sim,cup);
       return;
     }
@@ -704,14 +704,20 @@ async function finishShot(team,outcome){
     if(state.current==='B'&&state.throwsB>=9)state.current='A';
   }
   const sentAt=Date.now();
-  const payload={
+  const finalFrame={
     seq:shotSeq,
     ball_x:ball.x,ball_y:ball.y,ball_z:0,ball_sink:pts>0?1:0,
-    cup_id:outcome.cupId,score:pts,state:state,sent_at:sentAt
+    moving:false,phase:pts>0?'captured':'complete',
+    sent_at:sentAt
   };
+  const payload={
+    ...finalFrame,
+    cup_id:outcome.cupId,score:pts,state:state
+  };
+  realtimeSend('physics',finalFrame);
   realtimeSend('shot_complete',payload);
   realtimeSend('skee_state',{state:state,sent_at:sentAt});
-  queueSnapshot({seq:shotSeq,ball_x:ball.x,ball_y:ball.y,moving:false,sent_at:sentAt});
+  queueSnapshot(finalFrame);
   playThunk(pts);
   banner.textContent=pts>0?(pts+' points — sunk!'):'0 points — gutter / miss.';
   moving=false;localSim=false;skeeSim=null;syncHud();
