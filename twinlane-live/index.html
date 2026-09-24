@@ -939,6 +939,7 @@ body[data-view-mode="immersive"] #matchHud::before{
   let peerReadyTimer = null;
   let peerFallbackTimer = null;
   let peerHealthTimer = null;
+  let peerNegotiationStarted = false;
   let peerLastPongAt = 0;
   let peerRefreshHz = 60;
   let localRefreshHz = 60;
@@ -1151,6 +1152,7 @@ body[data-view-mode="immersive"] #matchHud::before{
     calibrationInFlight=false;
     calibrationPending.clear();
     peerIceQueue=[];
+    if(reason==='reset')peerNegotiationStarted=false;
     try{peerControlChannel?.close();}catch{}
     try{peerMotionChannel?.close();}catch{}
     try{peerConnection?.close();}catch{}
@@ -1301,7 +1303,16 @@ body[data-view-mode="immersive"] #matchHud::before{
 
   function ensurePeerConnection(initiator=false){
     if(peerConnection && !['closed','failed'].includes(peerConnection.connectionState))return peerConnection;
-    closePeerLink('reset');
+
+    if(peerConnection){
+      try{peerControlChannel?.close();}catch{}
+      try{peerMotionChannel?.close();}catch{}
+      try{peerConnection.close();}catch{}
+      peerControlChannel=null;
+      peerMotionChannel=null;
+      peerConnection=null;
+      peerIceQueue=[];
+    }
 
     const pc=new RTCPeerConnection({
       iceServers:[
@@ -1467,7 +1478,8 @@ body[data-view-mode="immersive"] #matchHud::before{
       activateRealtimeFallback('webrtc_unavailable');
       return;
     }
-    if(adaptiveLink.direct || calibrationInFlight)return;
+    if(adaptiveLink.direct || calibrationInFlight || peerNegotiationStarted)return;
+    peerNegotiationStarted=true;
 
     adaptiveLink={...ADAPTIVE_FALLBACK,ready:false};
     updateLinkStatus();
