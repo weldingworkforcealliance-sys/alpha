@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "engine": "corvu-mor-twinlane-bocce",
+  "gameplay_contract": "bocce-v1-physical-approved",
+  "default_skin": "living_kingdoms",
+  "protected_systems": [
+    "world_coordinates",
+    "lane_positions",
+    "playfield_boundaries",
+    "ball_and_pallino_hitboxes",
+    "launch_curves",
+    "physics_solver",
+    "friction_and_restitution",
+    "turn_and_scoring_rules",
+    "realtime_playback",
+    "competitive_visibility"
+  ],
+  "cosmetic_override_scope": [
+    "court_art",
+    "scenic_backgrounds",
+    "rail_and_endboard_materials",
+    "hud_frames",
+    "typography",
+    "ball_surface_materials",
+    "decorative_particles",
+    "non_gameplay_labels"
+  ],
+  "skins": [
+    {
+      "id": "living_kingdoms",
+      "name": "Living Kingdoms",
+      "edition": "Original",
+      "included": true,
+      "price_cents": 0,
+      "status": "active",
+      "competitive_readability": "approved"
+    }
+  ]
+}
