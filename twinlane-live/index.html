@@ -861,6 +861,7 @@ body[data-view-mode="immersive"] #matchHud::before{
   let pollInFlight = false;
   let lastRecoveryPollAt = 0;
   let remoteShotActive = false;
+  let remoteShotKind = 'bocce';
   let activeShotTeam = 'A';
   let displayedBall = {x:50,y:8};
   let targetBall = {x:50,y:8};
@@ -2048,7 +2049,8 @@ body[data-view-mode="immersive"] #matchHud::before{
     }
 
     shotSeq=Math.max(shotSeq,seq);
-    if(payload.kind==='bocce'){
+    remoteShotKind=payload.kind==='pallino'?'pallino':'bocce';
+    if(remoteShotKind==='bocce'){
       activeShotTeam=payload.team==='B'?'B':'A';
     }
 
@@ -2169,7 +2171,10 @@ body[data-view-mode="immersive"] #matchHud::before{
     realtimeFrames.push(frame);
     if(realtimeFrames.length>12)realtimeFrames.splice(0,realtimeFrames.length-12);
 
-    if(position==='second' && Number(frame.ball.y)>=REMOTE_TARGET_LIVE_START_Y){
+    const seamObjectY=remoteShotKind==='pallino'
+      ? Number(frame.pallino.y)
+      : Number(frame.ball.y);
+    if(position==='second' && seamObjectY>=REMOTE_TARGET_LIVE_START_Y){
       targetLiveVisual=true;
     }
 
