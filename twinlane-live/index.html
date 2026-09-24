@@ -1069,13 +1069,13 @@ body[data-view-mode="immersive"] #matchHud::before{
     });
   }
 
-  function chooseAdaptiveConfig(samples,peerHz=60){
+  function chooseAdaptiveConfig(samples,peerHz=60,expectedCount=12){
     const rtts=samples.map(s=>s.rtt).filter(Number.isFinite);
     const offsets=samples.map(s=>s.offset).filter(Number.isFinite);
     const med=median(rtts)??50;
     const p90=percentile(rtts,.90)??med;
     const jitter=Math.max(0,p90-med);
-    const loss=Math.max(0,1-rtts.length/12);
+    const loss=Math.max(0,1-rtts.length/Math.max(1,expectedCount));
     const refresh=clamp(Number(peerHz)||60,20,144);
 
     let profile='variable';
@@ -1123,6 +1123,9 @@ body[data-view-mode="immersive"] #matchHud::before{
       remoteClockOffsetMs=isHost?-next.peerOffsetMs:next.peerOffsetMs;
     }
     updateLinkStatus();
+    if(!state?.ball_moving){
+      setStatus(next.direct?'Direct court link ready.':'Cloud court link ready.');
+    }
     monitorEvent('link_profile',{payload:{...adaptiveLink}});
   }
 
@@ -1137,6 +1140,7 @@ body[data-view-mode="immersive"] #matchHud::before{
     adaptiveLink={...ADAPTIVE_FALLBACK,ready:true};
     pendingAdaptiveConfig=null;
     updateLinkStatus();
+    if(!state?.ball_moving)setStatus('Cloud court link ready.');
     monitorEvent('link_fallback',{payload:{reason}});
   }
 
@@ -1212,7 +1216,29 @@ body[data-view-mode="immersive"] #matchHud::before{
       peerLastPongAt=performance.now();
       if(msg.mode==='health'){
         calibrationSamples.push({rtt,offset,health:true});
-        if(calibrationSamples.length>20)calibrationSamples.splice(0,calibrationSamples.length-20);
+        if(calibrationSamples.length>24)calibrationSamples.splice(0,calibrationSamples.length-24);
+
+        if(isHost){
+          const health=calibrationSamples.filter(s=>s.health).slice(-6);
+          if(health.length>=6){
+            const cfg=chooseAdaptiveConfig(health,peerRefreshHz,health.length);
+            const meaningful=
+              cfg.profile!==adaptiveLink.profile ||
+              !Number.isFinite(adaptiveLink.medianRttMs) ||
+              Math.abs(cfg.medianRttMs-adaptiveLink.medianRttMs)>12 ||
+              Math.abs(cfg.jitterMs-adaptiveLink.jitterMs)>8;
+            if(meaningful){
+              applyAdaptiveConfig(cfg,false);
+              try{
+                peerControlChannel?.send(JSON.stringify({
+                  type:'cal_result',
+                  config:{...cfg,peerOffsetMs:undefined},
+                  peerOffsetMs:cfg.peerOffsetMs
+                }));
+              }catch{}
+            }
+          }
+        }
         return;
       }
       calibrationSamples.push({rtt,offset});
@@ -1259,6 +1285,7 @@ body[data-view-mode="immersive"] #matchHud::before{
 
   function maybePeerReady(){
     if(peerControlChannel?.readyState!=='open'||peerMotionChannel?.readyState!=='open')return;
+    if(peerReadyTimer){clearInterval(peerReadyTimer);peerReadyTimer=null;}
     if(peerFallbackTimer){clearTimeout(peerFallbackTimer);peerFallbackTimer=null;}
     adaptiveLink={...adaptiveLink,direct:true,ready:false,mode:'webrtc',profile:'calibrating'};
     updateLinkStatus();
@@ -1293,7 +1320,15 @@ body[data-view-mode="immersive"] #matchHud::before{
     });
     pc.addEventListener('connectionstatechange',()=>{
       monitorEvent('p2p_state',{payload:{state:pc.connectionState}});
-      if(['failed','closed'].includes(pc.connectionState))activateRealtimeFallback('peer_'+pc.connectionState);
+      if(['failed','closed'].includes(pc.connectionState)){
+        activateRealtimeFallback('peer_'+pc.connectionState);
+      }else if(pc.connectionState==='disconnected'){
+        setTimeout(()=>{
+          if(peerConnection===pc && pc.connectionState==='disconnected'){
+            activateRealtimeFallback('peer_disconnected');
+          }
+        },1200);
+      }
     });
 
     if(initiator){
@@ -1306,6 +1341,7 @@ body[data-view-mode="immersive"] #matchHud::before{
   async function sendPeerOffer(){
     if(!isHost || !realtimeReady)return;
     const pc=ensurePeerConnection(true);
+    if(pc.signalingState!=='stable')return;
     try{
       const offer=await pc.createOffer();
       await pc.setLocalDescription(offer);
@@ -1380,7 +1416,7 @@ body[data-view-mode="immersive"] #matchHud::before{
     await new Promise(r=>setTimeout(r,220));
 
     const samples=calibrationSamples.filter(s=>!s.health);
-    const cfg=chooseAdaptiveConfig(samples,peerRefreshHz);
+    const cfg=chooseAdaptiveConfig(samples,peerRefreshHz,12);
     applyAdaptiveConfig(cfg,false);
 
     try{
