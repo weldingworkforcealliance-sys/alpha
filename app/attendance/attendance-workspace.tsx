@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
 import {
@@ -21,6 +21,8 @@ type TeachingSection = {
 };
 
 type SessionInfo = {
+  section_id: string;
+  attendance_date: string;
   session_id: string;
   pair_id: string;
   pair_name: string;
@@ -95,7 +97,12 @@ function sectionLabel(section: TeachingSection) {
   return cohort ? `${course} · ${cohort}` : course;
 }
 
-export default function AttendanceWorkspace({
+export default function AttendanceWorkspace(props: AttendanceWorkspaceProps) {
+  // Remount immediately when the embedded planner changes its locked context.
+  return <AttendanceWorkspaceContent key={JSON.stringify([props.lockedSectionId, props.lockedDate])} {...props} />;
+}
+
+function AttendanceWorkspaceContent({
   embedded = false,
   lockedSectionId = null,
   lockedDate = null,
@@ -105,7 +112,10 @@ export default function AttendanceWorkspace({
   const [sections, setSections] = useState<TeachingSection[]>([]);
   const [sectionId, setSectionId] = useState('');
   const [attendanceDate, setAttendanceDate] = useState(localDate);
-  const [session, setSession] = useState<SessionInfo | null>(null);
+  const [loadedSession, setSession] = useState<SessionInfo | null>(null);
+  const requestVersion = useRef(0);
+  const session = loadedSession?.section_id === sectionId &&
+    loadedSession.attendance_date === attendanceDate ? loadedSession : null;
   const [students, setStudents] = useState<Student[]>([]);
   const [records, setRecords] = useState<Record<string, EditableRecord>>({});
   const [generalNotes, setGeneralNotes] = useState('');
@@ -116,6 +126,20 @@ export default function AttendanceWorkspace({
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [embeddedOpened, setEmbeddedOpened] = useState(false);
+
+  useLayoutEffect(() => {
+    requestVersion.current += 1;
+    setSession(null);
+    setStudents([]);
+    setRecords({});
+    setGeneralNotes('');
+    setReportQueue(null);
+    setNotice('');
+    setError('');
+    setBusy(false);
+    setEmbeddedOpened(false);
+    return () => { requestVersion.current += 1; };
+  }, [sectionId, attendanceDate]);
 
   const selectedSection = useMemo(
     () => sections.find((section) => section.section_id === sectionId) ?? null,
@@ -142,7 +166,7 @@ export default function AttendanceWorkspace({
   );
 
   const loadRoster = useCallback(
-    async (info: SessionInfo) => {
+    async (info: SessionInfo, version: number) => {
       const enrollmentResult = await supabase
         .from('attendance_pair_enrollments')
         .select('student_id')
@@ -154,6 +178,7 @@ export default function AttendanceWorkspace({
         (row: { student_id: string }) => row.student_id
       );
 
+      if (version !== requestVersion.current) return;
       if (!studentIds.length) {
         setStudents([]);
         setRecords({});
@@ -182,7 +207,7 @@ export default function AttendanceWorkspace({
       const loadedRecords = (recordResult.data ?? []) as AttendanceRecord[];
       const byStudent: Record<string, EditableRecord> = {};
 
-      loadedRecords.forEach((record) => {
+      loadedRecords.filter((record) => record.session_id === info.session_id).forEach((record) => {
         byStudent[record.student_id] = {
           recordId: record.id,
           initialStatus: record.initial_status,
@@ -192,6 +217,7 @@ export default function AttendanceWorkspace({
         };
       });
 
+      if (version !== requestVersion.current) return;
       setStudents(loadedStudents);
       setRecords(byStudent);
     },
@@ -199,7 +225,8 @@ export default function AttendanceWorkspace({
   );
 
   const loadReportQueue = useCallback(
-    async (info: SessionInfo) => {
+    async (info: SessionInfo, version: number) => {
+      if (version !== requestVersion.current) return;
       if (info.attendance_mode !== 'pvhs') {
         setReportQueue(null);
         return;
@@ -209,6 +236,7 @@ export default function AttendanceWorkspace({
         .select('status,run_after,sent_at,recipient_email,last_error')
         .eq('session_id', info.session_id)
         .maybeSingle();
+      if (version !== requestVersion.current) return;
       setReportQueue((data ?? null) as ReportQueue | null);
     },
     [supabase]
@@ -217,29 +245,42 @@ export default function AttendanceWorkspace({
   const openSession = useCallback(
     async (targetSectionId: string, targetDate: string) => {
       if (!targetSectionId || !targetDate) return;
+      const version = ++requestVersion.current;
       setBusy(true);
       setError('');
       setNotice('');
       setSession(null);
       setStudents([]);
       setRecords({});
+      setGeneralNotes('');
+      setReportQueue(null);
       try {
         const { data, error: rpcError } = await supabase.rpc('open_attendance_session', {
           p_section_id: targetSectionId,
           p_attendance_date: targetDate,
         });
         if (rpcError) throw rpcError;
-        const info = (Array.isArray(data) ? data[0] : data) as SessionInfo | null;
-        if (!info) throw new Error('Attendance session could not be opened.');
+        const result = (Array.isArray(data) ? data[0] : data) as SessionInfo | null;
+        if (!result) throw new Error('Attendance session could not be opened.');
+        if (version !== requestVersion.current) return;
+        const info = { ...result, section_id: targetSectionId, attendance_date: targetDate };
+        const { data: savedSession, error: sessionError } = await supabase
+          .from('attendance_sessions').select('instructor_notes')
+          .eq('id', info.session_id).eq('pair_id', info.pair_id)
+          .eq('attendance_date', targetDate).single();
+        if (sessionError) throw sessionError;
+        await loadRoster(info, version);
+        await loadReportQueue(info, version);
+        if (version !== requestVersion.current) return;
+        setGeneralNotes(savedSession?.instructor_notes ?? '');
         setSession(info);
-        await loadRoster(info);
-        await loadReportQueue(info);
         if (embedded) setEmbeddedOpened(true);
       } catch (err) {
+        if (version !== requestVersion.current) return;
         setError(err instanceof Error ? err.message : String(err));
         if (embedded) setEmbeddedOpened(true);
       } finally {
-        setBusy(false);
+        if (version === requestVersion.current) setBusy(false);
       }
     },
     [embedded, loadReportQueue, loadRoster, supabase]
@@ -270,43 +311,21 @@ export default function AttendanceWorkspace({
           requestedDate = params.get('date') || requestedDate;
         }
 
-        const chosen = loaded.find((section) => section.section_id === requestedSection) ?? loaded[0];
+        const chosen = lockedSectionId
+          ? loaded.find((section) => section.section_id === lockedSectionId)
+          : loaded.find((section) => section.section_id === requestedSection) ?? loaded[0];
         if (chosen) {
           setSectionId(chosen.section_id);
           if (!lockedSectionId) publishSelectedSection(chosen.section_id);
         }
-        setAttendanceDate(requestedDate);
+        setAttendanceDate(lockedDate || requestedDate);
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
       } finally {
         setLoading(false);
       }
     })();
-  }, [embedded, lockedSectionId, router, supabase]);
-
-  useEffect(() => {
-    if (!lockedSectionId) return;
-    if (sections.some((section) => section.section_id === lockedSectionId)) {
-      setSectionId(lockedSectionId);
-      setSession(null);
-      setStudents([]);
-      setRecords({});
-      setNotice('');
-      setError('');
-      setEmbeddedOpened(false);
-    }
-  }, [lockedSectionId, sections]);
-
-  useEffect(() => {
-    if (!lockedDate) return;
-    setAttendanceDate(lockedDate);
-    setSession(null);
-    setStudents([]);
-    setRecords({});
-    setNotice('');
-    setError('');
-    setEmbeddedOpened(false);
-  }, [lockedDate]);
+  }, [embedded, lockedDate, lockedSectionId, router, supabase]);
 
   useEffect(() => {
     if (lockedSectionId) return;
@@ -331,14 +350,18 @@ export default function AttendanceWorkspace({
   }, [selectedSection, supabase]);
 
   const saveRecord = async (studentId: string, next?: EditableRecord) => {
-    if (!session || session.finalized) return;
+    if (!session || busy || session.finalized) return;
     const record = next ?? records[studentId];
     if (!record) return;
+    const version = requestVersion.current;
     setBusy(true);
     setError('');
+    setNotice('');
     try {
-      const { error: rpcError } = await supabase.rpc('set_attendance_record', {
+      const { error: rpcError } = await supabase.rpc('set_section_attendance_record', {
         p_session_id: session.session_id,
+        p_section_id: session.section_id,
+        p_attendance_date: session.attendance_date,
         p_student_id: studentId,
         p_initial_status: record.initialStatus,
         p_final_status: record.finalStatus,
@@ -346,11 +369,17 @@ export default function AttendanceWorkspace({
         p_notes: record.notes.trim() || null,
       });
       if (rpcError) throw rpcError;
+      if (version !== requestVersion.current) return;
       setNotice('Attendance saved.');
     } catch (err) {
+      if (version !== requestVersion.current) return;
+      if (next) {
+        // A failed explicit mark is not saved attendance.
+        setRecords((existing) => ({ ...existing, [studentId]: records[studentId] }));
+      }
       setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setBusy(false);
+      if (version === requestVersion.current) setBusy(false);
     }
   };
 
@@ -363,26 +392,32 @@ export default function AttendanceWorkspace({
   };
 
   const markAllPresent = async () => {
-    if (!session || session.finalized) return;
+    if (!session || busy || session.finalized || session.is_completion_section) return;
+    const version = requestVersion.current;
     setBusy(true);
     setError('');
     try {
-      const { error: rpcError } = await supabase.rpc('mark_all_attendance', {
+      const { error: rpcError } = await supabase.rpc('mark_all_section_attendance', {
         p_session_id: session.session_id,
+        p_section_id: session.section_id,
+        p_attendance_date: session.attendance_date,
         p_status: 'present',
       });
       if (rpcError) throw rpcError;
-      await loadRoster(session);
+      if (version !== requestVersion.current) return;
+      await loadRoster(session, version);
+      if (version !== requestVersion.current) return;
       setNotice('All active students marked present. Adjust exceptions as needed.');
     } catch (err) {
+      if (version !== requestVersion.current) return;
       setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setBusy(false);
+      if (version === requestVersion.current) setBusy(false);
     }
   };
 
   const resetAttendance = async () => {
-    if (!session || session.finalized || !hasAttendanceData) return;
+    if (!session || busy || session.finalized || session.is_completion_section || !hasAttendanceData) return;
 
     const confirmed =
       typeof window === 'undefined' ||
@@ -391,22 +426,29 @@ export default function AttendanceWorkspace({
       );
     if (!confirmed) return;
 
+    const version = requestVersion.current;
     setBusy(true);
     setError('');
     setNotice('');
     try {
-      const { error: rpcError } = await supabase.rpc('reset_attendance_session', {
+      const { error: rpcError } = await supabase.rpc('reset_section_attendance', {
         p_session_id: session.session_id,
+        p_section_id: session.section_id,
+        p_attendance_date: session.attendance_date,
       });
       if (rpcError) throw rpcError;
+      if (version !== requestVersion.current) return;
       setGeneralNotes('');
-      await loadRoster(session);
-      await loadReportQueue(session);
+      await loadRoster(session, version);
+      if (version !== requestVersion.current) return;
+      await loadReportQueue(session, version);
+      if (version !== requestVersion.current) return;
       setNotice('Attendance reset. All students are unmarked and ready to retake.');
     } catch (err) {
+      if (version !== requestVersion.current) return;
       setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setBusy(false);
+      if (version === requestVersion.current) setBusy(false);
     }
   };
 
@@ -423,30 +465,36 @@ export default function AttendanceWorkspace({
   };
 
   const finalize = async () => {
-    if (!session || !selectedSection || !session.is_completion_section || session.finalized) return;
+    if (!session || busy || !selectedSection || !session.is_completion_section || session.finalized) return;
+    const version = requestVersion.current;
     setBusy(true);
     setError('');
     setNotice('');
     try {
-      const { error: rpcError } = await supabase.rpc('finalize_attendance_session', {
+      const { error: rpcError } = await supabase.rpc('finalize_section_attendance', {
         p_session_id: session.session_id,
-        p_section_id: selectedSection.section_id,
+        p_section_id: session.section_id,
+        p_attendance_date: session.attendance_date,
         p_general_notes: generalNotes.trim() || null,
       });
       if (rpcError) throw rpcError;
+      if (version !== requestVersion.current) return;
       const updated = { ...session, finalized: true };
       setSession(updated);
-      await loadRoster(updated);
-      await loadReportQueue(updated);
+      await loadRoster(updated, version);
+      if (version !== requestVersion.current) return;
+      await loadReportQueue(updated, version);
+      if (version !== requestVersion.current) return;
       setNotice(
         session.attendance_mode === 'pvhs'
           ? 'Attendance finalized. The PVHS report is queued for delayed delivery.'
           : 'Attendance finalized for the class pair.'
       );
     } catch (err) {
+      if (version !== requestVersion.current) return;
       setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setBusy(false);
+      if (version === requestVersion.current) setBusy(false);
     }
   };
 
@@ -478,7 +526,7 @@ export default function AttendanceWorkspace({
             )}
           </section>
 
-          {!session.finalized && students.length > 0 && (
+          {!session.finalized && !session.is_completion_section && students.length > 0 && (
             <div className={styles.bulkRow}>
               <button type="button" className={styles.actionButton} onClick={markAllPresent} disabled={busy}>
                 Mark All Present
@@ -500,6 +548,12 @@ export default function AttendanceWorkspace({
             </div>
           )}
 
+          {session.is_completion_section && (
+            <div className={styles.notice}>
+              Initial attendance comes from saved attendance in the primary course for this date.
+              Make corrections for this course under Final attendance, then save.
+            </div>
+          )}
           {students.length ? (
             <section className={styles.roster}>
               {students.map((student) => {
@@ -517,7 +571,8 @@ export default function AttendanceWorkspace({
                           <button
                             type="button"
                             key={value}
-                            disabled={busy || session.finalized}
+                            disabled={busy || session.finalized || session.is_completion_section}
+                            aria-pressed={record.initialStatus === value}
                             onClick={() => patchRecord(student.id, { initialStatus: value }, true)}
                             className={`${styles.statusButton} ${styles[value]} ${record.initialStatus === value ? styles.active : ''}`}
                           >
@@ -533,7 +588,7 @@ export default function AttendanceWorkspace({
                           Final attendance
                           <select
                             value={record.finalStatus ?? ''}
-                            disabled={busy || session.finalized}
+                            disabled={busy || session.finalized || !record.initialStatus}
                             onChange={(event) => patchRecord(student.id, { finalStatus: event.target.value || null })}
                           >
                             <option value="">Same as initial</option>
@@ -552,7 +607,7 @@ export default function AttendanceWorkspace({
                               <input
                                 type="checkbox"
                                 checked={record.flags.includes(value)}
-                                disabled={busy || session.finalized}
+                                disabled={busy || session.finalized || !record.initialStatus}
                                 onChange={() => toggleFlag(student.id, value)}
                               />
                               {label}
@@ -565,7 +620,7 @@ export default function AttendanceWorkspace({
                           <textarea
                             rows={2}
                             value={record.notes}
-                            disabled={busy || session.finalized}
+                            disabled={busy || session.finalized || !record.initialStatus}
                             onChange={(event) => patchRecord(student.id, { notes: event.target.value })}
                             placeholder="Unprepared, left early, disappeared, other context…"
                           />
@@ -574,10 +629,10 @@ export default function AttendanceWorkspace({
                         <button
                           type="button"
                           className={styles.saveButton}
-                          disabled={busy || session.finalized}
+                          disabled={busy || session.finalized || !record.initialStatus}
                           onClick={() => saveRecord(student.id)}
                         >
-                          Save Note
+                          Save Completion
                         </button>
                       </div>
                     )}
