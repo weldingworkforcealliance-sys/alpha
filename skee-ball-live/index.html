@@ -44,12 +44,20 @@ input{width:100%;background:#0b1018;color:#fff;border:1px solid #303b4f;border-r
 .lane:after{content:"";position:absolute;left:7%;right:7%;bottom:0;top:0;background:linear-gradient(90deg,#0002,transparent 20% 80%,#0002);pointer-events:none}
 .screen-label{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:12;background:#0b1019cc;border:1px solid #354158;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:900;letter-spacing:.09em}
 .seam{position:absolute;left:7%;right:7%;height:2px;background:#f5d16a88;z-index:3;box-shadow:0 0 8px #f5d16a66}
-.ramp{position:absolute;left:7%;right:7%;bottom:0;height:55%;background:linear-gradient(180deg,#9e754f,#5e412c);border-top:4px solid #3e2c20;z-index:2}
-.target-deck{position:absolute;left:7%;right:7%;top:0;height:45%;background:
- radial-gradient(circle at 50% 52%,#274b66 0 26%,#173247 27% 48%,#102639 49% 70%,#0e2130 71% 100%);
- border-bottom:4px solid #604329;z-index:1;overflow:hidden}
-.hole{position:absolute;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#020306 0 47%,#000 48% 58%,#8e6c40 60% 66%,#e6c36f 67% 70%,transparent 72%);display:flex;align-items:center;justify-content:center;font-weight:950;color:#f7db8f;text-shadow:0 2px 3px #000;z-index:4}
-.hole span{font-size:clamp(10px,2vw,16px)}
+.ramp{position:absolute;left:7%;right:7%;bottom:0;height:55%;background:
+ linear-gradient(90deg,#4d2f1c 0 4%,transparent 4% 96%,#4d2f1c 96%),
+ repeating-linear-gradient(90deg,#9f734b 0 12%,#ae8054 12% 24%);
+ border-top:0;z-index:2;overflow:visible;box-shadow:inset 0 0 22px #0007}
+.ramp:before{content:"";position:absolute;left:1%;right:1%;top:-7%;height:15%;border-radius:52% 52% 10% 10%/100% 100% 18% 18%;background:linear-gradient(180deg,#d4ad73 0,#9a7048 48%,#5e3e28 100%);border:3px solid #3d291c;box-shadow:0 -5px 12px #0008,inset 0 5px 6px #f6dca055;transform:perspective(220px) rotateX(-18deg);transform-origin:bottom center}
+.ramp:after{content:"";position:absolute;left:8%;right:8%;top:5%;bottom:3%;background:repeating-linear-gradient(180deg,transparent 0 12%,#fff1 12.5% 13%,transparent 13.5% 25%);pointer-events:none}
+.target-deck{position:absolute;left:7%;right:7%;top:0;height:48%;background:
+ radial-gradient(ellipse at 50% 58%,#315c78 0 24%,#1c3d55 25% 48%,#102b3f 49% 72%,#0a1b28 73% 100%);
+ border:4px solid #5e432c;border-bottom-width:7px;border-radius:20px 20px 8px 8px;z-index:1;overflow:visible;box-shadow:inset 0 0 26px #0009,0 8px 18px #0008}
+.target-deck:before{content:"SKEE BALL";position:absolute;top:1.5%;left:50%;transform:translateX(-50%);font-weight:950;letter-spacing:.16em;color:#f0d38999;font-size:clamp(9px,1.8vw,14px);text-shadow:0 2px 3px #000}
+.hole{position:absolute;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 50% 56%,#010205 0 48%,#090b0e 49% 57%,#4d3826 58% 61%,#d8b06e 62% 68%,#6b4c2f 69% 73%,transparent 74%);display:flex;align-items:center;justify-content:center;font-weight:950;color:#f7db8f;text-shadow:0 2px 3px #000;z-index:6;filter:drop-shadow(0 7px 5px #0008)}
+.hole:before{content:"";position:absolute;inset:-13%;border-radius:50%;border:clamp(3px,.7vw,6px) solid #765535;box-shadow:inset 0 4px 3px #f4d99a55,inset 0 -6px 7px #21150d,0 3px 0 #2c1e14;z-index:-1}
+.hole:after{content:"";position:absolute;left:8%;right:8%;top:48%;height:58%;border-radius:0 0 48% 48%;background:linear-gradient(90deg,#2c1d13,#825c38 18%,#a67a4a 50%,#6d492d 82%,#261810);border:2px solid #392619;border-top:0;box-shadow:0 8px 8px #0009;z-index:-2}
+.hole span{font-size:clamp(10px,2vw,16px);position:relative;z-index:3;background:#080a0dcc;border:1px solid #e0bd7444;border-radius:999px;padding:1px 4px;transform:translateY(-110%)}
 .h10{left:50%;top:88%;width:25%;aspect-ratio:1}
 .h20{left:50%;top:70%;width:22%;aspect-ratio:1}
 .h30{left:50%;top:53%;width:19%;aspect-ratio:1}
@@ -57,7 +65,8 @@ input{width:100%;background:#0b1018;color:#fff;border:1px solid #303b4f;border-r
 .h50{left:50%;top:22%;width:14%;aspect-ratio:1}
 .h100a,.h100b{top:16%;width:12%;aspect-ratio:1}
 .h100a{left:18%}.h100b{left:82%}
-.ball{position:absolute;width:34px;height:34px;border-radius:50%;transform:translate(-50%,50%);z-index:10;box-shadow:inset -8px -10px 12px #0007,inset 5px 5px 8px #fff4,0 4px 8px #0009;display:none}
+.ball{position:absolute;width:34px;height:34px;border-radius:50%;transform:translate(-50%,50%);transform-origin:center;z-index:12;box-shadow:inset -8px -10px 12px #0007,inset 5px 5px 8px #fff4,0 4px 8px #0009;display:none;will-change:left,bottom,transform,opacity}
+.ball-shadow{position:absolute;width:30px;height:10px;border-radius:50%;background:#0009;filter:blur(3px);transform:translate(-50%,50%);z-index:8;display:none;pointer-events:none;will-change:left,bottom,transform,opacity}
 .ball.a{background:radial-gradient(circle at 34% 28%,#9edcff,#2a95e8 42%,#0c4f88 75%)}
 .ball.b{background:radial-gradient(circle at 34% 28%,#ffc39f,#ff7835 42%,#8d2f10 75%)}
 .aimline{position:absolute;width:4px;border-radius:99px;background:linear-gradient(#ffe89d,#f1b73600);transform-origin:bottom center;display:none;z-index:8}
@@ -131,6 +140,7 @@ input{width:100%;background:#0b1018;color:#fff;border:1px solid #303b4f;border-r
       <div id="startZone" class="start-zone"></div>
       <div id="screenLabel" class="screen-label"></div>
       <div id="aimline" class="aimline"></div>
+      <div id="ballShadow" class="ball-shadow"></div>
       <div id="ball" class="ball a"></div>
       <div id="banner" class="banner">Tap inside the start zone, then swipe upward.</div>
       <div id="result" class="result hidden"><div class="resultbox"><div class="sub">MATCH COMPLETE</div><div class="big" id="winner"></div><div id="finalScore"></div><button id="againBtn" class="btn" style="margin-top:14px">Play Again</button></div></div>
@@ -152,7 +162,7 @@ const joinToken=params.get('join')||'';
 
 const $=id=>document.getElementById(id);
 const setup=$('setup'),pair=$('pair'),joinCard=$('joinCard'),gameEl=$('game');
-const shell=$('shell'),ballEl=$('ball'),banner=$('banner'),diag=$('diag'),conn=$('conn');
+const shell=$('shell'),ballEl=$('ball'),ballShadow=$('ballShadow'),banner=$('banner'),diag=$('diag'),conn=$('conn');
 const scoreAEl=$('scoreA'),scoreBEl=$('scoreB'),ballsAEl=$('ballsA'),ballsBEl=$('ballsB'),turnEl=$('turn');
 const nameAInput=$('nameA'),nameBInput=$('nameB'),hudA=$('hudA'),hudB=$('hudB');
 const resultEl=$('result'),winnerEl=$('winner'),finalScoreEl=$('finalScore');
@@ -160,11 +170,22 @@ const resultEl=$('result'),winnerEl=$('winner'),finalScoreEl=$('finalScore');
 let session='',token='',isHost=false,position='second',role='target';
 let ws=null,topic='',joinRef=null,ref=0,ready=false,reconnectTimer=null,heartbeat=null;
 let shotSeq=0,moving=false,localSim=false;
-let ball={x:50,y:8},displayBall={x:50,y:8};
+let ball={x:50,y:8,z:0,sink:0},displayBall={x:50,y:8,z:0,sink:0};
 let frames=[],playbackMs=null,lastPlaybackPerf=0,lastSentAt=0;
 let state={nameA:'Player 1',nameB:'Player 2',scoreA:0,scoreB:0,throwsA:0,throwsB:0,current:'A',over:false,winner:null,lastScore:0};
 let pointerStart=null,placedX=50,placed=false,lastSend=0,snapshotBusy=false,pendingSnapshot=null;
 let audioCtx=null;
+
+const RAMP_LIP_Y=76;
+const CUP_TARGETS=Object.freeze([
+  {id:'10',score:10,x:50,y:78.5,rx:10.5,ry:2.5},
+  {id:'20',score:20,x:50,y:82.5,rx:9.0,ry:2.3},
+  {id:'30',score:30,x:50,y:86.5,rx:7.8,ry:2.1},
+  {id:'40',score:40,x:50,y:90.5,rx:6.8,ry:2.0},
+  {id:'50',score:50,x:50,y:94.3,rx:5.8,ry:1.8},
+  {id:'100L',score:100,x:23,y:96,rx:5.4,ry:1.8},
+  {id:'100R',score:100,x:77,y:96,rx:5.4,ry:1.8}
+]);
 
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 function now(){return performance.now()}
@@ -179,12 +200,34 @@ function worldToLocal(x,y){
 }
 function renderBall(){
   const p=worldToLocal(displayBall.x,displayBall.y);
-  if(!p){ballEl.style.display='none';return}
+  if(!p){
+    ballEl.style.display='none';
+    ballShadow.style.display='none';
+    return;
+  }
+  const z=clamp(Number(displayBall.z||0),0,1.4);
+  const sink=clamp(Number(displayBall.sink||0),0,1);
+  const liftPx=z*Math.min(105,shell.clientHeight*.16);
+  const scale=(1+z*.20)*(1-sink*.58);
+  const opacity=clamp(1-sink*1.05,0,1);
+
   ballEl.style.display='block';
   ballEl.style.left=p.x+'px';
-  ballEl.style.bottom=p.y+'px';
+  ballEl.style.bottom=(p.y+liftPx-sink*8)+'px';
+  ballEl.style.transform='translate(-50%,50%) scale('+scale+')';
+  ballEl.style.opacity=String(opacity);
   ballEl.classList.toggle('a',state.current==='A');
   ballEl.classList.toggle('b',state.current==='B');
+
+  if(z>.02 && sink<.9){
+    ballShadow.style.display='block';
+    ballShadow.style.left=p.x+'px';
+    ballShadow.style.bottom=p.y+'px';
+    ballShadow.style.opacity=String(clamp(.68-z*.38,0.18,.68));
+    ballShadow.style.transform='translate(-50%,50%) scale('+(1+z*.8)+','+(1+z*.25)+')';
+  }else{
+    ballShadow.style.display='none';
+  }
 }
 function syncStatic(){
   $('screenLabel').textContent=position==='first'?'THROW LANE':'SCORE RAMP';
@@ -253,10 +296,10 @@ function applyShotStart(p){
   if(!p||localSim)return;
   shotSeq=Math.max(shotSeq,Number(p.seq||0));moving=true;
   const st=Number(p.sent_at||Date.now());
-  frames=[{sentAt:st,x:Number(p.ball_x||50),y:Number(p.ball_y||8)}];
+  frames=[{sentAt:st,x:Number(p.ball_x||50),y:Number(p.ball_y||8),z:Number(p.ball_z||0),sink:Number(p.ball_sink||0)}];
   playbackMs=st-REMOTE_DELAY;lastPlaybackPerf=now();lastSentAt=st;
   state.current=p.team==='B'?'B':'A';
-  displayBall={x:Number(p.ball_x||50),y:Number(p.ball_y||8)};
+  displayBall={x:Number(p.ball_x||50),y:Number(p.ball_y||8),z:Number(p.ball_z||0),sink:Number(p.ball_sink||0)};
 }
 function applyPhysics(p){
   if(!p||localSim)return;
@@ -264,7 +307,7 @@ function applyPhysics(p){
   if(seq<shotSeq||st<=lastSentAt)return;
   if(seq>shotSeq){frames=[];playbackMs=st-REMOTE_DELAY;lastPlaybackPerf=now()}
   shotSeq=seq;lastSentAt=st;moving=Boolean(p.moving);
-  frames.push({sentAt:st,x:Number(p.ball_x||50),y:Number(p.ball_y||8)});
+  frames.push({sentAt:st,x:Number(p.ball_x||50),y:Number(p.ball_y||8),z:Number(p.ball_z||0),sink:Number(p.ball_sink||0)});
   if(frames.length>12)frames.splice(0,frames.length-12);
 }
 let pendingComplete=[];
@@ -277,7 +320,7 @@ function flushComplete(){
   while(pendingComplete.length&&playbackMs!=null&&Number(pendingComplete[0].sent_at||0)<=playbackMs){
     const p=pendingComplete.shift();
     state=Object.assign({},state,p.state||{});
-    displayBall={x:Number(p.ball_x||50),y:Number(p.ball_y||96)};
+    displayBall={x:Number(p.ball_x||50),y:Number(p.ball_y||96),z:0,sink:Number(p.score||0)>0?1:0};
     moving=false;frames=[];playbackMs=null;
     playThunk(p.score||0);
     banner.textContent=(p.score||0)+' points!';
@@ -295,7 +338,12 @@ function animate(){
     while(frames.length>2&&frames[1].sentAt<=playbackMs)frames.shift();
     const a=frames[0],b=frames[1]||a;
     const t=b.sentAt>a.sentAt?clamp((playbackMs-a.sentAt)/(b.sentAt-a.sentAt),0,1):1;
-    displayBall={x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t};
+    displayBall={
+      x:a.x+(b.x-a.x)*t,
+      y:a.y+(b.y-a.y)*t,
+      z:Number(a.z||0)+(Number(b.z||0)-Number(a.z||0))*t,
+      sink:Number(a.sink||0)+(Number(b.sink||0)-Number(a.sink||0))*t
+    };
     flushComplete();
   }
   renderBall();requestAnimationFrame(animate);
@@ -313,54 +361,138 @@ async function flushSnapshot(){
   try{await api('POST',Object.assign({action:'physics',session:session,token:token},p))}catch(e){debug(e.message)}
   snapshotBusy=false;if(pendingSnapshot)flushSnapshot();
 }
-function scoreFor(x,y){
-  if(y>=94&&(x<=25||x>=75))return 100;
-  if(y>=94)return 50;
-  if(y>=90)return 40;
-  if(y>=86)return 30;
-  if(y>=82)return 20;
-  if(y>=77)return 10;
-  return 0;
+function resolveCup(x,y){
+  let best=null,bestMetric=Infinity;
+  for(const cup of CUP_TARGETS){
+    const metric=Math.hypot((x-cup.x)/cup.rx,(y-cup.y)/cup.ry);
+    if(metric<bestMetric){bestMetric=metric;best=cup}
+  }
+  return bestMetric<=1?best:null;
 }
 function landingFor(dx,dy,duration){
   const swipe=Math.hypot(dx,dy),speed=swipe/Math.max(80,duration);
-  const power=clamp((swipe*.75+speed*260)/430,0,1);
-  const lateral=clamp(dx/220,-1,1);
-  let x=50+lateral*(18+power*14);
-  let y=73+power*25;
-  if(power>.90&&Math.abs(lateral)>.62){x=lateral<0?19:81;y=96}
-  return {x:clamp(x,12,88),y:clamp(y,72,98),power:power};
+  const power=clamp((swipe*.72+speed*255)/430,0,1);
+  const lateral=clamp(dx/210,-1,1);
+
+  let aimX=50+lateral*(12+power*20);
+  let aimY=76.4+power*21.6;
+
+  // High-power, strongly angled throws can reach the classic 100 pockets.
+  if(power>.84&&Math.abs(lateral)>.52){
+    aimX=lateral<0?23:77;
+    aimY=96;
+  }
+
+  aimX=clamp(aimX,12,88);
+  aimY=clamp(aimY,76.4,98);
+
+  const cup=resolveCup(aimX,aimY);
+  return {
+    x:cup?cup.x:aimX,
+    y:cup?cup.y:aimY,
+    aimX,aimY,power,
+    cupId:cup?cup.id:null,
+    score:cup?cup.score:0
+  };
+}
+function sampleSkeePath(start,land,t,dx){
+  const rollEnd=.56;
+  const rampEnd=.76;
+  let x,y,z=0,sink=0;
+
+  if(t<rollEnd){
+    const u=t/rollEnd;
+    const e=1-Math.pow(1-u,1.45);
+    x=start.x+(land.aimX-start.x)*e*.34;
+    y=start.y+(50-start.y)*e;
+  }else if(t<rampEnd){
+    const u=(t-rollEnd)/(rampEnd-rollEnd);
+    const e=1-Math.pow(1-u,1.25);
+    const rampStartX=start.x+(land.aimX-start.x)*.34;
+    x=rampStartX+(land.aimX-rampStartX)*e*.42;
+    y=50+(RAMP_LIP_Y-50)*e;
+    z=.035*Math.sin(Math.PI*u);
+  }else{
+    const u=(t-rampEnd)/(1-rampEnd);
+    const airStartX=start.x+(land.aimX-start.x)*.62;
+    x=airStartX+(land.x-airStartX)*u;
+    y=RAMP_LIP_Y+(land.y-RAMP_LIP_Y)*u;
+    z=Math.sin(Math.PI*u)*(.58+land.power*.52);
+
+    if(land.cupId&&u>.78){
+      const drop=(u-.78)/.22;
+      sink=clamp(drop*drop,0,1);
+      z*=1-sink*.82;
+      x=x+(land.x-x)*sink*.65;
+      y=y+(land.y-y)*sink*.65;
+    }
+  }
+
+  // A tiny launch-side curve preserves swipe character without changing cup geometry.
+  x+=Math.sin(Math.PI*t)*dx*.006;
+  return {x:clamp(x,8,92),y:clamp(y,0,100),z:Math.max(0,z),sink};
 }
 function launchShot(dx,dy,duration){
   if(role!=='launch'||position!=='first'||moving||state.over)return;
   if(dy>=-22){banner.textContent='Swipe upward to throw.';return}
+
   const land=landingFor(dx,dy,duration);
+  if(land.power<.07){
+    banner.textContent='Give it a stronger roll to climb the ramp.';
+    return;
+  }
+
   shotSeq++;moving=true;localSim=true;placed=false;
-  const team=state.current,start={x:placedX,y:8},startAt=performance.now(),shotDuration=900+land.power*1150;
-  ball={x:start.x,y:start.y};displayBall={x:start.x,y:start.y};
-  const startPayload={seq:shotSeq,team:team,ball_x:start.x,ball_y:start.y,moving:true,sent_at:Date.now()};
-  realtimeSend('shot_start',startPayload);queueSnapshot(startPayload);banner.textContent='ROLLING…';
+  const team=state.current;
+  const start={x:placedX,y:8,z:0,sink:0};
+  const startAt=performance.now();
+  const shotDuration=1180+land.power*920;
+
+  ball={...start};
+  displayBall={...start};
+
+  const startPayload={
+    seq:shotSeq,team:team,
+    ball_x:start.x,ball_y:start.y,ball_z:0,ball_sink:0,
+    moving:true,sent_at:Date.now()
+  };
+
+  realtimeSend('shot_start',startPayload);
+  queueSnapshot(startPayload);
+  banner.textContent='ROLLING TO THE RAMP…';
+
   function step(ts){
     const t=clamp((ts-startAt)/shotDuration,0,1);
-    const ease=1-Math.pow(1-t,1.28);
-    const curve=Math.sin(t*Math.PI)*dx*.025;
-    ball.x=start.x+(land.x-start.x)*ease+curve;
-    ball.y=start.y+(land.y-start.y)*ease;
-    displayBall={x:ball.x,y:ball.y};
+    const sample=sampleSkeePath(start,land,t,dx);
+    ball={...sample};
+    displayBall={...sample};
+
+    if(t>.56&&t<.76)banner.textContent='UP THE RAMP…';
+    else if(t>=.76&&t<.97)banner.textContent=land.cupId?'AIRBORNE — LINE UP THE CUP…':'AIRBORNE…';
+
     if(ts-lastSend>32){
       lastSend=ts;
-      const frame={seq:shotSeq,ball_x:ball.x,ball_y:ball.y,moving:true,sent_at:Date.now()};
+      const frame={
+        seq:shotSeq,
+        ball_x:ball.x,ball_y:ball.y,
+        ball_z:ball.z,ball_sink:ball.sink,
+        moving:true,sent_at:Date.now()
+      };
       realtimeSend('physics',frame);
       if((Math.floor(t*20)%5)===0)queueSnapshot(frame);
     }
+
     if(t<1){requestAnimationFrame(step);return}
     finishShot(team,land);
   }
+
   requestAnimationFrame(step);
 }
+
 async function finishShot(team,land){
-  ball.x=land.x;ball.y=land.y;displayBall={x:ball.x,y:ball.y};
-  const pts=scoreFor(ball.x,ball.y);
+  const pts=Number(land.score||0);
+  ball={x:land.x,y:land.y,z:0,sink:pts>0?1:0};
+  displayBall={...ball};
   if(team==='A'){state.scoreA+=pts;state.throwsA++}else{state.scoreB+=pts;state.throwsB++}
   state.lastScore=pts;
   const done=state.throwsA>=9&&state.throwsB>=9;
@@ -373,14 +505,19 @@ async function finishShot(team,land){
     if(state.current==='B'&&state.throwsB>=9)state.current='A';
   }
   const sentAt=Date.now();
-  const payload={seq:shotSeq,ball_x:ball.x,ball_y:ball.y,score:pts,state:state,sent_at:sentAt};
+  const payload={
+    seq:shotSeq,
+    ball_x:ball.x,ball_y:ball.y,ball_z:0,ball_sink:pts>0?1:0,
+    cup_id:land.cupId,score:pts,state:state,sent_at:sentAt
+  };
   realtimeSend('shot_complete',payload);
   realtimeSend('skee_state',{state:state,sent_at:sentAt});
   queueSnapshot({seq:shotSeq,ball_x:ball.x,ball_y:ball.y,moving:false,sent_at:sentAt});
-  playThunk(pts);banner.textContent=pts+' points!';
+  playThunk(pts);
+  banner.textContent=pts>0?(pts+' points — sunk!'):'Miss — off the scoring cups.';
   moving=false;localSim=false;syncHud();
   setTimeout(function(){
-    if(!state.over){ball={x:50,y:8};displayBall={x:50,y:8};banner.textContent=currentName()+' — tap and swipe to throw.';render()}
+    if(!state.over){ball={x:50,y:8,z:0,sink:0};displayBall={x:50,y:8,z:0,sink:0};banner.textContent=currentName()+' — tap and swipe to throw.';render()}
   },700);
 }
 function unlockAudio(){if(!audioCtx)try{audioCtx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}
@@ -400,7 +537,7 @@ shell.addEventListener('pointerdown',function(e){
   const screenY=clamp((e.clientY-r.top)/r.height,0,1);
   const y=(1-screenY)*50;
   if(y<0||y>20)return;
-  placedX=x;placed=true;ball={x:x,y:8};displayBall={x:x,y:8};pointerStart={x:e.clientX,y:e.clientY,t:performance.now()};banner.textContent='Swipe upward from the ball.';render();
+  placedX=x;placed=true;ball={x:x,y:8,z:0,sink:0};displayBall={x:x,y:8,z:0,sink:0};pointerStart={x:e.clientX,y:e.clientY,t:performance.now()};banner.textContent='Swipe upward from the ball.';render();
   try{shell.setPointerCapture(e.pointerId)}catch(err){}
 });
 shell.addEventListener('pointerup',function(e){
@@ -442,7 +579,7 @@ $('joinBtn').addEventListener('click',async function(){
 $('againBtn').addEventListener('click',function(){
   if(role!=='launch')return;
   state.scoreA=0;state.scoreB=0;state.throwsA=0;state.throwsB=0;state.current='A';state.over=false;state.winner=null;state.lastScore=0;
-  ball={x:50,y:8};displayBall={x:50,y:8};resultEl.classList.add('hidden');sendState();syncHud();render();
+  ball={x:50,y:8,z:0,sink:0};displayBall={x:50,y:8,z:0,sink:0};resultEl.classList.add('hidden');sendState();syncHud();render();
 });
 async function pollJoin(){
   if(!isHost||!session)return;
