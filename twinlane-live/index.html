@@ -99,6 +99,8 @@ linear-gradient(180deg,#242319,#12130f);text-align:center;font-weight:900;color:
 .skin-card{margin-top:12px;padding:12px;border:1px solid #75613a;border-radius:12px;background:
 linear-gradient(135deg,#25301f,#11160f);display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:inset 0 1px #d8c37b22}
 .skin-card strong{color:#e0d1a3}
+.skin-card[data-selected="true"]{outline:1px solid #c7a45a33;outline-offset:2px}
+body[data-skin="living_kingdoms"] .skin-chip{border-color:#8c7447}
 .match-rule{font-size:11px;color:#7f8d83;margin-top:4px}
 .hero-card{text-align:center;padding:22px 16px}
 .hero-title{font-size:22px;font-weight:950;margin-bottom:4px}
@@ -513,7 +515,7 @@ body[data-view-mode="immersive"] #matchHud::before{
     <div class="eyebrow">CORVU MOR · TWINLANE</div>
     <div class="brand-title">BOCCE</div>
   </div>
-  <div class="skin-chip">LIVING KINGDOMS · ORIGINAL</div>
+  <div id="activeSkinChip" class="skin-chip">LIVING KINGDOMS · ORIGINAL</div>
 </div>
 <p>Two screens become one court. First to 12 points wins.</p>
 
@@ -564,12 +566,12 @@ body[data-view-mode="immersive"] #matchHud::before{
       <input id="playerBName" maxlength="24" value="Player 2" autocomplete="off">
     </label>
   </div>
-  <div class="skin-card">
+  <div id="activeSkinCard" class="skin-card" data-selected="true">
     <div>
-      <strong>Living Kingdoms</strong>
-      <div class="small">Original Corvu Mor court · included</div>
+      <strong id="activeSkinName">Living Kingdoms</strong>
+      <div id="activeSkinDescription" class="small">Original Corvu Mor court · included</div>
     </div>
-    <span class="tag">FREE</span>
+    <span id="activeSkinEntitlement" class="tag">FREE</span>
   </div>
   <div class="match-rule">4 balls per side · automatic scoring · first to 12</div>
   <div class="feedback-row">
@@ -720,7 +722,24 @@ body[data-view-mode="immersive"] #matchHud::before{
   const params = new URLSearchParams(location.search);
   const joinSession = params.get('session') || '';
   const joinToken = params.get('join') || '';
-  const monitorRequested = params.get('monitor') !== '0';
+  const monitorRequested = params.get('monitor') === '1';
+  const pairPage = PAGE + (monitorRequested ? '?monitor=1' : '');
+
+  const SKIN_REGISTRY = Object.freeze({
+    living_kingdoms:Object.freeze({
+      id:'living_kingdoms',
+      name:'Living Kingdoms',
+      edition:'Original',
+      included:true,
+      price_cents:0,
+      status:'active',
+      gameplay_contract:'bocce-v1-physical-approved',
+      competitive_readability:'approved'
+    })
+  });
+  const DEFAULT_SKIN_ID='living_kingdoms';
+  let selectedSkinId=localStorage.getItem('corvumor_skin')||DEFAULT_SKIN_ID;
+  if(!SKIN_REGISTRY[selectedSkinId])selectedSkinId=DEFAULT_SKIN_ID;
 
   const matchHud = document.getElementById('matchHud');
   const playFlowCard = document.getElementById('playFlowCard');
@@ -737,6 +756,11 @@ body[data-view-mode="immersive"] #matchHud::before{
   const joinHapticsBtn = document.getElementById('joinHapticsBtn');
   const viewModeBtn = document.getElementById('viewModeBtn');
   const joinViewModeBtn = document.getElementById('joinViewModeBtn');
+  const activeSkinChip = document.getElementById('activeSkinChip');
+  const activeSkinCard = document.getElementById('activeSkinCard');
+  const activeSkinName = document.getElementById('activeSkinName');
+  const activeSkinDescription = document.getElementById('activeSkinDescription');
+  const activeSkinEntitlement = document.getElementById('activeSkinEntitlement');
   const scoreAEl = document.getElementById('scoreA');
   const scoreBEl = document.getElementById('scoreB');
   const ballsAEl = document.getElementById('ballsA');
@@ -965,6 +989,26 @@ body[data-view-mode="immersive"] #matchHud::before{
     if(s2Pos)s2Pos.value='second';
   }
 
+
+  function activeSkin(){
+    return SKIN_REGISTRY[selectedSkinId]||SKIN_REGISTRY[DEFAULT_SKIN_ID];
+  }
+
+  function syncSkinPresentation(){
+    const skin=activeSkin();
+    document.body.dataset.skin=skin.id;
+    localStorage.setItem('corvumor_skin',skin.id);
+    if(activeSkinChip)activeSkinChip.textContent=(skin.name+' · '+skin.edition).toUpperCase();
+    if(activeSkinName)activeSkinName.textContent=skin.name;
+    if(activeSkinDescription){
+      activeSkinDescription.textContent=skin.edition+' Corvu Mor court · '+(skin.included?'included':'cosmetic add-on');
+    }
+    if(activeSkinEntitlement)activeSkinEntitlement.textContent=skin.included?'FREE':'OWNED';
+    if(activeSkinCard){
+      activeSkinCard.dataset.skinId=skin.id;
+      activeSkinCard.dataset.selected='true';
+    }
+  }
 
   function syncViewMode(){
     document.body.dataset.viewMode=viewMode;
@@ -1262,6 +1306,7 @@ body[data-view-mode="immersive"] #matchHud::before{
   [hapticsBtn,joinHapticsBtn].filter(Boolean).forEach(b=>b.addEventListener('click',toggleHaptics));
   [viewModeBtn,joinViewModeBtn].filter(Boolean).forEach(b=>b.addEventListener('click',toggleViewMode));
   syncFeedbackButtons();
+  syncSkinPresentation();
   syncViewMode();
   applyStandardSetup();
 
@@ -2241,19 +2286,20 @@ body[data-view-mode="immersive"] #matchHud::before{
       const playerAName=cleanPlayerName(playerANameInput?.value,'Player 1');
       const playerBName=cleanPlayerName(playerBNameInput?.value,'Player 2');
       localScreen=1;
-      setStatus('Creating Living Kingdoms match…');
+      const skin=activeSkin();
+      setStatus('Creating '+skin.name+' match…');
       const data=await api('POST',{
         action:'create',kind,role,position,
         player_a_name:playerAName,
         player_b_name:playerBName,
-        skin:'living_kingdoms'
+        skin:skin.id
       });
       session=data.session;token=data.host_token;isHost=true;
       startMonitorIfNeeded();
       state={
         screen1_kind:kind,screen1_role:role,screen1_position:position,
         screen2_joined:false,ball_x:50,ball_y:8,ball_seq:0,ball_moving:false,pallino_x:50,pallino_y:8,settled_balls:[],next_ball_number:1,
-        game_state:defaultGame({player_a_name:playerAName,player_b_name:playerBName})
+        game_state:defaultGame({player_a_name:playerAName,player_b_name:playerBName,skin:skin.id})
       };
       displayedBall=targetBall={x:50,y:8};
       displayedPallino=targetPallino={x:50,y:8};
@@ -2267,8 +2313,9 @@ body[data-view-mode="immersive"] #matchHud::before{
       hostPanel.classList.remove('hidden');
       viewPanel.classList.remove('hidden');
       document.getElementById('sessionId').textContent=session;
-      const joinUrl=PAGE+'?session='+encodeURIComponent(session)+'&join='+encodeURIComponent(data.join_token);
-      const qrUrl=API+'?api=qr&session='+encodeURIComponent(session)+'&join='+encodeURIComponent(data.join_token)+'&target='+encodeURIComponent(PAGE);
+      const joinSep=pairPage.includes('?')?'&':'?';
+      const joinUrl=pairPage+joinSep+'session='+encodeURIComponent(session)+'&join='+encodeURIComponent(data.join_token);
+      const qrUrl=API+'?api=qr&session='+encodeURIComponent(session)+'&join='+encodeURIComponent(data.join_token)+'&target='+encodeURIComponent(pairPage);
       document.getElementById('joinLink').textContent=joinUrl;
       document.getElementById('qr').src=qrUrl;
       setStatus('Match created. Pair Screen 2 to begin.');
