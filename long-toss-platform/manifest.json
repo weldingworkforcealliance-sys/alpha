@@ -1,0 +1,36 @@
+{
+  "name": "Long Toss Platform",
+  "id": "long_toss_platform",
+  "version": "1.0.0",
+  "status": "baseline",
+  "origin": {
+    "game": "Corvu Mor Bocce",
+    "branch": "locked/bocce-v1-physical-approved"
+  },
+  "owns": [
+    "pairing",
+    "device_roles",
+    "normalized_world",
+    "realtime_transport",
+    "monotonic_playback",
+    "recovery_arbitration",
+    "projectile_identity",
+    "physical_event_timeline",
+    "diagnostics",
+    "skin_registry",
+    "presentation_shell"
+  ],
+  "game_adapter_owns": [
+    "physics",
+    "scoring",
+    "targets",
+    "turn_rules",
+    "win_conditions",
+    "game_assets",
+    "game_audio"
+  ],
+  "first_adapters": [
+    "bocce",
+    "skee_ball"
+  ]
+}
