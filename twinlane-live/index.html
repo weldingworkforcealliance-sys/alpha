@@ -101,6 +101,30 @@ linear-gradient(135deg,#25301f,#11160f);display:flex;justify-content:space-betwe
 .skin-card strong{color:#e0d1a3}
 .skin-card[data-selected="true"]{outline:1px solid #c7a45a33;outline-offset:2px}
 body[data-skin="living_kingdoms"] .skin-chip{border-color:#8c7447}
+.brand-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.library-btn{min-height:34px;padding:6px 10px;border-radius:999px;font-size:11px;letter-spacing:.06em;border-color:#62563d;background:#12150f;color:#d9c99b}
+.court-library-overlay{position:fixed;inset:0;z-index:1000;background:#030604d9;backdrop-filter:blur(8px);display:grid;place-items:center;padding:16px}
+.court-library-panel{width:min(760px,100%);max-height:min(760px,92vh);overflow:auto;border:1px solid #7e6942;border-radius:18px;background:linear-gradient(180deg,#171d16,#090c09);padding:16px;box-shadow:0 26px 80px #000c,inset 0 1px #e7d5a02e}
+.court-library-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.court-library-head h2{margin:3px 0 2px}
+.library-tabs{display:flex;gap:8px;margin-top:14px}
+.library-tab{min-height:38px;padding:7px 12px;font-size:12px}
+.library-tab[aria-selected="true"]{border-color:#c9a85f;background:#2a2618;color:#ead7a3}
+.court-library-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+.court-card{border:1px solid #4e503d;border-radius:14px;overflow:hidden;background:#10140f;box-shadow:inset 0 1px #fff1}
+.court-card[data-selected="true"]{border-color:#c8a65d;box-shadow:0 0 0 1px #c8a65d55,inset 0 1px #fff2}
+.court-preview{height:145px;background:#1a2118 center/cover no-repeat;position:relative;border-bottom:1px solid #47462f}
+.court-preview.living-kingdoms{background-image:linear-gradient(180deg,#0001,#0007),var(--lk-far-art)}
+.court-preview::after{content:"";position:absolute;inset:0;box-shadow:inset 0 -45px 50px #080b08b8;pointer-events:none}
+.court-card-body{padding:12px}
+.court-title-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.court-title{font:800 17px/1.1 Georgia,"Times New Roman",serif;color:#ead7a3}
+.court-badge{font-size:10px;font-weight:950;letter-spacing:.08em;border:1px solid #73633f;border-radius:999px;padding:4px 7px;color:#d9c58b}
+.court-meta{font-size:11px;color:#839087;margin-top:5px;line-height:1.4}
+.court-action{width:100%;margin-top:10px;min-height:40px;font-size:13px}
+.court-empty{grid-column:1/-1;border:1px dashed #4b5146;border-radius:14px;padding:22px;text-align:center;color:#8b978e;background:#0d110e}
+.store-note{font-size:11px;color:#7f8d83;margin-top:12px;line-height:1.5}
+@media(max-width:600px){.brand-actions{gap:5px}.library-btn{font-size:10px}.court-library-grid{grid-template-columns:1fr}.court-preview{height:125px}}
 .match-rule{font-size:11px;color:#7f8d83;margin-top:4px}
 .hero-card{text-align:center;padding:22px 16px}
 .hero-title{font-size:22px;font-weight:950;margin-bottom:4px}
@@ -515,7 +539,10 @@ body[data-view-mode="immersive"] #matchHud::before{
     <div class="eyebrow">CORVU MOR · TWINLANE</div>
     <div class="brand-title">BOCCE</div>
   </div>
-  <div id="activeSkinChip" class="skin-chip">LIVING KINGDOMS · ORIGINAL</div>
+  <div class="brand-actions">
+    <div id="activeSkinChip" class="skin-chip">LIVING KINGDOMS · ORIGINAL</div>
+    <button id="courtLibraryBtn" class="library-btn" type="button">Court Library</button>
+  </div>
 </div>
 <p>Two screens become one court. First to 12 points wins.</p>
 
@@ -704,6 +731,26 @@ body[data-view-mode="immersive"] #matchHud::before{
   </div>
 </section>
 
+
+<section id="courtLibrary" class="court-library-overlay hidden" aria-hidden="true">
+  <div class="court-library-panel" role="dialog" aria-modal="true" aria-labelledby="courtLibraryTitle">
+    <div class="court-library-head">
+      <div>
+        <div class="eyebrow">CORVU MOR · BOCCE</div>
+        <h2 id="courtLibraryTitle">Court Library</h2>
+        <div class="small">Cosmetic courts only. Gameplay stays identical.</div>
+      </div>
+      <button id="courtLibraryClose" type="button">Close</button>
+    </div>
+    <div class="library-tabs" role="tablist">
+      <button id="myCourtsTab" class="library-tab" type="button" role="tab" aria-selected="true">My Courts</button>
+      <button id="courtStoreTab" class="library-tab" type="button" role="tab" aria-selected="false">Court Store</button>
+    </div>
+    <div id="courtLibraryGrid" class="court-library-grid"></div>
+    <div id="courtStoreNote" class="store-note"></div>
+  </div>
+</section>
+
 <section id="connectionCard" class="card">
   <div id="status" class="status">Ready.</div>
   <details class="diag">
@@ -761,6 +808,13 @@ body[data-view-mode="immersive"] #matchHud::before{
   const activeSkinName = document.getElementById('activeSkinName');
   const activeSkinDescription = document.getElementById('activeSkinDescription');
   const activeSkinEntitlement = document.getElementById('activeSkinEntitlement');
+  const courtLibraryBtn = document.getElementById('courtLibraryBtn');
+  const courtLibrary = document.getElementById('courtLibrary');
+  const courtLibraryClose = document.getElementById('courtLibraryClose');
+  const myCourtsTab = document.getElementById('myCourtsTab');
+  const courtStoreTab = document.getElementById('courtStoreTab');
+  const courtLibraryGrid = document.getElementById('courtLibraryGrid');
+  const courtStoreNote = document.getElementById('courtStoreNote');
   const scoreAEl = document.getElementById('scoreA');
   const scoreBEl = document.getElementById('scoreB');
   const ballsAEl = document.getElementById('ballsA');
@@ -989,6 +1043,2165 @@ body[data-view-mode="immersive"] #matchHud::before{
     if(s2Pos)s2Pos.value='second';
   }
 
+
+  const COURT_ENTITLEMENTS_KEY='corvumor_court_entitlements_v1';
+  let courtLibraryMode='owned';
+
+  function courtEntitlements(){
+    let stored={};
+    try{stored=JSON.parse(localStorage.getItem(COURT_ENTITLEMENTS_KEY)||'{}')||{};}catch{}
+    for(const skin of Object.values(SKIN_REGISTRY)){
+      if(skin.included)stored[skin.id]=true;
+    }
+    localStorage.setItem(COURT_ENTITLEMENTS_KEY,JSON.stringify(stored));
+    return stored;
+  }
+
+  function ownsSkin(skinId){
+    return Boolean(courtEntitlements()[skinId]);
+  }
+
+  function skinPriceLabel(skin){
+    if(skin.included)return 'INCLUDED';
+    if(Number.isFinite(Number(skin.price_cents)) && Number(skin.price_cents)>0){
+      return '
+    return SKIN_REGISTRY[selectedSkinId]||SKIN_REGISTRY[DEFAULT_SKIN_ID];
+  }
+
+  function syncSkinPresentation(){
+    const skin=activeSkin();
+    document.body.dataset.skin=skin.id;
+    localStorage.setItem('corvumor_skin',skin.id);
+    if(activeSkinChip)activeSkinChip.textContent=(skin.name+' · '+skin.edition).toUpperCase();
+    if(activeSkinName)activeSkinName.textContent=skin.name;
+    if(activeSkinDescription){
+      activeSkinDescription.textContent=skin.edition+' Corvu Mor court · '+(skin.included?'included':'cosmetic add-on');
+    }
+    if(activeSkinEntitlement)activeSkinEntitlement.textContent=skin.included?'FREE':'OWNED';
+    if(activeSkinCard){
+      activeSkinCard.dataset.skinId=skin.id;
+      activeSkinCard.dataset.selected='true';
+    }
+  }
+
+  function syncViewMode(){
+    document.body.dataset.viewMode=viewMode;
+    for(const b of [viewModeBtn,joinViewModeBtn].filter(Boolean)){
+      b.textContent='View: '+(viewMode==='immersive'?'Immersive':'Standard');
+    }
+  }
+
+  function toggleViewMode(){
+    viewMode=viewMode==='immersive'?'standard':'immersive';
+    localStorage.setItem('corvumor_view_mode',viewMode);
+    syncViewMode();
+  }
+
+  function syncFeedbackButtons(){
+    for(const b of [soundBtn,joinSoundBtn].filter(Boolean)){
+      b.textContent='Sound: '+(soundOn?'On':'Off');
+    }
+    for(const b of [hapticsBtn,joinHapticsBtn].filter(Boolean)){
+      if(!hapticsSupported){
+        b.textContent='Haptics: Not supported';
+        b.disabled=true;
+      }else{
+        b.textContent='Haptics: '+(hapticsOn?'On':'Off');
+        b.disabled=false;
+      }
+    }
+  }
+
+  function ensureAudio(){
+    if(!soundOn)return null;
+    try{
+      const AC=window.AudioContext||window.webkitAudioContext;
+      if(!AC)return null;
+      if(!audioCtx)audioCtx=new AC();
+      return audioCtx;
+    }catch{return null;}
+  }
+
+  async function unlockAudio(){
+    if(!soundOn)return false;
+    const ctx=ensureAudio();
+    if(!ctx)return false;
+    try{
+      if(ctx.state==='suspended')await ctx.resume();
+
+      // Prime the output path during a trusted user gesture.
+      const osc=ctx.createOscillator();
+      const gain=ctx.createGain();
+      gain.gain.value=.0001;
+      osc.connect(gain);gain.connect(ctx.destination);
+      osc.start();osc.stop(ctx.currentTime+.015);
+
+      audioUnlocked=ctx.state==='running';
+      if(audioUnlocked)prepareImpactAudio();
+      return audioUnlocked;
+    }catch{
+      audioUnlocked=false;
+      return false;
+    }
+  }
+
+  function buildResinImpactBuffer(ctx,kind='bocce'){
+    const duration=kind==='pallino'?.075:.095;
+    const length=Math.max(1,Math.floor(ctx.sampleRate*duration));
+    const buffer=ctx.createBuffer(1,length,ctx.sampleRate);
+    const data=buffer.getChannelData(0);
+
+    const bodyFreq=kind==='pallino'?980:640;
+    const upperFreq=kind==='pallino'?1850:1280;
+    const lowFreq=kind==='pallino'?260:185;
+
+    let peak=0;
+
+    for(let i=0;i<length;i++){
+      const t=i/ctx.sampleRate;
+
+      // Very fast contact transient, then a short resin/composite body.
+      const attack=Math.min(1,t/.0015);
+      const envFast=attack*Math.exp(-t*(kind==='pallino'?78:62));
+      const envBody=Math.exp(-t*(kind==='pallino'?48:40));
+
+      const noise=((Math.sin((i+1)*12.9898)*43758.5453)%1)*2-1;
+      const contact=noise*envFast*.42;
+      const body=Math.sin(2*Math.PI*bodyFreq*t)*envBody*.32;
+      const upper=Math.sin(2*Math.PI*upperFreq*t+.45)*envFast*.20;
+      const low=Math.sin(2*Math.PI*lowFreq*t+.2)*envBody*.16;
+
+      // Tiny initial knock adds the hard-sphere "clack" without a metallic ring.
+      const click=t<.003 ? (1-t/.003)*.30 : 0;
+
+      const sample=(contact+body+upper+low+click);
+      data[i]=sample;
+      peak=Math.max(peak,Math.abs(sample));
+    }
+
+    // Normalize once at creation. No compressor/network/decoding during gameplay.
+    const scale=peak>0 ? .88/peak : 1;
+    for(let i=0;i<length;i++)data[i]*=scale;
+
+    return buffer;
+  }
+
+  function buildWoodRailBuffer(ctx){
+    const duration=.13;
+    const length=Math.max(1,Math.floor(ctx.sampleRate*duration));
+    const buffer=ctx.createBuffer(1,length,ctx.sampleRate);
+    const data=buffer.getChannelData(0);
+
+    let peak=0;
+
+    for(let i=0;i<length;i++){
+      const t=i/ctx.sampleRate;
+      const attack=Math.min(1,t/.0012);
+      const envFast=attack*Math.exp(-t*52);
+      const envBody=Math.exp(-t*27);
+
+      // Short hardwood knock: low body, muted upper resonance, little tail.
+      const thump=Math.sin(2*Math.PI*165*t+.15)*envBody*.34;
+      const body=Math.sin(2*Math.PI*315*t+.55)*envBody*.24;
+      const upper=Math.sin(2*Math.PI*610*t+.25)*envFast*.12;
+      const contact=((((Math.sin((i+1)*78.233)*12345.6789)%1)*2)-1)*envFast*.20;
+      const click=t<.0025 ? (1-t/.0025)*.24 : 0;
+
+      const sample=thump+body+upper+contact+click;
+      data[i]=sample;
+      peak=Math.max(peak,Math.abs(sample));
+    }
+
+    const scale=peak>0 ? .90/peak : 1;
+    for(let i=0;i<length;i++)data[i]*=scale;
+    return buffer;
+  }
+
+  function prepareImpactAudio(){
+    if(impactAudioReady)return;
+    const ctx=ensureAudio();
+    if(!ctx)return;
+
+    try{
+      bocceImpactBuffer=buildResinImpactBuffer(ctx,'bocce');
+      pallinoImpactBuffer=buildResinImpactBuffer(ctx,'pallino');
+      woodRailImpactBuffer=buildWoodRailBuffer(ctx);
+      impactAudioReady=Boolean(bocceImpactBuffer&&pallinoImpactBuffer&&woodRailImpactBuffer);
+    }catch{
+      impactAudioReady=false;
+    }
+  }
+
+  function playImpactAudio(kind='impact',strength=2){
+    if(!soundOn || !audioUnlocked)return false;
+    prepareImpactAudio();
+
+    const ctx=ensureAudio();
+    if(!ctx || ctx.state!=='running')return false;
+
+    const buffer=kind==='pallino_hit'?pallinoImpactBuffer:bocceImpactBuffer;
+    if(!buffer)return false;
+
+    try{
+      const src=ctx.createBufferSource();
+      const gain=ctx.createGain();
+      const s=clamp(Number(strength||2),.5,12);
+
+      src.buffer=buffer;
+      src.playbackRate.value=kind==='pallino_hit'
+        ? clamp(.99+s*.004,.99,1.04)
+        : clamp(.96+s*.004,.96,1.03);
+
+      gain.gain.value=kind==='pallino_hit'
+        ? clamp(.32+s*.035,.36,.66)
+        : clamp(.48+s*.040,.54,.90);
+
+      src.connect(gain);
+      gain.connect(ctx.destination);
+      src.start();
+      return true;
+    }catch{
+      return false;
+    }
+  }
+
+  function playWoodRailImpact(isPallino=false,strength=2){
+    if(!soundOn || !audioUnlocked)return false;
+    prepareImpactAudio();
+
+    const ctx=ensureAudio();
+    if(!ctx || ctx.state!=='running' || !woodRailImpactBuffer)return false;
+
+    try{
+      const src=ctx.createBufferSource();
+      const gain=ctx.createGain();
+      const s=clamp(Number(strength||2),.4,14);
+
+      src.buffer=woodRailImpactBuffer;
+      src.playbackRate.value=isPallino
+        ? clamp(1.06+s*.003,1.06,1.11)
+        : clamp(.98+s*.003,.98,1.04);
+      gain.gain.value=isPallino
+        ? clamp(.30+s*.030,.34,.62)
+        : clamp(.55+s*.035,.62,.96);
+
+      src.connect(gain);
+      gain.connect(ctx.destination);
+      src.start();
+      return true;
+    }catch{
+      return false;
+    }
+  }
+
+  function tone(freq=440,duration=.06,volume=.07,delay=0,type='triangle'){
+    if(!soundOn)return;
+    const ctx=ensureAudio();
+    if(!ctx || ctx.state!=='running')return;
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    const start=ctx.currentTime+delay;
+    osc.type=type;
+    osc.frequency.setValueAtTime(freq,start);
+    gain.gain.setValueAtTime(Math.max(.0001,volume),start);
+    gain.gain.exponentialRampToValueAtTime(.0001,start+duration);
+    osc.connect(gain);gain.connect(ctx.destination);
+    osc.start(start);osc.stop(start+duration+.02);
+  }
+
+  function haptic(pattern){
+    if(!hapticsOn || !hapticsSupported)return false;
+    try{return navigator.vibrate(pattern)!==false;}catch{return false;}
+  }
+
+  function feedback(kind,strength=2){
+    if(kind==='place'){
+      tone(520,.045,.055);
+      haptic(10);
+    }
+    if(kind==='throw'){
+      tone(240,.055,.07);
+      tone(360,.05,.045,.035);
+      haptic(14);
+    }
+    if(kind==='impact'){
+      if(!playImpactAudio('impact',strength))tone(185,.045,.055,0,'triangle');
+      haptic(18);
+    }
+    if(kind==='pallino_hit'){
+      if(!playImpactAudio('pallino_hit',strength))tone(330,.04,.04,0,'triangle');
+      haptic(12);
+    }
+    if(kind==='wood'){
+      if(!playWoodRailImpact(false,strength))tone(170,.055,.05,0,'triangle');
+      haptic(10);
+    }
+    if(kind==='wood_pallino'){
+      if(!playWoodRailImpact(true,strength))tone(235,.045,.035,0,'triangle');
+      haptic(7);
+    }
+    if(kind==='end'){
+      tone(420,.08,.075);
+      tone(560,.09,.065,.085);
+      haptic([24,35,24]);
+    }
+    if(kind==='win'){
+      tone(380,.09,.08);
+      tone(520,.09,.075,.10);
+      tone(700,.14,.07,.20);
+      haptic([30,35,30,35,55]);
+    }
+  }
+
+  async function toggleSound(){
+    soundOn=!soundOn;
+    localStorage.setItem('corvumor_sound',soundOn?'on':'off');
+    syncFeedbackButtons();
+    if(soundOn)document.addEventListener('pointerdown',prepareImpactAudio,{once:true,passive:true});
+    if(soundOn){
+      await unlockAudio();
+      tone(520,.07,.08);
+    }
+  }
+  function toggleHaptics(){
+    if(!hapticsSupported)return;
+    hapticsOn=!hapticsOn;
+    localStorage.setItem('corvumor_haptics',hapticsOn?'on':'off');
+    syncFeedbackButtons();
+    if(hapticsOn)haptic(20);
+  }
+
+  const unlockFromGesture=()=>{ void unlockAudio(); };
+  document.addEventListener('pointerdown',unlockFromGesture,{passive:true});
+  document.addEventListener('touchend',unlockFromGesture,{passive:true});
+  document.addEventListener('keydown',unlockFromGesture);
+
+  [soundBtn,joinSoundBtn].filter(Boolean).forEach(b=>b.addEventListener('click',toggleSound));
+  [hapticsBtn,joinHapticsBtn].filter(Boolean).forEach(b=>b.addEventListener('click',toggleHaptics));
+  [viewModeBtn,joinViewModeBtn].filter(Boolean).forEach(b=>b.addEventListener('click',toggleViewMode));
+  courtLibraryBtn?.addEventListener('click',()=>openCourtLibrary('owned'));
+  courtLibraryClose?.addEventListener('click',closeCourtLibrary);
+  myCourtsTab?.addEventListener('click',()=>setCourtLibraryMode('owned'));
+  courtStoreTab?.addEventListener('click',()=>setCourtLibraryMode('store'));
+  courtLibrary?.addEventListener('click',(e)=>{if(e.target===courtLibrary)closeCourtLibrary();});
+  document.addEventListener('keydown',(e)=>{if(e.key==='Escape')closeCourtLibrary();});
+  syncFeedbackButtons();
+  syncSkinPresentation();
+  renderCourtLibrary();
+  syncViewMode();
+  applyStandardSetup();
+
+  function updateGameHud(){
+    if(!state)return;
+    const g=game();
+    matchHud.classList.remove('hidden');
+
+    const presentationKey=[g.phase,g.end_number,g.score_a,g.score_b,g.winner||''].join(':');
+    if(presentationKey!==lastPresentationKey){
+      if(g.phase==='end_complete')feedback('end');
+      if(g.phase==='match_over')feedback('win');
+      lastPresentationKey=presentationKey;
+    }
+
+    const hudKey=[
+      teamName('A'),teamName('B'),
+      g.score_a,g.score_b,g.balls_a,g.balls_b,
+      g.end_number,g.phase,g.current_team,g.starting_team,
+      g.end_scoring_team||'',g.end_score||0,g.winner||'',role
+    ].join('|');
+
+    if(hudKey===lastHudDomKey)return;
+    lastHudDomKey=hudKey;
+
+    playerANameHud.textContent=teamName('A').toUpperCase();
+    playerBNameHud.textContent=teamName('B').toUpperCase();
+    scoreAEl.textContent=String(Number(g.score_a||0));
+    scoreBEl.textContent=String(Number(g.score_b||0));
+    ballsAEl.textContent=(4-Number(g.balls_a||0))+' balls left';
+    ballsBEl.textContent=(4-Number(g.balls_b||0))+' balls left';
+    endNumberEl.textContent=String(Number(g.end_number||1));
+
+    endResultEl.classList.add('hidden');
+    nextEndBtn.classList.add('hidden');
+
+    if(g.phase==='pallino'){
+      turnLabelEl.textContent='PALLINO';
+      gameBannerEl.textContent=teamName(g.starting_team)+' throws the pallino.';
+    }else if(g.phase==='bocce'){
+      turnLabelEl.textContent=teamName(g.current_team).toUpperCase();
+      gameBannerEl.textContent=teamName(g.current_team)+' to throw.';
+    }else if(g.phase==='end_complete'){
+      turnLabelEl.textContent='END COMPLETE';
+      gameBannerEl.textContent=teamName(g.end_scoring_team)+' scores '+Number(g.end_score||0)+'.';
+      endResultEl.classList.remove('hidden');
+      endResultTextEl.textContent=teamName(g.end_scoring_team)+' scores '+Number(g.end_score||0)+' point'+(Number(g.end_score||0)===1?'':'s')+'.';
+      if(role==='launch')nextEndBtn.classList.remove('hidden');
+    }else if(g.phase==='match_over'){
+      turnLabelEl.textContent='MATCH OVER';
+      gameBannerEl.textContent=teamName(g.winner)+' wins the match.';
+      endResultEl.classList.remove('hidden');
+      endResultTextEl.textContent=teamName(g.winner)+' wins '+Number(g.score_a||0)+'–'+Number(g.score_b||0)+'.';
+    }
+  }
+
+  function localPositionLabel() {
+    if (position==='first') return 'Near Player';
+    if (position==='second') return 'Far End';
+    return 'Side Display';
+  }
+
+  function playfieldChain(s) {
+    if (!s) return [];
+    const arr=[];
+    if (s.screen1_position && s.screen1_position!=='independent') arr.push({screen:1,position:s.screen1_position});
+    if (s.screen2_joined && s.screen2_position && s.screen2_position!=='independent') arr.push({screen:2,position:s.screen2_position});
+    arr.sort((a,b)=>(a.position==='first'?0:1)-(b.position==='first'?0:1));
+    return arr;
+  }
+
+  function viewport() {
+    if (position==='independent') return null;
+    const chain=playfieldChain(state);
+    if (!chain.length) return null;
+    if (chain.length===1) return {y0:0,y1:100};
+    const me=chain.find(x=>x.screen===localScreen);
+    if (!me) return null;
+    return me.position==='first'?{y0:0,y1:50}:{y0:50,y1:100};
+  }
+
+  function worldToLocal(x,y) {
+    const vp=renderViewport||viewport();
+    if (!vp) return null;
+    const r=renderLaneRect||laneEl.getBoundingClientRect();
+    return {
+      x:(x/100)*r.width,
+      y:r.height-((y-vp.y0)/(vp.y1-vp.y0))*r.height
+    };
+  }
+
+  function pointerToWorld(e) {
+    const vp=viewport();
+    if (!vp) return null;
+    const r=laneEl.getBoundingClientRect();
+    return {
+      x:clamp(((e.clientX-r.left)/r.width)*100,0,100),
+      y:clamp(vp.y0+(1-(e.clientY-r.top)/r.height)*(vp.y1-vp.y0),vp.y0,vp.y1)
+    };
+  }
+
+  function positionObject(el,obj,visibleExtra=0) {
+    const vp=renderViewport||viewport();
+    if (!vp || obj.y<vp.y0-visibleExtra || obj.y>vp.y1+visibleExtra) {
+      el.style.display='none';return;
+    }
+    const p=worldToLocal(obj.x,obj.y);
+    if (!p){el.style.display='none';return;}
+    const r=renderLaneRect||laneEl.getBoundingClientRect();
+    el.style.display='block';
+    el.style.left=p.x+'px';
+    el.style.bottom=(r.height-p.y)+'px';
+  }
+
+  function renderSettledBalls() {
+    const vp=renderViewport||viewport();
+    const balls=Array.isArray(displayedSettledBalls)?displayedSettledBalls:[];
+    const ballCount=String(balls.length);
+    if(ballsOnCourtEl.textContent!==ballCount)ballsOnCourtEl.textContent=ballCount;
+
+    const liveIds=new Set(balls.map(b=>Number(b.id)));
+
+    for(const [id,el] of settledEls){
+      if(!liveIds.has(id)){
+        el.remove();
+        settledEls.delete(id);
+      }
+    }
+
+    for(const b of balls){
+      const id=Number(b.id);
+      let el=settledEls.get(id);
+
+      if(!el){
+        el=document.createElement('div');
+        el.className='settled-ball '+(b.team==='B'?'team-b':'team-a');
+        const num=document.createElement('div');
+        num.className='settled-number';
+        num.textContent=String(id);
+        el.appendChild(num);
+        settledLayerEl.appendChild(el);
+        settledEls.set(id,el);
+      }
+
+      if(!vp || Number(b.y)<vp.y0-.15 || Number(b.y)>vp.y1+.15){
+        el.style.display='none';
+        continue;
+      }
+
+      const p=worldToLocal(Number(b.x),Number(b.y));
+      if(!p){
+        el.style.display='none';
+        continue;
+      }
+
+      const r=renderLaneRect||laneEl.getBoundingClientRect();
+      el.style.display='block';
+      el.style.left=p.x+'px';
+      el.style.bottom=(r.height-p.y)+'px';
+    }
+  }
+
+  function renderStartZone() {
+    const vp=viewport();
+    const g=game();
+    const show=role==='launch' && position==='first' && vp && !state?.ball_moving && (g.phase==='pallino'||g.phase==='bocce');
+    launchHelp.classList.toggle('hidden',!show);
+    startZoneEl.classList.toggle('hidden',!show);
+    startLabelEl.classList.toggle('hidden',!show);
+    if (!show) return;
+    const p1=worldToLocal(15,14),p2=worldToLocal(85,5);
+    startZoneEl.style.left=p1.x+'px';
+    startZoneEl.style.top=p1.y+'px';
+    startZoneEl.style.width=(p2.x-p1.x)+'px';
+    startZoneEl.style.height=(p2.y-p1.y)+'px';
+    startLabelEl.style.left=(p1.x+8)+'px';
+    startLabelEl.style.top=(p1.y+7)+'px';
+  }
+
+  function render() {
+    const vp=viewport();
+    renderViewport=vp;
+    renderLaneRect=vp?laneEl.getBoundingClientRect():null;
+
+    const screenKey=position+'|'+role;
+    if(screenKey!==lastScreenDomKey){
+      if(position==='second')startMonitorIfNeeded();
+      lastScreenDomKey=screenKey;
+      viewPanel.dataset.skinView=position==='second'?'far':position==='first'?'near':'display';
+      if(position==='first'){
+        screenNameEl.textContent='Throw End';
+        screenPositionEl.textContent='Near Player';
+        screenMetaEl.textContent=monitorActive()?'LIVING KINGDOMS · MONITOR':'LIVING KINGDOMS';
+      }else if(position==='second'){
+        screenNameEl.textContent='Pallino End';
+        screenPositionEl.textContent='Far End';
+        screenMetaEl.textContent=monitorActive()?'LIVING KINGDOMS · MONITOR':'LIVING KINGDOMS';
+      }else{
+        screenNameEl.textContent='Match Display';
+        screenPositionEl.textContent=nice(role);
+        screenMetaEl.textContent='LIVING KINGDOMS';
+      }
+    }
+    updateGameHud();
+
+    if (!vp) {
+      laneEl.style.background='#11161d';
+      independentEl.classList.remove('hidden');
+      independentRoleEl.textContent=role.toUpperCase();
+      ballEl.style.display='none';
+      pallinoEl.style.display='none';
+      startZoneEl.classList.add('hidden');
+      startLabelEl.classList.add('hidden');
+      launchHelp.classList.add('hidden');
+      for(const el of settledEls.values())el.style.display='none';
+      renderLaneRect=null;
+      renderViewport=null;
+      return;
+    }
+
+    laneEl.style.background='';
+    independentEl.classList.add('hidden');
+    renderSettledBalls();
+    const g=game();
+    const seamExtra=state?.ball_moving?1.6:.15;
+    const renderedBallTeam=(state?.ball_moving||remoteShotActive)
+      ? activeShotTeam
+      : (g.current_team==='B'?'B':'A');
+    ballEl.classList.toggle('team-a',renderedBallTeam==='A');
+    ballEl.classList.toggle('team-b',renderedBallTeam==='B');
+
+    if(g.phase==='pallino'){
+      ballEl.style.display='none';
+      positionObject(pallinoEl,displayedPallino,seamExtra);
+    }else{
+      if(g.phase==='bocce' && !state?.ball_moving && position==='first' && role==='launch'){
+        positionObject(ballEl,displayedBall,seamExtra);
+      }else if(g.phase==='bocce' || state?.ball_moving){
+        positionObject(ballEl,displayedBall,seamExtra);
+      }else{
+        ballEl.style.display='none';
+      }
+      positionObject(pallinoEl,displayedPallino,seamExtra);
+    }
+
+    if(role==='launch'&&position==='first'){
+      launchHelp.classList.toggle('hidden',!(g.phase==='pallino'||g.phase==='bocce')||state?.ball_moving);
+      if(g.phase==='pallino'){
+        throwTitleEl.textContent=teamName(g.starting_team)+' · Pallino';
+        throwHelpEl.textContent='Tap the start area to place the pallino. Then swipe upward from it to throw. Tap again to reposition before throwing.';
+      }else if(g.phase==='bocce'){
+        throwTitleEl.textContent=teamName(g.current_team)+' · Bocce';
+        throwHelpEl.textContent='Tap the start area to place the bocce ball. Then swipe upward from it to throw. Tap again to reposition before throwing.';
+      }
+    }
+
+    renderStartZone();
+    renderLaneRect=null;
+    renderViewport=null;
+  }
+
+  function interpolateBalls(a,b,t){
+    const byId=new Map();
+    for(const item of (Array.isArray(a)?a:[]))byId.set(Number(item.id),{a:item,b:item});
+    for(const item of (Array.isArray(b)?b:[])){
+      const id=Number(item.id);
+      const pair=byId.get(id)||{a:item,b:item};
+      pair.b=item;
+      byId.set(id,pair);
+    }
+    return [...byId.entries()].map(([id,pair])=>({
+      id,
+      team:(pair.b.team||pair.a.team)==='B'?'B':'A',
+      x:Number(pair.a.x)+(Number(pair.b.x)-Number(pair.a.x))*t,
+      y:Number(pair.a.y)+(Number(pair.b.y)-Number(pair.a.y))*t
+    }));
+  }
+
+  function animateDisplay() {
+    if (!localSim && !(placementReady && role==='launch' && position==='first')) {
+      const now=performance.now();
+      const frameDelta=now-monitorLastRafAt;
+      monitorLastRafAt=now;
+      const realtimeAge=now-lastRealtimeFrameAt;
+
+      if(monitorActive() && frameDelta>42 && now-monitorLastLongFrameAt>250){
+        monitorLastLongFrameAt=now;
+        monitorEvent('long_frame',{frame_delta_ms:frameDelta});
+      }
+
+      // Durable state is emergency recovery only. It must not compete with
+      // healthy realtime motion.
+      if(position==='second' && (remoteShotActive || state?.ball_moving) && realtimeAge>450 && now-lastRecoveryPollAt>250){
+        lastRecoveryPollAt=now;
+        monitorEvent('recovery_poll',{payload:{realtime_age_ms:realtimeAge}});
+        void poll();
+      }
+
+      if(realtimeFrames.length){
+        const latestFrame=realtimeFrames[realtimeFrames.length-1];
+
+        if(remotePlaybackTimeMs==null){
+          remotePlaybackTimeMs=realtimeFrames[0].sentAt-REMOTE_PLAYBACK_DELAY_MS;
+          remotePlaybackLastPerfMs=now;
+        }
+
+        const dt=clamp(now-remotePlaybackLastPerfMs,0,50);
+        remotePlaybackLastPerfMs=now;
+        const gap=latestFrame.sentAt-remotePlaybackTimeMs;
+
+        let playbackRate=1;
+        if(gap<=0){
+          playbackRate=0;
+        }else if(gap<REMOTE_PLAYBACK_MIN_GAP_MS){
+          playbackRate=.55;
+        }else if(gap>REMOTE_PLAYBACK_CATCHUP_GAP_MS){
+          playbackRate=REMOTE_PLAYBACK_CATCHUP_RATE;
+        }
+
+        // The remote playback clock may slow, pause or gently catch up.
+        // It may never move backward.
+        remotePlaybackTimeMs=Math.min(
+          latestFrame.sentAt,
+          remotePlaybackTimeMs+dt*playbackRate
+        );
+
+        const playbackRemote=remotePlaybackTimeMs;
+
+        while(realtimeFrames.length>2 && realtimeFrames[1].sentAt<=playbackRemote){
+          realtimeFrames.shift();
+        }
+
+        const a=realtimeFrames[0];
+        const b=realtimeFrames[1]||a;
+        let t=0;
+
+        if(playbackRemote>=a.sentAt && b.sentAt>a.sentAt){
+          t=clamp((playbackRemote-a.sentAt)/(b.sentAt-a.sentAt),0,1);
+        }else if(playbackRemote>=b.sentAt){
+          t=1;
+        }
+
+        displayedBall={
+          x:a.ball.x+(b.ball.x-a.ball.x)*t,
+          y:a.ball.y+(b.ball.y-a.ball.y)*t
+        };
+        displayedPallino={
+          x:a.pallino.x+(b.pallino.x-a.pallino.x)*t,
+          y:a.pallino.y+(b.pallino.y-a.pallino.y)*t
+        };
+        displayedSettledBalls=interpolateBalls(a.settled,b.settled,t);
+
+        if(monitorActive() && shotSeq!==monitorSeamSeq && displayedBall.y>=50){
+          monitorSeamSeq=shotSeq;
+          monitorEvent('seam_visible',{
+            source_sent_at:b.sentAt,
+            payload:{queue:realtimeFrames.length,gap_ms:latestFrame.sentAt-playbackRemote}
+          });
+        }
+
+        if(monitorActive() && now-monitorLastRenderSampleAt>=100){
+          monitorLastRenderSampleAt=now;
+          monitorEvent('render_sample',{
+            source_sent_at:b.sentAt,
+            frame_delta_ms:frameDelta,
+            payload:{
+              t,
+              queue:realtimeFrames.length,
+              playback_gap_ms:latestFrame.sentAt-playbackRemote,
+              realtime_ready:realtimeReady
+            }
+          });
+        }
+
+        flushRemoteTimelineEvents(playbackRemote);
+      }else{
+        displayedBall.x+=(targetBall.x-displayedBall.x)*.24;
+        displayedBall.y+=(targetBall.y-displayedBall.y)*.24;
+        displayedPallino.x+=(targetPallino.x-displayedPallino.x)*.24;
+        displayedPallino.y+=(targetPallino.y-displayedPallino.y)*.24;
+        if(state?.settled_balls)displayedSettledBalls=state.settled_balls;
+      }
+    }
+
+    render();
+    requestAnimationFrame(animateDisplay);
+  }
+
+  requestAnimationFrame(animateDisplay);
+
+
+  function nextSoundEventId(){
+    soundEventSeq+=1;
+    return shotSeq+':'+soundEventSeq;
+  }
+
+  function rememberRemoteSoundEvent(id){
+    if(!id)return true;
+    if(remoteSoundEventIds.has(id))return false;
+    remoteSoundEventIds.add(id);
+    if(remoteSoundEventIds.size>96){
+      const first=remoteSoundEventIds.values().next().value;
+      remoteSoundEventIds.delete(first);
+    }
+    return true;
+  }
+
+  function flushRemoteTimelineEvents(playbackTime){
+    while(pendingPhysicalSounds.length && pendingPhysicalSounds[0].sentAt<=playbackTime){
+      const evt=pendingPhysicalSounds.shift();
+      monitorEvent('sound_played',{
+        source_sent_at:evt.sentAt,
+        payload:{kind:evt.kind,strength:evt.strength,av_offset_ms:playbackTime-evt.sentAt}
+      });
+      feedback(evt.kind,evt.strength);
+    }
+
+    while(pendingRemoteTransitions.length && pendingRemoteTransitions[0].sentAt<=playbackTime){
+      const evt=pendingRemoteTransitions.shift();
+      monitorEvent('transition_applied',{
+        source_sent_at:evt.sentAt,
+        payload:{type:evt.type}
+      });
+      if(evt.type==='shot_complete')applyShotComplete(evt.payload);
+      if(evt.type==='pallino_complete')applyPallinoComplete(evt.payload);
+      void poll();
+    }
+  }
+
+  function scheduleRemotePhysicalSound(payload){
+    if(!payload || !rememberRemoteSoundEvent(payload.id))return;
+
+    const evt={
+      kind:String(payload.kind||'impact'),
+      strength:Number(payload.strength||2),
+      sentAt:Number(payload.sent_at||Date.now())
+    };
+
+    // If no buffered remote shot exists, the event is already late.
+    if(remotePlaybackTimeMs==null){
+      feedback(evt.kind,evt.strength);
+      return;
+    }
+
+    pendingPhysicalSounds.push(evt);
+    pendingPhysicalSounds.sort((a,b)=>a.sentAt-b.sentAt);
+    monitorEvent('sound_queued',{
+      source_sent_at:evt.sentAt,
+      payload:{kind:evt.kind,strength:evt.strength,queue:pendingPhysicalSounds.length}
+    });
+    flushRemoteTimelineEvents(remotePlaybackTimeMs);
+  }
+
+  function queueRemoteTransition(type,payload){
+    if(!payload)return;
+    const sentAt=Number(payload.sent_at||0);
+
+    if(!sentAt || remotePlaybackTimeMs==null){
+      if(type==='shot_complete')applyShotComplete(payload);
+      if(type==='pallino_complete')applyPallinoComplete(payload);
+      void poll();
+      return;
+    }
+
+    pendingRemoteTransitions.push({type,payload,sentAt});
+    pendingRemoteTransitions.sort((a,b)=>a.sentAt-b.sentAt);
+    monitorEvent('transition_queued',{
+      source_sent_at:sentAt,
+      payload:{type,queue:pendingRemoteTransitions.length}
+    });
+    flushRemoteTimelineEvents(remotePlaybackTimeMs);
+  }
+
+  function realtimeSend(event,payload){
+    if(!realtimeSocket || realtimeSocket.readyState!==WebSocket.OPEN || !realtimeReady || !realtimeTopic)return;
+    realtimeRef+=1;
+    realtimeSocket.send(JSON.stringify({
+      topic:realtimeTopic,
+      event:'broadcast',
+      payload:{event:event,payload:payload,type:'broadcast'},
+      ref:String(realtimeRef),
+      join_ref:realtimeJoinRef
+    }));
+  }
+
+  function queueRecoverySnapshot(payload){
+    if(!payload)return;
+    pendingRecoverySnapshot={...payload};
+    if(recoverySnapshotInFlight)return;
+    void flushRecoverySnapshot();
+  }
+
+  async function flushRecoverySnapshot(){
+    if(recoverySnapshotInFlight || !pendingRecoverySnapshot)return;
+    const payload=pendingRecoverySnapshot;
+    pendingRecoverySnapshot=null;
+    recoverySnapshotInFlight=true;
+    try{
+      await api('POST',{action:'physics',session,token,...payload});
+    }catch(e){
+      debugEl.textContent='Snapshot error: '+e.message;
+    }finally{
+      recoverySnapshotInFlight=false;
+      if(pendingRecoverySnapshot)void flushRecoverySnapshot();
+    }
+  }
+
+  function applyShotStart(payload){
+    if(!payload || localSim)return;
+    const seq=Number(payload.seq||0);
+    if(seq<shotSeq)return;
+
+    const now=performance.now();
+    const sentAt=Number(payload.sent_at||Date.now());
+
+    if(seq>shotSeq || !remoteShotActive){
+      realtimeFrames=[];
+      pendingPhysicalSounds=[];
+      pendingRemoteTransitions=[];
+      remoteClockOffsetMs=null;
+      realtimeJitterMs=0;
+      lastPhysicsSeq=seq;
+      lastPhysicsSentAt=0;
+      remotePlaybackTimeMs=sentAt-REMOTE_PLAYBACK_DELAY_MS;
+      remotePlaybackLastPerfMs=now;
+      latestRemoteSentAt=sentAt;
+    }
+
+    shotSeq=Math.max(shotSeq,seq);
+    if(payload.kind==='bocce'){
+      activeShotTeam=payload.team==='B'?'B':'A';
+    }
+
+    remoteShotActive=true;
+    lastRealtimeFrameAt=now;
+    monitorSeamSeq=-1;
+    monitorEvent('shot_start',{
+      source_sent_at:sentAt,
+      payload:{kind:payload.kind||'unknown',team:activeShotTeam}
+    });
+
+    const anchor={
+      recvAt:now,
+      sentAt,
+      seq,
+      ball:{
+        x:Number(payload.ball_x??targetBall.x),
+        y:Number(payload.ball_y??targetBall.y)
+      },
+      pallino:{
+        x:Number(payload.pallino_x??targetPallino.x),
+        y:Number(payload.pallino_y??targetPallino.y)
+      },
+      settled:Array.isArray(payload.settled_balls)?payload.settled_balls.map(b=>({
+        id:Number(b.id),x:Number(b.x),y:Number(b.y),team:b.team==='B'?'B':'A'
+      })):[],
+      moving:true
+    };
+
+    realtimeFrames=[anchor];
+    targetBall={...anchor.ball};
+    targetPallino={...anchor.pallino};
+
+    if(state){
+      state.ball_x=anchor.ball.x;
+      state.ball_y=anchor.ball.y;
+      state.pallino_x=anchor.pallino.x;
+      state.pallino_y=anchor.pallino.y;
+      state.settled_balls=anchor.settled;
+      state.ball_moving=true;
+      state.ball_seq=shotSeq;
+    }
+  }
+
+  function applyRealtimePhysics(payload){
+    if(!payload || localSim)return;
+    const seq=Number(payload.seq||0);
+    if(seq<shotSeq)return;
+
+    const now=performance.now();
+    const recvWall=Date.now();
+    const sentAt=Number(payload.sent_at||recvWall);
+
+    if(seq>shotSeq){
+      realtimeFrames=[];
+      pendingPhysicalSounds=[];
+      pendingRemoteTransitions=[];
+      remoteClockOffsetMs=null;
+      realtimeJitterMs=0;
+      lastPhysicsSeq=seq;
+      lastPhysicsSentAt=0;
+      remotePlaybackTimeMs=sentAt-REMOTE_PLAYBACK_DELAY_MS;
+      remotePlaybackLastPerfMs=now;
+      latestRemoteSentAt=sentAt;
+    }
+
+    shotSeq=seq;
+
+    if(seq===lastPhysicsSeq && sentAt<=lastPhysicsSentAt)return;
+    if(seq!==lastPhysicsSeq){
+      lastPhysicsSeq=seq;
+      lastPhysicsSentAt=0;
+    }
+    lastPhysicsSentAt=sentAt;
+    latestRemoteSentAt=Math.max(latestRemoteSentAt,sentAt);
+
+    if(remotePlaybackTimeMs==null){
+      remotePlaybackTimeMs=sentAt-REMOTE_PLAYBACK_DELAY_MS;
+      remotePlaybackLastPerfMs=now;
+    }
+
+    // Keep network-delay diagnostics, but never let jitter move playback backward.
+    const observedOffset=recvWall-sentAt;
+    if(remoteClockOffsetMs==null || observedOffset<remoteClockOffsetMs){
+      remoteClockOffsetMs=observedOffset;
+    }
+    const excessDelay=Math.max(0,observedOffset-(remoteClockOffsetMs??observedOffset));
+    realtimeJitterMs=Math.max(realtimeJitterMs*.92,excessDelay);
+
+    lastRealtimeFrameAt=now;
+    remoteShotActive=Boolean(payload.moving);
+
+    if(payload.team==='A'||payload.team==='B'){
+      activeShotTeam=payload.team;
+    }
+
+    const frame={
+      recvAt:now,
+      sentAt,
+      seq,
+      ball:{
+        x:Number(payload.ball_x??targetBall.x),
+        y:Number(payload.ball_y??targetBall.y)
+      },
+      pallino:{
+        x:Number(payload.pallino_x??targetPallino.x),
+        y:Number(payload.pallino_y??targetPallino.y)
+      },
+      settled:Array.isArray(payload.settled_balls)?payload.settled_balls.map(b=>({
+        id:Number(b.id),x:Number(b.x),y:Number(b.y),team:b.team==='B'?'B':'A'
+      })):[],
+      moving:Boolean(payload.moving)
+    };
+
+    realtimeFrames.push(frame);
+    if(realtimeFrames.length>12)realtimeFrames.splice(0,realtimeFrames.length-12);
+
+    if(monitorActive() && now-monitorLastRxSampleAt>=120){
+      monitorLastRxSampleAt=now;
+      monitorEvent('physics_rx',{
+        source_sent_at:sentAt,
+        payload:{queue:realtimeFrames.length,excess_delay_ms:excessDelay}
+      });
+    }
+
+    targetBall={...frame.ball};
+    targetPallino={...frame.pallino};
+
+    if(state){
+      state.ball_x=frame.ball.x;
+      state.ball_y=frame.ball.y;
+      state.pallino_x=frame.pallino.x;
+      state.pallino_y=frame.pallino.y;
+      state.ball_moving=frame.moving;
+      state.ball_seq=seq;
+      state.settled_balls=frame.settled;
+    }
+  }
+
+  function applyShotComplete(payload){
+    if(!payload)return;
+    remoteShotActive=false;
+    lastPhysicsSeq=-1;
+    lastPhysicsSentAt=0;
+    remotePlaybackTimeMs=null;
+    remotePlaybackLastPerfMs=0;
+    latestRemoteSentAt=0;
+    pendingPhysicalSounds=[];
+    const seq=Number(payload.seq||shotSeq);
+    shotSeq=Math.max(shotSeq,seq);
+    lastRealtimeFrameAt=performance.now();
+
+    // Completion is a state transition, not another movement frame.
+    // Never interpolate the finished ball backward to the launch position.
+    realtimeFrames=[];
+    remoteClockOffsetMs=null;
+    realtimeJitterMs=0;
+
+    const settled=Array.isArray(payload.settled_balls)
+      ? payload.settled_balls.map(b=>({id:Number(b.id),x:Number(b.x),y:Number(b.y),team:b.team==='B'?'B':'A'}))
+      : [];
+
+    const pallino={
+      x:Number(payload.pallino_x??targetPallino.x),
+      y:Number(payload.pallino_y??targetPallino.y)
+    };
+
+    targetBall={x:50,y:8};
+    displayedBall={x:50,y:8};
+    targetPallino={...pallino};
+    displayedPallino={...pallino};
+    displayedSettledBalls=settled;
+
+    if(state){
+      state.ball_x=50;
+      state.ball_y=8;
+      state.ball_moving=false;
+      state.ball_seq=seq;
+      state.pallino_x=pallino.x;
+      state.pallino_y=pallino.y;
+      state.settled_balls=settled;
+      if(payload.next_ball_number!=null){
+        state.next_ball_number=Number(payload.next_ball_number);
+      }
+      if(payload.game_state)state.game_state=payload.game_state;
+    }
+
+    netSample=null;
+    netVelocity={ball:{x:0,y:0},pallino:{x:0,y:0}};
+    render();
+  }
+
+  function applyPallinoComplete(payload){
+    if(!payload)return;
+    remoteShotActive=false;
+    lastPhysicsSeq=-1;
+    lastPhysicsSentAt=0;
+    remotePlaybackTimeMs=null;
+    remotePlaybackLastPerfMs=0;
+    latestRemoteSentAt=0;
+    pendingPhysicalSounds=[];
+    realtimeFrames=[];
+    remoteClockOffsetMs=null;
+    realtimeJitterMs=0;
+    localSim=false;
+
+    const legal=payload.legal!==false;
+    const px=legal?Number(payload.pallino_x||50):50;
+    const py=legal?Number(payload.pallino_y||8):8;
+    displayedPallino=targetPallino={x:px,y:py};
+    displayedBall=targetBall={x:50,y:8};
+
+    if(state){
+      state.pallino_x=px;
+      state.pallino_y=py;
+      state.ball_x=50;
+      state.ball_y=8;
+      state.ball_moving=false;
+      if(payload.game_state)state.game_state=payload.game_state;
+      if(payload.seq!=null){
+        shotSeq=Math.max(shotSeq,Number(payload.seq));
+        state.ball_seq=shotSeq;
+      }
+    }
+
+    render();
+  }
+
+  function connectRealtime(){
+    if(!session)return;
+
+    if(realtimeSocket){
+      try{realtimeSocket.close();}catch{}
+      realtimeSocket=null;
+    }
+    if(heartbeatTimer)clearInterval(heartbeatTimer);
+    if(reconnectTimer)clearTimeout(reconnectTimer);
+
+    realtimeReady=false;
+    realtimeTopic='realtime:twinlane-'+session;
+    const ws=new WebSocket(REALTIME_URL);
+    realtimeSocket=ws;
+
+    ws.addEventListener('open',()=>{
+      realtimeJoinRef=String(Date.now());
+      realtimeRef+=1;
+      ws.send(JSON.stringify({
+        topic:realtimeTopic,
+        event:'phx_join',
+        payload:{
+          config:{
+            broadcast:{ack:false,self:false},
+            presence:{enabled:false},
+            private:false
+          }
+        },
+        ref:String(realtimeRef),
+        join_ref:realtimeJoinRef
+      }));
+
+      heartbeatTimer=setInterval(()=>{
+        if(ws.readyState===WebSocket.OPEN){
+          realtimeRef+=1;
+          ws.send(JSON.stringify({
+            topic:'phoenix',
+            event:'heartbeat',
+            payload:{},
+            ref:String(realtimeRef),
+            join_ref:null
+          }));
+        }
+      },20000);
+    });
+
+    ws.addEventListener('message',(event)=>{
+      let msg;
+      try{msg=JSON.parse(event.data);}catch{return;}
+      if(msg?.event==='phx_reply' && msg?.topic===realtimeTopic && msg?.payload?.status==='ok'){
+        realtimeReady=true;
+        debugEl.textContent='Realtime motion connected.';
+        monitorEvent('realtime_open');
+        return;
+      }
+      if(msg?.event==='broadcast' && msg?.topic===realtimeTopic){
+        const p=msg?.payload;
+        if(p?.event==='shot_start')applyShotStart(p.payload);
+        if(p?.event==='physics')applyRealtimePhysics(p.payload);
+        if(p?.event==='impact_hit')scheduleRemotePhysicalSound(p.payload);
+        if(p?.event==='rail_hit')scheduleRemotePhysicalSound(p.payload);
+        if(p?.event==='pallino_complete'){
+          queueRemoteTransition('pallino_complete',p.payload);
+        }
+        if(p?.event==='shot_complete'){
+          queueRemoteTransition('shot_complete',p.payload);
+        }
+      }
+    });
+
+    ws.addEventListener('close',()=>{
+      monitorEvent('realtime_close');
+      realtimeReady=false;
+      if(heartbeatTimer){clearInterval(heartbeatTimer);heartbeatTimer=null;}
+      if(session)reconnectTimer=setTimeout(connectRealtime,800);
+    });
+
+    ws.addEventListener('error',()=>{
+      realtimeReady=false;
+    });
+  }
+
+  async function api(method,body,query='') {
+    const opts={method,headers:{}};
+    if(body){opts.headers['content-type']='application/json';opts.body=JSON.stringify(body);}
+    const res=await fetch(API+query,opts);
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Request failed');
+    return data;
+  }
+
+  async function sendPhysics(ball,pallino,settledBalls,moving,seq) {
+    const frame={
+      ball_x:ball.x,ball_y:ball.y,
+      pallino_x:pallino.x,pallino_y:pallino.y,
+      settled_balls:settledBalls,
+      moving,seq,
+      sent_at:Date.now()
+    };
+
+    realtimeSend('physics',frame);
+
+    // Durable recovery snapshot only. Live motion rides the WebSocket.
+    try{
+      await api('POST',{
+        action:'physics',session,token,
+        ...frame
+      });
+    }catch(e){debugEl.textContent='Snapshot error: '+e.message;}
+  }
+
+  async function poll() {
+    if(!session||!token||pollInFlight)return;
+    pollInFlight=true;
+    try{
+      const s=await api('GET',null,'?api=state&session='+encodeURIComponent(session)+'&token='+encodeURIComponent(token));
+      const now=performance.now();
+      const newBall={x:Number(s.ball_x||50),y:Number(s.ball_y||8)};
+      const newPallino={x:Number(s.pallino_x||52),y:Number(s.pallino_y||82)};
+
+      const realtimeAge=now-lastRealtimeFrameAt;
+      const realtimeFresh=realtimeAge<350;
+      const protectRemoteTimeline=
+        position==='second' &&
+        remoteShotActive &&
+        remotePlaybackTimeMs!=null &&
+        realtimeAge<700;
+
+      if(Boolean(s.ball_moving)){
+        remoteShotActive=true;
+        const recoveryTeam=s?.game_state?.current_team;
+        if(recoveryTeam==='A'||recoveryTeam==='B')activeShotTeam=recoveryTeam;
+      }else if(remoteShotActive && !realtimeFresh && (now-lastRealtimeFrameAt)>500)remoteShotActive=false;
+
+      if(!realtimeFresh && !protectRemoteTimeline){
+        netSample={t:now,ball:newBall,pallino:newPallino};
+        realtimeFrames=[];
+      }
+
+      if(protectRemoteTimeline && state){
+        state={
+          ...s,
+          ball_x:state.ball_x,
+          ball_y:state.ball_y,
+          pallino_x:state.pallino_x,
+          pallino_y:state.pallino_y,
+          ball_seq:state.ball_seq,
+          ball_moving:true,
+          settled_balls:state.settled_balls,
+          next_ball_number:state.next_ball_number,
+          game_state:state.game_state
+        };
+      }else{
+        state=s;
+        shotSeq=Math.max(shotSeq,Number(s.ball_seq||0));
+      }
+
+      const preservePlacement = placementReady && placedObject && role==='launch' && position==='first';
+      if(preservePlacement){
+        if(placedObject.pallino){
+          state.pallino_x=placedObject.x;
+          state.pallino_y=placedObject.y;
+          displayedPallino={x:placedObject.x,y:placedObject.y};
+          targetPallino={x:placedObject.x,y:placedObject.y};
+        }else{
+          state.ball_x=placedObject.x;
+          state.ball_y=placedObject.y;
+          displayedBall={x:placedObject.x,y:placedObject.y};
+          targetBall={x:placedObject.x,y:placedObject.y};
+        }
+      }else if(!localSim && !realtimeFresh && !protectRemoteTimeline){
+        targetBall=newBall;
+        targetPallino=newPallino;
+      }
+
+      if(!localSim && !realtimeFresh && !protectRemoteTimeline){
+        displayedSettledBalls=Array.isArray(s.settled_balls)?s.settled_balls:[];
+      }
+      if(s.screen2_joined){
+        connectionCard.classList.add('ready');
+        if(pairStatusEl){
+          pairStatusEl.innerHTML='<span class="paired-badge">✓ Screen 2 connected</span>';
+          hostPanel?.classList.add('ready');
+        }
+        if(isHost && hostPanel && !hostPanel.classList.contains('hidden')){
+          setTimeout(()=>hostPanel.classList.add('hidden'),650);
+        }
+        const g=game();
+        if(g.phase==='pallino'){
+          setStatus(role==='launch' ? teamName(g.starting_team)+' throws the pallino.' : 'Waiting for the pallino throw.');
+        }else if(g.phase==='bocce'){
+          setStatus(s.ball_moving ? teamName(g.current_team)+' ball rolling.' : teamName(g.current_team)+' to throw.');
+        }else if(g.phase==='end_complete'){
+          setStatus('End complete. '+teamName(g.end_scoring_team)+' scored '+Number(g.end_score||0)+'.');
+        }else if(g.phase==='match_over'){
+          setStatus(teamName(g.winner)+' wins the match.');
+        }
+      }else if(isHost){
+        setStatus('Waiting for the far-end screen to connect.');
+      }
+      const audioState=impactAudioReady?'bocce clack ready':(soundOn?'bocce clack priming':'sound off');
+      debugEl.textContent='Active ball ('+Number(s.ball_x||50).toFixed(1)+', '+Number(s.ball_y||8).toFixed(1)+') · '+(Array.isArray(s.settled_balls)?s.settled_balls.length:0)+' settled · Pallino ('+Number(s.pallino_x||52).toFixed(1)+', '+Number(s.pallino_y||82).toFixed(1)+') · '+audioState;
+      render();
+    }catch(e){debugEl.textContent='Poll error: '+e.message;}
+    finally{pollInFlight=false;}
+  }
+
+  function startPolling(ms){
+    if(pollTimer)clearInterval(pollTimer);
+    poll();pollTimer=setInterval(poll,ms);
+  }
+
+  document.getElementById('createBtn').addEventListener('click',async()=>{
+    try{
+      await unlockAudio();
+      kind=document.getElementById('s1Kind').value;
+      role=document.getElementById('s1Role').value;
+      position=document.getElementById('s1Position').value;
+      const playerAName=cleanPlayerName(playerANameInput?.value,'Player 1');
+      const playerBName=cleanPlayerName(playerBNameInput?.value,'Player 2');
+      localScreen=1;
+      const skin=activeSkin();
+      setStatus('Creating '+skin.name+' match…');
+      const data=await api('POST',{
+        action:'create',kind,role,position,
+        player_a_name:playerAName,
+        player_b_name:playerBName,
+        skin:skin.id
+      });
+      session=data.session;token=data.host_token;isHost=true;
+      startMonitorIfNeeded();
+      state={
+        screen1_kind:kind,screen1_role:role,screen1_position:position,
+        screen2_joined:false,ball_x:50,ball_y:8,ball_seq:0,ball_moving:false,pallino_x:50,pallino_y:8,settled_balls:[],next_ball_number:1,
+        game_state:defaultGame({player_a_name:playerAName,player_b_name:playerBName,skin:skin.id})
+      };
+      displayedBall=targetBall={x:50,y:8};
+      displayedPallino=targetPallino={x:50,y:8};
+      displayedSettledBalls=[];
+      realtimeFrames=[];
+      realtimeJitterMs=0;
+      placementReady=false;
+      placedObject=null;
+      hostCreate.classList.add('hidden');
+      playFlowCard?.classList.add('hidden');
+      hostPanel.classList.remove('hidden');
+      viewPanel.classList.remove('hidden');
+      document.getElementById('sessionId').textContent=session;
+      const joinSep=pairPage.includes('?')?'&':'?';
+      const joinUrl=pairPage+joinSep+'session='+encodeURIComponent(session)+'&join='+encodeURIComponent(data.join_token);
+      const qrUrl=API+'?api=qr&session='+encodeURIComponent(session)+'&join='+encodeURIComponent(data.join_token)+'&target='+encodeURIComponent(pairPage);
+      document.getElementById('joinLink').textContent=joinUrl;
+      document.getElementById('qr').src=qrUrl;
+      setStatus('Match created. Pair Screen 2 to begin.');
+      connectRealtime();
+      startPolling(localScreen===2?250:500);
+    }catch(e){setStatus('Create failed: '+e.message);}
+  });
+
+  document.getElementById('joinBtn').addEventListener('click',async()=>{
+    try{
+      await unlockAudio();
+      kind=document.getElementById('s2Kind').value;
+      role=document.getElementById('s2Role').value;
+      position=document.getElementById('s2Position').value;
+      localScreen=2;
+      setStatus('Joining live Bocce session…');
+      await api('POST',{action:'join',session:joinSession,join_token:joinToken,kind,role,position});
+      session=joinSession;token=joinToken;isHost=false;
+      startMonitorIfNeeded();
+      joinPanel.classList.add('hidden');
+      playFlowCard?.classList.add('hidden');
+      viewPanel.classList.remove('hidden');
+      setStatus('Connected. Loading court…');
+      connectRealtime();
+      startPolling(localScreen===2?250:500);
+    }catch(e){setStatus('Join failed: '+e.message);}
+  });
+
+  function canThrow(){
+    const phase=game().phase;
+    return role==='launch' && position==='first' && state && !state.ball_moving && viewport() && (phase==='pallino'||phase==='bocce');
+  }
+
+  function throwingPallino(){
+    return game().phase==='pallino';
+  }
+
+  laneEl.addEventListener('pointerdown',(e)=>{
+    if(!canThrow())return;
+    const w=pointerToWorld(e);if(!w)return;
+
+    const pallinoMode=throwingPallino();
+    const localPlaced = placementReady && placedObject && placedObject.pallino===pallinoMode ? placedObject : null;
+    const bx=localPlaced ? Number(localPlaced.x) : (pallinoMode?Number(state.pallino_x||50):Number(state.ball_x||50));
+    const by=localPlaced ? Number(localPlaced.y) : (pallinoMode?Number(state.pallino_y||8):Number(state.ball_y||8));
+    const nearBall=Math.hypot(w.x-bx,w.y-by)<=6;
+
+    // If the object has been placed and the user starts on it, this gesture is a throw.
+    // Otherwise the gesture is treated as a tap-to-place candidate.
+    gesture={
+      mode:placementReady && nearBall ? 'throw' : 'tap',
+      startX:bx,
+      startY:by,
+      downX:w.x,
+      downY:w.y,
+      x:w.x,
+      y:w.y,
+      t0:performance.now(),
+      pallino:pallinoMode
+    };
+
+    laneEl.setPointerCapture?.(e.pointerId);
+  });
+
+  laneEl.addEventListener('pointermove',(e)=>{
+    if(!gesture||!canThrow())return;
+    const w=pointerToWorld(e);if(!w)return;
+    gesture.x=w.x;gesture.y=w.y;
+
+    if(gesture.mode==='throw'){
+      const p1=worldToLocal(gesture.startX,gesture.startY);
+      const p2=worldToLocal(w.x,w.y);
+      const dx=p2.x-p1.x,dy=p2.y-p1.y;
+      const len=Math.hypot(dx,dy);
+      flickLineEl.classList.remove('hidden');
+      flickLineEl.style.left=p1.x+'px';
+      flickLineEl.style.top=p1.y+'px';
+      flickLineEl.style.width=len+'px';
+      flickLineEl.style.transform='rotate('+Math.atan2(dy,dx)+'rad)';
+    }
+  });
+
+  laneEl.addEventListener('pointerup',(e)=>{
+    if(!gesture)return;
+    const w=pointerToWorld(e);
+    const g=gesture;
+    gesture=null;
+    flickLineEl.classList.add('hidden');
+    laneEl.releasePointerCapture?.(e.pointerId);
+    if(!w)return;
+
+    if(g.mode==='tap'){
+      const moved=Math.hypot(w.x-g.downX,w.y-g.downY);
+
+      // A short tap anywhere inside the start box places/repositions the object.
+      if(moved<=5 && w.y>=5 && w.y<=14){
+        const px=clamp(w.x,15,85);
+        const py=clamp(w.y,5,14);
+
+        if(g.pallino){
+          state.pallino_x=px;state.pallino_y=py;
+          displayedPallino={x:px,y:py};targetPallino={x:px,y:py};
+          setStatus('Pallino placed. Swipe upward from it to throw, or tap again to reposition.');
+        }else{
+          state.ball_x=px;state.ball_y=py;
+          displayedBall={x:px,y:py};targetBall={x:px,y:py};
+          setStatus(teamName(game().current_team)+' ball placed. Swipe upward from it to throw, or tap again to reposition.');
+        }
+
+        placementReady=true;
+        placedObject={pallino:g.pallino,x:px,y:py};
+        feedback('place');
+        void sendPhysics(
+          displayedBall,
+          displayedPallino,
+          Array.isArray(state.settled_balls)?state.settled_balls:[],
+          false,
+          shotSeq
+        );
+        render();
+      }
+      return;
+    }
+
+    const dx=w.x-g.startX;
+    const dy=w.y-g.startY;
+    const dist=Math.hypot(dx,dy);
+    const duration=Math.max(.08,(performance.now()-g.t0)/1000);
+
+    if(dy<4 || dist<5){
+      setStatus('Swipe upward from the placed '+(g.pallino?'pallino':'ball')+' to throw.');
+      return;
+    }
+
+    placementReady=false;
+    placedObject=null;
+    feedback('throw');
+    if(g.pallino)startPallinoShot(g.startX,g.startY,dx,dy,duration);
+    else startShot(g.startX,g.startY,dx,dy,duration);
+  });
+
+  laneEl.addEventListener('pointercancel',()=>{
+    gesture=null;
+    flickLineEl.classList.add('hidden');
+  });
+
+  async function startPallinoShot(startX,startY,dx,dy,duration){
+    if(localSim)return;
+    localSim=true;
+    shotSeq+=1;
+    state.ball_moving=true;
+    impactSoundTimes.clear();
+    woodSoundTimes.clear();
+
+    const shotStartPayload={
+      seq:shotSeq,kind:'pallino',
+      ball_x:Number(state.ball_x||50),ball_y:Number(state.ball_y||8),
+      pallino_x:startX,pallino_y:startY,
+      settled_balls:[],
+      moving:true,sent_at:Date.now()
+    };
+    realtimeSend('shot_start',shotStartPayload);
+    queueRecoverySnapshot(shotStartPayload);
+
+    const pallino={x:startX,y:startY,vx:0,vy:0,r:1.14,type:'pallino'};
+    const ang=clamp(Math.atan2(dx,dy),-.55,.55);
+    const flickDistance=Math.hypot(dx,dy);
+    const gestureSpeed=flickDistance/duration;
+
+    // Pallino uses a deliberately softer launch curve than bocce balls.
+    // Light flicks should land just into the legal far half; hard flicks travel deep.
+    const pallinoIntent=clamp(flickDistance*.70+gestureSpeed*.020,0,50);
+    const v=29+pallinoIntent*.28;
+
+    pallino.vx=Math.sin(ang)*v;
+    pallino.vy=Math.cos(ang)*v;
+    setStatus(teamName(game().starting_team)+' pallino rolling…');
+
+    let last=performance.now();
+    const started=last;
+    let stableFrames=0;
+    let finishing=false;
+
+    function contain(o){
+      const wallNow=performance.now();
+
+      if(o.x-o.r<8){
+        const wallSpeed=Math.abs(o.vx);
+        o.x=8+o.r;o.vx=Math.abs(o.vx)*.20;
+        const woodKey=String(o.id||o.type||'ball')+'|L';
+        const lastWoodSound=woodSoundTimes.get(woodKey)||-Infinity;
+        if(wallSpeed>.40 && wallNow-lastWoodSound>65){
+          woodSoundTimes.set(woodKey,wallNow);
+          const railKind='wood_pallino';
+          const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
+          feedback(railKind,wallSpeed);
+          realtimeSend('rail_hit',soundPayload);
+        }
+      }
+
+      if(o.x+o.r>92){
+        const wallSpeed=Math.abs(o.vx);
+        o.x=92-o.r;o.vx=-Math.abs(o.vx)*.20;
+        const woodKey=String(o.id||o.type||'ball')+'|R';
+        const lastWoodSound=woodSoundTimes.get(woodKey)||-Infinity;
+        if(wallSpeed>.40 && wallNow-lastWoodSound>65){
+          woodSoundTimes.set(woodKey,wallNow);
+          const railKind='wood_pallino';
+          const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
+          feedback(railKind,wallSpeed);
+          realtimeSend('rail_hit',soundPayload);
+        }
+      }
+
+      if(o.y-o.r<0){o.y=o.r;o.vy=Math.abs(o.vy)*.10;}
+      if(o.y+o.r>100){
+        const wallSpeed=Math.abs(o.vy);
+        o.y=100-o.r;o.vy=-Math.abs(o.vy)*.10;
+        const woodKey=String(o.id||o.type||'ball')+'|B';
+        const lastWoodSound=woodSoundTimes.get(woodKey)||-Infinity;
+        if(wallSpeed>.40 && wallNow-lastWoodSound>65){
+          woodSoundTimes.set(woodKey,wallNow);
+          const railKind='wood_pallino';
+          const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
+          feedback(railKind,wallSpeed);
+          realtimeSend('rail_hit',soundPayload);
+        }
+      }
+    }
+
+    async function finish(){
+      if(finishing)return;
+      finishing=true;
+      pallino.vx=0;pallino.vy=0;
+      const completionSentAt=Date.now();
+
+      try{
+        const result=await api('POST',{
+          action:'complete_pallino',
+          session,token,
+          pallino_x:pallino.x,pallino_y:pallino.y,
+          seq:shotSeq
+        });
+
+        state.ball_moving=false;
+        localSim=false;
+        placementReady=false;
+        placedObject=null;
+        realtimeFrames=[];
+        realtimeJitterMs=0;
+
+        if(!result.legal){
+          state.pallino_x=50;state.pallino_y=8;
+          displayedPallino=targetPallino={x:50,y:8};
+          shotSeq=Number(result.ball_seq||shotSeq+1);
+          state.ball_seq=shotSeq;
+          state.game_state=result.game_state||state.game_state;
+          realtimeSend('pallino_complete',{
+            legal:false,pallino_x:50,pallino_y:8,
+            game_state:state.game_state,seq:shotSeq,sent_at:completionSentAt
+          });
+          setStatus('Pallino was too short or too deep. It has reset. Throw again.');
+          render();
+          return;
+        }
+
+        state.pallino_x=Number(result.pallino_x);
+        state.pallino_y=Number(result.pallino_y);
+        displayedPallino=targetPallino={x:state.pallino_x,y:state.pallino_y};
+        state.ball_x=50;state.ball_y=8;
+        displayedBall=targetBall={x:50,y:8};
+        state.game_state=result.game_state||state.game_state;
+        shotSeq=Number(result.ball_seq||shotSeq+1);
+        state.ball_seq=shotSeq;
+
+        realtimeSend('pallino_complete',{
+          legal:true,
+          pallino_x:state.pallino_x,pallino_y:state.pallino_y,
+          game_state:state.game_state,seq:shotSeq,sent_at:completionSentAt
+        });
+
+        await poll();
+        setStatus(teamName(game().current_team)+' throws the first bocce ball.');
+        render();
+      }catch(e){
+        localSim=false;
+        state.ball_moving=false;
+        setStatus('Pallino throw failed: '+e.message);
+      }
+    }
+
+    async function frame(now){
+      if(finishing)return;
+      const dt=Math.min(.025,(now-last)/1000||.016);last=now;
+      pallino.x+=pallino.vx*dt;
+      pallino.y+=pallino.vy*dt;
+
+      const speed=Math.hypot(pallino.vx,pallino.vy);
+      if(speed>0){
+        const farHalfBoost=pallino.y>55 ? 1.65 : 0;
+        const deepEndBoost=pallino.y>85 ? 1.85 : 0;
+        const nextSpeed=Math.max(0,speed-(8.8+farHalfBoost+deepEndBoost)*dt);
+        const scale=nextSpeed/speed;
+        pallino.vx*=scale;pallino.vy*=scale;
+        if(nextSpeed<.42){pallino.vx=0;pallino.vy=0;}
+      }
+      contain(pallino);
+
+      displayedPallino=targetPallino={x:pallino.x,y:pallino.y};
+      state.pallino_x=pallino.x;state.pallino_y=pallino.y;
+
+      if(now-lastSend>32){
+        lastSend=now;
+        const framePayload={
+          ball_x:Number(state.ball_x||50),ball_y:Number(state.ball_y||8),
+          pallino_x:pallino.x,pallino_y:pallino.y,
+          settled_balls:[],moving:true,seq:shotSeq,sent_at:Date.now()
+        };
+        realtimeSend('physics',framePayload);
+        if(!state._lastSnapshotAt || now-state._lastSnapshotAt>220){
+          state._lastSnapshotAt=now;
+          queueRecoverySnapshot(framePayload);
+        }
+      }
+
+      const moving=Math.hypot(pallino.vx,pallino.vy)>.01;
+      if(!moving)stableFrames+=1;else stableFrames=0;
+      render();
+
+      if(stableFrames>=6 || now-started>7000){
+        void finish();
+        return;
+      }
+      requestAnimationFrame(frame);
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  async function startShot(startX,startY,dx,dy,duration){
+    if(localSim)return;
+    localSim=true;
+    shotSeq+=1;
+    state.ball_moving=true;
+    impactSoundTimes.clear();
+    woodSoundTimes.clear();
+
+    activeShotTeam=game().current_team==='B'?'B':'A';
+    const shotStartPayload={
+      seq:shotSeq,kind:'bocce',team:activeShotTeam,
+      ball_x:startX,ball_y:startY,
+      pallino_x:Number(state.pallino_x||52),pallino_y:Number(state.pallino_y||82),
+      settled_balls:Array.isArray(state.settled_balls)?state.settled_balls:[],
+      moving:true,sent_at:Date.now()
+    };
+    realtimeSend('shot_start',shotStartPayload);
+    queueRecoverySnapshot(shotStartPayload);
+
+    const physicsVp=viewport()||{y0:0,y1:50};
+    const pxPerWorldX=Math.max(1,laneEl.clientWidth)/100;
+    const pxPerWorldY=Math.max(1,laneEl.clientHeight)/Math.max(1,physicsVp.y1-physicsVp.y0);
+
+    // Collision geometry is defined in rendered pixels so visible rims and
+    // physical contact stay aligned even though world X/Y use different scales.
+    const active={id:'active',x:startX,y:startY,vx:0,vy:0,m:1,pr:15,type:'active'};
+    const pallino={id:'pallino',x:Number(state.pallino_x||52),y:Number(state.pallino_y||82),vx:0,vy:0,m:.35,pr:8.5,type:'pallino'};
+    const settled=(Array.isArray(state.settled_balls)?state.settled_balls:[]).map((b)=>({
+      id:Number(b.id),x:Number(b.x),y:Number(b.y),team:b.team==='B'?'B':'A',vx:0,vy:0,m:1,pr:15,type:'settled'
+    }));
+
+    const ang=clamp(Math.atan2(dx,dy),-.55,.55);
+    const gestureSpeed=Math.hypot(dx,dy)/duration;
+    const power=clamp(28+Math.hypot(dx,dy)*1.8+gestureSpeed*.045,30,100);
+    const v=30+power*.36;
+    active.vx=Math.sin(ang)*v;
+    active.vy=Math.cos(ang)*v;
+    setStatus('Ball '+Number(state.next_ball_number||1)+' rolling…');
+
+    function collide(a,b){
+      const dx=b.x-a.x,dy=b.y-a.y;
+      const dxPx=dx*pxPerWorldX;
+      const dyPx=dy*pxPerWorldY;
+      const dPx=Math.hypot(dxPx,dyPx);
+      const minPx=a.pr+b.pr;
+      if(!dPx||dPx>=minPx)return;
+
+      // Contact is detected from the visible pixel rims.
+      // Momentum is resolved in world space so balls keep believable mass.
+      const dWorld=Math.hypot(dx,dy);
+      if(!dWorld)return;
+      const nx=dx/dWorld,ny=dy/dWorld;
+      const i1=1/a.m,i2=1/b.m,sum=i1+i2;
+
+      // Convert the visual overlap back into world distance along this normal.
+      const pxPerWorldAlongNormal=Math.max(
+        .0001,
+        Math.hypot(nx*pxPerWorldX,ny*pxPerWorldY)
+      );
+      const overWorld=(minPx-dPx)/pxPerWorldAlongNormal;
+
+      a.x-=nx*overWorld*(i1/sum);
+      a.y-=ny*overWorld*(i1/sum);
+      b.x+=nx*overWorld*(i2/sum);
+      b.y+=ny*overWorld*(i2/sum);
+
+      const rvx=b.vx-a.vx,rvy=b.vy-a.vy;
+      const rel=rvx*nx+rvy*ny;
+      if(rel>=0)return;
+
+      const impactStrength=Math.abs(rel);
+      const impactNow=performance.now();
+      const pairKey=[String(a.id),String(b.id)].sort().join('|');
+      const lastPairSound=impactSoundTimes.get(pairKey)||-Infinity;
+
+      if(impactStrength>1.25 && impactNow-lastPairSound>40){
+        impactSoundTimes.set(pairKey,impactNow);
+        const impactKind=(a.type==='pallino'||b.type==='pallino')?'pallino_hit':'impact';
+        const soundPayload={
+          id:nextSoundEventId(),
+          kind:impactKind,
+          strength:impactStrength,
+          sent_at:Date.now()
+        };
+        feedback(impactKind,impactStrength);
+        realtimeSend('impact_hit',soundPayload);
+      }
+
+      const farContact=((a.y+b.y)*.5)>55;
+      const deepContact=((a.y+b.y)*.5)>85;
+
+      // Keep target-side impacts controlled without killing the reaction.
+      const restitution=deepContact ? .34 : farContact ? .39 : .48;
+      const impulse=-(1+restitution)*rel/sum;
+      const ix=impulse*nx,iy=impulse*ny;
+
+      a.vx-=ix*i1;a.vy-=iy*i1;
+      b.vx+=ix*i2;b.vy+=iy*i2;
+
+      if(farContact){
+        const damping=deepContact ? .90 : .94;
+        a.vx*=damping;a.vy*=damping;
+        b.vx*=damping;b.vy*=damping;
+      }
+    }
+
+    let last=performance.now();
+    const shotStarted=last;
+    let stableFrames=0;
+    let finishing=false;
+
+    async function finishShot(reason){
+      if(finishing)return;
+      finishing=true;
+
+      for(const o of [active,pallino,...settled]){
+        o.vx=0;o.vy=0;
+      }
+
+      const completionSentAt=Date.now();
+      const settledPayload=settled.map(b=>({id:b.id,x:b.x,y:b.y,team:b.team==='B'?'B':'A'}));
+      displayedBall={x:active.x,y:active.y};targetBall=displayedBall;
+      displayedPallino={x:pallino.x,y:pallino.y};targetPallino=displayedPallino;
+
+      try{
+        const result=await api('POST',{
+          action:'complete_shot',
+          session,token,
+          ball_x:active.x,ball_y:active.y,
+          pallino_x:pallino.x,pallino_y:pallino.y,
+          settled_balls:settledPayload,
+          seq:shotSeq
+        });
+
+        state.ball_moving=false;
+        state.settled_balls=result.settled_balls||[];
+        displayedSettledBalls=state.settled_balls;
+        realtimeFrames=[];
+        state.next_ball_number=Number(result.next_ball_number||Number(state.next_ball_number||1)+1);
+        if(result.game_state)state.game_state=result.game_state;
+        shotSeq=Number(result.ball_seq||shotSeq+1);
+        state.ball_seq=shotSeq;
+        state.ball_x=50;state.ball_y=8;
+        displayedBall=targetBall={x:50,y:8};
+        displayedPallino=targetPallino={x:pallino.x,y:pallino.y};
+        localSim=false;
+        placementReady=false;
+        placedObject=null;
+        netSample=null;
+        netVelocity={ball:{x:0,y:0},pallino:{x:0,y:0}};
+
+        realtimeSend('shot_complete',{
+          ball_x:50,ball_y:8,
+          pallino_x:pallino.x,pallino_y:pallino.y,
+          settled_balls:state.settled_balls,
+          moving:false,seq:shotSeq,
+          next_ball_number:state.next_ball_number,
+          game_state:state.game_state,
+          sent_at:completionSentAt
+        });
+
+        await poll();
+
+        const g=game();
+        if(g.phase==='end_complete'){
+          setStatus(teamName(g.end_scoring_team)+' scores '+Number(g.end_score||0)+'. End complete.');
+        }else if(g.phase==='match_over'){
+          setStatus(teamName(g.winner)+' wins the match.');
+        }else{
+          setStatus(teamName(g.current_team)+' to throw.');
+        }
+        render();
+      }catch(e){
+        localSim=false;
+        state.ball_moving=false;
+        setStatus('Shot resolution failed: '+e.message);
+      }
+    }
+
+    async function frame(now){
+      if(finishing)return;
+
+      const dt=Math.min(.025,(now-last)/1000||.016);last=now;
+      const objs=[active,pallino,...settled];
+
+      function contain(o){
+        const rx=o.pr/pxPerWorldX;
+        const ry=o.pr/pxPerWorldY;
+        const wallNow=performance.now();
+
+        if(o.x-rx<8){
+          const wallSpeed=Math.abs(o.vx);
+          o.x=8+rx;o.vx=Math.abs(o.vx)*.28;
+          const woodKey=String(o.id||o.type||'ball')+'|L';
+          const lastWoodSound=woodSoundTimes.get(woodKey)||-Infinity;
+          if(wallSpeed>.55 && wallNow-lastWoodSound>65){
+            woodSoundTimes.set(woodKey,wallNow);
+            const railKind=(o.type==='pallino'?'wood_pallino':'wood');
+            const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
+            feedback(railKind,wallSpeed);
+            realtimeSend('rail_hit',soundPayload);
+          }
+        }
+
+        if(o.x+rx>92){
+          const wallSpeed=Math.abs(o.vx);
+          o.x=92-rx;o.vx=-Math.abs(o.vx)*.28;
+          const woodKey=String(o.id||o.type||'ball')+'|R';
+          const lastWoodSound=woodSoundTimes.get(woodKey)||-Infinity;
+          if(wallSpeed>.55 && wallNow-lastWoodSound>65){
+            woodSoundTimes.set(woodKey,wallNow);
+            const railKind=(o.type==='pallino'?'wood_pallino':'wood');
+            const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
+            feedback(railKind,wallSpeed);
+            realtimeSend('rail_hit',soundPayload);
+          }
+        }
+
+        if(o.y-ry<0){o.y=ry;o.vy=Math.abs(o.vy)*.16;}
+        if(o.y+ry>100){
+          const wallSpeed=Math.abs(o.vy);
+          o.y=100-ry;o.vy=-Math.abs(o.vy)*.16;
+          const woodKey=String(o.id||o.type||'ball')+'|B';
+          const lastWoodSound=woodSoundTimes.get(woodKey)||-Infinity;
+          if(wallSpeed>.55 && wallNow-lastWoodSound>65){
+            woodSoundTimes.set(woodKey,wallNow);
+            const railKind=(o.type==='pallino'?'wood_pallino':'wood');
+            const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
+            feedback(railKind,wallSpeed);
+            realtimeSend('rail_hit',soundPayload);
+          }
+        }
+      }
+
+      // Run physics at micro-step resolution so fast contact chains cannot tunnel
+      // through a second object between animation frames.
+      const substeps=Math.max(1,Math.ceil(dt/(1/144)));
+      const subdt=dt/substeps;
+
+      for(let step=0;step<substeps;step++){
+        for(const o of objs){
+          o.x+=o.vx*subdt;
+          o.y+=o.vy*subdt;
+
+          const speed=Math.hypot(o.vx,o.vy);
+          if(speed>0){
+            const baseDecel=o.type==='pallino' ? 8.8 : 9.2;
+            const farHalfBoost=o.y>55 ? 1.65 : 0;
+            const deepEndBoost=o.y>85 ? 1.85 : 0;
+            const decel=baseDecel+farHalfBoost+deepEndBoost;
+            const nextSpeed=Math.max(0,speed-decel*subdt);
+            const scale=nextSpeed/speed;
+            o.vx*=scale;
+            o.vy*=scale;
+            if(nextSpeed<.42){o.vx=0;o.vy=0;}
+          }
+
+          contain(o);
+        }
+
+        // Resolve every contact several times at each micro-step. This is what lets
+        // ball -> pallino -> settled-ball chains transfer motion correctly.
+        for(let solve=0;solve<3;solve++){
+          for(let i=0;i<objs.length;i++){
+            for(let j=i+1;j<objs.length;j++)collide(objs[i],objs[j]);
+          }
+          for(const o of objs)contain(o);
+        }
+      }
+
+      const maxSpeed=Math.max(...objs.map(o=>Math.hypot(o.vx,o.vy)));
+      if(maxSpeed<.70)stableFrames+=1;
+      else stableFrames=0;
+
+      const settledPayload=settled.map(b=>({id:b.id,x:b.x,y:b.y,team:b.team==='B'?'B':'A'}));
+      displayedBall={x:active.x,y:active.y};targetBall=displayedBall;
+      displayedPallino={x:pallino.x,y:pallino.y};targetPallino=displayedPallino;
+      state.ball_x=active.x;state.ball_y=active.y;
+      state.pallino_x=pallino.x;state.pallino_y=pallino.y;
+      state.settled_balls=settledPayload;
+      displayedSettledBalls=settledPayload;
+
+      if(now-lastSend>32){
+        lastSend=now;
+        const frame={
+          ball_x:displayedBall.x,ball_y:displayedBall.y,
+          pallino_x:displayedPallino.x,pallino_y:displayedPallino.y,
+          settled_balls:settledPayload,
+          team:activeShotTeam,
+          moving:true,seq:shotSeq,
+          sent_at:Date.now()
+        };
+        realtimeSend('physics',frame);
+
+        // Save a recovery snapshot only every ~220ms.
+        if(!state._lastSnapshotAt || now-state._lastSnapshotAt>220){
+          state._lastSnapshotAt=now;
+          queueRecoverySnapshot(frame);
+        }
+      }
+
+      render();
+
+      if(stableFrames>=10){
+        void finishShot('settled');
+        return;
+      }
+
+      if(now-shotStarted>9000){
+        void finishShot('watchdog');
+        return;
+      }
+
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  nextEndBtn.addEventListener('click',async()=>{
+    if(role!=='launch')return;
+    try{
+      const result=await api('POST',{action:'start_next_end',session,token});
+      if(state){
+        state.game_state=result.game_state||state.game_state;
+        state.ball_x=50;state.ball_y=8;state.ball_moving=false;
+        state.pallino_x=50;state.pallino_y=8;
+        state.settled_balls=[];state.next_ball_number=1;
+      }
+      displayedBall=targetBall={x:50,y:8};
+      displayedPallino=targetPallino={x:50,y:8};
+      displayedSettledBalls=[];
+      realtimeFrames=[];
+      realtimeJitterMs=0;
+      placementReady=false;
+      placedObject=null;
+      realtimeSend('pallino_complete',{
+        legal:false,pallino_x:50,pallino_y:8,
+        game_state:state?.game_state,seq:shotSeq+1,sent_at:Date.now()
+      });
+      await poll();
+      render();
+    }catch(e){setStatus('Could not start next end: '+e.message);}
+  });
+
+  newMatchBtn.addEventListener('click',async()=>{
+    if(role!=='launch')return;
+    try{
+      const result=await api('POST',{action:'reset_match',session,token});
+      if(state){
+        state.game_state=result.game_state||defaultGame();
+        state.ball_x=50;state.ball_y=8;state.ball_moving=false;
+        state.pallino_x=50;state.pallino_y=8;
+        state.settled_balls=[];state.next_ball_number=1;
+      }
+      displayedBall=targetBall={x:50,y:8};
+      displayedPallino=targetPallino={x:50,y:8};
+      displayedSettledBalls=[];
+      realtimeFrames=[];
+      realtimeJitterMs=0;
+      await poll();
+      render();
+    }catch(e){setStatus('Could not reset match: '+e.message);}
+  });
+
+  if(joinSession&&joinToken){
+    hostCreate.classList.add('hidden');
+    playFlowCard?.classList.add('hidden');
+    joinPanel.classList.remove('hidden');
+    setStatus('Ready to join as the far-end screen.');
+
+    void api('GET',null,'?api=state&session='+encodeURIComponent(joinSession)+'&token='+encodeURIComponent(joinToken))
+      .then(s=>{
+        const g=s?.game_state||{};
+        const a=cleanPlayerName(g.player_a_name,'Player 1');
+        const b=cleanPlayerName(g.player_b_name,'Player 2');
+        if(joinMatchTitleEl)joinMatchTitleEl.textContent=a+' vs '+b;
+        if(joinMatchNamesEl)joinMatchNamesEl.textContent='Place this device at the far end, then tap Join Match.';
+      })
+      .catch(()=>{});
+  }
+
+  window.addEventListener('beforeunload',()=>{
+    if(pollTimer)clearInterval(pollTimer);
+    if(heartbeatTimer)clearInterval(heartbeatTimer);
+    if(reconnectTimer)clearTimeout(reconnectTimer);
+    if(monitorFlushTimer)clearInterval(monitorFlushTimer);
+    void flushMonitor();
+    try{realtimeSocket?.close();}catch{}
+  });
+})();
+</script>
+</body>
+</html>+(Number(skin.price_cents)/100).toFixed(2);
+    }
+    return 'LOCKED';
+  }
+
+  function selectSkin(skinId){
+    const skin=SKIN_REGISTRY[skinId];
+    if(!skin || skin.status!=='active' || !ownsSkin(skinId))return false;
+    selectedSkinId=skinId;
+    syncSkinPresentation();
+    renderCourtLibrary();
+    return true;
+  }
+
+  function courtCardHtml(skin){
+    const owned=ownsSkin(skin.id);
+    const selected=skin.id===selectedSkinId;
+    const previewClass=skin.id.replaceAll('_','-');
+    const badge=owned?(skin.included?'INCLUDED':'OWNED'):skinPriceLabel(skin);
+    const action=owned
+      ? (selected?'CURRENT COURT':'USE COURT')
+      : (skin.status==='coming_soon'?'COMING SOON':'AVAILABLE SOON');
+    return '<article class="court-card" data-skin-id="'+skin.id+'" data-selected="'+selected+'">'+
+      '<div class="court-preview '+previewClass+'"></div>'+
+      '<div class="court-card-body">'+
+        '<div class="court-title-row"><div class="court-title">'+skin.name+'</div><span class="court-badge">'+badge+'</span></div>'+
+        '<div class="court-meta">'+skin.edition+' · '+(skin.competitive_readability==='approved'?'competitive readability approved':'cosmetic court')+'</div>'+
+        '<button class="court-action" type="button" data-use-skin="'+skin.id+'" '+((!owned||selected)?'disabled':'')+'>'+action+'</button>'+
+      '</div>'+
+    '</article>';
+  }
+
+  function renderCourtLibrary(){
+    if(!courtLibraryGrid)return;
+    const skins=Object.values(SKIN_REGISTRY);
+    const visible=courtLibraryMode==='owned'
+      ? skins.filter(s=>ownsSkin(s.id))
+      : skins.filter(s=>s.status==='active'||s.status==='coming_soon');
+
+    courtLibraryGrid.innerHTML=visible.length
+      ? visible.map(courtCardHtml).join('')
+      : '<div class="court-empty">No courts are available here yet.</div>';
+
+    if(courtLibraryMode==='store'){
+      const purchasable=skins.some(s=>!ownsSkin(s.id)&&s.status==='active');
+      courtStoreNote.textContent=purchasable
+        ? 'Purchases will unlock cosmetic courts only. Gameplay, physics, scoring and hitboxes remain unchanged.'
+        : 'Living Kingdoms is included. Additional Corvu Mor courts will appear here as they are released.';
+    }else{
+      courtStoreNote.textContent='Select any owned court before starting a match. Court choice changes presentation only.';
+    }
+
+    for(const b of courtLibraryGrid.querySelectorAll('[data-use-skin]')){
+      b.addEventListener('click',()=>selectSkin(b.dataset.useSkin));
+    }
+  }
+
+  function setCourtLibraryMode(mode){
+    courtLibraryMode=mode==='store'?'store':'owned';
+    if(myCourtsTab)myCourtsTab.setAttribute('aria-selected',String(courtLibraryMode==='owned'));
+    if(courtStoreTab)courtStoreTab.setAttribute('aria-selected',String(courtLibraryMode==='store'));
+    renderCourtLibrary();
+  }
+
+  function openCourtLibrary(mode='owned'){
+    setCourtLibraryMode(mode);
+    courtLibrary?.classList.remove('hidden');
+    courtLibrary?.setAttribute('aria-hidden','false');
+  }
+
+  function closeCourtLibrary(){
+    courtLibrary?.classList.add('hidden');
+    courtLibrary?.setAttribute('aria-hidden','true');
+  }
 
   function activeSkin(){
     return SKIN_REGISTRY[selectedSkinId]||SKIN_REGISTRY[DEFAULT_SKIN_ID];
