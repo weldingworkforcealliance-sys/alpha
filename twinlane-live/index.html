@@ -871,6 +871,8 @@ body[data-view-mode="immersive"] #matchHud::before{
   const REMOTE_PLAYBACK_DELAY_MS = 60;
   const REMOTE_VISUAL_LEAD_MS = 18;
   const REMOTE_VISUAL_EXTRAPOLATE_MS = 12;
+  const REMOTE_TARGET_LIVE_START_Y = 44;
+  const REMOTE_TARGET_LIVE_PREDICT_MS = 55;
   const REMOTE_PLAYBACK_RATE_MIN = .82;
   const REMOTE_PLAYBACK_RATE_MAX = 1.16;
   let remoteClockOffsetMs = null;
@@ -899,6 +901,8 @@ body[data-view-mode="immersive"] #matchHud::before{
   let remotePlaybackTimeMs = null;
   let remotePlaybackLastPerfMs = 0;
   let remotePlaybackRate = 1;
+  let targetLiveVisual = false;
+  let targetLiveVisualTimeMs = null;
   let latestRemoteSentAt = 0;
   let pendingPhysicalSounds = [];
   let pendingRemoteTransitions = [];
@@ -1791,13 +1795,39 @@ body[data-view-mode="immersive"] #matchHud::before{
 
         const playbackRemote=remotePlaybackTimeMs;
 
-        // Visuals are allowed a tiny lead over the safe event clock. That hides
-        // short packet gaps at the physical screen seam. Audio/completion remain
-        // on playbackRemote, so they cannot fire ahead of visible physics.
-        const visualRemote=Math.min(
+        // Normal remote rendering stays slightly ahead of the safe event clock.
+        let visualRemote=Math.min(
           playbackRemote+REMOTE_VISUAL_LEAD_MS,
           latestFrame.sentAt+REMOTE_VISUAL_EXTRAPOLATE_MS
         );
+
+        // Once the ball approaches the physical seam, the target screen switches
+        // to a live predictive visual clock. Screen 1 is rendering the throw live,
+        // so keeping Screen 2 intentionally 60 ms behind creates a visible gap
+        // between two adjacent devices. Prediction is presentation-only and is
+        // capped tightly; authoritative physics remains on Screen 1.
+        if(position==='second' && targetLiveVisual){
+          const estimatedSenderNow=remoteClockOffsetMs==null
+            ? latestFrame.sentAt
+            : Date.now()-remoteClockOffsetMs;
+          const liveTarget=Math.min(
+            estimatedSenderNow,
+            latestFrame.sentAt+REMOTE_TARGET_LIVE_PREDICT_MS
+          );
+
+          if(targetLiveVisualTimeMs==null){
+            targetLiveVisualTimeMs=Math.max(visualRemote,latestFrame.sentAt);
+          }else{
+            targetLiveVisualTimeMs=Math.max(targetLiveVisualTimeMs,visualRemote);
+          }
+
+          targetLiveVisualTimeMs=Math.min(
+            liveTarget,
+            Math.max(targetLiveVisualTimeMs,targetLiveVisualTimeMs+dt*1.08)
+          );
+
+          visualRemote=Math.max(visualRemote,targetLiveVisualTimeMs);
+        }
 
         while(realtimeFrames.length>2 && realtimeFrames[1].sentAt<=visualRemote){
           realtimeFrames.shift();
@@ -1809,7 +1839,10 @@ body[data-view-mode="immersive"] #matchHud::before{
 
         if(visualRemote>=a.sentAt && b.sentAt>a.sentAt){
           const frameSpan=Math.max(1,b.sentAt-a.sentAt);
-          const maxT=1+(REMOTE_VISUAL_EXTRAPOLATE_MS/frameSpan);
+          const predictCap=(position==='second'&&targetLiveVisual)
+            ? REMOTE_TARGET_LIVE_PREDICT_MS
+            : REMOTE_VISUAL_EXTRAPOLATE_MS;
+          const maxT=1+(predictCap/frameSpan);
           t=clamp((visualRemote-a.sentAt)/frameSpan,0,maxT);
         }else if(visualRemote>=b.sentAt){
           t=1;
@@ -1848,12 +1881,16 @@ body[data-view-mode="immersive"] #matchHud::before{
               playback_gap_ms:latestFrame.sentAt-playbackRemote,
               visual_gap_ms:latestFrame.sentAt-visualRemote,
               playback_rate:remotePlaybackRate,
+              target_live_visual:targetLiveVisual,
               realtime_ready:realtimeReady
             }
           });
         }
 
-        flushRemoteTimelineEvents(playbackRemote);
+        const eventTimeline=(position==='second'&&targetLiveVisual)
+          ? visualRemote
+          : playbackRemote;
+        flushRemoteTimelineEvents(eventTimeline);
       }else{
         displayedBall.x+=(targetBall.x-displayedBall.x)*.24;
         displayedBall.y+=(targetBall.y-displayedBall.y)*.24;
@@ -2005,6 +2042,8 @@ body[data-view-mode="immersive"] #matchHud::before{
       remotePlaybackTimeMs=sentAt-REMOTE_PLAYBACK_DELAY_MS;
       remotePlaybackLastPerfMs=now;
       remotePlaybackRate=1;
+      targetLiveVisual=false;
+      targetLiveVisualTimeMs=null;
       latestRemoteSentAt=sentAt;
     }
 
@@ -2074,6 +2113,8 @@ body[data-view-mode="immersive"] #matchHud::before{
       remotePlaybackTimeMs=sentAt-REMOTE_PLAYBACK_DELAY_MS;
       remotePlaybackLastPerfMs=now;
       remotePlaybackRate=1;
+      targetLiveVisual=false;
+      targetLiveVisualTimeMs=null;
       latestRemoteSentAt=sentAt;
     }
 
@@ -2128,6 +2169,10 @@ body[data-view-mode="immersive"] #matchHud::before{
     realtimeFrames.push(frame);
     if(realtimeFrames.length>12)realtimeFrames.splice(0,realtimeFrames.length-12);
 
+    if(position==='second' && Number(frame.ball.y)>=REMOTE_TARGET_LIVE_START_Y){
+      targetLiveVisual=true;
+    }
+
     if(monitorActive() && now-monitorLastRxSampleAt>=120){
       monitorLastRxSampleAt=now;
       monitorEvent('physics_rx',{
@@ -2158,6 +2203,8 @@ body[data-view-mode="immersive"] #matchHud::before{
     remotePlaybackTimeMs=null;
     remotePlaybackLastPerfMs=0;
     remotePlaybackRate=1;
+    targetLiveVisual=false;
+    targetLiveVisualTimeMs=null;
     latestRemoteSentAt=0;
     pendingPhysicalSounds=[];
     const seq=Number(payload.seq||shotSeq);
@@ -2212,6 +2259,8 @@ body[data-view-mode="immersive"] #matchHud::before{
     remotePlaybackTimeMs=null;
     remotePlaybackLastPerfMs=0;
     remotePlaybackRate=1;
+    targetLiveVisual=false;
+    targetLiveVisualTimeMs=null;
     latestRemoteSentAt=0;
     pendingPhysicalSounds=[];
     realtimeFrames=[];
