@@ -904,6 +904,10 @@ body[data-view-mode="immersive"] #matchHud::before{
   let remotePlaybackRate = 1;
   let targetLiveVisual = false;
   let targetLiveVisualTimeMs = null;
+  let targetVisualVelocity = {
+    ball:{x:0,y:0},
+    pallino:{x:0,y:0}
+  };
   let latestRemoteSentAt = 0;
   let pendingPhysicalSounds = [];
   let pendingRemoteTransitions = [];
@@ -1849,15 +1853,50 @@ body[data-view-mode="immersive"] #matchHud::before{
           t=1;
         }
 
-        displayedBall={
+        const interpolatedBall={
           x:a.ball.x+(b.ball.x-a.ball.x)*t,
           y:a.ball.y+(b.ball.y-a.ball.y)*t
         };
-        displayedPallino={
+        const interpolatedPallino={
           x:a.pallino.x+(b.pallino.x-a.pallino.x)*t,
           y:a.pallino.y+(b.pallino.y-a.pallino.y)*t
         };
-        displayedSettledBalls=interpolateBalls(a.settled,b.settled,t);
+
+        if(position==='second' && targetLiveVisual && visualRemote>latestFrame.sentAt){
+          const predictMs=clamp(
+            visualRemote-latestFrame.sentAt,
+            0,
+            REMOTE_TARGET_LIVE_PREDICT_MS
+          );
+          const predictedBall={
+            x:latestFrame.ball.x+targetVisualVelocity.ball.x*predictMs,
+            y:latestFrame.ball.y+targetVisualVelocity.ball.y*predictMs
+          };
+          const predictedPallino={
+            x:latestFrame.pallino.x+targetVisualVelocity.pallino.x*predictMs,
+            y:latestFrame.pallino.y+targetVisualVelocity.pallino.y*predictMs
+          };
+
+          const objectNow=remoteShotKind==='pallino'?predictedPallino:predictedBall;
+          const objectShown=remoteShotKind==='pallino'?displayedPallino:displayedBall;
+          const correction=Math.hypot(objectNow.x-objectShown.x,objectNow.y-objectShown.y);
+          const smoothTau=correction>3?14:24;
+          const smoothAlpha=1-Math.exp(-dt/smoothTau);
+
+          displayedBall={
+            x:displayedBall.x+(predictedBall.x-displayedBall.x)*smoothAlpha,
+            y:displayedBall.y+(predictedBall.y-displayedBall.y)*smoothAlpha
+          };
+          displayedPallino={
+            x:displayedPallino.x+(predictedPallino.x-displayedPallino.x)*smoothAlpha,
+            y:displayedPallino.y+(predictedPallino.y-displayedPallino.y)*smoothAlpha
+          };
+        }else{
+          displayedBall=interpolatedBall;
+          displayedPallino=interpolatedPallino;
+        }
+
+        displayedSettledBalls=interpolateBalls(a.settled,b.settled,Math.min(t,1));
 
         if(monitorActive() && shotSeq!==monitorSeamSeq && displayedBall.y>=50){
           monitorSeamSeq=shotSeq;
@@ -1883,6 +1922,8 @@ body[data-view-mode="immersive"] #matchHud::before{
               visual_gap_ms:latestFrame.sentAt-visualRemote,
               playback_rate:remotePlaybackRate,
               target_live_visual:targetLiveVisual,
+              target_velocity_x:targetVisualVelocity.ball.x,
+              target_velocity_y:targetVisualVelocity.ball.y,
               realtime_ready:realtimeReady
             }
           });
@@ -2045,6 +2086,7 @@ body[data-view-mode="immersive"] #matchHud::before{
       remotePlaybackRate=1;
       targetLiveVisual=false;
       targetLiveVisualTimeMs=null;
+      targetVisualVelocity={ball:{x:0,y:0},pallino:{x:0,y:0}};
       latestRemoteSentAt=sentAt;
     }
 
@@ -2117,6 +2159,7 @@ body[data-view-mode="immersive"] #matchHud::before{
       remotePlaybackRate=1;
       targetLiveVisual=false;
       targetLiveVisualTimeMs=null;
+      targetVisualVelocity={ball:{x:0,y:0},pallino:{x:0,y:0}};
       latestRemoteSentAt=sentAt;
     }
 
@@ -2168,6 +2211,30 @@ body[data-view-mode="immersive"] #matchHud::before{
       moving:Boolean(payload.moving)
     };
 
+    const previousFrame=realtimeFrames[realtimeFrames.length-1];
+    if(previousFrame && frame.sentAt>previousFrame.sentAt){
+      const frameMs=Math.max(1,frame.sentAt-previousFrame.sentAt);
+
+      const rawBallV={
+        x:(frame.ball.x-previousFrame.ball.x)/frameMs,
+        y:(frame.ball.y-previousFrame.ball.y)/frameMs
+      };
+      const rawPallinoV={
+        x:(frame.pallino.x-previousFrame.pallino.x)/frameMs,
+        y:(frame.pallino.y-previousFrame.pallino.y)/frameMs
+      };
+
+      for(const key of ['ball','pallino']){
+        const raw=key==='ball'?rawBallV:rawPallinoV;
+        const old=targetVisualVelocity[key];
+        const delta=Math.hypot(raw.x-old.x,raw.y-old.y);
+        const reversed=(raw.x*old.x+raw.y*old.y)<0;
+        const alpha=(reversed||delta>.018)?.72:.34;
+        old.x+=(raw.x-old.x)*alpha;
+        old.y+=(raw.y-old.y)*alpha;
+      }
+    }
+
     realtimeFrames.push(frame);
     if(realtimeFrames.length>12)realtimeFrames.splice(0,realtimeFrames.length-12);
 
@@ -2210,6 +2277,7 @@ body[data-view-mode="immersive"] #matchHud::before{
     remotePlaybackRate=1;
     targetLiveVisual=false;
     targetLiveVisualTimeMs=null;
+    targetVisualVelocity={ball:{x:0,y:0},pallino:{x:0,y:0}};
     latestRemoteSentAt=0;
     pendingPhysicalSounds=[];
     const seq=Number(payload.seq||shotSeq);
@@ -2266,6 +2334,7 @@ body[data-view-mode="immersive"] #matchHud::before{
     remotePlaybackRate=1;
     targetLiveVisual=false;
     targetLiveVisualTimeMs=null;
+    targetVisualVelocity={ball:{x:0,y:0},pallino:{x:0,y:0}};
     latestRemoteSentAt=0;
     pendingPhysicalSounds=[];
     realtimeFrames=[];
@@ -2857,7 +2926,8 @@ body[data-view-mode="immersive"] #matchHud::before{
       displayedPallino=targetPallino={x:pallino.x,y:pallino.y};
       state.pallino_x=pallino.x;state.pallino_y=pallino.y;
 
-      if(now-lastSend>32){
+      const realtimeInterval=pallino.y>=42?24:32;
+      if(now-lastSend>realtimeInterval){
         lastSend=now;
         const framePayload={
           ball_x:Number(state.ball_x||50),ball_y:Number(state.ball_y||8),
@@ -3167,7 +3237,8 @@ body[data-view-mode="immersive"] #matchHud::before{
       state.settled_balls=settledPayload;
       displayedSettledBalls=settledPayload;
 
-      if(now-lastSend>32){
+      const realtimeInterval=active.y>=42?24:32;
+      if(now-lastSend>realtimeInterval){
         lastSend=now;
         const frame={
           ball_x:displayedBall.x,ball_y:displayedBall.y,
