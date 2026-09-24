@@ -876,7 +876,7 @@ body[data-view-mode="immersive"] #matchHud::before{
 
 
   function monitorActive(){
-    return monitorRequested && position==='second' && Boolean(session) && Boolean(token);
+    return monitorRequested && Boolean(session) && Boolean(token);
   }
 
   function monitorEvent(eventType,extra={}){
@@ -897,7 +897,13 @@ body[data-view-mode="immersive"] #matchHud::before{
       team:(activeShotTeam==='B'?'B':'A'),
       realtime_age_ms:lastRealtimeFrameAt?Math.max(0,now-lastRealtimeFrameAt):null,
       frame_delta_ms:Number.isFinite(Number(extra.frame_delta_ms))?Number(extra.frame_delta_ms):null,
-      payload:extra.payload&&typeof extra.payload==='object'?extra.payload:{}
+      payload:{
+        local_screen:localScreen,
+        kind,
+        role,
+        position,
+        ...(extra.payload&&typeof extra.payload==='object'?extra.payload:{})
+      }
     };
     monitorQueue.push(evt);
     if(monitorQueue.length>120)monitorQueue.splice(0,monitorQueue.length-100);
@@ -1448,7 +1454,7 @@ body[data-view-mode="immersive"] #matchHud::before{
       if(position==='first'){
         screenNameEl.textContent='Throw End';
         screenPositionEl.textContent='Near Player';
-        screenMetaEl.textContent='LIVING KINGDOMS';
+        screenMetaEl.textContent=monitorActive()?'LIVING KINGDOMS · MONITOR':'LIVING KINGDOMS';
       }else if(position==='second'){
         screenNameEl.textContent='Pallino End';
         screenPositionEl.textContent='Far End';
