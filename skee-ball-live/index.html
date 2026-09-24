@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Corvu Mor Skee Ball</title>
+<style>
+:root{
+  --bg:#090b10;--panel:#121722;--panel2:#181e2a;--line:#313a4c;
+  --gold:#f3c85d;--cream:#f6edd8;--blue:#39a9ff;--orange:#ff7a32;
+  --felt:#18334a;--lane:#bd8a58;--lane2:#8b5d39;--rubber:#202834;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:radial-gradient(circle at 50% 0,#1b2331 0,#080a0e 58%,#050609 100%);color:var(--cream);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif}
+body{min-height:100vh;overflow-x:hidden}
+button,input{font:inherit}
+button{cursor:pointer}
+.wrap{width:min(980px,100%);margin:0 auto;padding:10px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 2px}
+.brand{font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+.sub{font-size:12px;color:#9eabc0}
+.card{background:linear-gradient(180deg,#161d29,#0f141d);border:1px solid #2b3444;border-radius:16px;padding:14px;box-shadow:0 12px 32px #0008;margin-bottom:10px}
+.hidden{display:none!important}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1 1 150px}
+label{font-size:12px;color:#aab5c8;display:block;margin:4px 0}
+input{width:100%;background:#0b1018;color:#fff;border:1px solid #303b4f;border-radius:10px;padding:11px}
+.btn{border:0;border-radius:12px;padding:12px 14px;font-weight:800;background:linear-gradient(180deg,#f4cf6f,#c99b33);color:#17120a}
+.btn.secondary{background:#202938;color:#d9e3ef;border:1px solid #344055}
+.status{font-size:13px;color:#b8c4d8}
+.qr{width:min(230px,70vw);background:white;border-radius:12px;padding:8px;display:block;margin:12px auto}
+.scorebar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-bottom:8px}
+.playerbox{border:1px solid #2e3949;border-radius:12px;padding:8px;background:#101722}
+.playerbox.right{text-align:right}
+.pname{font-weight:850}
+.pscore{font-size:28px;font-weight:950;line-height:1}
+.pballs{font-size:11px;color:#9eabc0}
+.turn{font-size:12px;text-align:center;color:var(--gold);font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+.game-shell{position:relative;height:clamp(500px,72vh,820px);border-radius:18px;overflow:hidden;border:2px solid #313a49;background:#0d131b;touch-action:none;user-select:none}
+.lane{position:absolute;inset:0;background:
+ linear-gradient(90deg,#5e3c24 0 5%,transparent 5% 95%,#5e3c24 95%),
+ repeating-linear-gradient(90deg,#b98a5d 0 9%,#c39465 9% 18%);
+ box-shadow:inset 0 0 0 8px #362719,inset 0 0 35px #0008}
+.lane:after{content:"";position:absolute;left:7%;right:7%;bottom:0;top:0;background:linear-gradient(90deg,#0002,transparent 20% 80%,#0002);pointer-events:none}
+.screen-label{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:12;background:#0b1019cc;border:1px solid #354158;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:900;letter-spacing:.09em}
+.seam{position:absolute;left:7%;right:7%;height:2px;background:#f5d16a88;z-index:3;box-shadow:0 0 8px #f5d16a66}
+.ramp{position:absolute;left:7%;right:7%;height:18%;background:linear-gradient(180deg,#9e754f,#5e412c);border-top:4px solid #3e2c20;z-index:2}
+.target-deck{position:absolute;left:7%;right:7%;top:0;height:45%;background:
+ radial-gradient(circle at 50% 52%,#274b66 0 26%,#173247 27% 48%,#102639 49% 70%,#0e2130 71% 100%);
+ border-bottom:4px solid #604329;z-index:1;overflow:hidden}
+.hole{position:absolute;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#020306 0 47%,#000 48% 58%,#8e6c40 60% 66%,#e6c36f 67% 70%,transparent 72%);display:flex;align-items:center;justify-content:center;font-weight:950;color:#f7db8f;text-shadow:0 2px 3px #000;z-index:4}
+.hole span{font-size:clamp(10px,2vw,16px)}
+.h10{left:50%;top:88%;width:25%;aspect-ratio:1}
+.h20{left:50%;top:70%;width:22%;aspect-ratio:1}
+.h30{left:50%;top:53%;width:19%;aspect-ratio:1}
+.h40{left:50%;top:37%;width:16%;aspect-ratio:1}
+.h50{left:50%;top:22%;width:14%;aspect-ratio:1}
+.h100a,.h100b{top:16%;width:12%;aspect-ratio:1}
+.h100a{left:18%}.h100b{left:82%}
+.ball{position:absolute;width:34px;height:34px;border-radius:50%;transform:translate(-50%,50%);z-index:10;box-shadow:inset -8px -10px 12px #0007,inset 5px 5px 8px #fff4,0 4px 8px #0009;display:none}
+.ball.a{background:radial-gradient(circle at 34% 28%,#9edcff,#2a95e8 42%,#0c4f88 75%)}
+.ball.b{background:radial-gradient(circle at 34% 28%,#ffc39f,#ff7835 42%,#8d2f10 75%)}
+.aimline{position:absolute;width:4px;border-radius:99px;background:linear-gradient(#ffe89d,#f1b73600);transform-origin:bottom center;display:none;z-index:8}
+.start-zone{position:absolute;left:22%;right:22%;bottom:4%;height:18%;border:1px dashed #f2cf6a88;border-radius:18px;z-index:5;background:#f0c85b0a}
+.start-zone:after{content:"TAP BALL • SWIPE UP";position:absolute;bottom:8px;left:0;right:0;text-align:center;color:#f4d77e;font-size:10px;font-weight:900;letter-spacing:.08em}
+.banner{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);z-index:20;background:#080c13e8;border:1px solid #39465c;border-radius:11px;padding:8px 12px;font-size:12px;font-weight:850;max-width:90%;text-align:center}
+.result{position:absolute;inset:0;background:#05070bdc;z-index:30;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}
+.resultbox{background:#111824;border:1px solid #374257;border-radius:18px;padding:22px;width:min(380px,90%)}
+.big{font-size:36px;font-weight:950}
+.diag{font-size:11px;color:#8190a8;margin-top:8px;white-space:pre-wrap}
+@media (max-width:620px){
+  .wrap{padding:5px}.card{border-radius:12px;padding:10px}
+  .game-shell{height:76vh;border-radius:12px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div><div class="brand">Corvu Mor • Skee Ball</div><div class="sub">Built on Long Toss Platform v1</div></div>
+    <div class="sub" id="conn">Offline</div>
+  </div>
+
+  <section id="setup" class="card">
+    <div class="row">
+      <div><label>Player 1</label><input id="nameA" value="Player 1"></div>
+      <div><label>Player 2</label><input id="nameB" value="Player 2"></div>
+    </div>
+    <div style="margin-top:10px"><button id="startBtn" class="btn">Start Skee Ball</button></div>
+    <div class="status" id="setupStatus" style="margin-top:8px">9 balls each. Highest score wins.</div>
+  </section>
+
+  <section id="pair" class="card hidden">
+    <div style="font-weight:900">Pair the target screen</div>
+    <div class="sub">Open the join link on the second device, or scan the QR.</div>
+    <img id="qr" class="qr" alt="Pairing QR">
+    <div class="row">
+      <button id="copyBtn" class="btn secondary">Copy Join Link</button>
+      <button id="playBtn" class="btn">Enter Lane</button>
+    </div>
+    <div class="status" id="pairStatus">Waiting for target screen…</div>
+  </section>
+
+  <section id="joinCard" class="card hidden">
+    <div style="font-weight:900">Join Skee Ball</div>
+    <div class="sub">This device becomes the far target/ramp screen.</div>
+    <button id="joinBtn" class="btn" style="margin-top:10px">Join Target Screen</button>
+    <div class="status" id="joinStatus" style="margin-top:8px"></div>
+  </section>
+
+  <section id="game" class="hidden">
+    <div class="scorebar">
+      <div class="playerbox"><div class="pname" id="hudA">Player 1</div><div class="pscore" id="scoreA">0</div><div class="pballs" id="ballsA">9 balls left</div></div>
+      <div><div class="turn" id="turn">Player 1</div><div class="sub" style="text-align:center">TO THROW</div></div>
+      <div class="playerbox right"><div class="pname" id="hudB">Player 2</div><div class="pscore" id="scoreB">0</div><div class="pballs" id="ballsB">9 balls left</div></div>
+    </div>
+
+    <div id="shell" class="game-shell">
+      <div id="lane" class="lane"></div>
+      <div id="targetDeck" class="target-deck">
+        <div class="hole h10"><span>10</span></div>
+        <div class="hole h20"><span>20</span></div>
+        <div class="hole h30"><span>30</span></div>
+        <div class="hole h40"><span>40</span></div>
+        <div class="hole h50"><span>50</span></div>
+        <div class="hole h100a"><span>100</span></div>
+        <div class="hole h100b"><span>100</span></div>
+      </div>
+      <div id="ramp" class="ramp"></div>
+      <div id="seam" class="seam"></div>
+      <div id="startZone" class="start-zone"></div>
+      <div id="screenLabel" class="screen-label"></div>
+      <div id="aimline" class="aimline"></div>
+      <div id="ball" class="ball a"></div>
+      <div id="banner" class="banner">Tap inside the start zone, then swipe upward.</div>
+      <div id="result" class="result hidden"><div class="resultbox"><div class="sub">MATCH COMPLETE</div><div class="big" id="winner"></div><div id="finalScore"></div><button id="againBtn" class="btn" style="margin-top:14px">Play Again</button></div></div>
+    </div>
+    <details><summary class="sub">Diagnostics</summary><div id="diag" class="diag"></div></details>
+  </section>
+</div>
+
+<script>
+(function(){
+'use strict';
+const API='https://qsmvgyyaemjmklceyikr.supabase.co/functions/v1/twinlane-api';
+const PAGE=location.origin+location.pathname;
+const REALTIME_URL='wss://qsmvgyyaemjmklceyikr.supabase.co/realtime/v1/websocket?apikey=sb_publishable_pvvIlRcj-vro31h1Hng1jA_WL3oItk0&vsn=1.0.0';
+const REMOTE_DELAY=60;
+const params=new URLSearchParams(location.search);
+const joinSession=params.get('session')||'';
+const joinToken=params.get('join')||'';
+
+const $=id=>document.getElementById(id);
+const setup=$('setup'),pair=$('pair'),joinCard=$('joinCard'),gameEl=$('game');
+const shell=$('shell'),ballEl=$('ball'),banner=$('banner'),diag=$('diag'),conn=$('conn');
+const scoreAEl=$('scoreA'),scoreBEl=$('scoreB'),ballsAEl=$('ballsA'),ballsBEl=$('ballsB'),turnEl=$('turn');
+const nameAInput=$('nameA'),nameBInput=$('nameB'),hudA=$('hudA'),hudB=$('hudB');
+const resultEl=$('result'),winnerEl=$('winner'),finalScoreEl=$('finalScore');
+
+let session='',token='',isHost=false,position='first',role='launch';
+let ws=null,topic='',joinRef=null,ref=0,ready=false,reconnectTimer=null,heartbeat=null;
+let shotSeq=0,moving=false,localSim=false;
+let ball={x:50,y:8},displayBall={x:50,y:8};
+let frames=[],playbackMs=null,lastPlaybackPerf=0,lastSentAt=0;
+let state={nameA:'Player 1',nameB:'Player 2',scoreA:0,scoreB:0,throwsA:0,throwsB:0,current:'A',over:false,winner:null,lastScore:0};
+let pointerStart=null,placedX=50,placed=false,lastSend=0,snapshotBusy=false,pendingSnapshot=null;
+let audioCtx=null;
+
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function now(){return performance.now()}
+function currentName(){return state.current==='A'?state.nameA:state.nameB}
+function left(team){return Math.max(0,9-(team==='A'?state.throwsA:state.throwsB))}
+function debug(s){diag.textContent=String(s)}
+function viewport(){return position==='first'?{y0:0,y1:50}:{y0:50,y1:100}}
+function worldToLocal(x,y){
+  const vp=viewport(),r=shell.getBoundingClientRect();
+  if(y<vp.y0-1||y>vp.y1+1)return null;
+  return {x:(x/100)*r.width,y:((y-vp.y0)/(vp.y1-vp.y0))*r.height};
+}
+function renderBall(){
+  const p=worldToLocal(displayBall.x,displayBall.y);
+  if(!p){ballEl.style.display='none';return}
+  ballEl.style.display='block';
+  ballEl.style.left=p.x+'px';
+  ballEl.style.bottom=(shell.clientHeight-p.y)+'px';
+  ballEl.classList.toggle('a',state.current==='A');
+  ballEl.classList.toggle('b',state.current==='B');
+}
+function syncStatic(){
+  $('screenLabel').textContent=position==='first'?'THROW LANE':'SCORE RAMP';
+  $('targetDeck').style.display=position==='second'?'block':'none';
+  $('ramp').style.display=position==='second'?'block':'none';
+  $('startZone').style.display=(position==='first'&&!moving&&!state.over)?'block':'none';
+  $('seam').style.bottom=position==='first'?'0':'100%';
+}
+function syncHud(){
+  hudA.textContent=state.nameA;hudB.textContent=state.nameB;
+  scoreAEl.textContent=state.scoreA;scoreBEl.textContent=state.scoreB;
+  ballsAEl.textContent=left('A')+' balls left';ballsBEl.textContent=left('B')+' balls left';
+  turnEl.textContent=state.over?'MATCH OVER':currentName();
+  if(state.over){
+    winnerEl.textContent=state.winner==='T'?'TIE GAME':(state.winner==='A'?state.nameA:state.nameB)+' WINS';
+    finalScoreEl.textContent=state.scoreA+' – '+state.scoreB;
+    resultEl.classList.remove('hidden');
+  }else resultEl.classList.add('hidden');
+  syncStatic();
+}
+function render(){renderBall();syncHud()}
+
+async function api(method,body,query){
+  const opt={method:method,headers:{}};
+  if(body){opt.headers['content-type']='application/json';opt.body=JSON.stringify(body)}
+  const res=await fetch(API+(query||''),opt);
+  const data=await res.json();
+  if(!res.ok)throw new Error(data.error||'Request failed');
+  return data;
+}
+function realtimeSend(event,payload){
+  if(!ws||ws.readyState!==WebSocket.OPEN||!ready)return;
+  ref++;
+  ws.send(JSON.stringify({topic:topic,event:'broadcast',payload:{event:event,payload:payload,type:'broadcast'},ref:String(ref),join_ref:joinRef}));
+}
+function connectRealtime(){
+  if(!session)return;
+  if(ws)try{ws.close()}catch(e){}
+  if(heartbeat)clearInterval(heartbeat);
+  ready=false;topic='realtime:twinlane-'+session;
+  ws=new WebSocket(REALTIME_URL);
+  ws.addEventListener('open',function(){
+    joinRef=String(Date.now());ref++;
+    ws.send(JSON.stringify({topic:topic,event:'phx_join',payload:{config:{broadcast:{ack:false,self:false},presence:{enabled:false},private:false}},ref:String(ref),join_ref:joinRef}));
+    heartbeat=setInterval(function(){
+      if(ws&&ws.readyState===WebSocket.OPEN){ref++;ws.send(JSON.stringify({topic:'phoenix',event:'heartbeat',payload:{},ref:String(ref),join_ref:null}))}
+    },20000);
+  });
+  ws.addEventListener('message',function(ev){
+    let msg;try{msg=JSON.parse(ev.data)}catch(e){return}
+    if(msg.event==='phx_reply'&&msg.topic===topic&&msg.payload&&msg.payload.status==='ok'){ready=true;conn.textContent='Realtime';return}
+    if(msg.event==='broadcast'&&msg.topic===topic){
+      const p=msg.payload||{};
+      if(p.event==='skee_state')applyState(p.payload);
+      if(p.event==='shot_start')applyShotStart(p.payload);
+      if(p.event==='physics')applyPhysics(p.payload);
+      if(p.event==='shot_complete')queueComplete(p.payload);
+    }
+  });
+  ws.addEventListener('close',function(){ready=false;conn.textContent='Reconnecting';if(heartbeat)clearInterval(heartbeat);reconnectTimer=setTimeout(connectRealtime,800)});
+  ws.addEventListener('error',function(){ready=false});
+}
+function sendState(){realtimeSend('skee_state',{state:state,sent_at:Date.now()})}
+function applyState(p){if(!p||!p.state)return;state=Object.assign({},state,p.state);syncHud()}
+function applyShotStart(p){
+  if(!p||localSim)return;
+  shotSeq=Math.max(shotSeq,Number(p.seq||0));moving=true;
+  const st=Number(p.sent_at||Date.now());
+  frames=[{sentAt:st,x:Number(p.ball_x||50),y:Number(p.ball_y||8)}];
+  playbackMs=st-REMOTE_DELAY;lastPlaybackPerf=now();lastSentAt=st;
+  state.current=p.team==='B'?'B':'A';
+  displayBall={x:Number(p.ball_x||50),y:Number(p.ball_y||8)};
+}
+function applyPhysics(p){
+  if(!p||localSim)return;
+  const seq=Number(p.seq||0),st=Number(p.sent_at||Date.now());
+  if(seq<shotSeq||st<=lastSentAt)return;
+  if(seq>shotSeq){frames=[];playbackMs=st-REMOTE_DELAY;lastPlaybackPerf=now()}
+  shotSeq=seq;lastSentAt=st;moving=Boolean(p.moving);
+  frames.push({sentAt:st,x:Number(p.ball_x||50),y:Number(p.ball_y||8)});
+  if(frames.length>12)frames.splice(0,frames.length-12);
+}
+let pendingComplete=[];
+function queueComplete(p){
+  if(!p)return;
+  pendingComplete.push(p);
+  pendingComplete.sort(function(a,b){return Number(a.sent_at||0)-Number(b.sent_at||0)});
+}
+function flushComplete(){
+  while(pendingComplete.length&&playbackMs!=null&&Number(pendingComplete[0].sent_at||0)<=playbackMs){
+    const p=pendingComplete.shift();
+    state=Object.assign({},state,p.state||{});
+    displayBall={x:Number(p.ball_x||50),y:Number(p.ball_y||96)};
+    moving=false;frames=[];playbackMs=null;
+    playThunk(p.score||0);
+    banner.textContent=(p.score||0)+' points!';
+    syncHud();
+  }
+}
+function animate(){
+  if(!localSim&&frames.length){
+    const n=now(),dt=clamp(n-lastPlaybackPerf,0,50);lastPlaybackPerf=n;
+    const latest=frames[frames.length-1].sentAt;
+    if(playbackMs==null)playbackMs=frames[0].sentAt-REMOTE_DELAY;
+    const gap=latest-playbackMs;
+    let rate=1;if(gap<=0)rate=0;else if(gap<20)rate=.55;else if(gap>110)rate=1.20;
+    playbackMs=Math.min(latest,playbackMs+dt*rate);
+    while(frames.length>2&&frames[1].sentAt<=playbackMs)frames.shift();
+    const a=frames[0],b=frames[1]||a;
+    const t=b.sentAt>a.sentAt?clamp((playbackMs-a.sentAt)/(b.sentAt-a.sentAt),0,1):1;
+    displayBall={x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t};
+    flushComplete();
+  }
+  renderBall();requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+
+function queueSnapshot(payload){
+  pendingSnapshot=payload;
+  if(snapshotBusy)return;
+  flushSnapshot();
+}
+async function flushSnapshot(){
+  if(snapshotBusy||!pendingSnapshot)return;
+  const p=pendingSnapshot;pendingSnapshot=null;snapshotBusy=true;
+  try{await api('POST',Object.assign({action:'physics',session:session,token:token},p))}catch(e){debug(e.message)}
+  snapshotBusy=false;if(pendingSnapshot)flushSnapshot();
+}
+function scoreFor(x,y){
+  if(y>=94&&(x<=25||x>=75))return 100;
+  if(y>=94)return 50;
+  if(y>=90)return 40;
+  if(y>=86)return 30;
+  if(y>=82)return 20;
+  if(y>=77)return 10;
+  return 0;
+}
+function landingFor(dx,dy,duration){
+  const swipe=Math.hypot(dx,dy),speed=swipe/Math.max(80,duration);
+  const power=clamp((swipe*.75+speed*260)/430,0,1);
+  const lateral=clamp(dx/220,-1,1);
+  let x=50+lateral*(18+power*14);
+  let y=73+power*25;
+  if(power>.90&&Math.abs(lateral)>.62){x=lateral<0?19:81;y=96}
+  return {x:clamp(x,12,88),y:clamp(y,72,98),power:power};
+}
+function launchShot(dx,dy,duration){
+  if(!isHost||position!=='first'||moving||state.over)return;
+  if(dy>=-22){banner.textContent='Swipe upward to throw.';return}
+  const land=landingFor(dx,dy,duration);
+  shotSeq++;moving=true;localSim=true;placed=false;
+  const team=state.current,start={x:placedX,y:8},startAt=performance.now(),shotDuration=900+land.power*1150;
+  ball={x:start.x,y:start.y};displayBall={x:start.x,y:start.y};
+  const startPayload={seq:shotSeq,team:team,ball_x:start.x,ball_y:start.y,moving:true,sent_at:Date.now()};
+  realtimeSend('shot_start',startPayload);queueSnapshot(startPayload);banner.textContent='ROLLING…';
+  function step(ts){
+    const t=clamp((ts-startAt)/shotDuration,0,1);
+    const ease=1-Math.pow(1-t,1.28);
+    const curve=Math.sin(t*Math.PI)*dx*.025;
+    ball.x=start.x+(land.x-start.x)*ease+curve;
+    ball.y=start.y+(land.y-start.y)*ease;
+    displayBall={x:ball.x,y:ball.y};
+    if(ts-lastSend>32){
+      lastSend=ts;
+      const frame={seq:shotSeq,ball_x:ball.x,ball_y:ball.y,moving:true,sent_at:Date.now()};
+      realtimeSend('physics',frame);
+      if((Math.floor(t*20)%5)===0)queueSnapshot(frame);
+    }
+    if(t<1){requestAnimationFrame(step);return}
+    finishShot(team,land);
+  }
+  requestAnimationFrame(step);
+}
+async function finishShot(team,land){
+  ball.x=land.x;ball.y=land.y;displayBall={x:ball.x,y:ball.y};
+  const pts=scoreFor(ball.x,ball.y);
+  if(team==='A'){state.scoreA+=pts;state.throwsA++}else{state.scoreB+=pts;state.throwsB++}
+  state.lastScore=pts;
+  const done=state.throwsA>=9&&state.throwsB>=9;
+  if(done){
+    state.over=true;
+    state.winner=state.scoreA===state.scoreB?'T':(state.scoreA>state.scoreB?'A':'B');
+  }else{
+    state.current=team==='A'?'B':'A';
+    if(state.current==='A'&&state.throwsA>=9)state.current='B';
+    if(state.current==='B'&&state.throwsB>=9)state.current='A';
+  }
+  const sentAt=Date.now();
+  const payload={seq:shotSeq,ball_x:ball.x,ball_y:ball.y,score:pts,state:state,sent_at:sentAt};
+  realtimeSend('shot_complete',payload);
+  realtimeSend('skee_state',{state:state,sent_at:sentAt});
+  queueSnapshot({seq:shotSeq,ball_x:ball.x,ball_y:ball.y,moving:false,sent_at:sentAt});
+  playThunk(pts);banner.textContent=pts+' points!';
+  moving=false;localSim=false;syncHud();
+  setTimeout(function(){
+    if(!state.over){ball={x:50,y:8};displayBall={x:50,y:8};banner.textContent=currentName()+' — tap and swipe to throw.';render()}
+  },700);
+}
+function unlockAudio(){if(!audioCtx)try{audioCtx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}
+function playThunk(score){
+  unlockAudio();if(!audioCtx)return;
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=audioCtx.currentTime;
+  o.type='triangle';o.frequency.setValueAtTime(score>=50?180:120,t);o.frequency.exponentialRampToValueAtTime(60,t+.12);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.12,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+.15);
+  o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+.16);
+}
+
+shell.addEventListener('pointerdown',function(e){
+  unlockAudio();
+  if(!isHost||position!=='first'||moving||state.over)return;
+  const r=shell.getBoundingClientRect(),x=clamp(((e.clientX-r.left)/r.width)*100,22,78),y=100-((e.clientY-r.top)/r.height)*50;
+  if(y<0||y>20)return;
+  placedX=x;placed=true;ball={x:x,y:8};displayBall={x:x,y:8};pointerStart={x:e.clientX,y:e.clientY,t:performance.now()};banner.textContent='Swipe upward from the ball.';render();
+  try{shell.setPointerCapture(e.pointerId)}catch(err){}
+});
+shell.addEventListener('pointerup',function(e){
+  if(!pointerStart)return;
+  const dx=e.clientX-pointerStart.x,dy=e.clientY-pointerStart.y,d=performance.now()-pointerStart.t;pointerStart=null;
+  launchShot(dx,dy,d);
+});
+
+$('startBtn').addEventListener('click',async function(){
+  try{
+    state.nameA=nameAInput.value.trim()||'Player 1';state.nameB=nameBInput.value.trim()||'Player 2';
+    $('setupStatus').textContent='Creating match…';
+    const data=await api('POST',{action:'create',kind:'laptop',role:'launch',position:'first',player_a_name:state.nameA,player_b_name:state.nameB,skin:'living_kingdoms'});
+    session=data.session;token=data.host_token;isHost=true;position='first';role='launch';
+    const joinUrl=PAGE+'?session='+encodeURIComponent(session)+'&join='+encodeURIComponent(data.join_token);
+    $('qr').src=API+'?api=qr&session='+encodeURIComponent(session)+'&join='+encodeURIComponent(data.join_token)+'&target='+encodeURIComponent(PAGE);
+    $('copyBtn').dataset.url=joinUrl;
+    setup.classList.add('hidden');pair.classList.remove('hidden');connectRealtime();syncHud();
+    pollJoin();
+  }catch(e){$('setupStatus').textContent=e.message}
+});
+$('copyBtn').addEventListener('click',async function(){try{await navigator.clipboard.writeText(this.dataset.url||'');this.textContent='Copied'}catch(e){}});
+$('playBtn').addEventListener('click',function(){pair.classList.add('hidden');gameEl.classList.remove('hidden');syncHud();render()});
+$('joinBtn').addEventListener('click',async function(){
+  try{
+    $('joinStatus').textContent='Joining…';
+    await api('POST',{action:'join',session:joinSession,join_token:joinToken,kind:'phone',role:'target',position:'second'});
+    session=joinSession;token=joinToken;isHost=false;position='second';role='target';
+    joinCard.classList.add('hidden');gameEl.classList.remove('hidden');connectRealtime();
+    await pollState();syncHud();render();
+  }catch(e){$('joinStatus').textContent=e.message}
+});
+$('againBtn').addEventListener('click',function(){
+  if(!isHost)return;
+  state.scoreA=0;state.scoreB=0;state.throwsA=0;state.throwsB=0;state.current='A';state.over=false;state.winner=null;state.lastScore=0;
+  ball={x:50,y:8};displayBall={x:50,y:8};resultEl.classList.add('hidden');sendState();syncHud();render();
+});
+async function pollJoin(){
+  if(!isHost||!session)return;
+  try{
+    const s=await api('GET',null,'?api=state&session='+encodeURIComponent(session)+'&token='+encodeURIComponent(token));
+    if(s.screen2_joined){$('pairStatus').textContent='Target screen connected.'}
+  }catch(e){}
+  setTimeout(pollJoin,700);
+}
+async function pollState(){
+  if(!session||!token)return;
+  try{
+    const s=await api('GET',null,'?api=state&session='+encodeURIComponent(session)+'&token='+encodeURIComponent(token));
+    if(!moving&&s.ball_moving){moving=true}
+    if(!ready&&s.ball_moving){displayBall={x:Number(s.ball_x||50),y:Number(s.ball_y||8)}}
+  }catch(e){}
+}
+setInterval(function(){if(session&&!isHost)pollState()},500);
+
+if(joinSession&&joinToken){
+  setup.classList.add('hidden');joinCard.classList.remove('hidden');
+}else{
+  setup.classList.remove('hidden');
+}
+syncHud();render();
+})();
+</script>
+</body>
+</html>
