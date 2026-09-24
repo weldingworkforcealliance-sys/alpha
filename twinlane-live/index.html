@@ -2244,7 +2244,7 @@ body[data-view-mode="immersive"] #matchHud::before{
         const latestFrame=realtimeFrames[realtimeFrames.length-1];
 
         if(remotePlaybackTimeMs==null){
-          remotePlaybackTimeMs=realtimeFrames[0].sentAt-REMOTE_PLAYBACK_DELAY_MS;
+          remotePlaybackTimeMs=realtimeFrames[0].sentAt-currentPlaybackDelayMs();
           remotePlaybackLastPerfMs=now;
         }
 
@@ -2255,7 +2255,7 @@ body[data-view-mode="immersive"] #matchHud::before{
         // Smooth rate correction instead of jumping between fixed speeds.
         // Target roughly one 60 ms cushion, but approach it gradually.
         const desiredRate=clamp(
-          1+(gap-REMOTE_PLAYBACK_DELAY_MS)/240,
+          1+(gap-currentPlaybackDelayMs())/240,
           REMOTE_PLAYBACK_RATE_MIN,
           REMOTE_PLAYBACK_RATE_MAX
         );
@@ -2287,7 +2287,7 @@ body[data-view-mode="immersive"] #matchHud::before{
             : Date.now()-remoteClockOffsetMs;
           const liveTarget=Math.min(
             estimatedSenderNow,
-            latestFrame.sentAt+REMOTE_TARGET_LIVE_PREDICT_MS
+            latestFrame.sentAt+currentPredictMs()
           );
 
           if(targetLiveVisualTimeMs==null){
@@ -2315,7 +2315,7 @@ body[data-view-mode="immersive"] #matchHud::before{
         if(visualRemote>=a.sentAt && b.sentAt>a.sentAt){
           const frameSpan=Math.max(1,b.sentAt-a.sentAt);
           const predictCap=(position==='second'&&targetLiveVisual)
-            ? REMOTE_TARGET_LIVE_PREDICT_MS
+            ? currentPredictMs()
             : REMOTE_VISUAL_EXTRAPOLATE_MS;
           const maxT=1+(predictCap/frameSpan);
           t=clamp((visualRemote-a.sentAt)/frameSpan,0,maxT);
@@ -2336,7 +2336,7 @@ body[data-view-mode="immersive"] #matchHud::before{
           const predictMs=clamp(
             visualRemote-latestFrame.sentAt,
             0,
-            REMOTE_TARGET_LIVE_PREDICT_MS
+            currentPredictMs()
           );
           const predictedBall={
             x:latestFrame.ball.x+targetVisualVelocity.ball.x*predictMs,
@@ -2540,6 +2540,12 @@ body[data-view-mode="immersive"] #matchHud::before{
     const seq=Number(payload.seq||0);
     if(seq<shotSeq)return;
 
+    if(seq===shotSeq && remoteShotActive && lastPhysicsSeq===seq && realtimeFrames.length){
+      remoteShotKind=payload.kind==='pallino'?'pallino':remoteShotKind;
+      if(payload.team==='A'||payload.team==='B')activeShotTeam=payload.team;
+      return;
+    }
+
     const now=performance.now();
     const sentAt=Number(payload.sent_at||Date.now());
 
@@ -2551,7 +2557,7 @@ body[data-view-mode="immersive"] #matchHud::before{
       realtimeJitterMs=0;
       lastPhysicsSeq=seq;
       lastPhysicsSentAt=0;
-      remotePlaybackTimeMs=sentAt-REMOTE_PLAYBACK_DELAY_MS;
+      remotePlaybackTimeMs=sentAt-currentPlaybackDelayMs();
       remotePlaybackLastPerfMs=now;
       remotePlaybackRate=1;
       targetLiveVisual=false;
@@ -2624,7 +2630,7 @@ body[data-view-mode="immersive"] #matchHud::before{
       realtimeJitterMs=0;
       lastPhysicsSeq=seq;
       lastPhysicsSentAt=0;
-      remotePlaybackTimeMs=sentAt-REMOTE_PLAYBACK_DELAY_MS;
+      remotePlaybackTimeMs=sentAt-currentPlaybackDelayMs();
       remotePlaybackLastPerfMs=now;
       remotePlaybackRate=1;
       targetLiveVisual=false;
@@ -2644,7 +2650,7 @@ body[data-view-mode="immersive"] #matchHud::before{
     latestRemoteSentAt=Math.max(latestRemoteSentAt,sentAt);
 
     if(remotePlaybackTimeMs==null){
-      remotePlaybackTimeMs=sentAt-REMOTE_PLAYBACK_DELAY_MS;
+      remotePlaybackTimeMs=sentAt-currentPlaybackDelayMs();
       remotePlaybackLastPerfMs=now;
     }
 
@@ -2658,6 +2664,7 @@ body[data-view-mode="immersive"] #matchHud::before{
 
     lastRealtimeFrameAt=now;
     remoteShotActive=Boolean(payload.moving);
+    if(payload.kind==='pallino'||payload.kind==='bocce')remoteShotKind=payload.kind;
 
     if(payload.team==='A'||payload.team==='B'){
       activeShotTeam=payload.team;
@@ -2791,6 +2798,7 @@ body[data-view-mode="immersive"] #matchHud::before{
 
     netSample=null;
     netVelocity={ball:{x:0,y:0},pallino:{x:0,y:0}};
+    applyPendingAdaptiveConfig();
     render();
   }
 
@@ -2831,6 +2839,7 @@ body[data-view-mode="immersive"] #matchHud::before{
       }
     }
 
+    applyPendingAdaptiveConfig();
     render();
   }
 
@@ -2885,28 +2894,28 @@ body[data-view-mode="immersive"] #matchHud::before{
       try{msg=JSON.parse(event.data);}catch{return;}
       if(msg?.event==='phx_reply' && msg?.topic===realtimeTopic && msg?.payload?.status==='ok'){
         realtimeReady=true;
-        debugEl.textContent='Realtime motion connected.';
+        debugEl.textContent='Realtime signaling connected.';
         monitorEvent('realtime_open');
+        updateLinkStatus();
+        if(!isHost)startAdaptiveLinkNegotiation();
+        else if(state?.screen2_joined)startAdaptiveLinkNegotiation();
         return;
       }
       if(msg?.event==='broadcast' && msg?.topic===realtimeTopic){
         const p=msg?.payload;
-        if(p?.event==='shot_start')applyShotStart(p.payload);
-        if(p?.event==='physics')applyRealtimePhysics(p.payload);
-        if(p?.event==='impact_hit')scheduleRemotePhysicalSound(p.payload);
-        if(p?.event==='rail_hit')scheduleRemotePhysicalSound(p.payload);
-        if(p?.event==='pallino_complete'){
-          queueRemoteTransition('pallino_complete',p.payload);
+        if(!p?.event)return;
+        if(['peer_ready','peer_offer','peer_answer','peer_ice'].includes(p.event)){
+          void handlePeerSignal(p.event,p.payload||{});
+          return;
         }
-        if(p?.event==='shot_complete'){
-          queueRemoteTransition('shot_complete',p.payload);
-        }
+        dispatchRemoteGameplayEvent(p.event,p.payload,'realtime');
       }
     });
 
     ws.addEventListener('close',()=>{
       monitorEvent('realtime_close');
       realtimeReady=false;
+      if(!adaptiveLink.direct)updateLinkStatus();
       if(heartbeatTimer){clearInterval(heartbeatTimer);heartbeatTimer=null;}
       if(session)reconnectTimer=setTimeout(connectRealtime,800);
     });
@@ -2934,7 +2943,7 @@ body[data-view-mode="immersive"] #matchHud::before{
       sent_at:Date.now()
     };
 
-    realtimeSend('physics',frame);
+    transportSend('physics',frame,'motion');
 
     // Durable recovery snapshot only. Live motion rides the WebSocket.
     try{
@@ -3013,6 +3022,7 @@ body[data-view-mode="immersive"] #matchHud::before{
         displayedSettledBalls=Array.isArray(s.settled_balls)?s.settled_balls:[];
       }
       if(s.screen2_joined){
+        if(!adaptiveLink.ready && !adaptiveLink.direct && realtimeReady)startAdaptiveLinkNegotiation();
         connectionCard.classList.add('ready');
         if(pairStatusEl){
           pairStatusEl.innerHTML='<span class="paired-badge">✓ Screen 2 connected</span>';
@@ -3107,15 +3117,19 @@ body[data-view-mode="immersive"] #matchHud::before{
       joinPanel.classList.add('hidden');
       playFlowCard?.classList.add('hidden');
       viewPanel.classList.remove('hidden');
-      setStatus('Connected. Loading court…');
+      setStatus('Connected. Calibrating court link…');
       connectRealtime();
+      if(peerFallbackTimer)clearTimeout(peerFallbackTimer);
+      peerFallbackTimer=setTimeout(()=>{
+        if(!adaptiveLink.ready)activateRealtimeFallback('join_timeout');
+      },4200);
       startPolling(localScreen===2?250:500);
     }catch(e){setStatus('Join failed: '+e.message);}
   });
 
   function canThrow(){
     const phase=game().phase;
-    return role==='launch' && position==='first' && state && !state.ball_moving && viewport() && (phase==='pallino'||phase==='bocce');
+    return role==='launch' && position==='first' && state && Boolean(state.screen2_joined) && adaptiveLink.ready && !state.ball_moving && viewport() && (phase==='pallino'||phase==='bocce');
   }
 
   function throwingPallino(){
@@ -3246,7 +3260,7 @@ body[data-view-mode="immersive"] #matchHud::before{
       settled_balls:[],
       moving:true,sent_at:Date.now()
     };
-    realtimeSend('shot_start',shotStartPayload);
+    transportSend('shot_start',shotStartPayload,'control');
     queueRecoverySnapshot(shotStartPayload);
 
     const pallino={x:startX,y:startY,vx:0,vy:0,r:1.14,type:'pallino'};
@@ -3281,7 +3295,7 @@ body[data-view-mode="immersive"] #matchHud::before{
           const railKind='wood_pallino';
           const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
           feedback(railKind,wallSpeed);
-          realtimeSend('rail_hit',soundPayload);
+          transportSend('rail_hit',soundPayload,'control');
         }
       }
 
@@ -3295,7 +3309,7 @@ body[data-view-mode="immersive"] #matchHud::before{
           const railKind='wood_pallino';
           const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
           feedback(railKind,wallSpeed);
-          realtimeSend('rail_hit',soundPayload);
+          transportSend('rail_hit',soundPayload,'control');
         }
       }
 
@@ -3310,7 +3324,7 @@ body[data-view-mode="immersive"] #matchHud::before{
           const railKind='wood_pallino';
           const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
           feedback(railKind,wallSpeed);
-          realtimeSend('rail_hit',soundPayload);
+          transportSend('rail_hit',soundPayload,'control');
         }
       }
     }
@@ -3342,7 +3356,7 @@ body[data-view-mode="immersive"] #matchHud::before{
           shotSeq=Number(result.ball_seq||shotSeq+1);
           state.ball_seq=shotSeq;
           state.game_state=result.game_state||state.game_state;
-          realtimeSend('pallino_complete',{
+          transportSend('pallino_complete',{
             legal:false,pallino_x:50,pallino_y:8,
             game_state:state.game_state,seq:shotSeq,sent_at:completionSentAt
           });
@@ -3360,7 +3374,7 @@ body[data-view-mode="immersive"] #matchHud::before{
         shotSeq=Number(result.ball_seq||shotSeq+1);
         state.ball_seq=shotSeq;
 
-        realtimeSend('pallino_complete',{
+        transportSend('pallino_complete',{
           legal:true,
           pallino_x:state.pallino_x,pallino_y:state.pallino_y,
           game_state:state.game_state,seq:shotSeq,sent_at:completionSentAt
@@ -3396,15 +3410,15 @@ body[data-view-mode="immersive"] #matchHud::before{
       displayedPallino=targetPallino={x:pallino.x,y:pallino.y};
       state.pallino_x=pallino.x;state.pallino_y=pallino.y;
 
-      const realtimeInterval=pallino.y>=42?24:32;
+      const realtimeInterval=currentMotionInterval(pallino.y);
       if(now-lastSend>realtimeInterval){
         lastSend=now;
         const framePayload={
           ball_x:Number(state.ball_x||50),ball_y:Number(state.ball_y||8),
           pallino_x:pallino.x,pallino_y:pallino.y,
-          settled_balls:[],moving:true,seq:shotSeq,sent_at:Date.now()
+          settled_balls:[],kind:'pallino',moving:true,seq:shotSeq,sent_at:Date.now()
         };
-        realtimeSend('physics',framePayload);
+        transportSend('physics',framePayload,'motion');
         if(!state._lastSnapshotAt || now-state._lastSnapshotAt>220){
           state._lastSnapshotAt=now;
           queueRecoverySnapshot(framePayload);
@@ -3441,7 +3455,7 @@ body[data-view-mode="immersive"] #matchHud::before{
       settled_balls:Array.isArray(state.settled_balls)?state.settled_balls:[],
       moving:true,sent_at:Date.now()
     };
-    realtimeSend('shot_start',shotStartPayload);
+    transportSend('shot_start',shotStartPayload,'control');
     queueRecoverySnapshot(shotStartPayload);
 
     const physicsVp=viewport()||{y0:0,y1:50};
@@ -3510,7 +3524,7 @@ body[data-view-mode="immersive"] #matchHud::before{
           sent_at:Date.now()
         };
         feedback(impactKind,impactStrength);
-        realtimeSend('impact_hit',soundPayload);
+        transportSend('impact_hit',soundPayload,'control');
       }
 
       const farContact=((a.y+b.y)*.5)>55;
@@ -3576,7 +3590,7 @@ body[data-view-mode="immersive"] #matchHud::before{
         netSample=null;
         netVelocity={ball:{x:0,y:0},pallino:{x:0,y:0}};
 
-        realtimeSend('shot_complete',{
+        transportSend('shot_complete',{
           ball_x:50,ball_y:8,
           pallino_x:pallino.x,pallino_y:pallino.y,
           settled_balls:state.settled_balls,
@@ -3584,7 +3598,7 @@ body[data-view-mode="immersive"] #matchHud::before{
           next_ball_number:state.next_ball_number,
           game_state:state.game_state,
           sent_at:completionSentAt
-        });
+        },'control');
 
         await poll();
 
@@ -3625,7 +3639,7 @@ body[data-view-mode="immersive"] #matchHud::before{
             const railKind=(o.type==='pallino'?'wood_pallino':'wood');
             const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
             feedback(railKind,wallSpeed);
-            realtimeSend('rail_hit',soundPayload);
+            transportSend('rail_hit',soundPayload,'control');
           }
         }
 
@@ -3639,7 +3653,7 @@ body[data-view-mode="immersive"] #matchHud::before{
             const railKind=(o.type==='pallino'?'wood_pallino':'wood');
             const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
             feedback(railKind,wallSpeed);
-            realtimeSend('rail_hit',soundPayload);
+            transportSend('rail_hit',soundPayload,'control');
           }
         }
 
@@ -3654,7 +3668,7 @@ body[data-view-mode="immersive"] #matchHud::before{
             const railKind=(o.type==='pallino'?'wood_pallino':'wood');
             const soundPayload={id:nextSoundEventId(),kind:railKind,strength:wallSpeed,sent_at:Date.now()};
             feedback(railKind,wallSpeed);
-            realtimeSend('rail_hit',soundPayload);
+            transportSend('rail_hit',soundPayload,'control');
           }
         }
       }
@@ -3707,18 +3721,19 @@ body[data-view-mode="immersive"] #matchHud::before{
       state.settled_balls=settledPayload;
       displayedSettledBalls=settledPayload;
 
-      const realtimeInterval=active.y>=42?24:32;
+      const realtimeInterval=currentMotionInterval(active.y);
       if(now-lastSend>realtimeInterval){
         lastSend=now;
         const frame={
           ball_x:displayedBall.x,ball_y:displayedBall.y,
           pallino_x:displayedPallino.x,pallino_y:displayedPallino.y,
           settled_balls:settledPayload,
+          kind:'bocce',
           team:activeShotTeam,
           moving:true,seq:shotSeq,
           sent_at:Date.now()
         };
-        realtimeSend('physics',frame);
+        transportSend('physics',frame,'motion');
 
         // Save a recovery snapshot only every ~220ms.
         if(!state._lastSnapshotAt || now-state._lastSnapshotAt>220){
@@ -3761,10 +3776,10 @@ body[data-view-mode="immersive"] #matchHud::before{
       realtimeJitterMs=0;
       placementReady=false;
       placedObject=null;
-      realtimeSend('pallino_complete',{
+      transportSend('pallino_complete',{
         legal:false,pallino_x:50,pallino_y:8,
         game_state:state?.game_state,seq:shotSeq+1,sent_at:Date.now()
-      });
+      },'control');
       await poll();
       render();
     }catch(e){setStatus('Could not start next end: '+e.message);}
@@ -3813,6 +3828,7 @@ body[data-view-mode="immersive"] #matchHud::before{
     if(reconnectTimer)clearTimeout(reconnectTimer);
     if(monitorFlushTimer)clearInterval(monitorFlushTimer);
     void flushMonitor();
+    closePeerLink('reset');
     try{realtimeSocket?.close();}catch{}
   });
 })();
