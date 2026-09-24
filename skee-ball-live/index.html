@@ -91,20 +91,20 @@ input{width:100%;background:#0b1018;color:#fff;border:1px solid #303b4f;border-r
   </section>
 
   <section id="pair" class="card hidden">
-    <div style="font-weight:900">Pair the target screen</div>
-    <div class="sub">Open the join link on the second device, or scan the QR.</div>
+    <div style="font-weight:900">Pair the throw phone</div>
+    <div class="sub">Keep this laptop as the target/ramp screen. Scan the QR with the phone you will throw from.</div>
     <img id="qr" class="qr" alt="Pairing QR">
     <div class="row">
       <button id="copyBtn" class="btn secondary">Copy Join Link</button>
-      <button id="playBtn" class="btn">Enter Lane</button>
+      <button id="playBtn" class="btn">Open Target Screen</button>
     </div>
     <div class="status" id="pairStatus">Waiting for target screen…</div>
   </section>
 
   <section id="joinCard" class="card hidden">
     <div style="font-weight:900">Join Skee Ball</div>
-    <div class="sub">This device becomes the far target/ramp screen.</div>
-    <button id="joinBtn" class="btn" style="margin-top:10px">Join Target Screen</button>
+    <div class="sub">This phone becomes the throw lane.</div>
+    <button id="joinBtn" class="btn" style="margin-top:10px">Join Throw Screen</button>
     <div class="status" id="joinStatus" style="margin-top:8px"></div>
   </section>
 
@@ -157,7 +157,7 @@ const scoreAEl=$('scoreA'),scoreBEl=$('scoreB'),ballsAEl=$('ballsA'),ballsBEl=$(
 const nameAInput=$('nameA'),nameBInput=$('nameB'),hudA=$('hudA'),hudB=$('hudB');
 const resultEl=$('result'),winnerEl=$('winner'),finalScoreEl=$('finalScore');
 
-let session='',token='',isHost=false,position='first',role='launch';
+let session='',token='',isHost=false,position='second',role='target';
 let ws=null,topic='',joinRef=null,ref=0,ready=false,reconnectTimer=null,heartbeat=null;
 let shotSeq=0,moving=false,localSim=false;
 let ball={x:50,y:8},displayBall={x:50,y:8};
@@ -332,7 +332,7 @@ function landingFor(dx,dy,duration){
   return {x:clamp(x,12,88),y:clamp(y,72,98),power:power};
 }
 function launchShot(dx,dy,duration){
-  if(!isHost||position!=='first'||moving||state.over)return;
+  if(role!=='launch'||position!=='first'||moving||state.over)return;
   if(dy>=-22){banner.textContent='Swipe upward to throw.';return}
   const land=landingFor(dx,dy,duration);
   shotSeq++;moving=true;localSim=true;placed=false;
@@ -394,7 +394,7 @@ function playThunk(score){
 
 shell.addEventListener('pointerdown',function(e){
   unlockAudio();
-  if(!isHost||position!=='first'||moving||state.over)return;
+  if(role!=='launch'||position!=='first'||moving||state.over)return;
   const r=shell.getBoundingClientRect(),x=clamp(((e.clientX-r.left)/r.width)*100,22,78),y=100-((e.clientY-r.top)/r.height)*50;
   if(y<0||y>20)return;
   placedX=x;placed=true;ball={x:x,y:8};displayBall={x:x,y:8};pointerStart={x:e.clientX,y:e.clientY,t:performance.now()};banner.textContent='Swipe upward from the ball.';render();
@@ -410,8 +410,8 @@ $('startBtn').addEventListener('click',async function(){
   try{
     state.nameA=nameAInput.value.trim()||'Player 1';state.nameB=nameBInput.value.trim()||'Player 2';
     $('setupStatus').textContent='Creating match…';
-    const data=await api('POST',{action:'create',kind:'laptop',role:'launch',position:'first',player_a_name:state.nameA,player_b_name:state.nameB,skin:'living_kingdoms'});
-    session=data.session;token=data.host_token;isHost=true;position='first';role='launch';
+    const data=await api('POST',{action:'create',kind:'laptop',role:'target',position:'second',player_a_name:state.nameA,player_b_name:state.nameB,skin:'living_kingdoms'});
+    session=data.session;token=data.host_token;isHost=true;position='second';role='target';
     const joinUrl=PAGE+'?session='+encodeURIComponent(session)+'&join='+encodeURIComponent(data.join_token);
     $('qr').src=API+'?api=qr&session='+encodeURIComponent(session)+'&join='+encodeURIComponent(data.join_token)+'&target='+encodeURIComponent(PAGE);
     $('copyBtn').dataset.url=joinUrl;
@@ -424,14 +424,20 @@ $('playBtn').addEventListener('click',function(){pair.classList.add('hidden');ga
 $('joinBtn').addEventListener('click',async function(){
   try{
     $('joinStatus').textContent='Joining…';
-    await api('POST',{action:'join',session:joinSession,join_token:joinToken,kind:'phone',role:'target',position:'second'});
-    session=joinSession;token=joinToken;isHost=false;position='second';role='target';
+    await api('POST',{action:'join',session:joinSession,join_token:joinToken,kind:'phone',role:'launch',position:'first'});
+    session=joinSession;token=joinToken;isHost=false;position='first';role='launch';
     joinCard.classList.add('hidden');gameEl.classList.remove('hidden');connectRealtime();
-    await pollState();syncHud();render();
+    await pollState();
+    if(window.__lastPolledGameState){
+      const g=window.__lastPolledGameState;
+      state.nameA=g.player_a_name||state.nameA;
+      state.nameB=g.player_b_name||state.nameB;
+    }
+    syncHud();render();
   }catch(e){$('joinStatus').textContent=e.message}
 });
 $('againBtn').addEventListener('click',function(){
-  if(!isHost)return;
+  if(role!=='launch')return;
   state.scoreA=0;state.scoreB=0;state.throwsA=0;state.throwsB=0;state.current='A';state.over=false;state.winner=null;state.lastScore=0;
   ball={x:50,y:8};displayBall={x:50,y:8};resultEl.classList.add('hidden');sendState();syncHud();render();
 });
@@ -447,11 +453,16 @@ async function pollState(){
   if(!session||!token)return;
   try{
     const s=await api('GET',null,'?api=state&session='+encodeURIComponent(session)+'&token='+encodeURIComponent(token));
+    window.__lastPolledGameState=s.game_state||null;
+    if(s.game_state){
+      state.nameA=s.game_state.player_a_name||state.nameA;
+      state.nameB=s.game_state.player_b_name||state.nameB;
+    }
     if(!moving&&s.ball_moving){moving=true}
     if(!ready&&s.ball_moving){displayBall={x:Number(s.ball_x||50),y:Number(s.ball_y||8)}}
   }catch(e){}
 }
-setInterval(function(){if(session&&!isHost)pollState()},500);
+setInterval(function(){if(session&&role!=='launch')pollState()},500);
 
 if(joinSession&&joinToken){
   setup.classList.add('hidden');joinCard.classList.remove('hidden');
