@@ -1416,6 +1416,24 @@ body[data-view-mode="immersive"] #matchHud::before{
     await new Promise(r=>setTimeout(r,220));
 
     const samples=calibrationSamples.filter(s=>!s.health);
+
+    if(samples.length<5){
+      const fallback={...ADAPTIVE_FALLBACK,ready:true,direct:false,profile:'cloud'};
+      adaptiveLink=fallback;
+      updateLinkStatus();
+      try{
+        peerControlChannel.send(JSON.stringify({
+          type:'cal_result',
+          config:fallback,
+          peerOffsetMs:0
+        }));
+      }catch{}
+      calibrationInFlight=false;
+      setStatus('Cloud court link ready.');
+      monitorEvent('link_fallback',{payload:{reason:'insufficient_direct_samples',samples:samples.length}});
+      return;
+    }
+
     const cfg=chooseAdaptiveConfig(samples,peerRefreshHz,12);
     applyAdaptiveConfig(cfg,false);
 
@@ -2143,7 +2161,7 @@ body[data-view-mode="immersive"] #matchHud::before{
   function renderStartZone() {
     const vp=viewport();
     const g=game();
-    const show=role==='launch' && position==='first' && vp && !state?.ball_moving && (g.phase==='pallino'||g.phase==='bocce');
+    const show=role==='launch' && position==='first' && vp && Boolean(state?.screen2_joined) && adaptiveLink.ready && !state?.ball_moving && (g.phase==='pallino'||g.phase==='bocce');
     launchHelp.classList.toggle('hidden',!show);
     startZoneEl.classList.toggle('hidden',!show);
     startLabelEl.classList.toggle('hidden',!show);
@@ -2224,7 +2242,7 @@ body[data-view-mode="immersive"] #matchHud::before{
     }
 
     if(role==='launch'&&position==='first'){
-      launchHelp.classList.toggle('hidden',!(g.phase==='pallino'||g.phase==='bocce')||state?.ball_moving);
+      launchHelp.classList.toggle('hidden',!adaptiveLink.ready||!state?.screen2_joined||!(g.phase==='pallino'||g.phase==='bocce')||state?.ball_moving);
       if(g.phase==='pallino'){
         throwTitleEl.textContent=teamName(g.starting_team)+' · Pallino';
         throwHelpEl.textContent='Tap the start area to place the pallino. Then swipe upward from it to throw. Tap again to reposition before throwing.';
