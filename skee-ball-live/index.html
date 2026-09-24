@@ -56,7 +56,7 @@ input{width:100%;background:#0b1018;color:#fff;border:1px solid #303b4f;border-r
 .target-deck:before{content:"SKEE BALL";position:absolute;top:1.5%;left:50%;transform:translateX(-50%);font-weight:950;letter-spacing:.16em;color:#f0d38999;font-size:clamp(9px,1.8vw,14px);text-shadow:0 2px 3px #000}
 .hole{position:absolute;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 50% 56%,#010205 0 48%,#090b0e 49% 57%,#4d3826 58% 61%,#d8b06e 62% 68%,#6b4c2f 69% 73%,transparent 74%);display:flex;align-items:center;justify-content:center;font-weight:950;color:#f7db8f;text-shadow:0 2px 3px #000;z-index:6;filter:drop-shadow(0 7px 5px #0008)}
 .hole:before{content:"";position:absolute;inset:-13%;border-radius:50%;border:clamp(3px,.7vw,6px) solid #765535;box-shadow:inset 0 4px 3px #f4d99a55,inset 0 -6px 7px #21150d,0 3px 0 #2c1e14;z-index:-1}
-.hole:after{content:"";position:absolute;left:8%;right:8%;top:48%;height:58%;border-radius:0 0 48% 48%;background:linear-gradient(90deg,#2c1d13,#825c38 18%,#a67a4a 50%,#6d492d 82%,#261810);border:2px solid #392619;border-top:0;box-shadow:0 8px 8px #0009;z-index:-2}
+.hole:after{content:"";position:absolute;left:16%;right:16%;top:48%;height:34%;border-radius:0 0 48% 48%;background:linear-gradient(180deg,#050608,#17100b 55%,#000 100%);box-shadow:inset 0 8px 9px #000,0 4px 4px #0008;z-index:-2}
 .hole span{font-size:clamp(10px,2vw,16px);position:relative;z-index:3;background:#080a0dcc;border:1px solid #e0bd7444;border-radius:999px;padding:1px 4px;transform:translateY(-110%)}
 .h10{left:50%;top:88%;width:25%;aspect-ratio:1}
 .h20{left:50%;top:70%;width:22%;aspect-ratio:1}
@@ -174,17 +174,21 @@ let ball={x:50,y:8,z:0,sink:0},displayBall={x:50,y:8,z:0,sink:0};
 let frames=[],playbackMs=null,lastPlaybackPerf=0,lastSentAt=0;
 let state={nameA:'Player 1',nameB:'Player 2',scoreA:0,scoreB:0,throwsA:0,throwsB:0,current:'A',over:false,winner:null,lastScore:0};
 let pointerStart=null,placedX=50,placed=false,lastSend=0,snapshotBusy=false,pendingSnapshot=null;
+let skeeSim=null;
 let audioCtx=null;
 
 const RAMP_LIP_Y=76;
+const RAMP_START_Y=64;
+const RAMP_LIP_Y=76;
+const AIR_GRAVITY=5.8;
 const CUP_TARGETS=Object.freeze([
-  {id:'10',score:10,x:50,y:78.5,rx:10.5,ry:2.5},
-  {id:'20',score:20,x:50,y:82.5,rx:9.0,ry:2.3},
-  {id:'30',score:30,x:50,y:86.5,rx:7.8,ry:2.1},
-  {id:'40',score:40,x:50,y:90.5,rx:6.8,ry:2.0},
-  {id:'50',score:50,x:50,y:94.3,rx:5.8,ry:1.8},
-  {id:'100L',score:100,x:23,y:96,rx:5.4,ry:1.8},
-  {id:'100R',score:100,x:77,y:96,rx:5.4,ry:1.8}
+  {id:'10',score:10,x:50,y:78.5,rx:8.8,ry:1.55,rimRx:11.0,rimRy:2.65},
+  {id:'20',score:20,x:50,y:82.5,rx:7.7,ry:1.42,rimRx:9.3,rimRy:2.35},
+  {id:'30',score:30,x:50,y:86.5,rx:6.7,ry:1.30,rimRx:8.1,rimRy:2.15},
+  {id:'40',score:40,x:50,y:90.5,rx:5.8,ry:1.20,rimRx:7.0,rimRy:2.00},
+  {id:'50',score:50,x:50,y:94.3,rx:4.9,ry:1.08,rimRx:6.0,rimRy:1.82},
+  {id:'100L',score:100,x:23,y:96,rx:4.4,ry:1.03,rimRx:5.5,rimRy:1.72},
+  {id:'100R',score:100,x:77,y:96,rx:4.4,ry:1.03,rimRx:5.5,rimRy:1.72}
 ]);
 
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
@@ -362,115 +366,296 @@ async function flushSnapshot(){
   try{await api('POST',Object.assign({action:'physics',session:session,token:token},p))}catch(e){debug(e.message)}
   snapshotBusy=false;if(pendingSnapshot)flushSnapshot();
 }
-function resolveCup(x,y){
+function cupMetric(cup,x,y,useRim=false){
+  const rx=useRim?cup.rimRx:cup.rx;
+  const ry=useRim?cup.rimRy:cup.ry;
+  return Math.hypot((x-cup.x)/rx,(y-cup.y)/ry);
+}
+
+function cupAt(x,y){
   let best=null,bestMetric=Infinity;
   for(const cup of CUP_TARGETS){
-    const metric=Math.hypot((x-cup.x)/cup.rx,(y-cup.y)/cup.ry);
-    if(metric<bestMetric){bestMetric=metric;best=cup}
+    const m=cupMetric(cup,x,y,false);
+    if(m<bestMetric){bestMetric=m;best=cup}
   }
   return bestMetric<=1?best:null;
 }
-function landingFor(dx,dy,duration){
-  const swipe=Math.hypot(dx,dy),speed=swipe/Math.max(80,duration);
-  const power=clamp((swipe*.72+speed*255)/430,0,1);
-  const lateral=clamp(dx/210,-1,1);
 
-  let aimX=50+lateral*(12+power*20);
-  let aimY=76.4+power*21.6;
+function rampHeight(y){
+  const u=clamp((y-RAMP_START_Y)/(RAMP_LIP_Y-RAMP_START_Y),0,1);
+  return .12*u*u*(2-u);
+}
 
-  // High-power, strongly angled throws can reach the classic 100 pockets.
-  if(power>.84&&Math.abs(lateral)>.52){
-    aimX=lateral<0?23:77;
-    aimY=96;
-  }
+function createSkeeSimulation(dx,dy,duration){
+  const r=shell.getBoundingClientRect();
+  const forwardPx=Math.max(0,-dy);
+  const distanceFactor=clamp(forwardPx/Math.max(130,r.height*.42),0,1.25);
+  const speedFactor=clamp((forwardPx/Math.max(80,duration))/1.45,0,1.25);
+  const power=clamp(distanceFactor*.72+speedFactor*.28,0,1.18);
+  const lateral=clamp(dx/Math.max(90,r.width*.42),-1,1);
 
-  aimX=clamp(aimX,12,88);
-  aimY=clamp(aimY,76.4,98);
+  if(power<.09)return null;
 
-  const cup=resolveCup(aimX,aimY);
   return {
-    x:cup?cup.x:aimX,
-    y:cup?cup.y:aimY,
-    aimX,aimY,power,
-    cupId:cup?cup.id:null,
-    score:cup?cup.score:0
+    phase:'roll',
+    elapsed:0,
+    x:placedX,
+    y:8,
+    z:0,
+    sink:0,
+    vx:lateral*(4.0+power*7.0),
+    vy:44+power*20.5,
+    vz:0,
+    power,
+    cup:null,
+    score:0,
+    lastRingHitAt:-10,
+    lastWallHitAt:-10,
+    done:false
   };
 }
-function sampleSkeePath(start,land,t,dx){
-  const rollEnd=.56;
-  const rampEnd=.76;
-  let x,y,z=0,sink=0;
 
-  if(t<rollEnd){
-    const u=t/rollEnd;
-    const e=1-Math.pow(1-u,1.45);
-    x=start.x+(land.aimX-start.x)*e*.34;
-    y=start.y+(50-start.y)*e;
-  }else if(t<rampEnd){
-    const u=(t-rollEnd)/(rampEnd-rollEnd);
-    const e=1-Math.pow(1-u,1.25);
-    const rampStartX=start.x+(land.aimX-start.x)*.34;
-    x=rampStartX+(land.aimX-rampStartX)*e*.42;
-    y=50+(RAMP_LIP_Y-50)*e;
-    z=.035*Math.sin(Math.PI*u);
+function reflectFromRing(sim,cup){
+  const dx=(sim.x-cup.x)/(cup.rimRx*cup.rimRx);
+  const dy=(sim.y-cup.y)/(cup.rimRy*cup.rimRy);
+  const len=Math.hypot(dx,dy)||1;
+  const nx=dx/len,ny=dy/len;
+  const dot=sim.vx*nx+sim.vy*ny;
+
+  if(dot<0){
+    const restitution=.40;
+    sim.vx-=(1+restitution)*dot*nx;
+    sim.vy-=(1+restitution)*dot*ny;
   }else{
-    const u=(t-rampEnd)/(1-rampEnd);
-    const airStartX=start.x+(land.aimX-start.x)*.62;
-    x=airStartX+(land.x-airStartX)*u;
-    y=RAMP_LIP_Y+(land.y-RAMP_LIP_Y)*u;
-    z=Math.sin(Math.PI*u)*(.58+land.power*.52);
-
-    if(land.cupId&&u>.78){
-      const drop=(u-.78)/.22;
-      sink=clamp(drop*drop,0,1);
-      z*=1-sink*.82;
-      x=x+(land.x-x)*sink*.65;
-      y=y+(land.y-y)*sink*.65;
-    }
+    sim.vx+=nx*2.2;
+    sim.vy+=ny*2.2;
   }
 
-  // A tiny launch-side curve preserves swipe character without changing cup geometry.
-  x+=Math.sin(Math.PI*t)*dx*.006;
-  return {x:clamp(x,8,92),y:clamp(y,0,100),z:Math.max(0,z),sink};
+  sim.vx*=.82;
+  sim.vy*=.82;
+  sim.vz=Math.max(.34,Math.abs(sim.vz)*.28);
+  sim.z=Math.max(sim.z,.035);
+  sim.lastRingHitAt=sim.elapsed;
 }
-function launchShot(dx,dy,duration){
-  if(role!=='launch'||position!=='first'||moving||state.over)return;
-  if(dy>=-22){banner.textContent='Swipe upward to throw.';return}
 
-  const land=landingFor(dx,dy,duration);
-  if(land.power<.07){
-    banner.textContent='Give it a stronger roll to climb the ramp.';
+function handleTargetGeometry(sim){
+  // Side baffles on the scoring deck.
+  if(sim.x<9){
+    sim.x=9;
+    sim.vx=Math.abs(sim.vx)*.48;
+  }else if(sim.x>91){
+    sim.x=91;
+    sim.vx=-Math.abs(sim.vx)*.48;
+  }
+
+  // Back wall. A hard over-throw can rebound toward lower-value pockets.
+  if(sim.y>98.6 && sim.phase!=='captured'){
+    sim.y=98.6;
+    sim.vy=-Math.abs(sim.vy)*.38;
+    sim.vx*=.82;
+    sim.vz=Math.max(sim.vz,.32);
+    sim.lastWallHitAt=sim.elapsed;
+  }
+
+  // Pocket capture and raised-ring collision.
+  for(const cup of CUP_TARGETS){
+    const holeM=cupMetric(cup,sim.x,sim.y,false);
+    const rimM=cupMetric(cup,sim.x,sim.y,true);
+
+    if(holeM<=1 && sim.z<=.105 && sim.vz<=.18){
+      sim.phase='captured';
+      sim.cup=cup;
+      sim.score=cup.score;
+      sim.x=cup.x;
+      sim.y=cup.y;
+      sim.vx=0;sim.vy=0;sim.vz=0;
+      sim.z=0;
+      sim.sink=0;
+      return;
+    }
+
+    if(rimM<=1.04 && holeM>1 && sim.z<=.16 && sim.elapsed-sim.lastRingHitAt>.075){
+      reflectFromRing(sim,cup);
+      return;
+    }
+  }
+}
+
+function stepSkeePhysics(sim,dt){
+  sim.elapsed+=dt;
+
+  if(sim.phase==='roll'){
+    sim.x+=sim.vx*dt;
+    sim.y+=sim.vy*dt;
+
+    const drag=11.8;
+    const s=Math.hypot(sim.vx,sim.vy);
+    if(s>0){
+      const ns=Math.max(0,s-drag*dt);
+      const q=ns/s;
+      sim.vx*=q;sim.vy*=q;
+    }
+
+    if(sim.x<8){sim.x=8;sim.vx=Math.abs(sim.vx)*.40}
+    if(sim.x>92){sim.x=92;sim.vx=-Math.abs(sim.vx)*.40}
+
+    if(sim.y>=RAMP_START_Y){
+      sim.y=RAMP_START_Y;
+      sim.phase='ramp';
+    }else if(sim.vy<=2){
+      sim.done=true;
+    }
     return;
   }
 
-  shotSeq++;moving=true;localSim=true;placed=false;
+  if(sim.phase==='ramp'){
+    sim.x+=sim.vx*dt;
+    sim.y+=sim.vy*dt;
+
+    const drag=15.0;
+    const speed=Math.hypot(sim.vx,sim.vy);
+    if(speed>0){
+      const ns=Math.max(0,speed-drag*dt);
+      const q=ns/speed;
+      sim.vx*=q;sim.vy*=q;
+    }
+
+    sim.z=rampHeight(sim.y);
+
+    if(sim.x<8){sim.x=8;sim.vx=Math.abs(sim.vx)*.34}
+    if(sim.x>92){sim.x=92;sim.vx=-Math.abs(sim.vx)*.34}
+
+    if(sim.y>=RAMP_LIP_Y){
+      sim.y=RAMP_LIP_Y;
+      const lipSpeed=Math.max(0,sim.vy);
+      sim.phase='air';
+      sim.vy=clamp(8+(lipSpeed-18)*.55,8,25);
+      sim.vz=clamp(1.45+(lipSpeed-22)*.055,1.35,3.0);
+      sim.vx*=.78;
+      sim.z=.12;
+    }else if(sim.vy<=4){
+      // Not enough energy to crest the ball-hop.
+      sim.vy=-Math.max(3,Math.abs(sim.vy)*.28);
+      sim.phase='deck_roll';
+      sim.z=0;
+    }
+    return;
+  }
+
+  if(sim.phase==='air'){
+    sim.x+=sim.vx*dt;
+    sim.y+=sim.vy*dt;
+    sim.z+=sim.vz*dt;
+    sim.vz-=AIR_GRAVITY*dt;
+    sim.vx*=Math.pow(.997,dt*144);
+    sim.vy*=Math.pow(.998,dt*144);
+
+    handleTargetGeometry(sim);
+    if(sim.phase==='captured')return;
+
+    if(sim.z<=0 && sim.vz<0){
+      // The scoring deck rejects misses. Some shots bounce and roll back.
+      sim.z=0;
+      sim.vz=-sim.vz*.30;
+      sim.vx*=.72;
+      sim.vy*=.70;
+
+      handleTargetGeometry(sim);
+      if(sim.phase==='captured')return;
+
+      if(sim.vz<.24){
+        sim.vz=0;
+        sim.phase='deck_roll';
+      }
+    }
+    return;
+  }
+
+  if(sim.phase==='deck_roll'){
+    sim.z=0;
+    sim.sink=0;
+
+    // Target board slopes back toward the player.
+    sim.vy-=5.2*dt;
+
+    sim.x+=sim.vx*dt;
+    sim.y+=sim.vy*dt;
+
+    const speed=Math.hypot(sim.vx,sim.vy);
+    if(speed>0){
+      const ns=Math.max(0,speed-6.8*dt);
+      const q=ns/speed;
+      sim.vx*=q;sim.vy*=q;
+    }
+
+    handleTargetGeometry(sim);
+    if(sim.phase==='captured')return;
+
+    if(sim.y<RAMP_LIP_Y-.8 || sim.elapsed>5.6 || (speed<.4&&sim.elapsed>2.5)){
+      sim.done=true;
+    }
+    return;
+  }
+
+  if(sim.phase==='captured'){
+    sim.sink=clamp(sim.sink+dt*2.8,0,1);
+    sim.z=0;
+    if(sim.sink>=1)sim.done=true;
+  }
+}
+
+function launchShot(dx,dy,duration){
+  if(role!=='launch'||position!=='first'||moving||state.over)return;
+  if(dy>=-22){banner.textContent='Swipe upward to roll the ball.';return}
+
+  const sim=createSkeeSimulation(dx,dy,duration);
+  if(!sim){
+    banner.textContent='Give it a stronger roll.';
+    return;
+  }
+
+  shotSeq++;
+  moving=true;
+  localSim=true;
+  placed=false;
   const team=state.current;
   activeTeam=team;
-  const start={x:placedX,y:8,z:0,sink:0};
-  const startAt=performance.now();
-  const shotDuration=1180+land.power*920;
+  skeeSim=sim;
 
-  ball={...start};
-  displayBall={...start};
+  ball={x:sim.x,y:sim.y,z:0,sink:0};
+  displayBall={...ball};
 
   const startPayload={
-    seq:shotSeq,team:team,
-    ball_x:start.x,ball_y:start.y,ball_z:0,ball_sink:0,
+    seq:shotSeq,team,
+    ball_x:sim.x,ball_y:sim.y,ball_z:0,ball_sink:0,
     moving:true,sent_at:Date.now()
   };
 
   realtimeSend('shot_start',startPayload);
   queueSnapshot(startPayload);
-  banner.textContent='ROLLING TO THE RAMP…';
+  banner.textContent='ROLLING…';
+
+  let lastTs=performance.now();
+  let accumulator=0;
+  const fixedDt=1/144;
 
   function step(ts){
-    const t=clamp((ts-startAt)/shotDuration,0,1);
-    const sample=sampleSkeePath(start,land,t,dx);
-    ball={...sample};
-    displayBall={...sample};
+    let frameDt=clamp((ts-lastTs)/1000,0,.05);
+    lastTs=ts;
+    accumulator+=frameDt;
 
-    if(t>.56&&t<.76)banner.textContent='UP THE RAMP…';
-    else if(t>=.76&&t<.97)banner.textContent=land.cupId?'AIRBORNE — LINE UP THE CUP…':'AIRBORNE…';
+    while(accumulator>=fixedDt && !sim.done){
+      stepSkeePhysics(sim,fixedDt);
+      accumulator-=fixedDt;
+    }
+
+    ball={x:sim.x,y:sim.y,z:sim.z,sink:sim.sink};
+    displayBall={...ball};
+
+    if(sim.phase==='ramp')banner.textContent='UP THE BALL-HOP…';
+    else if(sim.phase==='air')banner.textContent='AIRBORNE…';
+    else if(sim.phase==='deck_roll')banner.textContent='BOUNCE — STILL LIVE…';
+    else if(sim.phase==='captured')banner.textContent=sim.score+' — DROPPING IN…';
 
     if(ts-lastSend>32){
       lastSend=ts;
@@ -478,22 +663,35 @@ function launchShot(dx,dy,duration){
         seq:shotSeq,
         ball_x:ball.x,ball_y:ball.y,
         ball_z:ball.z,ball_sink:ball.sink,
-        moving:true,sent_at:Date.now()
+        moving:!sim.done,
+        phase:sim.phase,
+        sent_at:Date.now()
       };
       realtimeSend('physics',frame);
-      if((Math.floor(t*20)%5)===0)queueSnapshot(frame);
+      if((Math.floor(sim.elapsed*12)%5)===0)queueSnapshot(frame);
     }
 
-    if(t<1){requestAnimationFrame(step);return}
-    finishShot(team,land);
+    if(!sim.done){
+      requestAnimationFrame(step);
+      return;
+    }
+
+    const outcome={
+      x:sim.x,
+      y:sim.y,
+      cupId:sim.cup?sim.cup.id:null,
+      score:sim.cup?sim.cup.score:0,
+      phase:sim.phase
+    };
+    finishShot(team,outcome);
   }
 
   requestAnimationFrame(step);
 }
 
-async function finishShot(team,land){
-  const pts=Number(land.score||0);
-  ball={x:land.x,y:land.y,z:0,sink:pts>0?1:0};
+async function finishShot(team,outcome){
+  const pts=Number(outcome.score||0);
+  ball={x:outcome.x,y:outcome.y,z:0,sink:pts>0?1:0};
   displayBall={...ball};
   if(team==='A'){state.scoreA+=pts;state.throwsA++}else{state.scoreB+=pts;state.throwsB++}
   state.lastScore=pts;
@@ -510,14 +708,14 @@ async function finishShot(team,land){
   const payload={
     seq:shotSeq,
     ball_x:ball.x,ball_y:ball.y,ball_z:0,ball_sink:pts>0?1:0,
-    cup_id:land.cupId,score:pts,state:state,sent_at:sentAt
+    cup_id:outcome.cupId,score:pts,state:state,sent_at:sentAt
   };
   realtimeSend('shot_complete',payload);
   realtimeSend('skee_state',{state:state,sent_at:sentAt});
   queueSnapshot({seq:shotSeq,ball_x:ball.x,ball_y:ball.y,moving:false,sent_at:sentAt});
   playThunk(pts);
-  banner.textContent=pts>0?(pts+' points — sunk!'):'Miss — off the scoring cups.';
-  moving=false;localSim=false;syncHud();
+  banner.textContent=pts>0?(pts+' points — sunk!'):'0 points — gutter / miss.';
+  moving=false;localSim=false;skeeSim=null;syncHud();
   setTimeout(function(){
     if(!state.over){activeTeam=state.current;ball={x:50,y:8,z:0,sink:0};displayBall={x:50,y:8,z:0,sink:0};banner.textContent=currentName()+' — tap and swipe to throw.';render()}
   },700);
