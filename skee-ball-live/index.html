@@ -44,7 +44,7 @@ input{width:100%;background:#0b1018;color:#fff;border:1px solid #303b4f;border-r
 .lane:after{content:"";position:absolute;left:7%;right:7%;bottom:0;top:0;background:linear-gradient(90deg,#0002,transparent 20% 80%,#0002);pointer-events:none}
 .screen-label{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:12;background:#0b1019cc;border:1px solid #354158;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:900;letter-spacing:.09em}
 .seam{position:absolute;left:7%;right:7%;height:2px;background:#f5d16a88;z-index:3;box-shadow:0 0 8px #f5d16a66}
-.ramp{position:absolute;left:7%;right:7%;height:18%;background:linear-gradient(180deg,#9e754f,#5e412c);border-top:4px solid #3e2c20;z-index:2}
+.ramp{position:absolute;left:7%;right:7%;bottom:0;height:55%;background:linear-gradient(180deg,#9e754f,#5e412c);border-top:4px solid #3e2c20;z-index:2}
 .target-deck{position:absolute;left:7%;right:7%;top:0;height:45%;background:
  radial-gradient(circle at 50% 52%,#274b66 0 26%,#173247 27% 48%,#102639 49% 70%,#0e2130 71% 100%);
  border-bottom:4px solid #604329;z-index:1;overflow:hidden}
@@ -182,7 +182,7 @@ function renderBall(){
   if(!p){ballEl.style.display='none';return}
   ballEl.style.display='block';
   ballEl.style.left=p.x+'px';
-  ballEl.style.bottom=(shell.clientHeight-p.y)+'px';
+  ballEl.style.bottom=p.y+'px';
   ballEl.classList.toggle('a',state.current==='A');
   ballEl.classList.toggle('b',state.current==='B');
 }
@@ -191,7 +191,7 @@ function syncStatic(){
   $('targetDeck').style.display=position==='second'?'block':'none';
   $('ramp').style.display=position==='second'?'block':'none';
   $('startZone').style.display=(position==='first'&&!moving&&!state.over)?'block':'none';
-  $('seam').style.bottom=position==='first'?'0':'100%';
+  $('seam').style.bottom=position==='first'?'calc(100% - 2px)':'0';
 }
 function syncHud(){
   hudA.textContent=state.nameA;hudB.textContent=state.nameB;
