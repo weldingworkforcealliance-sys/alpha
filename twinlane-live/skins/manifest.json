@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "engine": "corvu-mor-twinlane-bocce",
   "gameplay_contract": "bocce-v1-physical-approved",
   "default_skin": "living_kingdoms",
@@ -33,7 +33,18 @@
       "included": true,
       "price_cents": 0,
       "status": "active",
-      "competitive_readability": "approved"
+      "competitive_readability": "approved",
+      "sku": "CM-BOCCE-LIVING-KINGDOMS-ORIGINAL",
+      "store_visible": true,
+      "selectable": true,
+      "entitlement": "included"
     }
-  ]
+  ],
+  "store": {
+    "enabled": true,
+    "currency": "USD",
+    "checkout_status": "not_configured",
+    "entitlement_model": "local_v1",
+    "note": "Paid checkout is intentionally not active yet."
+  }
 }
