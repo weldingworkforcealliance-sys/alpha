@@ -169,7 +169,7 @@ const resultEl=$('result'),winnerEl=$('winner'),finalScoreEl=$('finalScore');
 
 let session='',token='',isHost=false,position='second',role='target';
 let ws=null,topic='',joinRef=null,ref=0,ready=false,reconnectTimer=null,heartbeat=null;
-let shotSeq=0,moving=false,localSim=false;
+let shotSeq=0,moving=false,localSim=false,activeTeam='A';
 let ball={x:50,y:8,z:0,sink:0},displayBall={x:50,y:8,z:0,sink:0};
 let frames=[],playbackMs=null,lastPlaybackPerf=0,lastSentAt=0;
 let state={nameA:'Player 1',nameB:'Player 2',scoreA:0,scoreB:0,throwsA:0,throwsB:0,current:'A',over:false,winner:null,lastScore:0};
@@ -216,8 +216,8 @@ function renderBall(){
   ballEl.style.bottom=(p.y+liftPx-sink*8)+'px';
   ballEl.style.transform='translate(-50%,50%) scale('+scale+')';
   ballEl.style.opacity=String(opacity);
-  ballEl.classList.toggle('a',state.current==='A');
-  ballEl.classList.toggle('b',state.current==='B');
+  ballEl.classList.toggle('a',activeTeam==='A');
+  ballEl.classList.toggle('b',activeTeam==='B');
 
   if(z>.02 && sink<.9){
     ballShadow.style.display='block';
@@ -298,7 +298,8 @@ function applyShotStart(p){
   const st=Number(p.sent_at||Date.now());
   frames=[{sentAt:st,x:Number(p.ball_x||50),y:Number(p.ball_y||8),z:Number(p.ball_z||0),sink:Number(p.ball_sink||0)}];
   playbackMs=st-REMOTE_DELAY;lastPlaybackPerf=now();lastSentAt=st;
-  state.current=p.team==='B'?'B':'A';
+  activeTeam=p.team==='B'?'B':'A';
+  state.current=activeTeam;
   displayBall={x:Number(p.ball_x||50),y:Number(p.ball_y||8),z:Number(p.ball_z||0),sink:Number(p.ball_sink||0)};
 }
 function applyPhysics(p){
@@ -444,6 +445,7 @@ function launchShot(dx,dy,duration){
 
   shotSeq++;moving=true;localSim=true;placed=false;
   const team=state.current;
+  activeTeam=team;
   const start={x:placedX,y:8,z:0,sink:0};
   const startAt=performance.now();
   const shotDuration=1180+land.power*920;
@@ -517,7 +519,7 @@ async function finishShot(team,land){
   banner.textContent=pts>0?(pts+' points — sunk!'):'Miss — off the scoring cups.';
   moving=false;localSim=false;syncHud();
   setTimeout(function(){
-    if(!state.over){ball={x:50,y:8,z:0,sink:0};displayBall={x:50,y:8,z:0,sink:0};banner.textContent=currentName()+' — tap and swipe to throw.';render()}
+    if(!state.over){activeTeam=state.current;ball={x:50,y:8,z:0,sink:0};displayBall={x:50,y:8,z:0,sink:0};banner.textContent=currentName()+' — tap and swipe to throw.';render()}
   },700);
 }
 function unlockAudio(){if(!audioCtx)try{audioCtx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}
