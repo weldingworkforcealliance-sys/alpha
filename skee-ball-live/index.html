@@ -395,7 +395,10 @@ function playThunk(score){
 shell.addEventListener('pointerdown',function(e){
   unlockAudio();
   if(role!=='launch'||position!=='first'||moving||state.over)return;
-  const r=shell.getBoundingClientRect(),x=clamp(((e.clientX-r.left)/r.width)*100,22,78),y=100-((e.clientY-r.top)/r.height)*50;
+  const r=shell.getBoundingClientRect();
+  const x=clamp(((e.clientX-r.left)/r.width)*100,22,78);
+  const screenY=clamp((e.clientY-r.top)/r.height,0,1);
+  const y=(1-screenY)*50;
   if(y<0||y>20)return;
   placedX=x;placed=true;ball={x:x,y:8};displayBall={x:x,y:8};pointerStart={x:e.clientX,y:e.clientY,t:performance.now()};banner.textContent='Swipe upward from the ball.';render();
   try{shell.setPointerCapture(e.pointerId)}catch(err){}
