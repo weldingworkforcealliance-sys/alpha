@@ -139,6 +139,9 @@ body[data-skin="living_kingdoms"] .skin-chip{border-color:#8c7447}
 .diag{margin-top:10px}
 .diag summary{cursor:pointer;color:#76857a;font-size:11px}
 .paired-badge{display:inline-flex;align-items:center;gap:7px;border:1px solid #3f6d50;border-radius:999px;padding:6px 10px;background:#102018;color:#b9dcc4;font-size:12px;font-weight:900}
+#linkStatus[data-quality="direct"]{border-color:#46795a;color:#bfe0c8;background:#102018}
+#linkStatus[data-quality="calibrating"]{border-color:#8b7445;color:#e1cc92;background:#201b10}
+#linkStatus[data-quality="fallback"]{border-color:#745749;color:#d8b6a7;background:#21140f}
 @media(max-width:600px){h1{font-size:24px}.qr{width:145px;height:145px}.three{grid-template-columns:1fr}.guide-box{min-width:105px}.player-inputs{grid-template-columns:1fr}.brand-title{font-size:25px}}
 
 /* Living Kingdoms immersive scenic art, presentation only. */
@@ -751,7 +754,10 @@ body[data-view-mode="immersive"] #matchHud::before{
 </section>
 
 <section id="connectionCard" class="card">
-  <div id="status" class="status">Ready.</div>
+  <div class="row">
+    <div id="status" class="status">Ready.</div>
+    <span id="linkStatus" class="tag">LINK · WAITING</span>
+  </div>
   <details class="diag">
     <summary>Diagnostics</summary>
     <div id="debug" class="small" style="margin-top:8px"></div>
@@ -831,6 +837,7 @@ body[data-view-mode="immersive"] #matchHud::before{
   const viewPanel = document.getElementById('viewPanel');
   const connectionCard = document.getElementById('connectionCard');
   const statusEl = document.getElementById('status');
+  const linkStatusEl = document.getElementById('linkStatus');
   const debugEl = document.getElementById('debug');
   const laneEl = document.getElementById('lane');
   const ballEl = document.getElementById('ball');
@@ -923,6 +930,40 @@ body[data-view-mode="immersive"] #matchHud::before{
   let monitorLastRafAt = performance.now();
   let monitorLastLongFrameAt = 0;
   let monitorSeamSeq = -1;
+
+  // TwinLane Adaptive Link v1. Supabase remains signaling + fallback.
+  let peerConnection = null;
+  let peerControlChannel = null;
+  let peerMotionChannel = null;
+  let peerIceQueue = [];
+  let peerReadyTimer = null;
+  let peerFallbackTimer = null;
+  let peerHealthTimer = null;
+  let peerLastPongAt = 0;
+  let peerRefreshHz = 60;
+  let localRefreshHz = 60;
+  let calibrationInFlight = false;
+  let calibrationSamples = [];
+  let calibrationPending = new Map();
+  let calibrationPeerOffsetSamples = [];
+  let calibrationPeerMeta = null;
+  let pendingAdaptiveConfig = null;
+
+  const ADAPTIVE_FALLBACK = Object.freeze({
+    mode:'realtime',
+    profile:'cloud',
+    direct:false,
+    ready:false,
+    playbackDelayMs:60,
+    predictMs:55,
+    motionIntervalNear:32,
+    motionIntervalFar:24,
+    medianRttMs:null,
+    jitterMs:null,
+    loss:null,
+    peerRefreshHz:60
+  });
+  let adaptiveLink={...ADAPTIVE_FALLBACK};
   let soundOn = localStorage.getItem('corvumor_sound') !== 'off';
   let viewMode = localStorage.getItem('corvumor_view_mode') || 'immersive';
   let hapticsOn = localStorage.getItem('corvumor_haptics') !== 'off';
@@ -962,6 +1003,435 @@ body[data-view-mode="immersive"] #matchHud::before{
       : cleanPlayerName(g.player_a_name,'Player 1');
   };
 
+
+  function updateLinkStatus(){
+    if(!linkStatusEl)return;
+    if(!adaptiveLink.ready){
+      linkStatusEl.dataset.quality='calibrating';
+      linkStatusEl.textContent=adaptiveLink.direct?'LINK · CALIBRATING':'LINK · PAIRING';
+      return;
+    }
+    if(adaptiveLink.direct){
+      linkStatusEl.dataset.quality='direct';
+      const rtt=Number.isFinite(adaptiveLink.medianRttMs)?Math.round(adaptiveLink.medianRttMs)+' ms':'DIRECT';
+      linkStatusEl.textContent='LINK · '+adaptiveLink.profile.toUpperCase()+' · '+rtt;
+    }else{
+      linkStatusEl.dataset.quality='fallback';
+      linkStatusEl.textContent='LINK · CLOUD FALLBACK';
+    }
+  }
+
+  function currentPlaybackDelayMs(){
+    return adaptiveLink.ready?adaptiveLink.playbackDelayMs:ADAPTIVE_FALLBACK.playbackDelayMs;
+  }
+
+  function currentPredictMs(){
+    return adaptiveLink.ready?adaptiveLink.predictMs:ADAPTIVE_FALLBACK.predictMs;
+  }
+
+  function currentMotionInterval(objectY){
+    const cfg=adaptiveLink.ready?adaptiveLink:ADAPTIVE_FALLBACK;
+    return objectY>=42?cfg.motionIntervalFar:cfg.motionIntervalNear;
+  }
+
+  function median(values){
+    const a=values.filter(Number.isFinite).slice().sort((x,y)=>x-y);
+    if(!a.length)return null;
+    const m=Math.floor(a.length/2);
+    return a.length%2?a[m]:(a[m-1]+a[m])/2;
+  }
+
+  function percentile(values,p){
+    const a=values.filter(Number.isFinite).slice().sort((x,y)=>x-y);
+    if(!a.length)return null;
+    const idx=(a.length-1)*p;
+    const lo=Math.floor(idx),hi=Math.ceil(idx);
+    if(lo===hi)return a[lo];
+    return a[lo]+(a[hi]-a[lo])*(idx-lo);
+  }
+
+  async function measureRefreshRate(){
+    return await new Promise(resolve=>{
+      const samples=[];
+      let last=performance.now();
+      const step=(now)=>{
+        const d=now-last;last=now;
+        if(d>5&&d<80)samples.push(d);
+        if(samples.length>=24){
+          const m=median(samples)||16.67;
+          resolve(clamp(1000/m,20,144));
+          return;
+        }
+        requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+      setTimeout(()=>resolve(60),1100);
+    });
+  }
+
+  function chooseAdaptiveConfig(samples,peerHz=60){
+    const rtts=samples.map(s=>s.rtt).filter(Number.isFinite);
+    const offsets=samples.map(s=>s.offset).filter(Number.isFinite);
+    const med=median(rtts)??50;
+    const p90=percentile(rtts,.90)??med;
+    const jitter=Math.max(0,p90-med);
+    const loss=Math.max(0,1-rtts.length/12);
+    const refresh=clamp(Number(peerHz)||60,20,144);
+
+    let profile='variable';
+    let playbackDelayMs=28,predictMs=38,motionIntervalNear=24,motionIntervalFar=20;
+
+    if(med<=18 && jitter<=6 && loss<=.08){
+      profile='excellent';
+      playbackDelayMs=8;predictMs=22;motionIntervalNear=16;motionIntervalFar=16;
+    }else if(med<=38 && jitter<=14 && loss<=.16){
+      profile='good';
+      playbackDelayMs=16;predictMs=30;motionIntervalNear=20;motionIntervalFar=18;
+    }else if(med<=75 && jitter<=28 && loss<=.28){
+      profile='variable';
+      playbackDelayMs=30;predictMs=42;motionIntervalNear=24;motionIntervalFar=22;
+    }else{
+      profile='poor';
+      playbackDelayMs=44;predictMs=52;motionIntervalNear=28;motionIntervalFar=24;
+    }
+
+    const refreshFloor=Math.max(12,Math.round(1000/refresh));
+    motionIntervalNear=Math.max(motionIntervalNear,refreshFloor);
+    motionIntervalFar=Math.max(motionIntervalFar,refreshFloor);
+
+    return {
+      mode:'webrtc',
+      profile,direct:true,ready:true,
+      playbackDelayMs,predictMs,
+      motionIntervalNear,motionIntervalFar,
+      medianRttMs:med,jitterMs:jitter,loss,
+      peerRefreshHz:refresh,
+      peerOffsetMs:median(offsets)??0
+    };
+  }
+
+  function applyAdaptiveConfig(config,fromPeer=false){
+    if(!config)return;
+    const next={...config,ready:true,direct:Boolean(config.direct)};
+    if(state?.ball_moving){
+      pendingAdaptiveConfig={next,fromPeer};
+      return;
+    }
+    adaptiveLink=next;
+    if(next.direct && Number.isFinite(next.peerOffsetMs)){
+      // peerOffsetMs is peer clock - host clock.
+      remoteClockOffsetMs=isHost?-next.peerOffsetMs:next.peerOffsetMs;
+    }
+    updateLinkStatus();
+    monitorEvent('link_profile',{payload:{...adaptiveLink}});
+  }
+
+  function applyPendingAdaptiveConfig(){
+    if(!pendingAdaptiveConfig || state?.ball_moving)return;
+    const pending=pendingAdaptiveConfig;
+    pendingAdaptiveConfig=null;
+    applyAdaptiveConfig(pending.next,pending.fromPeer);
+  }
+
+  function activateRealtimeFallback(reason='timeout'){
+    adaptiveLink={...ADAPTIVE_FALLBACK,ready:true};
+    pendingAdaptiveConfig=null;
+    updateLinkStatus();
+    monitorEvent('link_fallback',{payload:{reason}});
+  }
+
+  function closePeerLink(reason='reset'){
+    if(peerReadyTimer){clearInterval(peerReadyTimer);peerReadyTimer=null;}
+    if(peerFallbackTimer){clearTimeout(peerFallbackTimer);peerFallbackTimer=null;}
+    if(peerHealthTimer){clearInterval(peerHealthTimer);peerHealthTimer=null;}
+    calibrationInFlight=false;
+    calibrationPending.clear();
+    peerIceQueue=[];
+    try{peerControlChannel?.close();}catch{}
+    try{peerMotionChannel?.close();}catch{}
+    try{peerConnection?.close();}catch{}
+    peerControlChannel=null;
+    peerMotionChannel=null;
+    peerConnection=null;
+    if(reason!=='reset')activateRealtimeFallback(reason);
+  }
+
+  function peerChannelSend(channel,event,payload){
+    if(!channel || channel.readyState!=='open')return false;
+    try{
+      channel.send(JSON.stringify({type:'game',event,payload}));
+      return true;
+    }catch{return false;}
+  }
+
+  function transportSend(event,payload,kind='control'){
+    const channel=kind==='motion'?peerMotionChannel:peerControlChannel;
+    if(adaptiveLink.direct && adaptiveLink.ready && peerChannelSend(channel,event,payload))return true;
+    realtimeSend(event,payload);
+    return false;
+  }
+
+  function dispatchRemoteGameplayEvent(event,payload,source='realtime'){
+    if(event==='shot_start')applyShotStart(payload);
+    if(event==='physics')applyRealtimePhysics(payload);
+    if(event==='impact_hit')scheduleRemotePhysicalSound(payload);
+    if(event==='rail_hit')scheduleRemotePhysicalSound(payload);
+    if(event==='pallino_complete')queueRemoteTransition('pallino_complete',payload);
+    if(event==='shot_complete')queueRemoteTransition('shot_complete',payload);
+    if(monitorActive() && source==='webrtc'){
+      monitorEvent('p2p_event',{source_sent_at:Number(payload?.sent_at||0),payload:{event}});
+    }
+  }
+
+  function handlePeerData(raw,channelKind){
+    let msg;
+    try{msg=JSON.parse(raw);}catch{return;}
+    if(!msg||typeof msg!=='object')return;
+
+    if(msg.type==='game'){
+      dispatchRemoteGameplayEvent(msg.event,msg.payload,'webrtc');
+      return;
+    }
+
+    if(msg.type==='ping'){
+      const t1=Date.now();
+      const response={type:'pong',id:msg.id,t0:Number(msg.t0),t1,t2:Date.now(),mode:msg.mode||'cal'};
+      try{peerControlChannel?.send(JSON.stringify(response));}catch{}
+      return;
+    }
+
+    if(msg.type==='pong'){
+      const t3=Date.now();
+      const pending=calibrationPending.get(msg.id);
+      if(!pending)return;
+      calibrationPending.delete(msg.id);
+      const t0=Number(msg.t0??pending.t0);
+      const t1=Number(msg.t1),t2=Number(msg.t2);
+      const rtt=Math.max(0,(t3-t0)-(t2-t1));
+      const offset=((t1-t0)+(t2-t3))/2;
+      peerLastPongAt=performance.now();
+      if(msg.mode==='health'){
+        calibrationSamples.push({rtt,offset,health:true});
+        if(calibrationSamples.length>20)calibrationSamples.splice(0,calibrationSamples.length-20);
+        return;
+      }
+      calibrationSamples.push({rtt,offset});
+      return;
+    }
+
+    if(msg.type==='cal_meta'){
+      calibrationPeerMeta=msg;
+      peerRefreshHz=clamp(Number(msg.refreshHz)||60,20,144);
+      return;
+    }
+
+    if(msg.type==='cal_result'){
+      const cfg={...msg.config};
+      if(Number.isFinite(Number(msg.peerOffsetMs)))cfg.peerOffsetMs=Number(msg.peerOffsetMs);
+      applyAdaptiveConfig(cfg,true);
+      return;
+    }
+  }
+
+  function setupPeerChannel(channel,kind){
+    if(!channel)return;
+    if(kind==='control')peerControlChannel=channel;
+    else peerMotionChannel=channel;
+    channel.binaryType='arraybuffer';
+    channel.addEventListener('open',()=>{
+      monitorEvent('p2p_channel_open',{payload:{kind}});
+      if(kind==='control'){
+        void measureRefreshRate().then(hz=>{
+          localRefreshHz=hz;
+          try{channel.send(JSON.stringify({type:'cal_meta',refreshHz:hz,kind,device:kind}));}catch{}
+          if(isHost)void beginDirectCalibration();
+        });
+      }
+      maybePeerReady();
+    });
+    channel.addEventListener('message',(e)=>handlePeerData(e.data,kind));
+    channel.addEventListener('close',()=>{
+      monitorEvent('p2p_channel_close',{payload:{kind}});
+      if(adaptiveLink.direct)activateRealtimeFallback('datachannel_closed');
+    });
+    channel.addEventListener('error',()=>{});
+  }
+
+  function maybePeerReady(){
+    if(peerControlChannel?.readyState!=='open'||peerMotionChannel?.readyState!=='open')return;
+    if(peerFallbackTimer){clearTimeout(peerFallbackTimer);peerFallbackTimer=null;}
+    adaptiveLink={...adaptiveLink,direct:true,ready:false,mode:'webrtc',profile:'calibrating'};
+    updateLinkStatus();
+  }
+
+  async function flushQueuedIce(){
+    if(!peerConnection?.remoteDescription)return;
+    while(peerIceQueue.length){
+      const candidate=peerIceQueue.shift();
+      try{await peerConnection.addIceCandidate(candidate);}catch{}
+    }
+  }
+
+  function ensurePeerConnection(initiator=false){
+    if(peerConnection && !['closed','failed'].includes(peerConnection.connectionState))return peerConnection;
+    closePeerLink('reset');
+
+    const pc=new RTCPeerConnection({
+      iceServers:[
+        {urls:'stun:stun.cloudflare.com:3478'},
+        {urls:'stun:stun.l.google.com:19302'}
+      ]
+    });
+    peerConnection=pc;
+
+    pc.addEventListener('icecandidate',(e)=>{
+      if(e.candidate)realtimeSend('peer_ice',{candidate:e.candidate.toJSON?.()||e.candidate});
+    });
+    pc.addEventListener('datachannel',(e)=>{
+      const kind=e.channel.label==='twinlane-motion'?'motion':'control';
+      setupPeerChannel(e.channel,kind);
+    });
+    pc.addEventListener('connectionstatechange',()=>{
+      monitorEvent('p2p_state',{payload:{state:pc.connectionState}});
+      if(['failed','closed'].includes(pc.connectionState))activateRealtimeFallback('peer_'+pc.connectionState);
+    });
+
+    if(initiator){
+      setupPeerChannel(pc.createDataChannel('twinlane-control',{ordered:true}),'control');
+      setupPeerChannel(pc.createDataChannel('twinlane-motion',{ordered:false,maxRetransmits:0}),'motion');
+    }
+    return pc;
+  }
+
+  async function sendPeerOffer(){
+    if(!isHost || !realtimeReady)return;
+    const pc=ensurePeerConnection(true);
+    try{
+      const offer=await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      realtimeSend('peer_offer',{sdp:pc.localDescription});
+    }catch{}
+  }
+
+  async function handlePeerSignal(event,payload){
+    if(event==='peer_ready'){
+      if(isHost && !adaptiveLink.direct)await sendPeerOffer();
+      return true;
+    }
+
+    if(event==='peer_offer'){
+      if(isHost)return true;
+      const pc=ensurePeerConnection(false);
+      try{
+        await pc.setRemoteDescription(payload.sdp);
+        await flushQueuedIce();
+        const answer=await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        realtimeSend('peer_answer',{sdp:pc.localDescription});
+      }catch{}
+      return true;
+    }
+
+    if(event==='peer_answer'){
+      if(!isHost || !peerConnection)return true;
+      try{
+        await peerConnection.setRemoteDescription(payload.sdp);
+        await flushQueuedIce();
+      }catch{}
+      return true;
+    }
+
+    if(event==='peer_ice'){
+      const candidate=payload?.candidate;
+      if(!candidate)return true;
+      if(!peerConnection)ensurePeerConnection(false);
+      if(peerConnection?.remoteDescription){
+        try{await peerConnection.addIceCandidate(candidate);}catch{}
+      }else{
+        peerIceQueue.push(candidate);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  function sendCalibrationPing(mode='cal'){
+    if(peerControlChannel?.readyState!=='open')return;
+    const id=mode+':'+Date.now()+':'+Math.random().toString(36).slice(2,8);
+    const t0=Date.now();
+    calibrationPending.set(id,{t0,mode});
+    try{peerControlChannel.send(JSON.stringify({type:'ping',id,t0,mode}));}catch{}
+    setTimeout(()=>calibrationPending.delete(id),1800);
+  }
+
+  async function beginDirectCalibration(){
+    if(!isHost || calibrationInFlight || peerControlChannel?.readyState!=='open')return;
+    calibrationInFlight=true;
+    calibrationSamples=[];
+    calibrationPeerOffsetSamples=[];
+    adaptiveLink={...adaptiveLink,direct:true,ready:false,profile:'calibrating'};
+    updateLinkStatus();
+    setStatus('Calibrating direct court link…');
+
+    for(let i=0;i<12;i++){
+      sendCalibrationPing('cal');
+      await new Promise(r=>setTimeout(r,85));
+    }
+    await new Promise(r=>setTimeout(r,220));
+
+    const samples=calibrationSamples.filter(s=>!s.health);
+    const cfg=chooseAdaptiveConfig(samples,peerRefreshHz);
+    applyAdaptiveConfig(cfg,false);
+
+    try{
+      peerControlChannel.send(JSON.stringify({
+        type:'cal_result',
+        config:{...cfg,peerOffsetMs:undefined},
+        peerOffsetMs:cfg.peerOffsetMs
+      }));
+    }catch{}
+
+    calibrationInFlight=false;
+    setStatus('Direct court link ready.');
+    startPeerHealthChecks();
+  }
+
+  function startPeerHealthChecks(){
+    if(peerHealthTimer)clearInterval(peerHealthTimer);
+    peerLastPongAt=performance.now();
+    peerHealthTimer=setInterval(()=>{
+      if(peerControlChannel?.readyState!=='open')return;
+      sendCalibrationPing('health');
+      if(performance.now()-peerLastPongAt>6500){
+        activateRealtimeFallback('health_timeout');
+      }
+    },3000);
+  }
+
+  function startAdaptiveLinkNegotiation(){
+    if(typeof RTCPeerConnection!=='function'){
+      activateRealtimeFallback('webrtc_unavailable');
+      return;
+    }
+    if(adaptiveLink.direct || calibrationInFlight)return;
+
+    adaptiveLink={...ADAPTIVE_FALLBACK,ready:false};
+    updateLinkStatus();
+
+    if(peerFallbackTimer)clearTimeout(peerFallbackTimer);
+    peerFallbackTimer=setTimeout(()=>{
+      if(!adaptiveLink.direct || !adaptiveLink.ready)activateRealtimeFallback('calibration_timeout');
+    },3200);
+
+    if(!isHost){
+      if(peerReadyTimer)clearInterval(peerReadyTimer);
+      const announce=()=>{if(!adaptiveLink.direct)realtimeSend('peer_ready',{sent_at:Date.now()});};
+      announce();
+      peerReadyTimer=setInterval(announce,900);
+    }else{
+      void sendPeerOffer();
+    }
+  }
 
   function monitorActive(){
     return monitorRequested && Boolean(session) && Boolean(token);
