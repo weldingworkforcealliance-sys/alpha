@@ -64,7 +64,7 @@ export default function MfaPage() {
         if (factors.error) throw factors.error;
 
         const verifiedTotp = factors.data.totp.find(
-          (factor) => factor.status === 'verified'
+          (factor: { id: string; status?: string }) => factor.status === 'verified'
         );
 
         if (verifiedTotp) {
