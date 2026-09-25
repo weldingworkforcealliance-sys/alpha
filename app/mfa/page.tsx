@@ -83,6 +83,14 @@ export default function MfaPage() {
           return;
         }
 
+        const staleFactors = factors.data.totp.filter(
+          (factor: { id: string; status?: string }) => factor.status !== 'verified'
+        );
+        for (const factor of staleFactors) {
+          const cleanup = await supabase.auth.mfa.unenroll({ factorId: factor.id });
+          if (cleanup.error) throw cleanup.error;
+        }
+
         const enrollment = await supabase.auth.mfa.enroll({
           factorType: 'totp',
           friendlyName: 'LTG Authenticator',
