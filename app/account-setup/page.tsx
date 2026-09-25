@@ -193,6 +193,12 @@ export default function AccountSetupPage() {
       if (passwordError) throw passwordError;
       passwordUpdated = true;
 
+      if (process.env.NEXT_PUBLIC_REQUIRE_MFA === 'true') {
+        setMessage('Password saved. Secure your account with multi-factor authentication to finish setup.');
+        router.replace('/mfa?next=%2Fdashboard');
+        return;
+      }
+
       const { data: activatedCount, error: activateError } =
         await supabase.rpc('activate_my_invited_memberships');
 
