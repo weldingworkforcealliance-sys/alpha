@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "engine": "corvu-mor-twinlane",
+  "addons": [
+    {
+      "id": "adaptive-link-v1",
+      "version": "1.0.0",
+      "status": "required",
+      "required_for": [
+        "cross-screen-continuous-motion",
+        "cross-screen-projectile-games"
+      ],
+      "physically_approved_reference": {
+        "game": "bocce",
+        "branch": "locked/adaptive-link-v1-physical-approved",
+        "commit": "234b9eb3ef1a893b359fb3bb7d3c6bdb0fb420b7",
+        "date": "2026-09-24"
+      },
+      "transport": {
+        "primary": "webrtc-datachannel",
+        "control": "ordered-reliable",
+        "motion": "unordered-maxRetransmits-0",
+        "fallback": "supabase-realtime",
+        "recovery": "durable-game-snapshots"
+      },
+      "calibration": [
+        "round-trip-latency",
+        "jitter",
+        "packet-loss",
+        "clock-offset",
+        "sender-refresh-rate"
+      ],
+      "runtime_rule": "Profile changes are applied between shots, never during authoritative motion."
+    }
+  ]
+}
