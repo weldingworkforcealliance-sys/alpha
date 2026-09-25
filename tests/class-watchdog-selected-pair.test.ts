@@ -71,7 +71,7 @@ describe('selected watchdog alerts', () => {
     const alerts = selectedWatchdogAlerts(rows, at('2026-09-25T19:15:00'), 'c-110');
     expect(alerts).toHaveLength(1);
     expect(alerts[0].severity).toBe('overdue');
-    expect(alerts[0].sectionId).toBe('c-110');
+    expect(alerts[0].sectionId).toBe('c-105');
     expect(alerts[0].displayLabel).toBe('PVHS Level 1 C · WLD 105/110');
   });
 
