@@ -1,0 +1,116 @@
+{
+  "base": "http://127.0.0.1:3007",
+  "checkedAt": "2026-09-25T21:05:06.813Z",
+  "results": [
+    {
+      "check": "public-page",
+      "route": "/",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "check": "public-page",
+      "route": "/login",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "check": "public-page",
+      "route": "/account-setup",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "check": "public-page",
+      "route": "/reset-password",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "check": "public-page",
+      "route": "/training/login",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "check": "public-page",
+      "route": "/demo",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "check": "unauthenticated-redirect",
+      "route": "/dashboard",
+      "status": 307,
+      "pass": true
+    },
+    {
+      "check": "unauthenticated-redirect",
+      "route": "/agenda",
+      "status": 307,
+      "pass": true
+    },
+    {
+      "check": "unauthenticated-redirect",
+      "route": "/resources",
+      "status": 307,
+      "pass": true
+    },
+    {
+      "check": "unauthenticated-redirect",
+      "route": "/classroom",
+      "status": 307,
+      "pass": true
+    },
+    {
+      "check": "unauthenticated-redirect",
+      "route": "/attendance",
+      "status": 307,
+      "pass": true
+    },
+    {
+      "check": "unauthenticated-redirect",
+      "route": "/time-clock",
+      "status": 307,
+      "pass": true
+    },
+    {
+      "check": "unauthenticated-redirect",
+      "route": "/reports",
+      "status": 307,
+      "pass": true
+    },
+    {
+      "check": "unauthenticated-redirect",
+      "route": "/school",
+      "status": 307,
+      "pass": true
+    },
+    {
+      "check": "unauthenticated-redirect",
+      "route": "/owner",
+      "status": 307,
+      "pass": true
+    },
+    {
+      "check": "unauthenticated-redirect",
+      "route": "/accounts",
+      "status": 307,
+      "pass": true
+    },
+    {
+      "check": "unauthenticated-redirect",
+      "route": "/training",
+      "status": 307,
+      "pass": true
+    },
+    {
+      "check": "compiled-database-isolation",
+      "sameOriginScripts": 12,
+      "databaseHosts": [
+        "ezlvivmeneefiiwqwgqd"
+      ],
+      "pass": true
+    }
+  ]
+}

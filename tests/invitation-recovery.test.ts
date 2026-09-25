@@ -26,6 +26,7 @@ function harness(path: string, name: string, search = '') {
   const replaceState = vi.fn();
   const push = vi.fn();
   const handler = pageHandler<() => Promise<void>>(path, name, {
+    process: { env: { NEXT_PUBLIC_REQUIRE_MFA: 'false' } },
     supabase: { auth, rpc }, formatError, URLSearchParams,
     setReady, setError, setMessage, setBusy, setSaving, setEmail: vi.fn(),
     password: 'test-password', confirmPassword: 'test-password',
@@ -134,4 +135,3 @@ it('Account Setup checks user lookup errors after a successful code exchange', a
   expect(h.setReady).not.toHaveBeenCalled();
   expect(h.setError.mock.lastCall?.[0]).toContain('could not be verified');
 });
-

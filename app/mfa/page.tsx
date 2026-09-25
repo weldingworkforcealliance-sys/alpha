@@ -110,7 +110,6 @@ export default function MfaPage() {
 
     void prepare();
     // finish intentionally resolves the current invite only after AAL2 is reached.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router, supabase]);
 
   const verify = async () => {
