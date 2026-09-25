@@ -153,6 +153,7 @@ input{width:100%;background:#0b1018;color:#fff;border:1px solid #303b4f;border-r
   </section>
 </div>
 
+<script src="../twinlane-engine/adaptive-link-v1.js"></script>
 <script>
 (function(){
 'use strict';
@@ -180,6 +181,10 @@ let state={nameA:'Player 1',nameB:'Player 2',scoreA:0,scoreB:0,throwsA:0,throwsB
 let pointerStart=null,placedX=50,placed=false,lastSend=0,snapshotBusy=false,pendingSnapshot=null;
 let skeeSim=null;
 let audioCtx=null;
+let adaptiveLink=null;
+let adaptiveStarted=false;
+let peerJoined=false;
+let playbackRate=1;
 
 const RAMP_START_Y=64;
 const RAMP_LIP_Y=76;
@@ -199,6 +204,18 @@ function now(){return performance.now()}
 function currentName(){return state.current==='A'?state.nameA:state.nameB}
 function left(team){return Math.max(0,9-(team==='A'?state.throwsA:state.throwsB))}
 function debug(s){diag.textContent=String(s)}
+function linkConfig(){return adaptiveLink?adaptiveLink.current():null}
+function remoteDelay(){return adaptiveLink?adaptiveLink.playbackDelayMs():REMOTE_DELAY}
+function remotePredict(){return adaptiveLink?adaptiveLink.predictMs():55}
+function motionInterval(y){return adaptiveLink?adaptiveLink.motionInterval(y):(Number(y)>=42?24:32)}
+function adaptiveReady(){return !adaptiveLink||adaptiveLink.ready()}
+function senderNowMs(){
+  const cfg=linkConfig();
+  if(!cfg||!cfg.direct||!Number.isFinite(Number(cfg.peerOffsetMs)))return null;
+  // Target host calibrated peer offset as peer clock - host clock.
+  if(position==='second'&&isHost)return Date.now()+Number(cfg.peerOffsetMs);
+  return null;
+}
 function viewport(){return position==='first'?{y0:0,y1:50}:{y0:50,y1:100}}
 function worldToLocal(x,y){
   const vp=viewport(),r=shell.getBoundingClientRect();
@@ -241,7 +258,7 @@ function syncStatic(){
   $('targetDeck').style.display=position==='second'?'block':'none';
   $('ramp').style.display=position==='second'?'block':'none';
   $('gutter').style.display=position==='second'?'block':'none';
-  $('startZone').style.display=(position==='first'&&!moving&&!state.over)?'block':'none';
+  $('startZone').style.display=(position==='first'&&adaptiveReady()&&!moving&&!state.over)?'block':'none';
   $('seam').style.bottom=position==='first'?'calc(100% - 2px)':'0';
 }
 function syncHud(){
@@ -271,6 +288,46 @@ function realtimeSend(event,payload){
   ref++;
   ws.send(JSON.stringify({topic:topic,event:'broadcast',payload:{event:event,payload:payload,type:'broadcast'},ref:String(ref),join_ref:joinRef}));
 }
+function dispatchRemote(event,payload,source){
+  if(event==='skee_state')applyState(payload);
+  if(event==='shot_start')applyShotStart(payload);
+  if(event==='physics')applyPhysics(payload);
+  if(event==='shot_complete')queueComplete(payload);
+  if(source==='webrtc')debug('Adaptive Link · direct '+event);
+}
+function initAdaptiveLink(){
+  if(adaptiveLink||!window.CorvuMorAdaptiveLinkV1)return;
+  adaptiveLink=window.CorvuMorAdaptiveLinkV1.create({
+    isHost:()=>isHost,
+    isMoving:()=>moving,
+    role:()=>role,
+    position:()=>position,
+    signalSend:(event,payload)=>realtimeSend(event,payload),
+    onGameEvent:(event,payload,source)=>dispatchRemote(event,payload,source),
+    onStatus:(s)=>{
+      if(!s.ready){conn.textContent=s.direct?'LINK · CALIBRATING':'LINK · PAIRING';return}
+      if(s.direct){
+        const rtt=Number.isFinite(Number(s.medianRttMs))?Math.round(Number(s.medianRttMs))+' ms':'DIRECT';
+        conn.textContent='LINK · '+String(s.profile||'direct').toUpperCase()+' · '+rtt;
+      }else conn.textContent='LINK · CLOUD FALLBACK';
+      syncStatic();
+    },
+    onEvent:(type,payload)=>{
+      if(type==='fallback')debug('Adaptive fallback · '+String(payload?.reason||'unknown'));
+    }
+  });
+}
+function maybeStartAdaptive(){
+  if(!adaptiveLink||adaptiveStarted||!ready)return;
+  if(isHost&&!peerJoined)return;
+  adaptiveStarted=true;
+  adaptiveLink.start();
+}
+function transportSend(event,payload,kind){
+  if(adaptiveLink)return adaptiveLink.send(event,payload,kind||'control');
+  realtimeSend(event,payload);
+  return 'realtime';
+}
 function connectRealtime(){
   if(!session)return;
   if(ws)try{ws.close()}catch(e){}
@@ -286,26 +343,30 @@ function connectRealtime(){
   });
   ws.addEventListener('message',function(ev){
     let msg;try{msg=JSON.parse(ev.data)}catch(e){return}
-    if(msg.event==='phx_reply'&&msg.topic===topic&&msg.payload&&msg.payload.status==='ok'){ready=true;conn.textContent='Realtime';return}
+    if(msg.event==='phx_reply'&&msg.topic===topic&&msg.payload&&msg.payload.status==='ok'){
+      ready=true;conn.textContent='LINK · SIGNALING';maybeStartAdaptive();return
+    }
     if(msg.event==='broadcast'&&msg.topic===topic){
       const p=msg.payload||{};
-      if(p.event==='skee_state')applyState(p.payload);
-      if(p.event==='shot_start')applyShotStart(p.payload);
-      if(p.event==='physics')applyPhysics(p.payload);
-      if(p.event==='shot_complete')queueComplete(p.payload);
+      if(!p.event)return;
+      if(['peer_ready','peer_offer','peer_answer','peer_ice'].includes(p.event)){
+        if(adaptiveLink)void adaptiveLink.handleSignal(p.event,p.payload||{});
+        return;
+      }
+      dispatchRemote(p.event,p.payload,'realtime');
     }
   });
   ws.addEventListener('close',function(){ready=false;conn.textContent='Reconnecting';if(heartbeat)clearInterval(heartbeat);reconnectTimer=setTimeout(connectRealtime,800)});
   ws.addEventListener('error',function(){ready=false});
 }
-function sendState(){realtimeSend('skee_state',{state:state,sent_at:Date.now()})}
+function sendState(){transportSend('skee_state',{state:state,sent_at:Date.now()},'control')}
 function applyState(p){if(!p||!p.state)return;state=Object.assign({},state,p.state);syncHud()}
 function applyShotStart(p){
   if(!p||localSim)return;
   shotSeq=Math.max(shotSeq,Number(p.seq||0));moving=true;
   const st=Number(p.sent_at||Date.now());
   frames=[{sentAt:st,x:Number(p.ball_x||50),y:Number(p.ball_y||8),z:Number(p.ball_z||0),sink:Number(p.ball_sink||0)}];
-  playbackMs=st-REMOTE_DELAY;lastPlaybackPerf=now();lastSentAt=st;
+  playbackMs=st-remoteDelay();lastPlaybackPerf=now();lastSentAt=st;playbackRate=1;
   activeTeam=p.team==='B'?'B':'A';
   state.current=activeTeam;
   displayBall={x:Number(p.ball_x||50),y:Number(p.ball_y||8),z:Number(p.ball_z||0),sink:Number(p.ball_sink||0)};
@@ -314,7 +375,7 @@ function applyPhysics(p){
   if(!p||localSim)return;
   const seq=Number(p.seq||0),st=Number(p.sent_at||Date.now());
   if(seq<shotSeq||st<=lastSentAt)return;
-  if(seq>shotSeq){frames=[];playbackMs=st-REMOTE_DELAY;lastPlaybackPerf=now()}
+  if(seq>shotSeq){frames=[];playbackMs=st-remoteDelay();lastPlaybackPerf=now();playbackRate=1}
   shotSeq=seq;lastSentAt=st;moving=Boolean(p.moving);
   frames.push({sentAt:st,x:Number(p.ball_x||50),y:Number(p.ball_y||8),z:Number(p.ball_z||0),sink:Number(p.ball_sink||0)});
   if(frames.length>12)frames.splice(0,frames.length-12);
@@ -325,8 +386,9 @@ function queueComplete(p){
   pendingComplete.push(p);
   pendingComplete.sort(function(a,b){return Number(a.sent_at||0)-Number(b.sent_at||0)});
 }
-function flushComplete(){
-  while(pendingComplete.length&&playbackMs!=null&&Number(pendingComplete[0].sent_at||0)<=playbackMs){
+function flushComplete(timelineMs){
+  const timeline=Number.isFinite(Number(timelineMs))?Number(timelineMs):playbackMs;
+  while(pendingComplete.length&&timeline!=null&&Number(pendingComplete[0].sent_at||0)<=timeline){
     const p=pendingComplete.shift();
     state=Object.assign({},state,p.state||{});
     displayBall={x:Number(p.ball_x||50),y:Number(p.ball_y||96),z:0,sink:Number(p.score||0)>0?1:0};
@@ -339,21 +401,43 @@ function flushComplete(){
 function animate(){
   if(!localSim&&frames.length){
     const n=now(),dt=clamp(n-lastPlaybackPerf,0,50);lastPlaybackPerf=n;
-    const latest=frames[frames.length-1].sentAt;
-    if(playbackMs==null)playbackMs=frames[0].sentAt-REMOTE_DELAY;
+    const latestFrame=frames[frames.length-1];
+    const latest=latestFrame.sentAt;
+    if(playbackMs==null)playbackMs=frames[0].sentAt-remoteDelay();
+
     const gap=latest-playbackMs;
-    let rate=1;if(gap<=0)rate=0;else if(gap<20)rate=.55;else if(gap>110)rate=1.20;
-    playbackMs=Math.min(latest,playbackMs+dt*rate);
-    while(frames.length>2&&frames[1].sentAt<=playbackMs)frames.shift();
+    const desired=clamp(1+(gap-remoteDelay())/240,.82,1.16);
+    const ease=1-Math.exp(-dt/120);
+    playbackRate+=(desired-playbackRate)*ease;
+    playbackMs=Math.min(latest,playbackMs+dt*playbackRate);
+
+    let visualMs=Math.min(playbackMs+12,latest+12);
+    if(position==='second'&&Number(latestFrame.y)>=44){
+      const senderNow=senderNowMs();
+      if(senderNow!=null){
+        visualMs=Math.max(
+          visualMs,
+          Math.min(senderNow,latest+remotePredict())
+        );
+      }
+    }
+
+    while(frames.length>2&&frames[1].sentAt<=visualMs)frames.shift();
     const a=frames[0],b=frames[1]||a;
-    const t=b.sentAt>a.sentAt?clamp((playbackMs-a.sentAt)/(b.sentAt-a.sentAt),0,1):1;
+    let t=1;
+    if(b.sentAt>a.sentAt){
+      const span=Math.max(1,b.sentAt-a.sentAt);
+      const cap=(position==='second'&&Number(latestFrame.y)>=44)?remotePredict():12;
+      t=clamp((visualMs-a.sentAt)/span,0,1+(cap/span));
+    }
+
     displayBall={
       x:a.x+(b.x-a.x)*t,
       y:a.y+(b.y-a.y)*t,
       z:Number(a.z||0)+(Number(b.z||0)-Number(a.z||0))*t,
-      sink:Number(a.sink||0)+(Number(b.sink||0)-Number(a.sink||0))*t
+      sink:clamp(Number(a.sink||0)+(Number(b.sink||0)-Number(a.sink||0))*Math.min(t,1),0,1)
     };
-    flushComplete();
+    flushComplete(visualMs);
   }
   renderBall();requestAnimationFrame(animate);
 }
@@ -635,7 +719,7 @@ function stepSkeePhysics(sim,dt){
 }
 
 function launchShot(dx,dy,duration){
-  if(role!=='launch'||position!=='first'||moving||state.over)return;
+  if(role!=='launch'||position!=='first'||!adaptiveReady()||moving||state.over)return;
   if(dy>=-22){banner.textContent='Swipe upward to roll the ball.';return}
 
   const sim=createSkeeSimulation(dx,dy,duration);
@@ -661,7 +745,7 @@ function launchShot(dx,dy,duration){
     moving:true,sent_at:Date.now()
   };
 
-  realtimeSend('shot_start',startPayload);
+  transportSend('shot_start',startPayload,'control');
   queueSnapshot(startPayload);
   banner.textContent='ROLLING…';
 
@@ -688,7 +772,7 @@ function launchShot(dx,dy,duration){
     else if(sim.phase==='gutter')banner.textContent='GUTTER — 0 POINTS';
     else if(sim.phase==='captured')banner.textContent=sim.score+' — DROPPING IN…';
 
-    if(ts-lastSend>32){
+    if(ts-lastSend>motionInterval(ball.y)){
       lastSend=ts;
       const frame={
         seq:shotSeq,
@@ -698,7 +782,7 @@ function launchShot(dx,dy,duration){
         phase:sim.phase,
         sent_at:Date.now()
       };
-      realtimeSend('physics',frame);
+      transportSend('physics',frame,'motion');
       if((Math.floor(sim.elapsed*12)%5)===0)queueSnapshot(frame);
     }
 
@@ -746,13 +830,15 @@ async function finishShot(team,outcome){
     ...finalFrame,
     cup_id:outcome.cupId,score:pts,state:state
   };
-  realtimeSend('physics',finalFrame);
-  realtimeSend('shot_complete',payload);
-  realtimeSend('skee_state',{state:state,sent_at:sentAt});
+  transportSend('physics',finalFrame,'motion');
+  transportSend('shot_complete',payload,'control');
+  transportSend('skee_state',{state:state,sent_at:sentAt},'control');
   queueSnapshot(finalFrame);
   playThunk(pts);
   banner.textContent=pts>0?(pts+' points — sunk!'):'0 points — gutter / miss.';
-  moving=false;localSim=false;skeeSim=null;syncHud();
+  moving=false;localSim=false;skeeSim=null;
+  if(adaptiveLink)adaptiveLink.applyPending();
+  syncHud();
   setTimeout(function(){
     if(!state.over){activeTeam=state.current;ball={x:50,y:8,z:0,sink:0};displayBall={x:50,y:8,z:0,sink:0};banner.textContent=currentName()+' — tap and swipe to throw.';render()}
   },700);
@@ -768,7 +854,7 @@ function playThunk(score){
 
 shell.addEventListener('pointerdown',function(e){
   unlockAudio();
-  if(role!=='launch'||position!=='first'||moving||state.over)return;
+  if(role!=='launch'||position!=='first'||!adaptiveReady()||moving||state.over)return;
   const r=shell.getBoundingClientRect();
   const x=clamp(((e.clientX-r.left)/r.width)*100,22,78);
   const screenY=clamp((e.clientY-r.top)/r.height,0,1);
@@ -788,7 +874,7 @@ $('startBtn').addEventListener('click',async function(){
     state.nameA=nameAInput.value.trim()||'Player 1';state.nameB=nameBInput.value.trim()||'Player 2';
     $('setupStatus').textContent='Creating match…';
     const data=await api('POST',{action:'create',kind:'laptop',role:'target',position:'second',player_a_name:state.nameA,player_b_name:state.nameB,skin:'living_kingdoms'});
-    session=data.session;token=data.host_token;isHost=true;position='second';role='target';
+    session=data.session;token=data.host_token;isHost=true;position='second';role='target';initAdaptiveLink();
     const joinUrl=PAGE+'?session='+encodeURIComponent(session)+'&join='+encodeURIComponent(data.join_token);
     $('qr').src=API+'?api=qr&session='+encodeURIComponent(session)+'&join='+encodeURIComponent(data.join_token)+'&target='+encodeURIComponent(PAGE);
     $('copyBtn').dataset.url=joinUrl;
@@ -802,7 +888,7 @@ $('joinBtn').addEventListener('click',async function(){
   try{
     $('joinStatus').textContent='Joining…';
     await api('POST',{action:'join',session:joinSession,join_token:joinToken,kind:'phone',role:'launch',position:'first'});
-    session=joinSession;token=joinToken;isHost=false;position='first';role='launch';
+    session=joinSession;token=joinToken;isHost=false;position='first';role='launch';initAdaptiveLink();
     joinCard.classList.add('hidden');gameEl.classList.remove('hidden');connectRealtime();
     await pollState();
     if(window.__lastPolledGameState){
@@ -822,7 +908,11 @@ async function pollJoin(){
   if(!isHost||!session)return;
   try{
     const s=await api('GET',null,'?api=state&session='+encodeURIComponent(session)+'&token='+encodeURIComponent(token));
-    if(s.screen2_joined){$('pairStatus').textContent='Target screen connected.'}
+    if(s.screen2_joined){
+      peerJoined=true;
+      $('pairStatus').textContent='Throw screen connected · calibrating link…';
+      maybeStartAdaptive();
+    }
   }catch(e){}
   setTimeout(pollJoin,700);
 }
@@ -840,6 +930,7 @@ async function pollState(){
   }catch(e){}
 }
 setInterval(function(){if(session&&role!=='launch')pollState()},500);
+window.addEventListener('beforeunload',function(){try{adaptiveLink&&adaptiveLink.reset()}catch(e){}});
 
 if(joinSession&&joinToken){
   setup.classList.add('hidden');joinCard.classList.remove('hidden');
