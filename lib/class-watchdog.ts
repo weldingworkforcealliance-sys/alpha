@@ -93,7 +93,6 @@ export function selectedWatchdogAlerts(
   return [
     {
       ...mostUrgent,
-      sectionId: selected.sectionId,
       sectionLabel: selected.sectionLabel,
       dayNumber: selected.dayNumber ?? mostUrgent.dayNumber,
       displayLabel:
