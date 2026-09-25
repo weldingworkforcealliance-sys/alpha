@@ -3,10 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import AttendanceWorkspace from './attendance/attendance-workspace';
 import { getSupabase } from '@/lib/supabase-browser';
-import {
-  readSelectedSectionId,
-  subscribeSelectedSection,
-} from '@/lib/section-selection';
 
 function localDate() {
   const now = new Date();
@@ -20,90 +16,14 @@ function displayDate(value: string) {
   return year && month && day ? `${month}/${day}/${year}` : value;
 }
 
-export default function PlannerAttendancePanel({ pathname }: { pathname: string }) {
+export default function PlannerAttendancePanel({
+  sectionId, attendanceDate,
+}: { sectionId: string; attendanceDate: string }) {
   const [supabase] = useState(getSupabase);
-  const [sectionId, setSectionId] = useState<string | null>(() => readSelectedSectionId());
-  const [attendanceDate, setAttendanceDate] = useState(localDate);
   const [completionNotice, setCompletionNotice] = useState('');
   const completionBypassRef = useRef(false);
 
   useEffect(() => {
-    if (pathname !== '/dashboard') return;
-    let cancelled = false;
-
-    const selectSection = async (nextSectionId: string | null) => {
-      if (cancelled) return;
-      setSectionId(nextSectionId);
-      setCompletionNotice('');
-      if (!nextSectionId) {
-        setAttendanceDate(localDate());
-        return;
-      }
-
-      const { data } = await supabase
-        .from('current_teaching_sections')
-        .select('scheduled_date,planner_day_id')
-        .eq('section_id', nextSectionId)
-        .maybeSingle();
-
-      let resolvedDate = data?.scheduled_date || localDate();
-
-      if (data?.planner_day_id) {
-        const { data: delivery } = await supabase
-          .from('planner_day_delivery')
-          .select('actual_date')
-          .eq('section_id', nextSectionId)
-          .eq('planner_day_id', data.planner_day_id)
-          .maybeSingle();
-        if (delivery?.actual_date) resolvedDate = delivery.actual_date;
-      }
-
-      if (!cancelled) setAttendanceDate(resolvedDate);
-    };
-
-    void selectSection(readSelectedSectionId());
-    const unsubscribe = subscribeSelectedSection((nextSectionId) => {
-      void selectSection(nextSectionId);
-    });
-
-    return () => {
-      cancelled = true;
-      unsubscribe();
-    };
-  }, [pathname, supabase]);
-
-  useEffect(() => {
-    if (pathname !== '/dashboard') return;
-
-    const syncFromActualDate = (event?: Event) => {
-      const candidate =
-        event?.target instanceof HTMLInputElement && event.target.id === 'actual-date'
-          ? event.target
-          : (document.getElementById('actual-date') as HTMLInputElement | null);
-      if (candidate?.value) setAttendanceDate(candidate.value);
-    };
-
-    const handleDateEvent = (event: Event) => {
-      if (event.target instanceof HTMLInputElement && event.target.id === 'actual-date') {
-        syncFromActualDate(event);
-        setCompletionNotice('');
-      }
-    };
-
-    const initialSync = window.setTimeout(() => syncFromActualDate(), 0);
-    document.addEventListener('input', handleDateEvent, true);
-    document.addEventListener('change', handleDateEvent, true);
-
-    return () => {
-      window.clearTimeout(initialSync);
-      document.removeEventListener('input', handleDateEvent, true);
-      document.removeEventListener('change', handleDateEvent, true);
-    };
-  }, [pathname, sectionId]);
-
-  useEffect(() => {
-    if (pathname !== '/dashboard' || !sectionId) return;
-
     const handleCompleteDayClick = (event: MouseEvent) => {
       if (!(event.target instanceof Element)) return;
       const button = event.target.closest('button.complete-button') as HTMLButtonElement | null;
@@ -120,8 +40,6 @@ export default function PlannerAttendancePanel({ pathname }: { pathname: string 
       void (async () => {
         const actualDateInput = document.getElementById('actual-date') as HTMLInputElement | null;
         const completionDate = actualDateInput?.value || attendanceDate || localDate();
-
-        if (completionDate !== attendanceDate) setAttendanceDate(completionDate);
 
         const requirement = await supabase.rpc('attendance_completion_requirement', {
           p_section_id: sectionId,
@@ -163,9 +81,7 @@ export default function PlannerAttendancePanel({ pathname }: { pathname: string 
 
     document.addEventListener('click', handleCompleteDayClick, true);
     return () => document.removeEventListener('click', handleCompleteDayClick, true);
-  }, [attendanceDate, pathname, sectionId, supabase]);
-
-  if (pathname !== '/dashboard' || !sectionId) return null;
+  }, [attendanceDate, sectionId, supabase]);
 
   return (
     <section

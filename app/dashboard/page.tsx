@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import PlannerAttendancePanel from '../planner-attendance-panel';
 import PlannerActivity from '../planner-activity';
 import PlannerTimeBudget from '../planner-time-budget';
 import { getPlannerTimeBudget } from '@/lib/planner-time-budget';
@@ -194,6 +195,9 @@ export default function DashboardPage() {
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [calendarLoading, setCalendarLoading] = useState(false);
+  const calendarRequest = useRef(0);
+  const [calendarSectionId, setCalendarSectionId] = useState<string | null>(null);
+  const [attendanceDateOverride, setAttendanceDateOverride] = useState<{ dayKey: string; date: string } | null>(null);
   const [visibleMonthIndex, setVisibleMonthIndex] = useState(0);
 
   const [plannerDays, setPlannerDays] = useState<PlannerDay[]>([]);
@@ -252,6 +256,7 @@ export default function DashboardPage() {
   };
 
   const loadCalendarData = async (sectionId: string) => {
+    const request = ++calendarRequest.current;
     setCalendarLoading(true);
 
     const [daysResult, exceptionsResult, deliveriesResult] = await Promise.all([
@@ -273,6 +278,8 @@ export default function DashboardPage() {
         .eq('section_id', sectionId),
     ]);
 
+    if (request !== calendarRequest.current) return;
+
     const calendarError =
       daysResult.error || exceptionsResult.error || deliveriesResult.error;
 
@@ -283,6 +290,7 @@ export default function DashboardPage() {
       return;
     }
 
+    setCalendarSectionId(sectionId);
     setPlannerDays((daysResult.data ?? []) as PlannerDay[]);
     setCalendarExceptions((exceptionsResult.data ?? []) as CalendarException[]);
     setDeliveries((deliveriesResult.data ?? []) as DayDelivery[]);
@@ -464,6 +472,7 @@ export default function DashboardPage() {
     if (selectedSection?.section_id) {
       loadCalendarData(selectedSection.section_id);
     }
+    return () => { calendarRequest.current += 1; };
   }, [selectedSection?.section_id]);
 
   useEffect(() => {
@@ -699,6 +708,18 @@ export default function DashboardPage() {
     ? deliveryByPlannerDay.get(viewedPlannerDay.id)
     : undefined;
 
+  // Attendance follows the viewed lesson and its actual taught date.
+  // Hide the roster while a previous class/day's data is still loading.
+  const attendanceDayKey = selectedSection?.section_id + '/' + selectedSection?.planner_day_id;
+  const viewedAttendanceDate =
+    !calendarLoading && !guideLoading &&
+    calendarSectionId === selectedSection?.section_id &&
+    guideDay?.id === viewedGuideDayId && viewedPlannerDay
+      ? (isViewingCurrentDay && attendanceDateOverride?.dayKey === attendanceDayKey
+          ? attendanceDateOverride.date
+          : viewedDelivery?.actual_date || viewedPlannerDay.scheduled_date)
+      : null;
+
   const currentDelivery = selectedSection?.planner_day_id
     ? deliveryByPlannerDay.get(selectedSection.planner_day_id)
     : undefined;
@@ -826,6 +847,13 @@ export default function DashboardPage() {
       </header>
 
       <main className="dashboard-main">
+        {selectedSection && viewedAttendanceDate && (
+          <PlannerAttendancePanel
+            key={selectedSection.section_id + '/' + viewedAttendanceDate}
+            sectionId={selectedSection.section_id}
+            attendanceDate={viewedAttendanceDate}
+          />
+        )}
         {error && <div className="error-message dashboard-error">{error}</div>}
 
         {sections.length === 0 ? (
@@ -1257,7 +1285,10 @@ export default function DashboardPage() {
                       id="actual-date"
                       type="date"
                       value={actualDate}
-                      onChange={(event) => setActualDate(event.target.value)}
+                      onChange={(event) => {
+                        setActualDate(event.target.value);
+                        setAttendanceDateOverride({ dayKey: attendanceDayKey, date: event.target.value });
+                      }}
                       disabled={
                         actionLoading || !isViewingCurrentDay || currentDayInProgress
                       }
