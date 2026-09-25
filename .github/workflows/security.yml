@@ -2,9 +2,14 @@ name: LTG Security Scan
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - product/standalone-mainline-2026-09-11
+      - security/pccc-readiness-20260925
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - product/standalone-mainline-2026-09-11
   schedule:
     - cron: '15 10 * * 1'
   workflow_dispatch:
