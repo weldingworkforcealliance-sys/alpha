@@ -24,10 +24,6 @@ function localDate() {
   ).padStart(2, '0')}`;
 }
 
-function localDateTime(date: string, time: string) {
-  const normalized = time.length >= 8 ? time.slice(0, 8) : time;
-  return new Date(`${date}T${normalized}`).getTime();
-}
 
 function formatTime(time: string) {
   const [hourText, minuteText] = time.split(':');
@@ -289,7 +285,7 @@ export default function ClassTimeWatchdog() {
             alert.severity === 'start'
               ? `Scheduled start · ${alert.displayLabel} should be started now.`
               : alert.severity === 'end'
-                ? `Scheduled class time ended at ${formatTime(alert.endTime)}. Complete the class and attendance.`
+                ? `Scheduled class time ended at ${formatTime(alert.endTime)} · ${alert.displayLabel} still needs class closeout or attendance.`
                 : `30 minutes overdue · ${alert.displayLabel} still needs class closeout or attendance. The instructor email reminder is active.`;
 
           return (
