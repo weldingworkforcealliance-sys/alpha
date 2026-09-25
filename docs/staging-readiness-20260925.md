@@ -41,3 +41,16 @@ The initial malformed-input cases already rejected requests eventually; the impr
 - **Separation:** Gltg identity and API target are verified. Server secrets, email sinks, callbacks, storage and workers still need deployed-preview verification. No production backup workflow was dispatched.
 
 See staging-hardening/README.md, manifest.json, rollback SQL and test scripts in [draft PR #112](https://github.com/weldingworkforcealliance-sys/alpha/pull/112). No merge, production migration or production deployment is authorized by this run.
+
+
+Plan eligibility verified: Gltg organization ynovhytojosrhnjbcusb reports plan=free, tier=tier_free. Supabase's documented leaked-password protection requires Pro or higher. No billing or subscription change was made. See https://supabase.com/docs/guides/auth/password-security .
+
+Final commit 8d1284ac214a89695683bf57684cc395b6296f52: GitHub Build Check 36181965861 and Security Scan 36181965968 both succeeded, including build, route smoke, tests, lint/typecheck, dependency audit and CodeQL execution. Draft PR 112 remains unmerged.
+
+## Preview follow-up — 25 September 2026, 21:05 UTC
+
+- Local staging preview is available at http://127.0.0.1:3007/login. Its compiled login-page scripts contain Gltg as the only concrete Supabase project host.
+- 18/18 HTTP/isolation checks passed; browser inspection verified login, account setup and the Attendance authentication redirect. No staging account credentials were available, so authenticated browser workflows remain blocked.
+- Hosted preview remains blocked: PR 112 targets main, outside Netlify's configured preview target branches. Manual draft packaging encountered extension metadata HTTP 403; supported offline packaging then exposed a Windows middleware path-resolution error. No incomplete build was uploaded and no middleware was disabled.
+- The authenticated Netlify connector confirmed published deployment 6ab6c162193d2c0008f11e2c remains ready, matching the pre-run production deployment. Production settings, deployment branch and PR base were unchanged.
+- New reusable preview-isolation test, results and deployment runbook are included in the draft. Staging readiness remains AMBER. Existing MFA, throttling, full restore, browser-role and Free-tier leaked-password blockers remain.
