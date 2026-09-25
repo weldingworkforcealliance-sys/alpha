@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { getSupabase } from '@/lib/supabase-browser';
-import { publishSelectedSection } from '@/lib/section-selection';
+import { publishSelectedSection, readSelectedSectionId, subscribeSelectedSection } from '@/lib/section-selection';
+import { selectedWatchdogAlerts, type WatchdogAlert, type WatchdogRow } from '@/lib/class-watchdog';
 
 type TeachingSection = {
   school_id: string;
@@ -14,27 +15,6 @@ type TeachingSection = {
   current_planner_day_number: number | null;
   planner_day_id: string | null;
   scheduled_date: string | null;
-};
-
-type WatchRow = {
-  sectionId: string;
-  plannerDayId: string;
-  scheduledDate: string;
-  dayNumber: number | null;
-  sectionLabel: string;
-  courseLabel: string;
-  startTime: string;
-  endTime: string;
-  deliveryStatus: string | null;
-  startedAt: string | null;
-  completedAt: string | null;
-  requiresFinalAttendance: boolean;
-  attendanceFinalized: boolean;
-};
-
-type WatchAlert = WatchRow & {
-  severity: 'start' | 'end' | 'overdue';
-  endMs: number;
 };
 
 function localDate() {
@@ -60,7 +40,8 @@ function formatTime(time: string) {
 
 export default function ClassTimeWatchdog() {
   const [supabase] = useState(getSupabase);
-  const [rows, setRows] = useState<WatchRow[]>([]);
+  const [rows, setRows] = useState<WatchdogRow[]>([]);
+  const [selectedSectionId, setSelectedSectionId] = useState(readSelectedSectionId);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [audioReady, setAudioReady] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -68,6 +49,11 @@ export default function ClassTimeWatchdog() {
   useEffect(() => {
     const tick = window.setInterval(() => setNowMs(Date.now()), 15000);
     return () => window.clearInterval(tick);
+  }, []);
+
+  useEffect(() => {
+    setSelectedSectionId(readSelectedSectionId());
+    return subscribeSelectedSection(setSelectedSectionId);
   }, []);
 
   useEffect(() => {
@@ -132,9 +118,8 @@ export default function ClassTimeWatchdog() {
           .in('planner_day_id', plannerDayIds),
         supabase
           .from('attendance_pairs')
-          .select('id,completion_section_id')
-          .eq('active', true)
-          .in('completion_section_id', sectionIds),
+          .select('id,pair_name,primary_section_id,completion_section_id')
+          .eq('active', true),
       ]);
 
       if (cancelled || timingResult.error || deliveryResult.error || pairResult.error) return;
@@ -156,7 +141,12 @@ export default function ClassTimeWatchdog() {
         )
       );
 
-      const pairs = (pairResult.data ?? []) as Array<{ id: string; completion_section_id: string }>;
+      const pairs = (pairResult.data ?? []) as Array<{
+        id: string;
+        pair_name: string;
+        primary_section_id: string;
+        completion_section_id: string;
+      }>;
       const pairIds = pairs.map((pair) => pair.id);
       let sessions: Array<{ pair_id: string; status: string }> = [];
 
@@ -171,17 +161,22 @@ export default function ClassTimeWatchdog() {
 
       if (cancelled) return;
 
-      const pairBySection = new Map(pairs.map((pair) => [pair.completion_section_id, pair.id]));
+      const pairBySection = new Map<string, (typeof pairs)[number]>();
+      pairs.forEach((pair) => {
+        pairBySection.set(pair.primary_section_id, pair);
+        pairBySection.set(pair.completion_section_id, pair);
+      });
       const sessionByPair = new Map(sessions.map((session) => [session.pair_id, session]));
 
-      const nextRows: WatchRow[] = [];
+      const nextRows: WatchdogRow[] = [];
       todaySections.forEach((section) => {
         if (!section.planner_day_id || !section.scheduled_date) return;
         const timing = timings.get(section.section_id);
         if (!timing?.start_time || !timing?.end_time) return;
 
         const delivery = deliveries.get(section.planner_day_id);
-        const pairId = pairBySection.get(section.section_id);
+        const pair = pairBySection.get(section.section_id);
+        const pairId = pair?.id ?? null;
         const attendanceSession = pairId ? sessionByPair.get(pairId) : null;
 
         nextRows.push({
@@ -198,6 +193,10 @@ export default function ClassTimeWatchdog() {
           completedAt: delivery?.completed_at ?? null,
           requiresFinalAttendance: Boolean(pairId),
           attendanceFinalized: pairId ? attendanceSession?.status === 'finalized' : true,
+          pairId,
+          pairName: pair?.pair_name ?? null,
+          pairPrimarySectionId: pair?.primary_section_id ?? null,
+          pairCompletionSectionId: pair?.completion_section_id ?? null,
         });
       });
 
@@ -212,31 +211,9 @@ export default function ClassTimeWatchdog() {
     };
   }, [supabase]);
 
-  const alerts = useMemo<WatchAlert[]>(() => {
-    return rows
-      .map((row): WatchAlert | null => {
-        const startMs = localDateTime(row.scheduledDate, row.startTime);
-        const endMs = localDateTime(row.scheduledDate, row.endTime);
-        const completed = row.deliveryStatus === 'completed' || Boolean(row.completedAt);
-        const needsCloseout = !completed || (row.requiresFinalAttendance && !row.attendanceFinalized);
-
-        if (nowMs >= endMs + 30 * 60 * 1000 && needsCloseout) {
-          return { ...row, severity: 'overdue', endMs };
-        }
-        if (nowMs >= endMs && needsCloseout) {
-          return { ...row, severity: 'end', endMs };
-        }
-        if (nowMs >= startMs && !row.startedAt && !completed) {
-          return { ...row, severity: 'start', endMs };
-        }
-        return null;
-      })
-      .filter((alert): alert is WatchAlert => Boolean(alert))
-      .sort((a, b) => {
-        const rank = { overdue: 0, end: 1, start: 2 };
-        return rank[a.severity] - rank[b.severity] || a.endMs - b.endMs;
-      });
-  }, [rows, nowMs]);
+  const alerts = useMemo<WatchdogAlert[]>(() => {
+    return selectedWatchdogAlerts(rows, nowMs, selectedSectionId);
+  }, [rows, nowMs, selectedSectionId]);
 
   useEffect(() => {
     if (!audioReady) return;
@@ -310,14 +287,14 @@ export default function ClassTimeWatchdog() {
 
           const message =
             alert.severity === 'start'
-              ? `Scheduled start · ${alert.courseLabel} should be started now.`
+              ? `Scheduled start · ${alert.displayLabel} should be started now.`
               : alert.severity === 'end'
                 ? `Scheduled class time ended at ${formatTime(alert.endTime)}. Complete the class and attendance.`
-                : `30 minutes overdue · ${alert.courseLabel} still needs class closeout or attendance. The instructor email reminder is active.`;
+                : `30 minutes overdue · ${alert.displayLabel} still needs class closeout or attendance. The instructor email reminder is active.`;
 
           return (
             <div
-              key={alert.sectionId}
+              key={alert.pairId || alert.sectionId}
               style={{
                 border: `1px solid ${border}`,
                 borderLeft: `5px solid ${border}`,
