@@ -139,13 +139,24 @@ export default function ClassTimeWatchdog() {
 
       if (cancelled || timingResult.error || deliveryResult.error || pairResult.error) return;
 
-      const timings = new Map(
+      const timings = new Map<
+        string,
+        { id: string; start_time: string | null; end_time: string | null }
+      >(
         (timingResult.data ?? []).map((row: { id: string; start_time: string | null; end_time: string | null }) => [
           row.id,
           row,
         ])
       );
-      const deliveries = new Map(
+      const deliveries = new Map<
+        string,
+        {
+          planner_day_id: string;
+          delivery_status: string | null;
+          started_at: string | null;
+          completed_at: string | null;
+        }
+      >(
         (deliveryResult.data ?? []).map(
           (row: {
             planner_day_id: string;
