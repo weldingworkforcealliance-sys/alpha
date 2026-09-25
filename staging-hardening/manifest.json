@@ -1,0 +1,48 @@
+{
+  "targetProject": "ezlvivmeneefiiwqwgqd",
+  "targetName": "Gltg",
+  "productionPromotion": false,
+  "sourceCommit": "c52163943cd1d6f9694163b0c100ba1bfcc462c9",
+  "forward": "supabase/migrations/20260925194129_bound_anonymous_rpc_inputs.sql",
+  "rollback": "rollback/bound_anonymous_rpc_inputs.sql",
+  "stagingLedger": [
+    {
+      "version": "20260925194313",
+      "name": "bound_anonymous_rpc_inputs_staging"
+    },
+    {
+      "version": "20260925194408",
+      "name": "rollback_bound_anonymous_rpc_inputs_staging_drill"
+    },
+    {
+      "version": "20260925194431",
+      "name": "reapply_bound_anonymous_rpc_inputs_staging"
+    }
+  ],
+  "functions": [
+    {
+      "signature": "public.get_classroom_assessment(text)",
+      "beforeMd5": "cd46cb15f2846144a4e08ffc79d65f43",
+      "afterMd5": "5bd7b287dad647a5189c18f210f1415a",
+      "acl": "{postgres=X/postgres,service_role=X/postgres,anon=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "signature": "public.get_job_card_by_code(text)",
+      "beforeMd5": "85e004a5cb97a4a41e09a8c350c3072b",
+      "afterMd5": "56c4c964d98faf7e994f7b69f6eab909",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}"
+    },
+    {
+      "signature": "public.submit_classroom_assessment_v2(text,text,text,text,jsonb)",
+      "beforeMd5": "4297d58913af23dbfa1d7ecededd7b12",
+      "afterMd5": "272d14c7be4748248a31532d7446bff5",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}"
+    },
+    {
+      "signature": "public.submit_job_card(text,text,text,jsonb,jsonb,jsonb,text,text)",
+      "beforeMd5": "a2d5f919ebbd713edc9f46a4a5cb8e6a",
+      "afterMd5": "6dfa5bfc4b56905df88e3301b4144b66",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}"
+    }
+  ]
+}
