@@ -551,7 +551,15 @@ function AttendanceWorkspaceContent({
           {session.is_completion_section && (
             <div className={styles.notice}>
               Initial attendance comes from saved attendance in the primary course for this date.
-              Make corrections for this course under Final attendance, then save.
+              {markedCount === 0 && !session.finalized
+                ? ' No primary-course attendance has been saved for this date yet. Enter and save it in WLD 105/205 first, then reopen this course to record completion.'
+                : ' Make corrections for this course under Final attendance, then save.'}
+            </div>
+          )}
+          {session.finalized && (
+            <div className={styles.notice}>
+              Attendance for {attendanceDate} has been finalized and is read-only.
+              {canManage && <> Use <a href="/attendance/corrections">Correct Attendance</a> to update saved marks.</>}
             </div>
           )}
           {students.length ? (

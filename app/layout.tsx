@@ -15,7 +15,6 @@ import ThemeToggle from './theme-toggle';
 import SidebarSignOut from './sidebar-sign-out';
 import DashboardHero from './dashboard-hero';
 import DashboardPunchClock from './dashboard-punch-clock';
-import PlannerAttendancePanel from './planner-attendance-panel';
 import PlannerLabGradingPanel from './planner-lab-grading-panel';
 import AttendanceFinalizationAlert from './attendance-finalization-alert';
 import ClassTimeWatchdog from './class-time-watchdog';
@@ -264,7 +263,6 @@ export default function RootLayout({
                   {!isStudentDisplay && <TeacherIdentityBar pathname={pathname} />}
                   <AttendanceFinalizationAlert pathname={pathname} />
                   {!hideWorkspaceNav && <ClassTimeWatchdog />}
-                  <PlannerAttendancePanel pathname={pathname} />
                   <PlannerLabGradingPanel pathname={pathname} />
                   {!isStudentDisplay && <AgendaNotePolicyBanner pathname={pathname} />}
                 </>
