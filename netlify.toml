@@ -10,7 +10,7 @@
 [context.deploy-preview.environment]
   NEXT_PUBLIC_SUPABASE_URL = "https://ezlvivmeneefiiwqwgqd.supabase.co"
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_VDQ-Ug5VBliSzl1I-FKCog_ZNPv-g7R"
-  NEXT_PUBLIC_DEPLOYMENT_ENV = "staging"
+  NEXT_PUBLIC_DEPLOYMENT_ENV = "staging"\n  NEXT_PUBLIC_REQUIRE_MFA = "true"
 
 # Baseline response hardening. CSP is intentionally handled separately because
 # LTG currently relies on framework/runtime scripts and external Supabase assets;
