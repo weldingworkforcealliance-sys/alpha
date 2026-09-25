@@ -153,13 +153,16 @@ input{width:100%;background:#0b1018;color:#fff;border:1px solid #303b4f;border-r
   </section>
 </div>
 
+<script src="../twinlane-engine/adaptive-link-v1.js"></script>
 <script>
 (function(){
 'use strict';
 const API='https://qsmvgyyaemjmklceyikr.supabase.co/functions/v1/twinlane-api';
 const PAGE=location.origin+location.pathname;
 const REALTIME_URL='wss://qsmvgyyaemjmklceyikr.supabase.co/realtime/v1/websocket?apikey=sb_publishable_pvvIlRcj-vro31h1Hng1jA_WL3oItk0&vsn=1.0.0';
-const REMOTE_DELAY=60;
+const REMOTE_DELAY_FALLBACK=60;
+const REMOTE_VISUAL_LEAD_MS=18;
+const REMOTE_SEAM_START_Y=44;
 const params=new URLSearchParams(location.search);
 const joinSession=params.get('session')||'';
 const joinToken=params.get('join')||'';
@@ -176,6 +179,9 @@ let ws=null,topic='',joinRef=null,ref=0,ready=false,reconnectTimer=null,heartbea
 let shotSeq=0,moving=false,localSim=false,activeTeam='A';
 let ball={x:50,y:8,z:0,sink:0},displayBall={x:50,y:8,z:0,sink:0};
 let frames=[],playbackMs=null,lastPlaybackPerf=0,lastSentAt=0;
+let playbackRate=1,remoteClockOffsetMs=null,targetLiveVisual=false,targetLiveVisualTimeMs=null;
+let visualVelocity={x:0,y:0};
+let adaptive=null;
 let state={nameA:'Player 1',nameB:'Player 2',scoreA:0,scoreB:0,throwsA:0,throwsB:0,current:'A',over:false,winner:null,lastScore:0};
 let pointerStart=null,placedX=50,placed=false,lastSend=0,snapshotBusy=false,pendingSnapshot=null;
 let skeeSim=null;
@@ -199,6 +205,26 @@ function now(){return performance.now()}
 function currentName(){return state.current==='A'?state.nameA:state.nameB}
 function left(team){return Math.max(0,9-(team==='A'?state.throwsA:state.throwsB))}
 function debug(s){diag.textContent=String(s)}
+function linkConfig(){
+  return adaptive&&adaptive.getConfig?adaptive.getConfig():{
+    ready:false,direct:false,profile:'cloud',
+    playbackDelayMs:REMOTE_DELAY_FALLBACK,predictMs:55,
+    motionIntervalNear:32,motionIntervalFar:24
+  };
+}
+function linkReady(){return adaptive?adaptive.isReady():ready}
+function linkDelay(){const v=Number(linkConfig().playbackDelayMs);return Number.isFinite(v)?v:REMOTE_DELAY_FALLBACK}
+function linkPredict(){const v=Number(linkConfig().predictMs);return Number.isFinite(v)?v:55}
+function motionInterval(y){return adaptive?adaptive.motionInterval(y,42):(Number(y)>=42?24:32)}
+function linkStatusText(info){
+  const cfg=(info&&info.config)||linkConfig();
+  if(!cfg.ready)return 'CALIBRATING';
+  if(cfg.direct){
+    const rtt=Number.isFinite(Number(cfg.medianRttMs))?' · '+Math.round(Number(cfg.medianRttMs))+'ms':'';
+    return 'DIRECT · '+String(cfg.profile||'link').toUpperCase()+rtt;
+  }
+  return 'CLOUD FALLBACK';
+}
 function viewport(){return position==='first'?{y0:0,y1:50}:{y0:50,y1:100}}
 function worldToLocal(x,y){
   const vp=viewport(),r=shell.getBoundingClientRect();
@@ -241,7 +267,7 @@ function syncStatic(){
   $('targetDeck').style.display=position==='second'?'block':'none';
   $('ramp').style.display=position==='second'?'block':'none';
   $('gutter').style.display=position==='second'?'block':'none';
-  $('startZone').style.display=(position==='first'&&!moving&&!state.over)?'block':'none';
+  $('startZone').style.display=(position==='first'&&linkReady()&&!moving&&!state.over)?'block':'none';
   $('seam').style.bottom=position==='first'?'calc(100% - 2px)':'0';
 }
 function syncHud(){
@@ -267,9 +293,36 @@ async function api(method,body,query){
   return data;
 }
 function realtimeSend(event,payload){
-  if(!ws||ws.readyState!==WebSocket.OPEN||!ready)return;
+  if(!ws||ws.readyState!==WebSocket.OPEN||!ready)return false;
   ref++;
   ws.send(JSON.stringify({topic:topic,event:'broadcast',payload:{event:event,payload:payload,type:'broadcast'},ref:String(ref),join_ref:joinRef}));
+  return true;
+}
+function dispatchGameEvent(event,payload,source){
+  if(event==='skee_state')applyState(payload);
+  if(event==='shot_start')applyShotStart(payload);
+  if(event==='physics')applyPhysics(payload);
+  if(event==='shot_complete')queueComplete(payload);
+}
+function transportSend(event,payload,kind){
+  if(adaptive&&adaptive.send(event,payload,kind||'control'))return true;
+  return realtimeSend(event,payload);
+}
+function ensureAdaptive(){
+  if(adaptive||!window.CorvuMorAdaptiveLink)return adaptive;
+  adaptive=window.CorvuMorAdaptiveLink.create({
+    isHost:()=>isHost,
+    role:()=>role,
+    position:()=>position,
+    isMoving:()=>moving,
+    isMotionSender:()=>role==='launch',
+    sendSignal:(event,payload)=>realtimeSend(event,payload),
+    onGameEvent:(event,payload,source)=>dispatchGameEvent(event,payload,source),
+    onConfig:(cfg)=>{conn.textContent=linkStatusText({config:cfg});syncStatic()},
+    onStatus:(info)=>{conn.textContent=linkStatusText(info);syncStatic()},
+    onMetric:(type,payload)=>debug(type+' '+JSON.stringify(payload||{}))
+  });
+  return adaptive;
 }
 function connectRealtime(){
   if(!session)return;
@@ -286,26 +339,35 @@ function connectRealtime(){
   });
   ws.addEventListener('message',function(ev){
     let msg;try{msg=JSON.parse(ev.data)}catch(e){return}
-    if(msg.event==='phx_reply'&&msg.topic===topic&&msg.payload&&msg.payload.status==='ok'){ready=true;conn.textContent='Realtime';return}
+    if(msg.event==='phx_reply'&&msg.topic===topic&&msg.payload&&msg.payload.status==='ok'){
+      ready=true;conn.textContent='CALIBRATING';
+      const link=ensureAdaptive();
+      if(link)void link.start();
+      return;
+    }
     if(msg.event==='broadcast'&&msg.topic===topic){
       const p=msg.payload||{};
-      if(p.event==='skee_state')applyState(p.payload);
-      if(p.event==='shot_start')applyShotStart(p.payload);
-      if(p.event==='physics')applyPhysics(p.payload);
-      if(p.event==='shot_complete')queueComplete(p.payload);
+      if(!p.event)return;
+      if(['peer_ready','peer_offer','peer_answer','peer_ice'].includes(p.event)){
+        const link=ensureAdaptive();
+        if(link)void link.handleSignal(p.event,p.payload||{});
+        return;
+      }
+      dispatchGameEvent(p.event,p.payload,'realtime');
     }
   });
   ws.addEventListener('close',function(){ready=false;conn.textContent='Reconnecting';if(heartbeat)clearInterval(heartbeat);reconnectTimer=setTimeout(connectRealtime,800)});
   ws.addEventListener('error',function(){ready=false});
 }
-function sendState(){realtimeSend('skee_state',{state:state,sent_at:Date.now()})}
+function sendState(){transportSend('skee_state',{state:state,sent_at:Date.now()},'control')}
 function applyState(p){if(!p||!p.state)return;state=Object.assign({},state,p.state);syncHud()}
 function applyShotStart(p){
   if(!p||localSim)return;
   shotSeq=Math.max(shotSeq,Number(p.seq||0));moving=true;
   const st=Number(p.sent_at||Date.now());
   frames=[{sentAt:st,x:Number(p.ball_x||50),y:Number(p.ball_y||8),z:Number(p.ball_z||0),sink:Number(p.ball_sink||0)}];
-  playbackMs=st-REMOTE_DELAY;lastPlaybackPerf=now();lastSentAt=st;
+  playbackMs=st-linkDelay();lastPlaybackPerf=now();lastSentAt=st;
+  playbackRate=1;remoteClockOffsetMs=null;targetLiveVisual=false;targetLiveVisualTimeMs=null;visualVelocity={x:0,y:0};
   activeTeam=p.team==='B'?'B':'A';
   state.current=activeTeam;
   displayBall={x:Number(p.ball_x||50),y:Number(p.ball_y||8),z:Number(p.ball_z||0),sink:Number(p.ball_sink||0)};
@@ -314,10 +376,29 @@ function applyPhysics(p){
   if(!p||localSim)return;
   const seq=Number(p.seq||0),st=Number(p.sent_at||Date.now());
   if(seq<shotSeq||st<=lastSentAt)return;
-  if(seq>shotSeq){frames=[];playbackMs=st-REMOTE_DELAY;lastPlaybackPerf=now()}
+  if(seq>shotSeq){
+    frames=[];playbackMs=st-linkDelay();lastPlaybackPerf=now();
+    playbackRate=1;remoteClockOffsetMs=null;targetLiveVisual=false;targetLiveVisualTimeMs=null;visualVelocity={x:0,y:0};
+  }
   shotSeq=seq;lastSentAt=st;moving=Boolean(p.moving);
-  frames.push({sentAt:st,x:Number(p.ball_x||50),y:Number(p.ball_y||8),z:Number(p.ball_z||0),sink:Number(p.ball_sink||0)});
+
+  const observedOffset=Date.now()-st;
+  if(remoteClockOffsetMs==null||observedOffset<remoteClockOffsetMs)remoteClockOffsetMs=observedOffset;
+
+  const frame={sentAt:st,x:Number(p.ball_x||50),y:Number(p.ball_y||8),z:Number(p.ball_z||0),sink:Number(p.ball_sink||0)};
+  const previous=frames[frames.length-1];
+  if(previous&&frame.sentAt>previous.sentAt){
+    const ms=Math.max(1,frame.sentAt-previous.sentAt);
+    const raw={x:(frame.x-previous.x)/ms,y:(frame.y-previous.y)/ms};
+    const delta=Math.hypot(raw.x-visualVelocity.x,raw.y-visualVelocity.y);
+    const reversed=(raw.x*visualVelocity.x+raw.y*visualVelocity.y)<0;
+    const alpha=(reversed||delta>.018)?.72:.34;
+    visualVelocity.x+=(raw.x-visualVelocity.x)*alpha;
+    visualVelocity.y+=(raw.y-visualVelocity.y)*alpha;
+  }
+  frames.push(frame);
   if(frames.length>12)frames.splice(0,frames.length-12);
+  if(position==='second'&&frame.y>=REMOTE_SEAM_START_Y)targetLiveVisual=true;
 }
 let pendingComplete=[];
 function queueComplete(p){
@@ -331,6 +412,7 @@ function flushComplete(){
     state=Object.assign({},state,p.state||{});
     displayBall={x:Number(p.ball_x||50),y:Number(p.ball_y||96),z:0,sink:Number(p.score||0)>0?1:0};
     moving=false;frames=[];playbackMs=null;
+    if(adaptive)adaptive.applyPending();
     playThunk(p.score||0);
     banner.textContent=(p.score||0)+' points!';
     syncHud();
@@ -339,20 +421,59 @@ function flushComplete(){
 function animate(){
   if(!localSim&&frames.length){
     const n=now(),dt=clamp(n-lastPlaybackPerf,0,50);lastPlaybackPerf=n;
-    const latest=frames[frames.length-1].sentAt;
-    if(playbackMs==null)playbackMs=frames[0].sentAt-REMOTE_DELAY;
+    const latestFrame=frames[frames.length-1],latest=latestFrame.sentAt;
+    if(playbackMs==null)playbackMs=frames[0].sentAt-linkDelay();
+
     const gap=latest-playbackMs;
-    let rate=1;if(gap<=0)rate=0;else if(gap<20)rate=.55;else if(gap>110)rate=1.20;
-    playbackMs=Math.min(latest,playbackMs+dt*rate);
-    while(frames.length>2&&frames[1].sentAt<=playbackMs)frames.shift();
+    const desired=clamp(1+(gap-linkDelay())/240,.82,1.16);
+    const ease=1-Math.exp(-dt/120);
+    playbackRate+=(desired-playbackRate)*ease;
+    playbackMs=Math.min(latest,playbackMs+dt*playbackRate);
+
+    let visualMs=Math.min(playbackMs+REMOTE_VISUAL_LEAD_MS,latest+12);
+    if(position==='second'&&targetLiveVisual){
+      const senderNow=remoteClockOffsetMs==null?latest:Date.now()-remoteClockOffsetMs;
+      const liveTarget=Math.min(senderNow,latest+linkPredict());
+      if(targetLiveVisualTimeMs==null)targetLiveVisualTimeMs=Math.max(visualMs,latest);
+      targetLiveVisualTimeMs=Math.max(targetLiveVisualTimeMs,visualMs);
+      targetLiveVisualTimeMs=Math.min(liveTarget,targetLiveVisualTimeMs+dt*1.08);
+      visualMs=Math.max(visualMs,targetLiveVisualTimeMs);
+    }
+
+    while(frames.length>2&&frames[1].sentAt<=visualMs)frames.shift();
     const a=frames[0],b=frames[1]||a;
-    const t=b.sentAt>a.sentAt?clamp((playbackMs-a.sentAt)/(b.sentAt-a.sentAt),0,1):1;
-    displayBall={
+    let t=1;
+    if(b.sentAt>a.sentAt){
+      const span=Math.max(1,b.sentAt-a.sentAt);
+      const cap=(position==='second'&&targetLiveVisual)?linkPredict():12;
+      t=clamp((visualMs-a.sentAt)/span,0,1+cap/span);
+    }
+
+    const interpolated={
       x:a.x+(b.x-a.x)*t,
       y:a.y+(b.y-a.y)*t,
-      z:Number(a.z||0)+(Number(b.z||0)-Number(a.z||0))*t,
-      sink:Number(a.sink||0)+(Number(b.sink||0)-Number(a.sink||0))*t
+      z:Number(a.z||0)+(Number(b.z||0)-Number(a.z||0))*Math.min(t,1),
+      sink:Number(a.sink||0)+(Number(b.sink||0)-Number(a.sink||0))*Math.min(t,1)
     };
+
+    if(position==='second'&&targetLiveVisual&&visualMs>latest){
+      const predictMs=clamp(visualMs-latest,0,linkPredict());
+      const predicted={
+        x:latestFrame.x+visualVelocity.x*predictMs,
+        y:latestFrame.y+visualVelocity.y*predictMs
+      };
+      const correction=Math.hypot(predicted.x-displayBall.x,predicted.y-displayBall.y);
+      const alpha=1-Math.exp(-dt/(correction>3?14:24));
+      displayBall={
+        x:displayBall.x+(predicted.x-displayBall.x)*alpha,
+        y:displayBall.y+(predicted.y-displayBall.y)*alpha,
+        z:interpolated.z,
+        sink:interpolated.sink
+      };
+    }else{
+      displayBall=interpolated;
+    }
+
     flushComplete();
   }
   renderBall();requestAnimationFrame(animate);
@@ -635,7 +756,7 @@ function stepSkeePhysics(sim,dt){
 }
 
 function launchShot(dx,dy,duration){
-  if(role!=='launch'||position!=='first'||moving||state.over)return;
+  if(role!=='launch'||position!=='first'||!linkReady()||moving||state.over)return;
   if(dy>=-22){banner.textContent='Swipe upward to roll the ball.';return}
 
   const sim=createSkeeSimulation(dx,dy,duration);
@@ -661,7 +782,7 @@ function launchShot(dx,dy,duration){
     moving:true,sent_at:Date.now()
   };
 
-  realtimeSend('shot_start',startPayload);
+  transportSend('shot_start',startPayload,'control');
   queueSnapshot(startPayload);
   banner.textContent='ROLLING…';
 
@@ -688,7 +809,8 @@ function launchShot(dx,dy,duration){
     else if(sim.phase==='gutter')banner.textContent='GUTTER — 0 POINTS';
     else if(sim.phase==='captured')banner.textContent=sim.score+' — DROPPING IN…';
 
-    if(ts-lastSend>32){
+    const sendEvery=motionInterval(sim.y);
+    if(ts-lastSend>sendEvery){
       lastSend=ts;
       const frame={
         seq:shotSeq,
@@ -698,7 +820,7 @@ function launchShot(dx,dy,duration){
         phase:sim.phase,
         sent_at:Date.now()
       };
-      realtimeSend('physics',frame);
+      transportSend('physics',frame,'motion');
       if((Math.floor(sim.elapsed*12)%5)===0)queueSnapshot(frame);
     }
 
@@ -746,13 +868,15 @@ async function finishShot(team,outcome){
     ...finalFrame,
     cup_id:outcome.cupId,score:pts,state:state
   };
-  realtimeSend('physics',finalFrame);
-  realtimeSend('shot_complete',payload);
-  realtimeSend('skee_state',{state:state,sent_at:sentAt});
+  transportSend('physics',finalFrame,'control');
+  transportSend('shot_complete',payload,'control');
+  transportSend('skee_state',{state:state,sent_at:sentAt},'control');
   queueSnapshot(finalFrame);
   playThunk(pts);
   banner.textContent=pts>0?(pts+' points — sunk!'):'0 points — gutter / miss.';
-  moving=false;localSim=false;skeeSim=null;syncHud();
+  moving=false;localSim=false;skeeSim=null;
+  if(adaptive)adaptive.applyPending();
+  syncHud();
   setTimeout(function(){
     if(!state.over){activeTeam=state.current;ball={x:50,y:8,z:0,sink:0};displayBall={x:50,y:8,z:0,sink:0};banner.textContent=currentName()+' — tap and swipe to throw.';render()}
   },700);
@@ -768,7 +892,7 @@ function playThunk(score){
 
 shell.addEventListener('pointerdown',function(e){
   unlockAudio();
-  if(role!=='launch'||position!=='first'||moving||state.over)return;
+  if(role!=='launch'||position!=='first'||!linkReady()||moving||state.over)return;
   const r=shell.getBoundingClientRect();
   const x=clamp(((e.clientX-r.left)/r.width)*100,22,78);
   const screenY=clamp((e.clientY-r.top)/r.height,0,1);
@@ -846,6 +970,9 @@ if(joinSession&&joinToken){
 }else{
   setup.classList.remove('hidden');
 }
+window.addEventListener('beforeunload',function(){
+  try{adaptive&&adaptive.stop()}catch(e){}
+});
 syncHud();render();
 })();
 </script>
