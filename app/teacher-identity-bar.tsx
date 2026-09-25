@@ -51,7 +51,8 @@ export default function TeacherIdentityBar({ pathname }: { pathname: string }) {
     const loadIdentity = async () => {
       try {
         const { data: sessionData } = await supabase.auth.getSession();
-        if (!sessionData.session || cancelled) {
+        if (cancelled) return;
+        if (!sessionData.session) {
           setVisible(false);
           return;
         }
@@ -68,6 +69,7 @@ export default function TeacherIdentityBar({ pathname }: { pathname: string }) {
             .eq('section_id', sectionId)
             .maybeSingle();
 
+          if (cancelled) return;
           if (!selectedResult.error) {
             section = (selectedResult.data ?? null) as SectionRow | null;
           }
@@ -82,6 +84,7 @@ export default function TeacherIdentityBar({ pathname }: { pathname: string }) {
             .limit(1)
             .maybeSingle();
 
+          if (cancelled) return;
           if (fallbackResult.error || !fallbackResult.data) {
             setVisible(false);
             return;
@@ -120,6 +123,7 @@ export default function TeacherIdentityBar({ pathname }: { pathname: string }) {
         setClassLabel(`${course} · ${group}`);
         setVisible(true);
       } catch (error) {
+        if (cancelled) return;
         console.error('Failed to load teacher identity bar:', error);
         setVisible(false);
       }

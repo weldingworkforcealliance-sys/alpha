@@ -3,19 +3,21 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import Dashboard from '@/app/dashboard/page';
 
-const mocks = vi.hoisted(() => ({ from: vi.fn(), rpc: vi.fn(), push: vi.fn(), select: null as null | ((id: string) => void) }));
+const mocks = vi.hoisted(() => ({ selectedId: '110', from: vi.fn(), rpc: vi.fn(), push: vi.fn(), select: null as null | ((id: string) => void) }));
 vi.mock('next/navigation', () => { const router = { push: mocks.push }; return { useRouter: () => router }; });
-vi.mock('@/lib/section-selection', () => ({ readSelectedSectionId: () => '110', publishSelectedSection: vi.fn(), subscribeSelectedSection: (fn: (id: string) => void) => { mocks.select = fn; return () => {}; } }));
+vi.mock('@/lib/section-selection', () => ({ readSelectedSectionId: () => mocks.selectedId, publishSelectedSection: vi.fn(), subscribeSelectedSection: (fn: (id: string) => void) => { mocks.select = (id: string) => { mocks.selectedId = id; fn(id); }; return () => {}; } }));
 const client = { from: mocks.from, rpc: mocks.rpc, auth: { getSession: async () => ({ data: { session: { user: { id: 'teacher' } } } }) } };
 vi.mock('@/lib/supabase-browser', () => ({ getSupabase: () => client }));
 vi.mock('@/app/planner-activity', () => ({ default: () => null }));
 vi.mock('@/app/attendance/attendance-workspace', () => ({ default: ({ lockedSectionId, lockedDate }: { lockedSectionId: string; lockedDate: string }) => <div data-testid="attendance-context">{lockedSectionId}/{lockedDate}</div> }));
 let delayedGuide: null | { id: string; result: Promise<unknown> };
 let delayedIndex: null | Promise<unknown>;
+let currentStarted = false;
 let actualDay3: string | null;
 let delayCalendar: null | Promise<unknown>;
 const sections = ['110', '210'].map(section => ({ school_id: 'school', section_id: section, course_code: `WLD ${section}`, current_planner_day_number: 4, planner_day_id: `${section}-p4`, scheduled_date: '2026-09-28', guide_day_id: `${section}-g4` }));
 beforeEach(() => {
+  mocks.selectedId = '110'; currentStarted = false;
   actualDay3 = '2026-09-24'; delayCalendar = null; delayedGuide = null; delayedIndex = null;
   mocks.rpc.mockResolvedValue({ data: false });
   mocks.from.mockImplementation((table: string) => {
@@ -29,6 +31,7 @@ beforeEach(() => {
           data = [3, 4].map(day => ({ id: `${f.section_id}-p${day}`, planner_day_number: day, scheduled_date: day === 3 ? '2026-09-23' : '2026-09-28', status: day === 3 ? 'completed' : 'planned' }));
         }
         if (table === 'planner_day_delivery') data = [{ planner_day_id: `${f.section_id}-p3`, delivery_status: 'completed', actual_date: actualDay3, completed_at: '2026-09-25T01:40:00Z' }];
+        if (table === 'planner_day_delivery' && currentStarted) data = [{ planner_day_id: `${f.section_id}-p4`, delivery_status: 'in_progress', actual_date: '2026-09-28', started_at: '2026-09-28T17:00:00Z' }];
         if (table === 'course_guide_days') {
           if (f.guide_id === '110' && delayedIndex) return delayedIndex.then(resolve, reject);
           if (delayedGuide && f.id === delayedGuide.id) return delayedGuide.result.then(resolve, reject);
@@ -100,4 +103,19 @@ it('ignores a stale lesson index after switching class during initial loading', 
   await act(async () => resolve({ data: [{ id: '110-g3', planner_day_number: 3, title: 'Stale index' }], error: null }));
   expect(screen.queryByRole('option', { name: /Stale index/ })).toBeNull();
   expect(screen.getByTestId('attendance-context').textContent).toBe('210/2026-09-28');
+});
+
+
+it.each([['Start Today', 'start_current_planner_day'], ['Complete Day', 'complete_current_planner_day']])('keeps the current class when a previous class %s finishes', async (button, rpc) => {
+  currentStarted = button === 'Complete Day';
+  render(<Dashboard />); await expectDate('110/2026-09-28');
+  let resolve!: (value: unknown) => void;
+  const pending = new Promise(r => { resolve = r; });
+  mocks.rpc.mockImplementation((name: string) => name === rpc ? pending : Promise.resolve({ data: false }));
+  fireEvent.click(screen.getByRole('button', { name: button }));
+  await waitFor(() => expect(mocks.rpc).toHaveBeenCalledWith(rpc, expect.objectContaining({ p_section_id: '110' })));
+  act(() => mocks.select?.('210'));
+  await expectDate('210/2026-09-28');
+  await act(async () => resolve({ error: null }));
+  expect(screen.queryByTestId('attendance-context')?.textContent).toBe('210/2026-09-28');
 });
