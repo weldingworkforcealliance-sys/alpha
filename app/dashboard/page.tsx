@@ -225,7 +225,7 @@ export default function DashboardPage() {
 
   const [supabase] = useState(getSupabase);
 
-  const refreshSections = async (sectionId?: string) => {
+  const refreshSections = async () => {
     const { data, error: queryError } = await supabase
       .from('current_teaching_sections')
       .select('*');
@@ -245,9 +245,8 @@ export default function DashboardPage() {
     }
 
     const savedSectionId = readSelectedSectionId();
-    const preferredSectionId = sectionId || savedSectionId;
     const selected =
-      typedSections.find((section) => section.section_id === preferredSectionId) ??
+      typedSections.find((section) => section.section_id === savedSectionId) ??
       typedSections[0];
 
     setSelectedSection(selected);
@@ -521,8 +520,10 @@ export default function DashboardPage() {
         return;
       }
 
-      await refreshSections(selectedSection.section_id);
-      await loadCalendarData(selectedSection.section_id);
+      await refreshSections();
+      if (readSelectedSectionId() === selectedSection.section_id) {
+        await loadCalendarData(selectedSection.section_id);
+      }
     } catch (err) {
       setError('An unexpected error occurred');
       console.error('Start day error:', err);
@@ -554,11 +555,15 @@ export default function DashboardPage() {
         return;
       }
 
-      setDeviationSummary('');
-      setFollowUpNeeded(false);
-      setFollowUpNotes('');
-      await refreshSections(selectedSection.section_id);
-      await loadCalendarData(selectedSection.section_id);
+      if (readSelectedSectionId() === selectedSection.section_id) {
+        setDeviationSummary('');
+        setFollowUpNeeded(false);
+        setFollowUpNotes('');
+      }
+      await refreshSections();
+      if (readSelectedSectionId() === selectedSection.section_id) {
+        await loadCalendarData(selectedSection.section_id);
+      }
     } catch (err) {
       setError('An unexpected error occurred');
       console.error('Complete day error:', err);
