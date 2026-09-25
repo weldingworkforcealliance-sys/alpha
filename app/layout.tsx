@@ -21,6 +21,7 @@ import ClassTimeWatchdog from './class-time-watchdog';
 import SchoolActiveTodayEmployees from './school-active-today-employees';
 import UsageTracker from './usage-tracker';
 import DemoSessionGuard from './demo-session-guard';
+import MfaGate from './mfa-gate';
 import './styles.css';
 import './agenda/agenda.css';
 import './desktop-layout-fix.css';
@@ -62,6 +63,7 @@ export default function RootLayout({
     pathname === '/account-setup' ||
     pathname === '/forgot-password' ||
     pathname === '/reset-password' ||
+    pathname === '/mfa' ||
     pathname === '/training/login';
   const isPrimaryPlannerRoute =
     pathname === '/planner' || pathname === '/dashboard' || pathname === '/agenda';
@@ -104,6 +106,7 @@ export default function RootLayout({
       <body className={bodyClassName || undefined}>
         <ThemeProvider>
           <DemoSessionGuard />
+          <MfaGate pathname={pathname} />
           {IS_STAGING && (
             <div
               role="status"
