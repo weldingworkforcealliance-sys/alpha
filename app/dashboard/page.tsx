@@ -204,6 +204,7 @@ export default function DashboardPage() {
   const [calendarExceptions, setCalendarExceptions] = useState<CalendarException[]>([]);
   const [deliveries, setDeliveries] = useState<DayDelivery[]>([]);
 
+  const guideRequest = useRef(0);
   const [guideLoading, setGuideLoading] = useState(false);
   const [guideDay, setGuideDay] = useState<GuideDay | null>(null);
   const [guideDayRefs, setGuideDayRefs] = useState<GuideDayRef[]>([]);
@@ -298,6 +299,7 @@ export default function DashboardPage() {
   };
 
   const loadGuideData = async (guideDayId: string) => {
+    const request = ++guideRequest.current;
     setGuideLoading(true);
     setGuideDay(null);
     setGuideSegments([]);
@@ -342,6 +344,8 @@ export default function DashboardPage() {
           .maybeSingle(),
       ]);
 
+    if (request !== guideRequest.current) return;
+
     const guideError =
       dayResult.error ||
       segmentsResult.error ||
@@ -367,6 +371,7 @@ export default function DashboardPage() {
         .eq('guide_id', loadedGuideDay.guide_id)
         .order('planner_day_number');
 
+      if (request !== guideRequest.current) return;
       if (guideIndexError) {
         console.error('Guide day index query error:', guideIndexError);
       } else {
@@ -385,6 +390,7 @@ export default function DashboardPage() {
         .in('id', outcomeIds)
         .order('outcome_code');
 
+      if (request !== guideRequest.current) return;
       if (outcomeError) {
         setError(`Failed to load protected outcomes: ${outcomeError.message}`);
         console.error('Outcome query error:', outcomeError);
@@ -405,6 +411,7 @@ export default function DashboardPage() {
         .eq('math_lesson_id', lesson.id)
         .order('sequence_number');
 
+      if (request !== guideRequest.current) return;
       if (mathSegmentError) {
         console.error('Math segment query error:', mathSegmentError);
       } else {
@@ -484,6 +491,7 @@ export default function DashboardPage() {
     if (viewedGuideDayId) {
       loadGuideData(viewedGuideDayId);
     } else {
+      setGuideLoading(false);
       setGuideDay(null);
       setGuideSegments([]);
       setGuideResources([]);
@@ -491,6 +499,7 @@ export default function DashboardPage() {
       setMathLesson(null);
       setMathSegments([]);
     }
+    return () => { guideRequest.current += 1; };
   }, [viewedGuideDayId]);
 
   const handleStartToday = async () => {

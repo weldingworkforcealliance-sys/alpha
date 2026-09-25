@@ -74,8 +74,10 @@ export default function PlannerScheduleStartGuard() {
     };
   }, [sectionId, supabase]);
 
+  const activeBlock = block?.sectionId === sectionId ? block : null;
+
   useEffect(() => {
-    if (!block) return;
+    if (!activeBlock) return;
 
     const interceptFutureStart = (event: MouseEvent) => {
       const target = event.target;
@@ -91,9 +93,9 @@ export default function PlannerScheduleStartGuard() {
 
     document.addEventListener('click', interceptFutureStart, true);
     return () => document.removeEventListener('click', interceptFutureStart, true);
-  }, [block]);
+  }, [activeBlock]);
 
-  if (!block) return null;
+  if (!activeBlock) return null;
 
   return (
     <section
@@ -113,8 +115,8 @@ export default function PlannerScheduleStartGuard() {
         Next planner day is not scheduled for today
       </strong>
       <span style={{ fontSize: 13 }}>
-        {block.dayNumber ? `Day ${block.dayNumber} is` : 'This day is'} scheduled for{' '}
-        {displayDate(block.scheduledDate)}. Start Today is blocked until that date or until an
+        {activeBlock.dayNumber ? `Day ${activeBlock.dayNumber} is` : 'This day is'} scheduled for{' '}
+        {displayDate(activeBlock.scheduledDate)}. Start Today is blocked until that date or until an
         administrator updates the class schedule.
       </span>
     </section>
