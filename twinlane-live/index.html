@@ -1203,8 +1203,12 @@ body[data-view-mode="immersive"] #matchHud::before{
     if(!adaptiveLink.ready){
       linkStatusEl.dataset.quality='calibrating';
       linkStatusEl.textContent=adaptiveLink.direct?'LINK · CALIBRATING':'LINK · PAIRING';
-      if(state?.screen2_joined)setPairProgress('calibrate');
-      else setPairProgress('pair');
+      if(state?.screen2_joined){
+        setPairProgress('calibrate');
+        if(pairStatusEl)pairStatusEl.innerHTML='<span class="paired-badge" style="border-color:#8b7445;color:#e1cc92;background:#201b10">Screen 2 connected · calibrating…</span>';
+      }else{
+        setPairProgress('pair');
+      }
       return;
     }
     if(adaptiveLink.direct){
@@ -1212,10 +1216,16 @@ body[data-view-mode="immersive"] #matchHud::before{
       linkStatusEl.dataset.quality='direct';
       const rtt=Number.isFinite(adaptiveLink.medianRttMs)?Math.round(adaptiveLink.medianRttMs)+' ms':'DIRECT';
       linkStatusEl.textContent='LINK · '+adaptiveLink.profile.toUpperCase()+' · '+rtt;
+      if(pairStatusEl)pairStatusEl.innerHTML='<span class="paired-badge">✓ Court ready · '+adaptiveLink.profile.toUpperCase()+'</span>';
     }else{
       setPairProgress('ready');
       linkStatusEl.dataset.quality='fallback';
       linkStatusEl.textContent='LINK · CLOUD FALLBACK';
+      if(pairStatusEl)pairStatusEl.innerHTML='<span class="paired-badge">✓ Court ready · CLOUD</span>';
+    }
+    if(isHost && hostPanel && !hostPanel.classList.contains('hidden') && hostPanel.dataset.readyCollapsed!=='1'){
+      hostPanel.dataset.readyCollapsed='1';
+      setTimeout(()=>hostPanel.classList.add('hidden'),900);
     }
   }
 
@@ -3388,12 +3398,10 @@ body[data-view-mode="immersive"] #matchHud::before{
       if(s.screen2_joined){
         if(!adaptiveLink.ready && !adaptiveLink.direct && realtimeReady)startAdaptiveLinkNegotiation();
         connectionCard.classList.add('ready');
-        if(pairStatusEl){
-          pairStatusEl.innerHTML='<span class="paired-badge">✓ Screen 2 connected</span>';
-          hostPanel?.classList.add('ready');
-        }
-        if(isHost && hostPanel && !hostPanel.classList.contains('hidden')){
-          setTimeout(()=>hostPanel.classList.add('hidden'),650);
+        hostPanel?.classList.add('ready');
+        if(!adaptiveLink.ready && pairStatusEl){
+          pairStatusEl.innerHTML='<span class="paired-badge" style="border-color:#8b7445;color:#e1cc92;background:#201b10">Screen 2 connected · calibrating…</span>';
+          setPairProgress('calibrate');
         }
         const g=game();
         if(g.phase==='pallino'){
@@ -3454,6 +3462,7 @@ body[data-view-mode="immersive"] #matchHud::before{
       hostCreate.classList.add('hidden');
       playFlowCard?.classList.add('hidden');
       hostPanel.classList.remove('hidden');
+      delete hostPanel.dataset.readyCollapsed;
       setPairProgress('pair');
       viewPanel.classList.remove('hidden');
       document.getElementById('sessionId').textContent=session;
@@ -4150,6 +4159,35 @@ body[data-view-mode="immersive"] #matchHud::before{
     }catch(e){setStatus('Could not start next end: '+e.message);}
   });
 
+  function leaveCurrentMatchForHome(){
+    if(pollTimer){clearInterval(pollTimer);pollTimer=null;}
+    if(heartbeatTimer){clearInterval(heartbeatTimer);heartbeatTimer=null;}
+    if(reconnectTimer){clearTimeout(reconnectTimer);reconnectTimer=null;}
+    closePeerLink('reset');
+    try{realtimeSocket?.close();}catch{}
+    realtimeSocket=null;
+    realtimeReady=false;
+    session='';
+    token='';
+    isHost=false;
+    state=null;
+    remoteShotActive=false;
+    localSim=false;
+    realtimeFrames=[];
+    displayedSettledBalls=[];
+    placementReady=false;
+    placedObject=null;
+    adaptiveLink={...ADAPTIVE_FALLBACK};
+    if(linkStatusEl){
+      linkStatusEl.dataset.quality='calibrating';
+      linkStatusEl.textContent='LINK · WAITING';
+    }
+    if(pairStatusEl)pairStatusEl.textContent='Waiting for Screen 2…';
+    delete hostPanel?.dataset.readyCollapsed;
+    setPairProgress('pair');
+    showHome();
+  }
+
   async function resetCurrentMatch(){
     if(role!=='launch')return;
     try{
@@ -4177,7 +4215,7 @@ body[data-view-mode="immersive"] #matchHud::before{
   rematchBtn?.addEventListener('click',resetCurrentMatch);
   winnerHomeBtn?.addEventListener('click',()=>{
     if(role!=='launch')return;
-    showHome();
+    leaveCurrentMatchForHome();
   });
 
   if(joinSession&&joinToken){
