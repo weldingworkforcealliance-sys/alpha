@@ -64,7 +64,7 @@
 .toolbar {
   padding: 12px;
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) 180px auto;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
   gap: 10px;
   align-items: end;
   margin-bottom: 12px;
@@ -136,7 +136,7 @@
 .studentCard { padding: 12px; }
 .studentTop {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(340px, 1.6fr);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
   gap: 12px;
   align-items: center;
 }
@@ -186,7 +186,7 @@
   border-top: 1px solid var(--ltg-border-soft, #314657);
   padding-top: 10px;
   display: grid;
-  grid-template-columns: 210px minmax(260px, 1fr) minmax(260px, 1.3fr) auto;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
   gap: 10px;
   align-items: end;
 }
@@ -360,3 +360,59 @@
   .embeddedSummary { align-items: flex-start; }
   .embeddedSummaryStatus { display: none; }
 }
+
+/* Size to the available panel, including sidebar and zoomed layouts. */
+.page,
+.embeddedPanel,
+.embeddedBody,
+.roster,
+.studentCard,
+.studentTop,
+.completionGrid,
+.field {
+  min-width: 0;
+  box-sizing: border-box;
+}
+.studentTop > *,
+.completionGrid > *,
+.toolbar > * {
+  min-width: 0;
+}
+.studentName,
+.notice,
+.summary,
+.reportLine,
+.embeddedSummary > span {
+  overflow-wrap: anywhere;
+}
+.field select,
+.field input,
+.field textarea,
+.studentCard select,
+.studentCard textarea,
+.finalizeCard textarea {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.header,
+.finalizeHeader,
+.embeddedToolbar,
+.embeddedToolbarActions {
+  flex-wrap: wrap;
+}
+.embeddedToolbar > *,
+.embeddedSummary > span:first-child {
+  min-width: 0;
+}
+.adminLink,
+.backLink,
+.actionButton,
+.secondaryButton,
+.saveButton {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+.completionGrid .saveButton { justify-self: start; }
