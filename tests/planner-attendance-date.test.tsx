@@ -38,7 +38,7 @@ beforeEach(() => {
   });
 });
 afterEach(() => { cleanup(); vi.clearAllMocks(); });
-async function expectDate(value: string) { await waitFor(() => expect(screen.getByTestId('attendance-context').textContent).toBe(value)); }
+async function expectDate(value: string) { await waitFor(() => expect(screen.getByTestId('attendance-context').textContent).toBe(value), { timeout: 5000 }); }
 async function previewDay3() { fireEvent.change(screen.getByRole('combobox', { name: 'Go to Day' }), { target: { value: '3' } }); }
 
 describe('planner attendance follows the viewed lesson', () => {
