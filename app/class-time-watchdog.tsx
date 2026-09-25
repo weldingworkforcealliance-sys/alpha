@@ -330,7 +330,7 @@ export default function ClassTimeWatchdog() {
                     fontWeight: 800,
                   }}
                 >
-                  Open Class
+                  {alert.courseLabel ? `Open ${alert.courseLabel}` : 'Open Class'}
                 </a>
                 {alert.severity !== 'start' && (
                   <a
