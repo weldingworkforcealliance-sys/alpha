@@ -1,0 +1,38 @@
+{
+  "engine": "Corvu Mor TwinLane",
+  "addon_id": "adaptive_link",
+  "addon_version": "1.0.0",
+  "contract": "adaptive-link-v1-physical-approved",
+  "required_for": [
+    "cross_device_motion",
+    "screen_seam_handoff",
+    "realtime_physics_replication"
+  ],
+  "physical_reference": {
+    "game": "Bocce",
+    "commit": "234b9eb3ef1a893b359fb3bb7d3c6bdb0fb420b7",
+    "locked_branch": "locked/adaptive-link-v1-physical-approved",
+    "result": "physically approved",
+    "transport": "WebRTC direct with Supabase fallback"
+  },
+  "responsibilities": [
+    "peer-to-peer realtime transport",
+    "Supabase signaling and fallback integration",
+    "RTT and jitter calibration",
+    "clock offset estimation",
+    "refresh-rate measurement",
+    "adaptive playback delay",
+    "adaptive prediction window",
+    "adaptive motion send cadence",
+    "health monitoring and between-shot recalibration"
+  ],
+  "prohibited_changes": [
+    "game physics",
+    "scoring",
+    "launch curves",
+    "collision geometry",
+    "game-specific world rules"
+  ],
+  "fallback_required": true,
+  "module": "twinlane-engine/adaptive-link-v1.js"
+}
