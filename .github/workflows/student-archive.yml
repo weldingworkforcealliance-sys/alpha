@@ -51,7 +51,7 @@ jobs:
         env:
           LTG_ARCHIVE_DB_DRILL: 'true'
       - name: Obtain short-lived AWS archive access
-        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd
         with:
           aws-region: us-east-2
           role-to-assume: arn:aws:iam::551626544567:role/ltg-production-student-archive
