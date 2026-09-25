@@ -533,6 +533,80 @@ body[data-view-mode="immersive"] #matchHud::before{
   body[data-view-mode="immersive"] .game-banner{font-size:13px}
 }
 
+
+/* Bocce Product Pass v1 — presentation only. */
+.product-home{
+  position:relative;overflow:hidden;text-align:center;padding:28px 18px 22px;
+  border-color:#66563b;background:
+    radial-gradient(circle at 50% -20%,#d7b56a22,transparent 38%),
+    linear-gradient(180deg,#181d16,#0d110d);
+}
+.product-home::before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.16;
+  background:
+    radial-gradient(circle at 18% 22%,#d5ba77 0 1px,transparent 2px),
+    radial-gradient(circle at 78% 35%,#d5ba77 0 1px,transparent 2px),
+    radial-gradient(circle at 45% 70%,#d5ba77 0 1px,transparent 2px);
+  background-size:120px 120px,160px 160px,190px 190px;
+}
+.product-home > *{position:relative;z-index:1}
+.home-mark{font:900 11px/1 Georgia,"Times New Roman",serif;letter-spacing:.24em;color:#b89b63}
+.home-title{font:900 clamp(42px,10vw,72px)/.9 Georgia,"Times New Roman",serif;color:#ead7a3;margin:10px 0 7px;text-shadow:0 4px 18px #000}
+.home-sub{max-width:520px;margin:0 auto;color:#98a49b;font-size:13px;line-height:1.55}
+.home-court-chip{display:inline-flex;gap:7px;align-items:center;margin:14px auto 18px;padding:7px 11px;border:1px solid #6f5d3d;border-radius:999px;background:#14180f;color:#d7c08b;font-size:10px;font-weight:900;letter-spacing:.08em}
+.home-actions{display:grid;grid-template-columns:1.35fr 1fr;gap:9px;max-width:520px;margin:0 auto}
+.home-actions button{min-height:52px;font-weight:900}
+.home-actions .home-play{grid-column:1/-1;font-size:17px}
+.home-actions .wide{grid-column:1/-1}
+.product-modal{
+  position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:16px;
+  background:#020403d9;backdrop-filter:blur(8px);
+}
+.product-modal.hidden{display:none}
+.product-modal-panel{
+  width:min(620px,100%);max-height:min(82vh,760px);overflow:auto;
+  border:1px solid #6a593b;border-radius:18px;padding:18px;
+  background:linear-gradient(180deg,#171c15,#0c100c);box-shadow:0 28px 70px #000c;
+}
+.product-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.product-modal-head h2{margin:2px 0 0;font-family:Georgia,"Times New Roman",serif;color:#ead7a3}
+.tutorial-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.tutorial-step{border:1px solid #3d473d;border-radius:14px;padding:13px;background:#111610}
+.tutorial-icon{height:76px;display:grid;place-items:center;font-size:34px;border-radius:10px;background:radial-gradient(circle,#7a684533,#0b0f0b 70%);margin-bottom:9px}
+.tutorial-step strong{display:block;color:#e2d0a2;margin-bottom:5px}
+.tutorial-step .small{line-height:1.45}
+.settings-stack{display:grid;gap:10px}
+.settings-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px;border:1px solid #344037;border-radius:12px;background:#101510}
+.pair-progress{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:13px}
+.pair-stage{padding:7px 4px;border:1px solid #2f3831;border-radius:9px;font-size:9px;font-weight:900;letter-spacing:.05em;color:#66736a;background:#0c100d}
+.pair-stage[data-active="true"]{border-color:#876f42;color:#dfca91;background:#201b10}
+.pair-stage[data-done="true"]{border-color:#3d6b4e;color:#b8dcc3;background:#102018}
+#matchHud.end-pop{animation:endPop .55s ease both}
+@keyframes endPop{0%{transform:scale(.98);filter:brightness(.8)}55%{transform:scale(1.015);filter:brightness(1.18)}100%{transform:scale(1);filter:brightness(1)}}
+.winner-overlay{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:16px;background:#020302e8;backdrop-filter:blur(9px)}
+.winner-overlay.hidden{display:none}
+.winner-card{width:min(520px,100%);text-align:center;border:1px solid #80693f;border-radius:20px;padding:28px 20px;background:
+  radial-gradient(circle at 50% 0,#c7a65b2b,transparent 42%),
+  linear-gradient(180deg,#1a2016,#0c100c);box-shadow:0 30px 80px #000d}
+.winner-crown{font-size:44px;line-height:1}
+.winner-label{margin-top:9px;font-size:10px;font-weight:900;letter-spacing:.22em;color:#ad9561}
+.winner-name{font:900 clamp(30px,8vw,48px)/1 Georgia,"Times New Roman",serif;color:#ead7a3;margin:7px 0}
+.winner-score{font-size:16px;color:#a8b2ab;margin-bottom:17px}
+.winner-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.living-ambient{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.living-ambient i{position:absolute;width:3px;height:3px;border-radius:50%;background:#f3d88c;box-shadow:0 0 8px #e3bb62;opacity:0;animation:firefly 7s linear infinite}
+.living-ambient i:nth-child(1){left:17%;top:62%;animation-delay:0s}
+.living-ambient i:nth-child(2){left:68%;top:48%;animation-delay:2.1s}
+.living-ambient i:nth-child(3){left:82%;top:71%;animation-delay:4.2s}
+@keyframes firefly{0%,100%{opacity:0;transform:translate(0,8px)}25%{opacity:.6}55%{opacity:.22;transform:translate(12px,-12px)}78%{opacity:.5}}
+@media(prefers-reduced-motion:reduce){.living-ambient i,#matchHud.end-pop{animation:none}}
+@media(max-width:600px){
+  .home-actions{grid-template-columns:1fr}
+  .home-actions .home-play,.home-actions .wide{grid-column:auto}
+  .tutorial-grid{grid-template-columns:1fr}
+  .pair-progress{grid-template-columns:1fr 1fr}
+  .winner-actions{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -549,7 +623,20 @@ body[data-view-mode="immersive"] #matchHud::before{
 </div>
 <p>Two screens become one court. First to 12 points wins.</p>
 
-<section id="playFlowCard" class="card hero-card">
+<section id="productHome" class="card product-home">
+  <div class="home-mark">CORVU MOR · TWINLANE</div>
+  <div class="home-title">BOCCE</div>
+  <div class="home-sub">Turn two nearby devices into one continuous bocce court. Pair, calibrate, and play.</div>
+  <div class="home-court-chip">LIVING KINGDOMS · ORIGINAL COURT</div>
+  <div class="home-actions">
+    <button id="homePlayBtn" class="primary home-play" type="button">Play Bocce</button>
+    <button id="homeCourtsBtn" type="button">Court Library</button>
+    <button id="homeHowBtn" type="button">How to Play</button>
+    <button id="homeSettingsBtn" class="wide" type="button">Settings</button>
+  </div>
+</section>
+
+<section id="playFlowCard" class="card hero-card hidden">
   <div class="hero-title">Two devices. One court.</div>
   <div class="hero-sub">Put the first device near the players. Scan the QR with the second device and place it directly beyond the first.</div>
   <div class="pair-flow">
@@ -586,7 +673,7 @@ body[data-view-mode="immersive"] #matchHud::before{
   </div>
 </section>
 
-<section id="hostCreate" class="card">
+<section id="hostCreate" class="card hidden">
   <div class="setup-title">NEW MATCH</div>
   <div class="player-inputs">
     <label>Player 1
@@ -648,6 +735,12 @@ body[data-view-mode="immersive"] #matchHud::before{
       <strong>Scan this QR with the second device</strong>
       <div class="small" style="margin-top:7px">Then place Screen 2 directly beyond this one at the far end of the court.</div>
       <div id="pairStatus" class="small" style="margin-top:9px">Waiting for Screen 2…</div>
+      <div id="pairProgress" class="pair-progress" aria-label="Pairing progress">
+        <div class="pair-stage" data-stage="create" data-done="true">MATCH</div>
+        <div class="pair-stage" data-stage="pair" data-active="true">PAIR</div>
+        <div class="pair-stage" data-stage="calibrate">CALIBRATE</div>
+        <div class="pair-stage" data-stage="ready">READY</div>
+      </div>
     </div>
     <img id="qr" class="qr" alt="QR code to join Corvu Mor Bocce">
   </div>
@@ -710,6 +803,7 @@ body[data-view-mode="immersive"] #matchHud::before{
     <span id="screenMeta" class="tag"></span>
   </div>
   <div id="lane" class="lane">
+    <div class="living-ambient" aria-hidden="true"><i></i><i></i><i></i></div>
     <div class="rails"></div>
     <div id="startZone" class="start-zone hidden"></div>
     <div id="startLabel" class="start-label hidden">START AREA</div>
@@ -731,6 +825,47 @@ body[data-view-mode="immersive"] #matchHud::before{
       <span class="tag"><span id="ballsOnCourt">0</span> on court</span>
     </div>
     <div id="throwHelp" class="small" style="margin-top:7px">Place the ball, then flick forward.</div>
+  </div>
+</section>
+
+<section id="howToPlayModal" class="product-modal hidden" aria-hidden="true">
+  <div class="product-modal-panel" role="dialog" aria-modal="true" aria-labelledby="howTitle">
+    <div class="product-modal-head">
+      <div><div class="eyebrow">BOCCE IN 30 SECONDS</div><h2 id="howTitle">How to Play</h2></div>
+      <button id="howCloseBtn" type="button">Close</button>
+    </div>
+    <div class="tutorial-grid">
+      <div class="tutorial-step"><div class="tutorial-icon">●</div><strong>1. Place</strong><div class="small">Tap inside the start area to position the pallino or your bocce ball.</div></div>
+      <div class="tutorial-step"><div class="tutorial-icon">↟</div><strong>2. Throw</strong><div class="small">Swipe upward from the placed ball. Direction and swipe speed control the shot.</div></div>
+      <div class="tutorial-step"><div class="tutorial-icon">◎</div><strong>3. Score</strong><div class="small">After all eight balls are thrown, the side closest to the pallino scores. First to 12 wins.</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="settingsModal" class="product-modal hidden" aria-hidden="true">
+  <div class="product-modal-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="product-modal-head">
+      <div><div class="eyebrow">BOCCE</div><h2 id="settingsTitle">Settings</h2></div>
+      <button id="settingsCloseBtn" type="button">Close</button>
+    </div>
+    <div class="settings-stack">
+      <div class="settings-row"><div><strong>Sound</strong><div class="small">Ball and rail impact audio.</div></div><button id="homeSoundBtn" type="button">Sound: On</button></div>
+      <div class="settings-row"><div><strong>Haptics</strong><div class="small">Supported mobile devices only.</div></div><button id="homeHapticsBtn" type="button">Haptics: On</button></div>
+      <div class="settings-row"><div><strong>Court View</strong><div class="small">Immersive Living Kingdoms or cleaner standard view.</div></div><button id="homeViewModeBtn" type="button">View: Immersive</button></div>
+    </div>
+  </div>
+</section>
+
+<section id="winnerOverlay" class="winner-overlay hidden" aria-hidden="true">
+  <div class="winner-card">
+    <div class="winner-crown">♜</div>
+    <div class="winner-label">MATCH WINNER</div>
+    <div id="winnerName" class="winner-name">PLAYER 1</div>
+    <div id="winnerScore" class="winner-score">12–8</div>
+    <div class="winner-actions">
+      <button id="rematchBtn" class="primary" type="button">Rematch</button>
+      <button id="winnerHomeBtn" type="button">Home</button>
+    </div>
   </div>
 </section>
 
@@ -795,6 +930,24 @@ body[data-view-mode="immersive"] #matchHud::before{
 
   const matchHud = document.getElementById('matchHud');
   const playFlowCard = document.getElementById('playFlowCard');
+  const productHome = document.getElementById('productHome');
+  const homePlayBtn = document.getElementById('homePlayBtn');
+  const homeCourtsBtn = document.getElementById('homeCourtsBtn');
+  const homeHowBtn = document.getElementById('homeHowBtn');
+  const homeSettingsBtn = document.getElementById('homeSettingsBtn');
+  const howToPlayModal = document.getElementById('howToPlayModal');
+  const howCloseBtn = document.getElementById('howCloseBtn');
+  const settingsModal = document.getElementById('settingsModal');
+  const settingsCloseBtn = document.getElementById('settingsCloseBtn');
+  const homeSoundBtn = document.getElementById('homeSoundBtn');
+  const homeHapticsBtn = document.getElementById('homeHapticsBtn');
+  const homeViewModeBtn = document.getElementById('homeViewModeBtn');
+  const winnerOverlay = document.getElementById('winnerOverlay');
+  const winnerName = document.getElementById('winnerName');
+  const winnerScore = document.getElementById('winnerScore');
+  const rematchBtn = document.getElementById('rematchBtn');
+  const winnerHomeBtn = document.getElementById('winnerHomeBtn');
+  const pairProgress = document.getElementById('pairProgress');
   const pairStatusEl = document.getElementById('pairStatus');
   const joinMatchTitleEl = document.getElementById('joinMatchTitle');
   const joinMatchNamesEl = document.getElementById('joinMatchNames');
@@ -1006,18 +1159,61 @@ body[data-view-mode="immersive"] #matchHud::before{
   };
 
 
+  function showHome(){
+    productHome?.classList.remove('hidden');
+    playFlowCard?.classList.add('hidden');
+    hostCreate?.classList.add('hidden');
+    hostPanel?.classList.add('hidden');
+    matchHud?.classList.add('hidden');
+    viewPanel?.classList.add('hidden');
+    connectionCard?.classList.add('hidden');
+    winnerOverlay?.classList.add('hidden');
+  }
+
+  function showMatchSetup(){
+    productHome?.classList.add('hidden');
+    playFlowCard?.classList.remove('hidden');
+    hostCreate?.classList.remove('hidden');
+    connectionCard?.classList.remove('hidden');
+  }
+
+  function openProductModal(el){
+    el?.classList.remove('hidden');
+    el?.setAttribute('aria-hidden','false');
+  }
+
+  function closeProductModal(el){
+    el?.classList.add('hidden');
+    el?.setAttribute('aria-hidden','true');
+  }
+
+  function setPairProgress(stage){
+    if(!pairProgress)return;
+    const order=['create','pair','calibrate','ready'];
+    const idx=Math.max(0,order.indexOf(stage));
+    for(const el of pairProgress.querySelectorAll('[data-stage]')){
+      const n=order.indexOf(el.dataset.stage);
+      el.dataset.done=String(n<idx || (stage==='ready'&&n===idx));
+      el.dataset.active=String(n===idx && stage!=='ready');
+    }
+  }
+
   function updateLinkStatus(){
     if(!linkStatusEl)return;
     if(!adaptiveLink.ready){
       linkStatusEl.dataset.quality='calibrating';
       linkStatusEl.textContent=adaptiveLink.direct?'LINK · CALIBRATING':'LINK · PAIRING';
+      if(state?.screen2_joined)setPairProgress('calibrate');
+      else setPairProgress('pair');
       return;
     }
     if(adaptiveLink.direct){
+      setPairProgress('ready');
       linkStatusEl.dataset.quality='direct';
       const rtt=Number.isFinite(adaptiveLink.medianRttMs)?Math.round(adaptiveLink.medianRttMs)+' ms':'DIRECT';
       linkStatusEl.textContent='LINK · '+adaptiveLink.profile.toUpperCase()+' · '+rtt;
     }else{
+      setPairProgress('ready');
       linkStatusEl.dataset.quality='fallback';
       linkStatusEl.textContent='LINK · CLOUD FALLBACK';
     }
@@ -1776,7 +1972,7 @@ body[data-view-mode="immersive"] #matchHud::before{
 
   function syncViewMode(){
     document.body.dataset.viewMode=viewMode;
-    for(const b of [viewModeBtn,joinViewModeBtn].filter(Boolean)){
+    for(const b of [viewModeBtn,joinViewModeBtn,homeViewModeBtn].filter(Boolean)){
       b.textContent='View: '+(viewMode==='immersive'?'Immersive':'Standard');
     }
   }
@@ -1788,10 +1984,10 @@ body[data-view-mode="immersive"] #matchHud::before{
   }
 
   function syncFeedbackButtons(){
-    for(const b of [soundBtn,joinSoundBtn].filter(Boolean)){
+    for(const b of [soundBtn,joinSoundBtn,homeSoundBtn].filter(Boolean)){
       b.textContent='Sound: '+(soundOn?'On':'Off');
     }
-    for(const b of [hapticsBtn,joinHapticsBtn].filter(Boolean)){
+    for(const b of [hapticsBtn,joinHapticsBtn,homeHapticsBtn].filter(Boolean)){
       if(!hapticsSupported){
         b.textContent='Haptics: Not supported';
         b.disabled=true;
@@ -2067,9 +2263,25 @@ body[data-view-mode="immersive"] #matchHud::before{
   document.addEventListener('keydown',unlockFromGesture);
 
   void measureRefreshRate().then(hz=>{localRefreshHz=hz;});
-  [soundBtn,joinSoundBtn].filter(Boolean).forEach(b=>b.addEventListener('click',toggleSound));
-  [hapticsBtn,joinHapticsBtn].filter(Boolean).forEach(b=>b.addEventListener('click',toggleHaptics));
-  [viewModeBtn,joinViewModeBtn].filter(Boolean).forEach(b=>b.addEventListener('click',toggleViewMode));
+
+  homePlayBtn?.addEventListener('click',()=>showMatchSetup());
+  homeCourtsBtn?.addEventListener('click',()=>openCourtLibrary('owned'));
+  homeHowBtn?.addEventListener('click',()=>openProductModal(howToPlayModal));
+  homeSettingsBtn?.addEventListener('click',()=>openProductModal(settingsModal));
+  howCloseBtn?.addEventListener('click',()=>closeProductModal(howToPlayModal));
+  settingsCloseBtn?.addEventListener('click',()=>closeProductModal(settingsModal));
+  howToPlayModal?.addEventListener('click',(e)=>{if(e.target===howToPlayModal)closeProductModal(howToPlayModal);});
+  settingsModal?.addEventListener('click',(e)=>{if(e.target===settingsModal)closeProductModal(settingsModal);});
+  document.addEventListener('keydown',(e)=>{
+    if(e.key==='Escape'){
+      closeProductModal(howToPlayModal);
+      closeProductModal(settingsModal);
+    }
+  });
+
+  [soundBtn,joinSoundBtn,homeSoundBtn].filter(Boolean).forEach(b=>b.addEventListener('click',toggleSound));
+  [hapticsBtn,joinHapticsBtn,homeHapticsBtn].filter(Boolean).forEach(b=>b.addEventListener('click',toggleHaptics));
+  [viewModeBtn,joinViewModeBtn,homeViewModeBtn].filter(Boolean).forEach(b=>b.addEventListener('click',toggleViewMode));
   courtLibraryBtn?.addEventListener('click',()=>openCourtLibrary('owned'));
   courtLibraryClose?.addEventListener('click',closeCourtLibrary);
   myCourtsTab?.addEventListener('click',()=>setCourtLibraryMode('owned'));
@@ -2088,8 +2300,24 @@ body[data-view-mode="immersive"] #matchHud::before{
 
     const presentationKey=[g.phase,g.end_number,g.score_a,g.score_b,g.winner||''].join(':');
     if(presentationKey!==lastPresentationKey){
-      if(g.phase==='end_complete')feedback('end');
-      if(g.phase==='match_over')feedback('win');
+      if(g.phase==='end_complete'){
+        feedback('end');
+        matchHud.classList.remove('end-pop');
+        void matchHud.offsetWidth;
+        matchHud.classList.add('end-pop');
+      }
+      if(g.phase==='match_over'){
+        feedback('win');
+        if(winnerName)winnerName.textContent=teamName(g.winner);
+        if(winnerScore)winnerScore.textContent=Number(g.score_a||0)+'–'+Number(g.score_b||0);
+        if(role==='launch'){
+          winnerOverlay?.classList.remove('hidden');
+          winnerOverlay?.setAttribute('aria-hidden','false');
+        }
+      }else{
+        winnerOverlay?.classList.add('hidden');
+        winnerOverlay?.setAttribute('aria-hidden','true');
+      }
       lastPresentationKey=presentationKey;
     }
 
@@ -3226,6 +3454,7 @@ body[data-view-mode="immersive"] #matchHud::before{
       hostCreate.classList.add('hidden');
       playFlowCard?.classList.add('hidden');
       hostPanel.classList.remove('hidden');
+      setPairProgress('pair');
       viewPanel.classList.remove('hidden');
       document.getElementById('sessionId').textContent=session;
       const joinSep=pairPage.includes('?')?'&':'?';
@@ -3921,9 +4150,10 @@ body[data-view-mode="immersive"] #matchHud::before{
     }catch(e){setStatus('Could not start next end: '+e.message);}
   });
 
-  newMatchBtn.addEventListener('click',async()=>{
+  async function resetCurrentMatch(){
     if(role!=='launch')return;
     try{
+      winnerOverlay?.classList.add('hidden');
       const result=await api('POST',{action:'reset_match',session,token});
       if(state){
         state.game_state=result.game_state||defaultGame();
@@ -3936,12 +4166,23 @@ body[data-view-mode="immersive"] #matchHud::before{
       displayedSettledBalls=[];
       realtimeFrames=[];
       realtimeJitterMs=0;
+      placementReady=false;
+      placedObject=null;
       await poll();
       render();
     }catch(e){setStatus('Could not reset match: '+e.message);}
+  }
+
+  newMatchBtn.addEventListener('click',resetCurrentMatch);
+  rematchBtn?.addEventListener('click',resetCurrentMatch);
+  winnerHomeBtn?.addEventListener('click',()=>{
+    if(role!=='launch')return;
+    showHome();
   });
 
   if(joinSession&&joinToken){
+    productHome?.classList.add('hidden');
+    connectionCard?.classList.remove('hidden');
     hostCreate.classList.add('hidden');
     playFlowCard?.classList.add('hidden');
     joinPanel.classList.remove('hidden');
@@ -3956,6 +4197,11 @@ body[data-view-mode="immersive"] #matchHud::before{
         if(joinMatchNamesEl)joinMatchNamesEl.textContent='Place this device at the far end, then tap Join Match.';
       })
       .catch(()=>{});
+  }
+
+  if(!joinSession || !joinToken){
+    connectionCard?.classList.add('hidden');
+    showHome();
   }
 
   window.addEventListener('beforeunload',()=>{
