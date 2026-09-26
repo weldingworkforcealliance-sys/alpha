@@ -27,8 +27,23 @@
   NEXT_PUBLIC_SUPABASE_URL = "https://ezlvivmeneefiiwqwgqd.supabase.co"
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_VDQ-Ug5VBliSzl1I-FKCog_ZNPv-g7R"
   NEXT_PUBLIC_DEPLOYMENT_ENV = "staging"
+  NEXT_PUBLIC_REQUIRE_MFA = "true"
 
 # Gradebook migrations verified in production September 17, 2026.
 [context.production.environment]
   NEXT_PUBLIC_GRADEBOOK_ENABLED = "true"
   NEXT_PUBLIC_GRADEBOOK_FINALS_ENABLED = "true"
+
+
+# Baseline response hardening for institutional deployment.
+# CSP is handled separately because LTG currently uses framework/runtime inline
+# scripts and external Supabase connections; it will be introduced after a
+# report-only compatibility pass.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
