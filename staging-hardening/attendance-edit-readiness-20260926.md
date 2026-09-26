@@ -16,3 +16,5 @@ Scope remaining: full attendance finalization/reporting journey and generic UI e
 
 Reference: https://supabase.com/docs/guides/database/functions
 
+SUPERSEDED: see scoped-attendance-readiness-20260926.md. Legacy grants were revoked again after updating the client to use the existing class/date-scoped RPCs.
+

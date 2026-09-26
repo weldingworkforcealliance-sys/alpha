@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
+import { formatError } from '@/lib/format-error';
 import {
   publishSelectedSection,
   readSelectedSectionId,
@@ -236,7 +237,7 @@ export default function AttendanceWorkspace({
         await loadReportQueue(info);
         if (embedded) setEmbeddedOpened(true);
       } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
+        setError(formatError(err, 'Attendance could not be saved or loaded. Please try again.'));
         if (embedded) setEmbeddedOpened(true);
       } finally {
         setBusy(false);
@@ -277,7 +278,7 @@ export default function AttendanceWorkspace({
         }
         setAttendanceDate(requestedDate);
       } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
+        setError(formatError(err, 'Attendance could not be saved or loaded. Please try again.'));
       } finally {
         setLoading(false);
       }
@@ -337,8 +338,10 @@ export default function AttendanceWorkspace({
     setBusy(true);
     setError('');
     try {
-      const { error: rpcError } = await supabase.rpc('set_attendance_record', {
+      const { error: rpcError } = await supabase.rpc('set_section_attendance_record', {
         p_session_id: session.session_id,
+        p_section_id: sectionId,
+        p_attendance_date: attendanceDate,
         p_student_id: studentId,
         p_initial_status: record.initialStatus,
         p_final_status: record.finalStatus,
@@ -348,7 +351,7 @@ export default function AttendanceWorkspace({
       if (rpcError) throw rpcError;
       setNotice('Attendance saved.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(formatError(err, 'Attendance could not be saved or loaded. Please try again.'));
     } finally {
       setBusy(false);
     }
@@ -363,26 +366,28 @@ export default function AttendanceWorkspace({
   };
 
   const markAllPresent = async () => {
-    if (!session || session.finalized) return;
+    if (!session || session.finalized || session.is_completion_section) return;
     setBusy(true);
     setError('');
     try {
-      const { error: rpcError } = await supabase.rpc('mark_all_attendance', {
+      const { error: rpcError } = await supabase.rpc('mark_all_section_attendance', {
         p_session_id: session.session_id,
+        p_section_id: sectionId,
+        p_attendance_date: attendanceDate,
         p_status: 'present',
       });
       if (rpcError) throw rpcError;
       await loadRoster(session);
       setNotice('All active students marked present. Adjust exceptions as needed.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(formatError(err, 'Attendance could not be saved or loaded. Please try again.'));
     } finally {
       setBusy(false);
     }
   };
 
   const resetAttendance = async () => {
-    if (!session || session.finalized || !hasAttendanceData) return;
+    if (!session || session.finalized || session.is_completion_section || !hasAttendanceData) return;
 
     const confirmed =
       typeof window === 'undefined' ||
@@ -395,8 +400,10 @@ export default function AttendanceWorkspace({
     setError('');
     setNotice('');
     try {
-      const { error: rpcError } = await supabase.rpc('reset_attendance_session', {
+      const { error: rpcError } = await supabase.rpc('reset_section_attendance', {
         p_session_id: session.session_id,
+        p_section_id: sectionId,
+        p_attendance_date: attendanceDate,
       });
       if (rpcError) throw rpcError;
       setGeneralNotes('');
@@ -404,7 +411,7 @@ export default function AttendanceWorkspace({
       await loadReportQueue(session);
       setNotice('Attendance reset. All students are unmarked and ready to retake.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(formatError(err, 'Attendance could not be saved or loaded. Please try again.'));
     } finally {
       setBusy(false);
     }
@@ -428,9 +435,10 @@ export default function AttendanceWorkspace({
     setError('');
     setNotice('');
     try {
-      const { error: rpcError } = await supabase.rpc('finalize_attendance_session', {
+      const { error: rpcError } = await supabase.rpc('finalize_section_attendance', {
         p_session_id: session.session_id,
-        p_section_id: selectedSection.section_id,
+        p_section_id: sectionId,
+        p_attendance_date: attendanceDate,
         p_general_notes: generalNotes.trim() || null,
       });
       if (rpcError) throw rpcError;
@@ -444,7 +452,7 @@ export default function AttendanceWorkspace({
           : 'Attendance finalized for the class pair.'
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(formatError(err, 'Attendance could not be saved or loaded. Please try again.'));
     } finally {
       setBusy(false);
     }
@@ -478,7 +486,7 @@ export default function AttendanceWorkspace({
             )}
           </section>
 
-          {!session.finalized && students.length > 0 && (
+          {!session.finalized && !session.is_completion_section && students.length > 0 && (
             <div className={styles.bulkRow}>
               <button type="button" className={styles.actionButton} onClick={markAllPresent} disabled={busy}>
                 Mark All Present
@@ -517,7 +525,7 @@ export default function AttendanceWorkspace({
                           <button
                             type="button"
                             key={value}
-                            disabled={busy || session.finalized}
+                            disabled={busy || session.finalized || session.is_completion_section}
                             onClick={() => patchRecord(student.id, { initialStatus: value }, true)}
                             className={`${styles.statusButton} ${styles[value]} ${record.initialStatus === value ? styles.active : ''}`}
                           >
@@ -744,3 +752,6 @@ export default function AttendanceWorkspace({
     </main>
   );
 }
+
+
+
