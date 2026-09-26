@@ -15,7 +15,12 @@ function loginHarness() {
   const handleLogin = pageHandler<(event: { preventDefault: () => void }) => Promise<void>>(
     'app/login/page.tsx', 'handleLogin', {
       email: ' Teacher@Example.com ', password: 'test-password',
-      supabase: { auth: { signInWithPassword }, rpc },
+      supabase: { auth: { signInWithPassword, mfa: {
+        getAuthenticatorAssuranceLevel: vi.fn().mockResolvedValue({
+          data: { currentLevel: 'aal1', nextLevel: 'aal1' }, error: null,
+        }),
+      } }, rpc },
+      process: { env: { NEXT_PUBLIC_REQUIRE_MFA: 'false' } },
       setError, setIsLoading, router, formatError, safePostLoginRoute,
       console: { error: vi.fn() }, URLSearchParams,
       window: { location: { search: '?next=%2Faccounts' } },

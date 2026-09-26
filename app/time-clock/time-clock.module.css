@@ -408,6 +408,20 @@
   background: rgba(80, 97, 110, 0.18) !important;
 }
 
+.payrollSummary {
+  margin: 18px 0;
+  padding: 16px;
+  border: 1px solid rgba(128, 185, 217, .25);
+  border-radius: 12px;
+  background: rgba(7, 23, 34, .7);
+}
+
+.payrollSummary h3 { margin: 4px 0 0; }
+.payrollSummary p { color: #b7c9d5; font-size: .85rem; line-height: 1.5; }
+.payrollSummary .tableWrap { overflow-x: auto; }
+.payrollSummary table { min-width: 1050px; }
+.payrollSummary td:not(:nth-child(2)), .payrollSummary th:not(:nth-child(2)) { text-align: right; }
+
 .tableWrap {
   overflow-x: auto;
   border: 1px solid rgba(133, 188, 217, 0.15);
