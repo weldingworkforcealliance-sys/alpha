@@ -202,6 +202,40 @@ export default function TimeClockPage() {
       .sort((a, b) => b.clock_in_at.localeCompare(a.clock_in_at));
   }, [entries, rangeStart, rangeEnd]);
 
+  const payrollGroups = useMemo(() => {
+    const grouped = new Map<string, {
+      employeeId: string; name: string; code: string; weekStart: string;
+      days: Record<string, number>; hours: number; open: number; overnight: number;
+    }>();
+    filteredEntries.forEach((entry) => {
+      const clockIn = new Date(entry.clock_in_at);
+      const day = dateInputValue(clockIn);
+      const monday = new Date(clockIn);
+      monday.setDate(monday.getDate() - (monday.getDay() === 0 ? 6 : monday.getDay() - 1));
+      const weekStart = dateInputValue(monday);
+      const key = `${entry.employee_id}:${weekStart}`;
+      const employee = employeeById.get(entry.employee_id);
+      const group = grouped.get(key) ?? {
+        employeeId: entry.employee_id,
+        name: employee?.display_name ?? 'Unknown employee',
+        code: employee?.employee_code ?? '',
+        weekStart, days: {}, hours: 0, open: 0, overnight: 0,
+      };
+      if (entry.clock_out_at) {
+        const hours = hoursBetween(entry.clock_in_at, entry.clock_out_at);
+        group.days[day] = (group.days[day] ?? 0) + hours;
+        group.hours += hours;
+        if (dateInputValue(new Date(entry.clock_out_at)) !== day) group.overnight++;
+      } else {
+        group.open++;
+      }
+      grouped.set(key, group);
+    });
+    return Array.from(grouped.values()).sort((a, b) =>
+      b.weekStart.localeCompare(a.weekStart) || a.name.localeCompare(b.name)
+    );
+  }, [filteredEntries, employeeById]);
+
   const totalHours = useMemo(
     () => filteredEntries.reduce(
       (sum, entry) => sum + hoursBetween(entry.clock_in_at, entry.clock_out_at, now),
@@ -538,6 +572,28 @@ export default function TimeClockPage() {
     URL.revokeObjectURL(url);
   };
 
+  const exportPayrollCsv = () => {
+    const header = ['Week Starting', 'Employee', 'Employee Code', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Completed Hours', 'Open Shifts', 'Overnight Shifts'];
+    const rows = payrollGroups.map((group) => {
+      const monday = new Date(`${group.weekStart}T12:00:00`);
+      const days = Array.from({ length: 7 }, (_, offset) => {
+        const date = new Date(monday);
+        date.setDate(date.getDate() + offset);
+        return (group.days[dateInputValue(date)] ?? 0).toFixed(2);
+      });
+      return [group.weekStart, group.name, group.code, ...days, group.hours.toFixed(2), group.open, group.overnight];
+    });
+    const csv = [header, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(','))
+      .join('\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `ltg-payroll-by-employee-${rangeStart}-to-${rangeEnd}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (loading) {
     return <main className={styles.loading}>Opening LTG Time Clock…</main>;
   }
@@ -803,7 +859,10 @@ export default function TimeClockPage() {
             </div>
             <div className={styles.reportActions}>
               {canReport && (
-                <button onClick={exportCsv} disabled={filteredEntries.length === 0}>Export CSV</button>
+                <>
+                  <button onClick={exportPayrollCsv} disabled={payrollGroups.length === 0}>Export Payroll Summary</button>
+                  <button onClick={exportCsv} disabled={filteredEntries.length === 0}>Export Punch Detail</button>
+                </>
               )}
               <button onClick={loadSchoolData} disabled={refreshing}>
                 {refreshing ? 'Refreshing…' : 'Refresh'}
@@ -825,6 +884,40 @@ export default function TimeClockPage() {
               <strong>{totalHours.toFixed(2)}</strong>
             </div>
           </div>
+
+          {canReport && (
+            <div className={styles.payrollSummary}>
+              <div className={styles.panelHeading}>
+                <div>
+                  <span className={styles.kicker}>PAYROLL ENTRY</span>
+                  <h3>Hours by employee and week</h3>
+                </div>
+              </div>
+              <p>Completed shifts only. Open shifts need review. Overnight shifts are assigned to their clock-in day here; use the finalized weekly report for hours split across dates.</p>
+              <div className={styles.tableWrap}>
+                <table>
+                  <thead><tr><th>Week of</th><th>Employee</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th><th>Weekly hours</th><th>Review</th></tr></thead>
+                  <tbody>
+                    {payrollGroups.map((group) => {
+                      const monday = new Date(`${group.weekStart}T12:00:00`);
+                      return <tr key={`${group.employeeId}:${group.weekStart}`}>
+                        <td>{group.weekStart}</td>
+                        <td><strong>{group.name}</strong>{group.code && <small> · {group.code}</small>}</td>
+                        {Array.from({ length: 7 }, (_, offset) => {
+                          const date = new Date(monday);
+                          date.setDate(date.getDate() + offset);
+                          return <td key={offset}>{(group.days[dateInputValue(date)] ?? 0).toFixed(2)}</td>;
+                        })}
+                        <td><strong>{group.hours.toFixed(2)}</strong></td>
+                        <td>{group.open > 0 && `${group.open} open `}{group.overnight > 0 && `${group.overnight} overnight`}</td>
+                      </tr>;
+                    })}
+                    {!payrollGroups.length && <tr><td colSpan={11} className={styles.emptyCell}>No employee hours in this date range.</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
           {adjustingEntryId && isManager && (
             <div className={styles.adjustBox}>
