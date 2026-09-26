@@ -386,9 +386,10 @@ export default function AttendanceCorrectionsPage() {
     setError('');
     setNotice('');
     try {
-      const { error: rpcError } = await supabase.rpc('finalize_attendance_session', {
+      const { error: rpcError } = await supabase.rpc('finalize_section_attendance', {
         p_session_id: session.id,
         p_section_id: selectedPair.completion_section_id,
+        p_attendance_date: attendanceDate,
         p_general_notes: `Administrative historical correction: ${reason.trim()}`,
       });
       if (rpcError) throw rpcError;
@@ -561,3 +562,5 @@ export default function AttendanceCorrectionsPage() {
     </main>
   );
 }
+
+

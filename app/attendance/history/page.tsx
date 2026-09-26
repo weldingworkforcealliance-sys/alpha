@@ -1,5 +1,7 @@
 'use client';
 
+import { attendanceNeedsReview } from '@/lib/attendance-review';
+
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
@@ -497,7 +499,7 @@ export default function AttendanceHistoryPage() {
     });
     const counts = sessionCounts(rows);
     const queue = queueMap.get(session.id);
-    const attention = counts.absent + counts.late + counts.leftEarly + counts.partial + counts.flagged + counts.unmarked;
+    const attention = rows.filter(attendanceNeedsReview).length;
 
     return (
       <details className={styles.sessionCard} key={session.id} id={`session-${session.id}`}>
@@ -899,3 +901,5 @@ export default function AttendanceHistoryPage() {
     </main>
   );
 }
+
+
