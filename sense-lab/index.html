@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AWS SENSE Level I Passport Lab</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-block">
+        <div class="brand-mark">S1</div>
+        <div>
+          <div class="eyebrow">Standalone prototype</div>
+          <h1>SENSE Passport Lab</h1>
+        </div>
+      </div>
+
+      <nav class="nav-stack" aria-label="Primary">
+        <button class="nav-btn active" data-view="dashboard">Dashboard</button>
+        <button class="nav-btn" data-view="students">Students</button>
+        <button class="nav-btn" data-view="passport">SENSE Passport</button>
+        <button class="nav-btn" data-view="exams">Knowledge Exams</button>
+        <button class="nav-btn" data-view="qualifications">Performance Qualifications</button>
+        <button class="nav-btn" data-view="admin">Admin / AWS Readiness</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="tiny-label">Prototype storage</div>
+        <div class="storage-state">Browser localStorage only</div>
+        <button id="exportJsonBtn" class="secondary-btn full">Export JSON</button>
+        <label class="secondary-btn full file-btn">
+          Import JSON
+          <input id="importJsonInput" type="file" accept="application/json" hidden />
+        </label>
+        <button id="resetDemoBtn" class="danger-btn full">Reset demo data</button>
+      </div>
+    </aside>
+
+    <main class="main-panel">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">AWS SENSE Level I · Entry Welder</div>
+          <h2 id="viewTitle">Program Dashboard</h2>
+        </div>
+        <div class="topbar-actions">
+          <label class="field-inline">
+            Active student
+            <select id="activeStudentSelect"></select>
+          </label>
+          <button id="addStudentBtn" class="primary-btn">+ Add test student</button>
+        </div>
+      </header>
+
+      <section id="appContent" class="content"></section>
+    </main>
+  </div>
+
+  <dialog id="studentDialog" class="modal">
+    <form method="dialog" id="studentForm">
+      <div class="modal-head">
+        <div>
+          <div class="eyebrow">Prototype record</div>
+          <h3>Add test student</h3>
+        </div>
+        <button value="cancel" class="icon-btn" aria-label="Close">×</button>
+      </div>
+      <div class="form-grid">
+        <label>Student name<input name="name" required /></label>
+        <label>School ID<input name="studentId" required /></label>
+        <label>Email<input name="email" type="email" /></label>
+        <label>Cohort<input name="cohort" placeholder="e.g. PVHS Level 1 B" /></label>
+      </div>
+      <div class="modal-actions">
+        <button value="cancel" class="secondary-btn">Cancel</button>
+        <button value="default" class="primary-btn" id="saveStudentBtn">Create student</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="./app.js"></script>
+  <script src="./standards-fixes.js"></script>
+</body>
+</html>
