@@ -1,6 +1,7 @@
 import {WORLD} from '../game/rules.js';
 export function viewport(device){
-  if(![1,2].includes(device))throw new Error('Expected Phone A (1) or Phone B (2)');
+  if(device===0)return {x0:0,x1:WORLD.width,y0:0,y1:WORLD.height};
+  if(![1,2].includes(device))throw new Error('Expected Solo (0), Phone A (1), or Phone B (2)');
   return {x0:(device-1)*500,x1:device*500,y0:0,y1:WORLD.height};
 }
 export function worldToLocal(point,device,width,height){
