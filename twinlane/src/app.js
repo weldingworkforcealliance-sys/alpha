@@ -28,6 +28,7 @@ function ready(credentials){
   $('play').hidden=false;
 
   const solo=Boolean(credentials.solo);
+  document.body.classList.toggle('solo-mode',solo);
   $('hostControls').hidden=!(device===1||solo);
   $('modeControl').hidden=!(device===1||solo);
   $('guestHelp').hidden=device!==2;
