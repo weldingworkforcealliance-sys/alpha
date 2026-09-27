@@ -63,9 +63,77 @@ html.lk-premium-v3 .pallino{background:radial-gradient(circle at 29% 22%,#fffde9
 @media(max-width:600px){html.lk-premium-v3 main{padding:6px 6px 24px!important}html.lk-premium-v3 .brand-title{font-size:28px!important}html.lk-premium-v3 .score-team{min-height:80px!important;padding:8px 9px 13px!important}html.lk-premium-v3 .score-num{font-size:35px!important}html.lk-premium-v3 #viewPanel{padding:6px!important}html.lk-premium-v3 .living-ambient::before,html.lk-premium-v3 .living-ambient::after{width:45%;height:57%;opacity:.72}html.lk-premium-v3 #viewPanel .rails{inset:0 7.5%!important;border-left-width:5px!important;border-right-width:5px!important}}
 `;
 
-  function rewritePairing(doc){try{const join=doc.getElementById('joinLink');if(join&&join.textContent){const old=new URL(join.textContent);const next=new URL(WRAPPER_BASE);for(const [k,v] of old.searchParams)next.searchParams.set(k,v);if(location.search.includes('monitor=1'))next.searchParams.set('monitor','1');join.textContent=next.toString()}const qr=doc.getElementById('qr');if(qr&&qr.src){const u=new URL(qr.src);u.searchParams.set('target',WRAPPER_BASE+(location.search.includes('monitor=1')?'?monitor=1':''));qr.src=u.toString()}}catch{}}
-  function applyUpgrade(){let doc;try{doc=frame.contentDocument}catch{return}if(!doc?.documentElement)return;doc.documentElement.classList.add('lk-premium-v3');if(!doc.getElementById('lk-premium-v3-style')){const style=doc.createElement('style');style.id='lk-premium-v3-style';style.textContent=premiumCSS;doc.head.appendChild(style)}rewritePairing(doc);new MutationObserver(()=>rewritePairing(doc)).observe(doc.body,{childList:true,subtree:true,attributes:true,attributeFilter:['src','class']});loading.classList.add('done')}
-  frame.addEventListener('load',()=>setTimeout(applyUpgrade,80));
+  function rewritePairing(doc){
+    try{
+      const monitorSuffix=location.search.includes('monitor=1')?'?monitor=1':'';
+      const desiredTarget=WRAPPER_BASE+monitorSuffix;
+
+      const join=doc.getElementById('joinLink');
+      if(join && join.textContent){
+        const currentText=join.textContent.trim();
+        const oldUrl=new URL(currentText);
+        const next=new URL(WRAPPER_BASE);
+        for(const [k,v] of oldUrl.searchParams)next.searchParams.set(k,v);
+        if(location.search.includes('monitor=1'))next.searchParams.set('monitor','1');
+        const desiredJoin=next.toString();
+        if(currentText!==desiredJoin)join.textContent=desiredJoin;
+      }
+
+      const qr=doc.getElementById('qr');
+      if(qr && qr.src){
+        const u=new URL(qr.src);
+        const currentTarget=u.searchParams.get('target')||'';
+        if(currentTarget!==desiredTarget){
+          u.searchParams.set('target',desiredTarget);
+          qr.src=u.toString();
+        }
+      }
+    }catch{}
+  }
+
+  function installPairingWatch(doc){
+    if(doc.__lkV3PairWatchInstalled)return;
+    doc.__lkV3PairWatchInstalled=true;
+
+    const observer=new MutationObserver((mutations)=>{
+      let shouldRewrite=false;
+      for(const m of mutations){
+        if(m.type==='childList'){shouldRewrite=true;break;}
+        if(m.type==='attributes' && m.target?.id==='qr' && m.attributeName==='src'){
+          shouldRewrite=true;break;
+        }
+      }
+      if(shouldRewrite)rewritePairing(doc);
+    });
+
+    observer.observe(doc.body,{
+      childList:true,
+      subtree:true,
+      attributes:true,
+      attributeFilter:['src']
+    });
+  }
+
+  function applyUpgrade(){
+    let doc;
+    try{doc=frame.contentDocument}catch{return}
+    if(!doc?.documentElement)return;
+
+    doc.documentElement.classList.add('lk-premium-v3');
+
+    if(!doc.getElementById('lk-premium-v3-style')){
+      const style=doc.createElement('style');
+      style.id='lk-premium-v3-style';
+      style.textContent=premiumCSS;
+      doc.head.appendChild(style);
+    }
+
+    rewritePairing(doc);
+    installPairingWatch(doc);
+    loading.classList.add('done');
+  }
+
+  frame.addEventListener('load',()=>setTimeout(applyUpgrade,120));
 })();
 </script>
 </body>
