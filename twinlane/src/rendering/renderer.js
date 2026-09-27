@@ -1,12 +1,13 @@
 import {LANES} from '../game/rules.js';
-import {worldToLocal} from '../multiplayer/device-layout.js';
+import {worldToLocal,viewport} from '../multiplayer/device-layout.js';
 export function render(canvas,state,device,skin){
   const rect=canvas.getBoundingClientRect(),dpr=globalThis.devicePixelRatio||1;
   const w=Math.round(rect.width*dpr),h=Math.round(rect.height*dpr);
   if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
   const c=canvas.getContext('2d'),a=skin.assets;
   c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle=a.terrain;c.fillRect(0,0,rect.width,rect.height);
-  c.save();c.scale(rect.width/500,rect.height/800);c.translate(-(device-1)*500,0);
+  const v=viewport(device);
+  c.save();c.scale(rect.width/(v.x1-v.x0),rect.height/800);c.translate(-v.x0,0);
   // All geometry is in shared world coordinates, clipped only by the canvas.
   c.strokeStyle=a.laneGround;c.lineWidth=76;
   for(const y of LANES){c.beginPath();c.moveTo(0,y);c.lineTo(1000,y);c.stroke();}
