@@ -40,6 +40,19 @@ describe('attendance closeout routing', () => {
     });
   });
 
+  it('allows an empty roster to proceed to final confirmation', () => {
+    expect(attendanceCloseoutAction({
+      attendance_required: true,
+      session_id: null,
+      finalized: false,
+      primary_section_id: 'wld105',
+      completion_section_id: 'wld110',
+      active_student_count: 0,
+      initial_marked_count: 0,
+      missing_initial_count: 0,
+    })?.targetSectionId).toBe('wld110');
+  });
+
   it('returns no action when attendance is finalized or not required', () => {
     expect(attendanceCloseoutAction({
       attendance_required: true,
