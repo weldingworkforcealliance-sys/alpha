@@ -26,13 +26,16 @@ export default function PlannerAttendancePanel({ pathname }: { pathname: string 
   const [attendanceDate, setAttendanceDate] = useState(localDate);
   const [completionNotice, setCompletionNotice] = useState('');
   const completionBypassRef = useRef(false);
+  const sectionLookupRef = useRef(0);
 
   useEffect(() => {
     if (pathname !== '/dashboard') return;
     let cancelled = false;
 
     const selectSection = async (nextSectionId: string | null) => {
+      const lookupId = ++sectionLookupRef.current;
       if (cancelled) return;
+
       setSectionId(nextSectionId);
       setCompletionNotice('');
       if (!nextSectionId) {
@@ -46,6 +49,8 @@ export default function PlannerAttendancePanel({ pathname }: { pathname: string 
         .eq('section_id', nextSectionId)
         .maybeSingle();
 
+      if (cancelled || lookupId !== sectionLookupRef.current) return;
+
       let resolvedDate = data?.scheduled_date || localDate();
 
       if (data?.planner_day_id) {
@@ -55,10 +60,14 @@ export default function PlannerAttendancePanel({ pathname }: { pathname: string 
           .eq('section_id', nextSectionId)
           .eq('planner_day_id', data.planner_day_id)
           .maybeSingle();
+
+        if (cancelled || lookupId !== sectionLookupRef.current) return;
         if (delivery?.actual_date) resolvedDate = delivery.actual_date;
       }
 
-      if (!cancelled) setAttendanceDate(resolvedDate);
+      if (!cancelled && lookupId === sectionLookupRef.current) {
+        setAttendanceDate(resolvedDate);
+      }
     };
 
     void selectSection(readSelectedSectionId());
@@ -68,6 +77,7 @@ export default function PlannerAttendancePanel({ pathname }: { pathname: string 
 
     return () => {
       cancelled = true;
+      sectionLookupRef.current += 1;
       unsubscribe();
     };
   }, [pathname, supabase]);
@@ -167,6 +177,8 @@ export default function PlannerAttendancePanel({ pathname }: { pathname: string 
 
   if (pathname !== '/dashboard' || !sectionId) return null;
 
+  const futureAttendanceDate = attendanceDate > localDate();
+
   return (
     <section
       id="ltg-planner-attendance-slot"
@@ -195,11 +207,33 @@ export default function PlannerAttendancePanel({ pathname }: { pathname: string 
         </div>
       )}
 
-      <AttendanceWorkspace
-        embedded
-        lockedSectionId={sectionId}
-        lockedDate={attendanceDate}
-      />
+      {futureAttendanceDate ? (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            padding: '11px 12px',
+            border: '1px solid rgba(255, 154, 56, 0.48)',
+            borderRadius: 8,
+            background: 'rgba(255, 154, 56, 0.07)',
+            color: '#ffd7ae',
+            fontSize: 13,
+            lineHeight: 1.45,
+          }}
+        >
+          <strong style={{ display: 'block', marginBottom: 3, color: '#ffe7cb' }}>
+            Future attendance is locked
+          </strong>
+          Attendance for {displayDate(attendanceDate)} cannot be opened before that date. Select the
+          current paired class or return on the scheduled day.
+        </div>
+      ) : (
+        <AttendanceWorkspace
+          embedded
+          lockedSectionId={sectionId}
+          lockedDate={attendanceDate}
+        />
+      )}
     </section>
   );
 }
