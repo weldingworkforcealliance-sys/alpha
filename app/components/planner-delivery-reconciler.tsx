@@ -3,9 +3,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { getSupabase } from '@/lib/supabase-browser';
 import {
+  publishSelectedSection,
   readSelectedSectionId,
   subscribeSelectedSection,
 } from '@/lib/section-selection';
+import {
+  attendanceCloseoutAction,
+  type AttendanceCloseoutAction,
+  type AttendanceCloseoutStatus,
+} from '@/lib/attendance-closeout';
 
 type Snapshot = {
   plannerDayId: string | null;
@@ -14,8 +20,7 @@ type Snapshot = {
   sectionCompletedAt: string | null;
 };
 
-type AttendanceBlock = {
-  sectionId: string;
+type AttendanceBlock = AttendanceCloseoutAction & {
   attendanceDate: string;
 };
 
@@ -45,6 +50,10 @@ function wasInProgress(snapshot: Snapshot | null) {
     snapshot?.deliveryStatus === 'in_progress' ||
     snapshot?.deliveryStatus === 'started'
   );
+}
+
+function firstRow<T>(data: T | T[] | null): T | null {
+  return Array.isArray(data) ? data[0] ?? null : data;
 }
 
 export default function PlannerDeliveryReconciler() {
@@ -104,19 +113,39 @@ export default function PlannerDeliveryReconciler() {
           deliveryStatus === 'in_progress' || deliveryStatus === 'started';
 
         if (inProgress && deliveryActualDate) {
-          const requirement = await supabase.rpc('attendance_completion_requirement', {
+          const closeout = await supabase.rpc('attendance_closeout_status', {
             p_section_id: sectionId,
             p_attendance_date: deliveryActualDate,
           });
 
-          if (!requirement.error && !cancelled) {
-            const row = Array.isArray(requirement.data)
-              ? requirement.data[0]
-              : requirement.data;
-            if (row?.attendance_required && !row?.finalized) {
+          if (!closeout.error && !cancelled) {
+            const status = firstRow(closeout.data as AttendanceCloseoutStatus | AttendanceCloseoutStatus[] | null);
+            const action = attendanceCloseoutAction(status);
+            setAttendanceBlock(
+              action ? { ...action, attendanceDate: deliveryActualDate } : null
+            );
+          } else if (!cancelled) {
+            // Deployment-safe fallback while the new routing RPC reaches every environment.
+            const requirement = await supabase.rpc('attendance_completion_requirement', {
+              p_section_id: sectionId,
+              p_attendance_date: deliveryActualDate,
+            });
+            const row = firstRow(requirement.data as {
+              attendance_required?: boolean;
+              finalized?: boolean;
+            } | Array<{
+              attendance_required?: boolean;
+              finalized?: boolean;
+            }> | null);
+
+            if (!requirement.error && row?.attendance_required && !row.finalized) {
               setAttendanceBlock({
-                sectionId,
+                targetSectionId: sectionId,
                 attendanceDate: deliveryActualDate,
+                stage: 'final',
+                heading: 'Attendance confirmation required before Complete Day',
+                message: 'Review the paired-class attendance and press Finalize Pair Attendance. Complete Day will work after attendance is finalized.',
+                actionLabel: 'Open Attendance',
               });
             } else {
               setAttendanceBlock(null);
@@ -180,29 +209,36 @@ export default function PlannerDeliveryReconciler() {
     if (!attendanceBlock) return;
 
     const attendanceHref = `/attendance?section=${encodeURIComponent(
-      attendanceBlock.sectionId
+      attendanceBlock.targetSectionId
     )}&date=${encodeURIComponent(attendanceBlock.attendanceDate)}`;
 
-    const interceptBlockedComplete = (event: MouseEvent) => {
+    const interceptBlockedCloseout = (event: MouseEvent) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
+
       const button = target.closest('button');
-      if (!button) return;
-      if (button.textContent?.trim() !== 'Complete Day') return;
+      const anchor = target.closest('a[href]');
+      const anchorHref = anchor?.getAttribute('href') ?? '';
+      const isCompleteDay = button?.textContent?.trim() === 'Complete Day';
+      const isAttendanceLink = anchorHref.startsWith('/attendance');
+
+      if (!isCompleteDay && !isAttendanceLink) return;
 
       event.preventDefault();
       event.stopPropagation();
+      event.stopImmediatePropagation();
+      publishSelectedSection(attendanceBlock.targetSectionId);
       window.location.assign(attendanceHref);
     };
 
-    document.addEventListener('click', interceptBlockedComplete, true);
-    return () => document.removeEventListener('click', interceptBlockedComplete, true);
+    document.addEventListener('click', interceptBlockedCloseout, true);
+    return () => document.removeEventListener('click', interceptBlockedCloseout, true);
   }, [attendanceBlock]);
 
   if (!attendanceBlock) return null;
 
   const attendanceHref = `/attendance?section=${encodeURIComponent(
-    attendanceBlock.sectionId
+    attendanceBlock.targetSectionId
   )}&date=${encodeURIComponent(attendanceBlock.attendanceDate)}`;
 
   return (
@@ -226,14 +262,15 @@ export default function PlannerDeliveryReconciler() {
     >
       <div>
         <strong style={{ display: 'block', color: '#fff1df' }}>
-          Attendance confirmation required before Complete Day
+          {attendanceBlock.heading}
         </strong>
         <span style={{ fontSize: 13 }}>
-          Review the paired-class attendance and press Finalize Pair Attendance. Complete Day will work after attendance is finalized.
+          {attendanceBlock.message}
         </span>
       </div>
       <a
         href={attendanceHref}
+        onClick={() => publishSelectedSection(attendanceBlock.targetSectionId)}
         style={{
           border: '1px solid #ffb76d',
           borderRadius: 8,
@@ -245,7 +282,7 @@ export default function PlannerDeliveryReconciler() {
           whiteSpace: 'nowrap',
         }}
       >
-        Open Attendance
+        {attendanceBlock.actionLabel}
       </a>
     </section>
   );
