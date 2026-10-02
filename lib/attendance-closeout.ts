@@ -46,7 +46,7 @@ export function attendanceCloseoutAction(
       targetSectionId,
       stage: 'initial',
       heading: 'Initial attendance required before Complete Day',
-      message: `${countMessage} Enter those statuses in the primary course first. LTG will then route you to final confirmation.`,
+      message: `${countMessage} Enter those statuses in the primary course first. Then return to the completion course to review and finalize the pair.`,
       actionLabel: 'Enter Initial Attendance',
     };
   }
