@@ -34,9 +34,30 @@ export default function LoginPage() {
         return;
       }
 
-      await supabase.rpc('activate_my_invited_memberships');
       const requestedRoute = new URLSearchParams(window.location.search).get('next');
-      router.replace(safePostLoginRoute(requestedRoute));
+      const nextRoute = safePostLoginRoute(requestedRoute);
+
+      const { data: aal, error: aalError } =
+        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aalError) throw aalError;
+
+      const requireMfa = process.env.NEXT_PUBLIC_REQUIRE_MFA === 'true';
+      const needsMfa =
+        aal.currentLevel !== 'aal2' &&
+        (aal.nextLevel === 'aal2' || requireMfa);
+
+      if (needsMfa) {
+        router.replace(`/mfa?next=${encodeURIComponent(nextRoute)}`);
+        router.refresh();
+        return;
+      }
+
+      const { error: activationError } = await supabase.rpc(
+        'activate_my_invited_memberships'
+      );
+      if (activationError) throw activationError;
+
+      router.replace(nextRoute);
       router.refresh();
     } catch (err) {
       console.error(err);
