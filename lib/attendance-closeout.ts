@@ -30,7 +30,7 @@ export function attendanceCloseoutAction(
 
   const active = nonNegativeCount(status.active_student_count);
   const missing = nonNegativeCount(status.missing_initial_count);
-  const needsInitial = !status.session_id || missing > 0;
+  const needsInitial = missing > 0;
   const targetSectionId = needsInitial
     ? status.primary_section_id
     : status.completion_section_id;
