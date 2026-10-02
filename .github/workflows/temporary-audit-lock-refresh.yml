@@ -1,0 +1,45 @@
+name: Temporary Audit Lock Refresh
+
+on:
+  push:
+    branches:
+      - fix/pvhs-attendance-date-race-20261002
+    paths:
+      - .github/workflows/temporary-audit-lock-refresh.yml
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-lock:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v5
+        with:
+          ref: fix/pvhs-attendance-date-race-20261002
+
+      - name: Use Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Apply audit-safe lockfile updates
+        run: npm audit fix --package-lock-only --ignore-scripts
+
+      - name: Verify all dependency audits
+        run: npm audit --audit-level=high
+
+      - name: Commit refreshed package lock
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json package.json
+          if git diff --cached --quiet; then
+            echo "No lockfile changes were needed."
+            exit 0
+          fi
+          git commit -m "Refresh audited dependency lockfile"
+          git push origin HEAD:fix/pvhs-attendance-date-race-20261002
