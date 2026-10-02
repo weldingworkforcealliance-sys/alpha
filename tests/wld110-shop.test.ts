@@ -26,11 +26,19 @@ describe('WLD 110 approved grading and progression',()=>{
  it('retains tags only for current deficiencies',()=>{
   expect(cleanTags({...defaultRatings(),execution:12},{execution:['Travel speed'],placement:['Joint alignment']})).toEqual({execution:['Travel speed']});
  });
- it('has eight core competencies followed by advanced 2G, and 23 pacing nights',()=>{
+ it('requires E6010 and E7018 for every core position and keeps the 23-night guide explicit',()=>{
   expect(COMPETENCIES.map(c=>c.position+' '+c.electrode)).toEqual([
    'Flat E6010','Flat E7018','2F E6010','2F E7018','3F vertical-up E6010','3F vertical-up E7018','4F E6010','4F E7018','Advanced 2G with backing E7018',
   ]);
+  for(const position of ['Flat','2F','3F vertical-up','4F']){
+   expect(COMPETENCIES.filter(c=>c.position===position).map(c=>c.electrode)).toEqual(['E6010','E7018']);
+  }
   expect(PACING).toHaveLength(23);
+  expect(PACING.filter(night=>night.includes('E6010 completion'))).toHaveLength(4);
+  expect(PACING.filter(night=>night.includes('E7018 completion'))).toHaveLength(4);
+  expect(PACING[17]).toBe('4F E6010 · Overhead consistency; formal checks');
+  expect(PACING[21]).toContain('All eight core rod-position competencies');
+  expect(PACING[22]).toContain('Remaining E6010/E7018 checks');
   expect(COMPETENCIES[0].coupon).toBe('3/8 × 3 × 6 in plate');
   expect(COMPETENCIES.slice(2,8).every(c=>c.coupon.includes('centered top and bottom; four 6-inch'))).toBe(true);
  });
