@@ -35,7 +35,7 @@ describe('attendance date and closeout safeguards', () => {
     expect(migration).toContain('public.get_attendance_action_alerts');
     expect(migration).toContain("'missing'::text as alert_type");
     expect(migration).toContain("'unfinalized'::text as alert_type");
-    expect(migration).toContain('from public.planner_day_delivery d');
+    expect(migration).toContain('join public.planner_day_delivery d');
     expect(migration).toContain('a.primary_completed or a.completion_started');
     expect(migration).toContain('ar.initial_status is not null');
   });
