@@ -16,7 +16,7 @@ describe('attendance closeout routing', () => {
       targetSectionId: 'wld105',
       stage: 'initial',
       heading: 'Initial attendance required before Complete Day',
-      message: '6 of 6 students still need Present, Absent, Late, or Excused. Enter those statuses in the primary course first. LTG will then route you to final confirmation.',
+      message: '6 of 6 students still need Present, Absent, Late, or Excused. Enter those statuses in the primary course first. Then return to the completion course to review and finalize the pair.',
       actionLabel: 'Enter Initial Attendance',
     });
   });
