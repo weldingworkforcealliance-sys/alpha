@@ -7,9 +7,11 @@ const PUBLIC_EXACT_ROUTES = new Set([
   '/reset-password',
   '/training/login',
   '/demo',
+  '/finsen-clock-lab',
+  '/finsen-clock-lab/',
 ]);
 
-const PUBLIC_ROUTE_PREFIXES = ['/join/', '/job/', '/demo/'];
+const PUBLIC_ROUTE_PREFIXES = ['/join/', '/job/', '/demo/', '/finsen-clock-lab/'];
 
 export function isPublicRoute(pathname: string) {
   return (

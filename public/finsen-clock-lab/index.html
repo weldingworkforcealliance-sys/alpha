@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Finsen Sierra Time Clock Lab</title>
+  <link rel="stylesheet" href="styles.css?v=lab-v2" />
+  <link rel="stylesheet" href="approved-frame.css?v=approved-20260914-2344" />
+</head>
+<body>
+  <main class="lab-shell">
+    <section class="stage" aria-label="Finsen Sierra Time Clock laboratory">
+      <div class="clock-wrap" id="clockWrap" data-frame-ready="loading">
+        <img id="frameImage" class="frame" alt="Approved Finsen Sierra brass time clock frame" draggable="false" />
+
+        <section class="live-screen" aria-label="Live Finsen Sierra employee time clock">
+          <div class="screen-top">
+            <div class="identity-block">
+              <span id="greeting">Good morning,</span>
+              <strong id="employeeName">Alex Carter</strong>
+              <small><span id="department">PCCC Welding</span> &nbsp;|&nbsp; <span id="employeeNumber">0350510</span></small>
+              <small id="role">Welding Instructor</small>
+            </div>
+
+            <div class="time-block" aria-live="off">
+              <div class="time-line"><strong id="liveTime">7:31</strong><span id="ampm">AM</span></div>
+              <div id="liveDate" class="date-line">Thu, Apr 24, 2025</div>
+            </div>
+
+            <div class="brand-block" aria-label="Passaic County Community College Welding">
+              <div class="brand-name">Passaic County<br/>Community College</div>
+              <div class="brand-rule"></div>
+              <div class="brand-sub">WELDING • EDUCATION • OPPORTUNITY</div>
+              <div class="brand-short">PCCC</div>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button id="clockInBtn" class="plate plate-in" type="button">
+              <span class="plate-icon">◷</span>
+              <span class="plate-copy"><strong>Clock In</strong><small>Start Your Day</small></span>
+            </button>
+            <button id="clockOutBtn" class="plate plate-out" type="button">
+              <span class="plate-icon">➜</span>
+              <span class="plate-copy"><strong>Clock Out</strong><small>End Your Day</small></span>
+            </button>
+          </div>
+
+          <div class="status-bar">
+            <div class="employee-card">
+              <span class="avatar" id="avatar">AC</span>
+              <div>
+                <strong id="footerName">Alex Carter</strong>
+                <small id="footerDepartment">PCCC Welding</small>
+                <small id="footerRole">Welding Instructor</small>
+                <small id="footerEmployee">0350510</small>
+              </div>
+            </div>
+            <div class="status-card">
+              <small>Status</small>
+              <strong id="statusValue"><i></i> Clocked Out</strong>
+              <span id="statusSince">Not currently punched in</span>
+            </div>
+            <div class="total-card">
+              <small>Today's Total</small>
+              <strong id="todayTotal">0h 00m</strong>
+              <span id="totalNote">Recorded time today</span>
+            </div>
+            <button id="viewTimeBtn" class="view-time" type="button">
+              <span class="bars">▮▮▮</span><span>View My Time</span>
+            </button>
+          </div>
+        </section>
+
+        <div class="lamp-dimmer lamp-left" id="leftLampDimmer" aria-hidden="true"></div>
+        <div class="lamp-dimmer lamp-right" id="rightLampDimmer" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <section class="lab-controls" aria-label="Clock lab controls">
+      <div>
+        <span class="lab-kicker">ISOLATED TEST ENVIRONMENT</span>
+        <h1>Finsen Sierra Clock Lab</h1>
+        <p>The approved brass clock face is now the physical shell. Punches persist only in this browser's local sandbox and do not touch LTG production payroll or attendance data.</p>
+      </div>
+      <div class="lab-actions">
+        <button id="scenarioOut" type="button">Scenario: Clocked Out</button>
+        <button id="scenarioIn" type="button">Scenario: Clocked In 2h 17m</button>
+        <button id="resetLab" type="button">Reset Sandbox</button>
+      </div>
+      <div class="qa-grid">
+        <div><span>State</span><strong id="qaState">CLOCKED OUT</strong></div>
+        <div><span>Entries Today</span><strong id="qaEntries">0</strong></div>
+        <div><span>Frame</span><strong id="qaFrame">LOADING APPROVED FRAME</strong></div>
+        <div><span>LTG Production</span><strong>DISCONNECTED</strong></div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="timeDialog">
+    <div class="dialog-head">
+      <div><span>FINSEN SIERRA</span><h2>My Time Today</h2></div>
+      <button id="closeDialog" type="button" aria-label="Close">×</button>
+    </div>
+    <div id="timeEntries" class="time-entries"></div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js?v=approved-20260914-2344"></script>
+</body>
+</html>

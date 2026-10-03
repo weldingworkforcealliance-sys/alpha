@@ -1,0 +1,83 @@
+/* Exact approved Finsen Sierra brass clock geometry: 1536 × 1024 transparent artwork. */
+.stage { background: transparent; }
+.clock-wrap {
+  width: min(100%, 1536px);
+  aspect-ratio: 3 / 2;
+  background: transparent;
+}
+.frame {
+  object-fit: contain;
+  filter: drop-shadow(0 18px 34px rgba(0,0,0,.46));
+}
+
+/* The approved artwork already carries the physical brass, black steel,
+   crest, PCCC identity, nameplate and vintage lamps. This pane only makes
+   the center screen live. */
+.live-screen {
+  left: 17.15%;
+  top: 25.55%;
+  width: 65.70%;
+  height: 46.55%;
+  padding: 2.65% 2.85% 1.85%;
+  grid-template-rows: 1.18fr .92fr .60fr;
+  gap: 2.75%;
+  border-radius: clamp(10px, 1.55vw, 24px);
+  background:
+    linear-gradient(180deg, rgba(5,16,23,.88), rgba(3,12,18,.93));
+  backdrop-filter: blur(2px) saturate(.75);
+  box-shadow:
+    inset 0 0 0 1px rgba(142,185,205,.22),
+    inset 0 0 34px rgba(0,0,0,.58);
+}
+
+/* Side lamps remain physically present in the approved artwork.
+   Only the inactive glass is dimmed. */
+.lamp-dimmer {
+  top: 25.8%;
+  width: 6.8%;
+  height: 21.5%;
+  border-radius: 44%;
+  background:
+    linear-gradient(90deg, rgba(3,3,3,.92), rgba(15,13,10,.76) 45%, rgba(3,3,3,.92));
+  box-shadow: inset 0 0 18px #000, 0 0 5px rgba(0,0,0,.72);
+}
+.lamp-left { left: 6.05%; }
+.lamp-right { right: 6.05%; }
+.clock-wrap[data-clocked-in="true"] .lamp-left { opacity: 0; }
+.clock-wrap[data-clocked-in="true"] .lamp-right { opacity: .90; }
+.clock-wrap[data-clocked-in="false"] .lamp-left { opacity: .90; }
+.clock-wrap[data-clocked-in="false"] .lamp-right { opacity: 0; }
+
+/* Match the approved face more closely while preserving functional controls. */
+.screen-top { grid-template-columns: 1.15fr 1fr .92fr; gap: 2.4%; }
+.identity-block strong { font-size: clamp(16px, 2.45vw, 38px); }
+.time-line strong { font-size: clamp(38px, 6.25vw, 96px); }
+.action-row { gap: 2.2%; }
+.plate { border-radius: clamp(7px, .85vw, 14px); }
+.status-bar { grid-template-columns: 1.45fr 1.12fr 1.02fr .92fr; }
+
+.clock-wrap[data-frame-ready="false"]::after {
+  content: "Approved brass frame failed to load";
+  position: absolute;
+  inset: 42% 20% auto;
+  z-index: 20;
+  padding: 14px;
+  border: 1px solid #8a6332;
+  border-radius: 8px;
+  background: rgba(10,10,10,.94);
+  color: #e8c68f;
+  text-align: center;
+  font-weight: 800;
+}
+
+@media (max-width: 800px) {
+  .clock-wrap { width: 100%; }
+  .live-screen {
+    left: 17.05%;
+    top: 25.45%;
+    width: 65.9%;
+    height: 46.8%;
+    padding: 2.5% 2.6% 1.65%;
+  }
+  .lamp-dimmer { top: 25.8%; height: 21.5%; }
+}
