@@ -43,6 +43,7 @@ function dailyMaintenance() {
 
 function scheduleDueFollowUps_() {
   var config = getConfig_(); var queue = getRecords_(NJCWWA.SHEETS.QUEUE); var templates = getActiveTemplateMap_(); var suppressed = getSuppressedEmailSet_(); var now = new Date(); var created = 0; var existingKeys = {}; var firstTouchByKey = {};
+  if (config.maximumFollowUps === 0 || !isCampaignDateAllowed_(now, config)) return 0;
   queue.forEach(function (entry) {
     var record = entry.record; var key = safeString_(record['Campaign ID']) + '|' + safeString_(record['Contact ID']); var touch = Number(record['Touch Number'] || 1);
     existingKeys[key + '|' + touch] = true;

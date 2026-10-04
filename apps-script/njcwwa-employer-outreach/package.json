@@ -7,7 +7,7 @@
     "syntax": "node tests/check-syntax.js",
     "lint": "node tests/lint.js",
     "test": "node tests/run-tests.js",
-    "check": "npm run syntax && npm run lint && npm test"
+    "check": "npm run syntax && npm run lint && npm test && node tests/check-week-plan.js && node tests/check-prelaunch.js"
   },
   "engines": {
     "node": ">=20"

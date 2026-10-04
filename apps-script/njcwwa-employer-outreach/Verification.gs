@@ -25,7 +25,12 @@ function verifyAllianceSetup() {
     results.push('Live Launch Authorized: ' + (config.liveLaunchAuthorized ? 'Yes' : 'No'));
     results.push('Automation version: ' + NJCWWA.VERSION);
     if (config.senderEmail !== NJCWWA.SENDER_EMAIL) throw new Error('Configuration Sender Email does not match the locked Alliance account.');
-    if (config.dailyNewTarget < 100) throw new Error('Daily New Outreach Target is below the required minimum of 100.');
+    if (config.dailyNewTarget !== 100) throw new Error('Daily New Outreach Target must equal 100.');
+    if (config.dailyTotalCap !== 100) throw new Error('Daily Total Send Cap must equal 100.');
+    if (config.campaignEnabled) throw new Error('Campaign Enabled must be No during verification.');
+    if (!config.testMode) throw new Error('Test Mode must be Yes during verification.');
+    if (config.liveLaunchAuthorized) throw new Error('Live Launch Authorized must be No during verification.');
+    results.push('Campaign dates: ' + config.campaignStartDate + ' through ' + config.campaignEndDate);
     if (config.dailyTotalCap < config.dailyNewTarget) throw new Error('Daily Total Send Cap must be at least the Daily New Outreach Target.');
     if (config.messagesPerBatch > 25) warnings.push('Messages Per Batch is above the conservative limit of 25.');
     if (!config.testAllowlist.length) throw new Error('Test Recipient Allowlist is empty.');
@@ -34,7 +39,15 @@ function verifyAllianceSetup() {
     results.push('Gmail labels: ready');
     var triggerCount = listNJCWWATriggers().length;
     results.push('Managed triggers installed: ' + triggerCount);
-    if (triggerCount) warnings.push('Managed triggers already exist; confirm this is intentional before testing.');
+    if (triggerCount) throw new Error('Managed triggers must be absent during pre-launch verification.');
+    var testSent = 0; var liveSent = 0;
+    getRecords_(NJCWWA.SHEETS.ACTIVITY).forEach(function (entry) {
+      if (safeString_(entry.record['Event Type']).toLowerCase() !== 'sent') return;
+      if (safeString_(entry.record['Queue ID']).indexOf(NJCWWA.TEST_PREFIX) === 0) testSent++;
+      else liveSent++;
+    });
+    results.push('Test messages sent: ' + testSent);
+    results.push('Live employer messages sent: ' + liveSent);
     var output = results.concat(warnings.map(function (warning) { return 'WARNING: ' + warning; }));
     output.push('Verification result: PASS');
     logAutomation_('verifyAllianceSetup','Completed',1,0,0,'',secondsSince_(started),output.join(' | '));

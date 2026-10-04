@@ -8,7 +8,7 @@ Google Apps Script automation for the **NJCWWA Employer Outreach & Lead System**
 - Spreadsheet ID: `1I0uFNU_tjFAiBLuXbOWZrR91WpeF7Mwbsg070XRGPG0`
 - Spreadsheet title: `NJCWWA Employer Outreach & Lead System`
 - Daily new-employer target: **100**
-- Daily total cap: **150**
+- Daily total cap: **100**
 
 The code refuses to run under any Gmail account other than `weldingworkforcealliance@gmail.com`.
 
@@ -42,6 +42,14 @@ No trigger is installed automatically by this repository. No live email is sent 
 - `Verification.gs` — non-sending setup verification
 - `Tests.gs` — controlled test and cleanup functions
 - `appsscript.json` — V8 runtime, Gmail API v1, and least-necessary scopes
+
+## Version 2026-10-04.3: 100/100 pre-launch correction
+
+Daily new outreach target and daily total automated cap are both 100. Values above 100 are clamped to 100; missing, nonnumeric, nonpositive, or fractional values fall back to 100. Verification requires effective values of exactly 100/100 and Campaign Enabled = No, Test Mode = Yes, Live Launch Authorized = No. It sends no email and installs no triggers.
+
+Automatic follow-ups remain disabled (Maximum Follow-Ups = 0). Batches remain 10 messages, 45 minutes apart, within 9:30 AM–4:30 PM America/New_York. No larger makeup batches are permitted after missed days. The existing campaign date bounds remain in place. Incoming replies do not consume outgoing send quota; outbound replies remain subject to Google limits.
+
+The existing 250-row queue was prepared at 50 per weekday and has not been expanded or approved by this correction. Before any future launch, reconcile the queue with the 100-per-business-day plan and complete the pipeline test. Sending remains disabled; no triggers are installed. The confirmed physical mailing address is preserved in the Configuration sheet.
 
 ## Local checks
 
@@ -161,4 +169,4 @@ Do not install triggers until the complete pipeline test passes. `installNJCWWAT
 
 ## Quota and deliverability limits
 
-The Gmail API does not bypass Gmail account limits or anti-abuse systems. The internal 150-message cap is a safety ceiling, not a promise that Google will permit every message. Begin with one allowlisted test, then a controlled 10-message employer test before authorizing the 100-per-business-day campaign.
+The Gmail API does not bypass Gmail account limits or anti-abuse systems. The internal 100-message cap is a safety ceiling, not a promise that Google will permit every message. Begin with one allowlisted test, then a controlled 10-message employer test before authorizing the 100-per-business-day campaign.

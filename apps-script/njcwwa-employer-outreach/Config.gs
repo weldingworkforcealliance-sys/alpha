@@ -8,7 +8,7 @@
  *   Live Launch Authorized = Yes
  */
 var NJCWWA = Object.freeze({
-  VERSION: '2026-10-04.1',
+  VERSION: '2026-10-04.3',
   SPREADSHEET_ID: '1I0uFNU_tjFAiBLuXbOWZrR91WpeF7Mwbsg070XRGPG0',
   SENDER_EMAIL: 'weldingworkforcealliance@gmail.com',
   TIME_ZONE: 'America/New_York',
@@ -49,17 +49,19 @@ function getConfig_() {
   });
   return {
     senderEmail: normalizeEmail_(raw['Sender Email']) || NJCWWA.SENDER_EMAIL,
-    dailyNewTarget: positiveInteger_(raw['Daily New Outreach Target'], 100),
-    dailyTotalCap: positiveInteger_(raw['Daily Total Send Cap'], 150),
+    dailyNewTarget: outreachDailyLimit_(raw['Daily New Outreach Target']),
+    dailyTotalCap: outreachDailyLimit_(raw['Daily Total Send Cap']),
+    campaignStartDate: configDateKey_(raw['Campaign Start Date']),
+    campaignEndDate: configDateKey_(raw['Campaign End Date']),
     businessDaysOnly: yes_(raw['Business Days Only']),
     timeZone: safeString_(raw['Time Zone']) || NJCWWA.TIME_ZONE,
-    sendWindowStart: safeString_(raw['Send Window Start']) || '8:30 AM',
+    sendWindowStart: safeString_(raw['Send Window Start']) || '9:30 AM',
     sendWindowEnd: safeString_(raw['Send Window End']) || '4:30 PM',
     messagesPerBatch: positiveInteger_(raw['Messages Per Batch'], 10),
     minutesBetweenBatches: positiveInteger_(raw['Minutes Between Batches'], 45),
     followUp1Delay: positiveInteger_(raw['Follow-Up 1 Delay'], 5),
     followUp2Delay: positiveInteger_(raw['Follow-Up 2 Delay'], 10),
-    maximumFollowUps: positiveInteger_(raw['Maximum Follow-Ups'], 2),
+    maximumFollowUps: Math.max(0, Math.floor(Number(raw['Maximum Follow-Ups']) || 0)),
     stopOnReply: yes_(raw['Stop on Reply']), stopOnUnsubscribe: yes_(raw['Stop on Unsubscribe']),
     requireApprovedStatus: yes_(raw['Require Approved Status']), requireUniqueEmail: yes_(raw['Require Unique Email']),
     campaignEnabled: yes_(raw['Campaign Enabled']), testMode: yes_(raw['Test Mode']), liveLaunchAuthorized: yes_(raw['Live Launch Authorized']),
@@ -111,6 +113,35 @@ function assertTestRecipientAllowed_(email, config) {
   if (config.testAllowlist.indexOf(normalized) === -1) throw new Error('Test recipient is not in Test Recipient Allowlist: ' + normalized);
 }
 
+function outreachDailyLimit_(value) {
+  if (typeof value !== 'number' && typeof value !== 'string') return 100;
+  var number = Number(value);
+  if (!isFinite(number) || number <= 0 || Math.floor(number) !== number) return 100;
+  return Math.min(100, number);
+}
+
+function configDateKey_(value) {
+  return value instanceof Date ? dateKey_(value, NJCWWA.TIME_ZONE) : safeString_(value);
+}
+
+function isCampaignDateAllowed_(date, config) {
+  var start = config.campaignStartDate; var end = config.campaignEndDate;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(start || '') || !/^\d{4}-\d{2}-\d{2}$/.test(end || '') || start > end) return false;
+  var today = dateKey_(date, NJCWWA.TIME_ZONE);
+  var day = new Date(today + 'T12:00:00Z').getUTCDay();
+  return today >= start && today <= end && day >= 1 && day <= 5;
+}
+
+function assertCampaignSchedule_(date, config) {
+  if (!isCampaignDateAllowed_(date, config)) throw new Error('Outside the authorized weekday campaign dates.');
+  if (!isWithinSendWindow_(date, config.sendWindowStart, config.sendWindowEnd, NJCWWA.TIME_ZONE)) throw new Error('Outside configured send window.');
+}
+
+function isPublicConfirmedContact_(contact) {
+  var currentNotes = safeString_(contact.Notes).split(/Previous research:/i)[0];
+  return yes_(contact['Email Verified']) || /PUBLIC EMAIL CONFIRMED/i.test(currentNotes);
+}
+
 function getSpreadsheet_() { return SpreadsheetApp.openById(NJCWWA.SPREADSHEET_ID); }
 function getSheet_(name) { var sheet = getSpreadsheet_().getSheetByName(name); if (!sheet) throw new Error('Required sheet not found: ' + name); return sheet; }
 function withScriptLock_(callback) { var lock = LockService.getScriptLock(); if (!lock.tryLock(5000)) return { skipped: true, reason: 'Another NJCWWA automation run already holds the script lock.' }; try { return callback(); } finally { lock.releaseLock(); } }
@@ -119,7 +150,7 @@ function nextBusinessDate_(date, businessDays) { var result = new Date(date.getT
 function businessDaysBetween_(start, end) { var cursor = new Date(start.getFullYear(), start.getMonth(), start.getDate()); var finish = new Date(end.getFullYear(), end.getMonth(), end.getDate()); var count = 0; while (cursor < finish) { cursor.setDate(cursor.getDate() + 1); if (isBusinessDay_(cursor)) count++; } return count; }
 function timeToMinutes_(value) { var text = safeString_(value); var match = text.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/i); if (!match) return 0; var hour = Number(match[1]); var minute = Number(match[2] || 0); var meridiem = safeString_(match[3]).toUpperCase(); if (meridiem === 'PM' && hour < 12) hour += 12; if (meridiem === 'AM' && hour === 12) hour = 0; return hour * 60 + minute; }
 function isWithinSendWindow_(date, start, end, timeZone) { var zone = timeZone || NJCWWA.TIME_ZONE; var current = Utilities.formatDate(date, zone, 'h:mm a'); var nowMinutes = timeToMinutes_(current); return nowMinutes >= timeToMinutes_(start) && nowMinutes <= timeToMinutes_(end); }
-function isQueueRecordDue_(record, now, timeZone) { var scheduledDate = record['Scheduled Date']; var scheduledTime = record['Scheduled Time']; if (!scheduledDate && !scheduledTime) return true; var zone = timeZone || NJCWWA.TIME_ZONE; var today = Utilities.formatDate(now, zone, 'yyyy-MM-dd'); var dateString = today; if (scheduledDate instanceof Date) dateString = Utilities.formatDate(scheduledDate, zone, 'yyyy-MM-dd'); else if (scheduledDate) { var parsed = new Date(scheduledDate); if (!isNaN(parsed.getTime())) dateString = Utilities.formatDate(parsed, zone, 'yyyy-MM-dd'); } if (dateString > today) return false; if (dateString < today) return true; if (!scheduledTime) return true; var currentMinutes = timeToMinutes_(Utilities.formatDate(now, zone, 'h:mm a')); var scheduledMinutes; if (scheduledTime instanceof Date) scheduledMinutes = Number(Utilities.formatDate(scheduledTime, zone, 'H')) * 60 + Number(Utilities.formatDate(scheduledTime, zone, 'm')); else scheduledMinutes = timeToMinutes_(scheduledTime); return currentMinutes >= scheduledMinutes; }
+function isQueueRecordDue_(record, now, timeZone) { var scheduledDate = record['Scheduled Date']; var scheduledTime = record['Scheduled Time']; if (!scheduledDate && !scheduledTime) return true; var zone = timeZone || NJCWWA.TIME_ZONE; var today = Utilities.formatDate(now, zone, 'yyyy-MM-dd'); var dateString = today; if (scheduledDate instanceof Date) dateString = Utilities.formatDate(scheduledDate, zone, 'yyyy-MM-dd'); else if (/^\d{4}-\d{2}-\d{2}$/.test(safeString_(scheduledDate))) dateString = safeString_(scheduledDate); else if (scheduledDate) { var parsed = new Date(scheduledDate); if (!isNaN(parsed.getTime())) dateString = Utilities.formatDate(parsed, zone, 'yyyy-MM-dd'); } if (dateString > today) return false; if (dateString < today) return true; if (!scheduledTime) return true; var currentMinutes = timeToMinutes_(Utilities.formatDate(now, zone, 'h:mm a')); var scheduledMinutes; if (scheduledTime instanceof Date) scheduledMinutes = Number(Utilities.formatDate(scheduledTime, zone, 'H')) * 60 + Number(Utilities.formatDate(scheduledTime, zone, 'm')); else scheduledMinutes = timeToMinutes_(scheduledTime); return currentMinutes >= scheduledMinutes; }
 function batchIntervalElapsed_(minutes) { var value = PropertiesService.getScriptProperties().getProperty('NJCWWA_LAST_BATCH_AT'); if (!value) return true; return Date.now() - Number(value) >= Math.max(1, Number(minutes || 45)) * 60 * 1000; }
 function markBatchSent_() { PropertiesService.getScriptProperties().setProperty('NJCWWA_LAST_BATCH_AT', String(Date.now())); }
 function safeString_(value) { return value === null || typeof value === 'undefined' ? '' : String(value).trim(); }

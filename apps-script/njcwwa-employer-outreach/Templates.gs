@@ -93,6 +93,13 @@ function buildRawMessage_(to, subject, body, threadId) {
 
 function sendRawMessage_(to, subject, body, threadId) {
   assertAllianceAccount_();
+  var config = getConfig_();
+  if (config.testMode) assertTestRecipientAllowed_(to, config);
+  else {
+    assertLiveSendingAllowed_(config);
+    assertCampaignSchedule_(new Date(), config);
+    if (getTodaySendStats_(new Date(), NJCWWA.TIME_ZONE).totalSent >= config.dailyTotalCap) throw new Error('Daily total send cap already reached.');
+  }
   var message = buildRawMessage_(to, subject, body, threadId);
   return Gmail.Users.Messages.send(message, 'me');
 }
