@@ -1,6 +1,15 @@
 'use strict';
 const {assert,context:c,sheets}=require('./mock-runtime');
 const cfg=c.getConfig_();
+const batchStart=new Date(Date.now()-45*60*1000);
+c.markBatchSent_(batchStart);
+assert.equal(c.batchIntervalElapsed_(45),true,'Batch duration must not delay the next scheduled batch');
+c.markBatchSent_(new Date(Date.now()-44*60*1000));
+assert.equal(c.batchIntervalElapsed_(45),false,'Minimum 45-minute start spacing remains enforced');
+const triggerIntervals=[];const oldNewTrigger=c.ScriptApp.newTrigger;
+c.ScriptApp.newTrigger=handler=>({timeBased(){return this;},everyMinutes(minutes){triggerIntervals.push([handler,minutes]);return this;},atHour(){return this;},nearMinute(){return this;},everyDays(){return this;},create(){return {};}});
+c.installNJCWWATriggers();c.ScriptApp.newTrigger=oldNewTrigger;
+assert.deepEqual(triggerIntervals,[['runOutreachCycle',1],['scanEmployerReplies',10]]);
 assert.equal(cfg.dailyNewTarget,100);assert.equal(cfg.dailyTotalCap,100);assert.equal(cfg.maximumFollowUps,0);
 const allowed=['2026-10-05T13:30:00Z','2026-10-06T13:30:00Z','2026-10-07T13:30:00Z','2026-10-08T13:30:00Z','2026-10-09T13:30:00Z'];
 for(const value of allowed) assert.doesNotThrow(()=>c.assertCampaignSchedule_(new Date(value),cfg));

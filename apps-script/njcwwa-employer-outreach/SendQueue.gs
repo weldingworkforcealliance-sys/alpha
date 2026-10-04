@@ -14,7 +14,7 @@ function runOutreachCycle() {
       if (!isWithinSendWindow_(now,config.sendWindowStart,config.sendWindowEnd,config.timeZone)) return { sent:0, skipped:true, reason:'Outside configured send window.' };
       if (!batchIntervalElapsed_(config.minutesBetweenBatches)) return { sent:0, skipped:true, reason:'Batch spacing interval has not elapsed.' };
       var result = sendApprovedBatchInternal_({ config:config, now:now, explicitTest:false });
-      checked=result.checked; changed=result.changed; sentCount=result.sent; errors=result.errors; if(sentCount>0) markBatchSent_();
+      checked=result.checked; changed=result.changed; sentCount=result.sent; errors=result.errors; if(sentCount>0) markBatchSent_(now);
       logAutomation_('runOutreachCycle',errors.length?'Completed with errors':'Completed',checked,changed,sentCount,errors.join(' | '),secondsSince_(started),result.details);
       return result;
     } catch(error) { logAutomation_('runOutreachCycle','Failed',checked,changed,sentCount,error.message,secondsSince_(started),''); throw error; }

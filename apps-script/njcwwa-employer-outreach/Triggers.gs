@@ -9,10 +9,10 @@ function installNJCWWATriggers() {
   var config = getConfig_();
   if (!config.testMode) assertLiveSendingAllowed_(config);
   removeNJCWWATriggers();
-  ScriptApp.newTrigger('runOutreachCycle').timeBased().everyMinutes(15).create();
+  ScriptApp.newTrigger('runOutreachCycle').timeBased().everyMinutes(1).create();
   ScriptApp.newTrigger('scanEmployerReplies').timeBased().everyMinutes(10).create();
   ScriptApp.newTrigger('dailyMaintenance').timeBased().atHour(7).nearMinute(15).everyDays(1).create();
-  logAutomation_('installNJCWWATriggers','Completed',3,3,0,'',0,'Outreach checks every 15 minutes; reply scan every 10 minutes; maintenance near 7:15 AM.');
+  logAutomation_('installNJCWWATriggers','Completed',3,3,0,'',0,'Outreach checks every minute; batches at least 45 minutes apart; reply scan every 10 minutes; maintenance near 7:15 AM.');
   return listNJCWWATriggers();
 }
 
