@@ -1,0 +1,15 @@
+{
+  "name": "njcwwa-employer-outreach-automation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Google Apps Script automation for NJCWWA employer outreach and reply-to-lead processing.",
+  "scripts": {
+    "syntax": "node tests/check-syntax.js",
+    "lint": "node tests/lint.js",
+    "test": "node tests/run-tests.js",
+    "check": "npm run syntax && npm run lint && npm test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
