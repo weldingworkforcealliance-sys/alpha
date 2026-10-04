@@ -18,8 +18,8 @@ jobs:
       run:
         working-directory: apps-script/njcwwa-employer-outreach
     steps:
-      - uses: actions/checkout@v6.3
-      - uses: actions/setup-node@v6.3
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: "22"
       - run: npm run check
