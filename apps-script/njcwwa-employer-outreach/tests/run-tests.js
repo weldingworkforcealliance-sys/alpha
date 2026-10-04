@@ -19,6 +19,22 @@ test('live safety remains blocked', () => {
   assert.throws(() => context.assertLiveSendingAllowed_(config), /Campaign Enabled must be Yes/);
 });
 
+test('Gmail MIME decoding pads unpadded bodies for Apps Script', () => {
+  const original = context.Utilities.base64DecodeWebSafe;
+  context.Utilities.base64DecodeWebSafe = value => {
+    assert.strictEqual(value.length % 4, 0, 'Apps Script decoder requires padded data');
+    return Buffer.from(value, 'base64url');
+  };
+  try {
+    for (const body of ['a', 'ab', 'abc', 'Hiring welders — $24–$28']) {
+      const encoded = Buffer.from(body).toString('base64url');
+      assert.strictEqual(context.extractMessageBody_({mimeType:'text/plain',body:{data:encoded}}),body);
+      const signedBytes = Array.from(Buffer.from(body), byte => byte > 127 ? byte - 256 : byte);
+      assert.strictEqual(context.extractMessageBody_({mimeType:'text/plain',body:{data:signedBytes}}),body);
+    }
+  } finally { context.Utilities.base64DecodeWebSafe = original; }
+});
+
 test('reply parser extracts structured hiring details', () => {
   const queueEntry = context.findFirstRecord_('Campaign Queue', (record) => record['Queue ID'] === 'TEST-Q1');
   const result = context.processEmployerReply_({
