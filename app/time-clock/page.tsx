@@ -468,34 +468,39 @@ export default function TimeClockPage() {
     }
   };
 
-  const exportCsv = () => {
-    const header = ['Employee', 'Date', 'Clock In', 'Clock Out', 'Hours', 'Status', 'Method In', 'Method Out'];
-    const rows = filteredEntries.map((entry) => {
-      const employee = employeeById.get(entry.employee_id);
-      return [
-        employee?.display_name ?? 'Unknown employee',
-        formatDate(entry.clock_in_at),
-        formatTime(entry.clock_in_at),
-        formatTime(entry.clock_out_at),
-        hoursBetween(entry.clock_in_at, entry.clock_out_at, now).toFixed(4),
-        entry.clock_out_at ? 'Complete' : 'Clocked In',
-        entry.clock_in_method,
-        entry.clock_out_method ?? '',
-      ];
-    });
-
-    const csv = [header, ...rows]
-      .map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(','))
-      .join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `ltg-time-clock-${rangeStart}-to-${rangeEnd}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+  const exportWorkbook = async () => {
+    setActionLoading(true);
+    setError('');
+    try {
+      const { buildTimeclockWorkbook } = await import('@/lib/timeclock-workbook');
+      const workbook = buildTimeclockWorkbook(filteredEntries.map((entry) => ({
+        employeeId: entry.employee_id,
+        employee: employeeById.get(entry.employee_id)?.display_name ?? 'Unknown employee',
+        date: dateInputValue(new Date(entry.clock_in_at)),
+        clockIn: formatTime(entry.clock_in_at),
+        clockOut: formatTime(entry.clock_out_at),
+        hours: Number(hoursBetween(entry.clock_in_at, entry.clock_out_at, now).toFixed(4)),
+        status: entry.clock_out_at ? 'Complete' : 'Clocked In',
+        methodIn: entry.clock_in_method,
+        methodOut: entry.clock_out_method ?? '',
+        entryId: entry.id,
+        clockInAt: entry.clock_in_at,
+        clockOutAt: entry.clock_out_at,
+      })), rangeStart, rangeEnd);
+      const bytes = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([new Uint8Array(bytes)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `LTG_Time_Clock_Payroll_Weekly_${rangeStart}_to_${rangeEnd}.xlsx`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to export the attendance workbook.');
+    } finally {
+      setActionLoading(false);
+    }
   };
-
   if (loading) {
     return <main className={styles.loading}>Opening LTG Time Clock…</main>;
   }
@@ -746,7 +751,7 @@ export default function TimeClockPage() {
               <h2>{canReport ? 'Attendance Report' : 'My Attendance'}</h2>
             </div>
             <div className={styles.reportActions}>
-              {canReport && <button onClick={exportCsv} disabled={filteredEntries.length === 0}>Export CSV</button>}
+              {canReport && <button onClick={exportWorkbook} disabled={actionLoading || filteredEntries.length === 0}>Export Weekly Excel</button>}
               <button onClick={loadSchoolData} disabled={refreshing}>{refreshing ? 'Refreshing…' : 'Refresh'}</button>
             </div>
           </div>
@@ -842,3 +847,4 @@ export default function TimeClockPage() {
     </div>
   );
 }
+
