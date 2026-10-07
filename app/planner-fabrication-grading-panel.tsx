@@ -26,10 +26,37 @@ type TowerStudent = {
   student_id: string;
   display_name: string;
   active: boolean;
+  homework_completed_count: number;
+  homework_remaining_count: number;
   homework_avg: number | null;
+  homework_course_points: number;
+  homework_locked: boolean;
   classroom_avg: number | null;
   fabrication_avg: number | null;
   current_grade: number | null;
+};
+type HomeworkChapter = {
+  code: string;
+  label: string;
+  status: 'complete' | 'pending' | 'incomplete';
+  completed_on: string | null;
+  course_points: number;
+};
+type HomeworkStudent = {
+  student_id: string;
+  display_name: string;
+  active: boolean;
+  completed_count: number;
+  pending_count: number;
+  incomplete_count: number;
+  earned_course_points: number;
+  chapters: HomeworkChapter[];
+};
+type HomeworkPayload = {
+  final_day: string | null;
+  deadline_passed: boolean;
+  chapter_value: number;
+  students: HomeworkStudent[];
 };
 type CriterionKey = 'layout' | 'prep' | 'fitup' | 'welding' | 'finish';
 
@@ -60,6 +87,7 @@ export default function PlannerFabricationGradingPanel({ pathname }: { pathname:
   const [students, setStudents] = useState<Student[]>([]);
   const [attempts, setAttempts] = useState<FabricationAttempt[]>([]);
   const [tower, setTower] = useState<TowerStudent[]>([]);
+  const [homework, setHomework] = useState<HomeworkPayload | null>(null);
   const [studentId, setStudentId] = useState('');
   const [projectCode, setProjectCode] = useState<(typeof PROJECTS)[number]['code']>('m');
   const [attemptNumber, setAttemptNumber] = useState(1);
@@ -121,7 +149,7 @@ export default function PlannerFabricationGradingPanel({ pathname }: { pathname:
       if (setup.error) throw setup.error;
       const refresh = await client.rpc('refresh_gradebook', { p_gradebook_id: session.id });
       if (refresh.error) throw refresh.error;
-      const [rosterResult, attemptsResult, towerResult] = await Promise.all([
+      const [rosterResult, attemptsResult, towerResult, homeworkResult] = await Promise.all([
         client.from('gradebook_roster')
           .select('student_id,display_name,active')
           .eq('gradebook_id', session.id)
@@ -131,15 +159,18 @@ export default function PlannerFabricationGradingPanel({ pathname }: { pathname:
           .eq('gradebook_id', session.id)
           .order('recorded_at', { ascending: false }),
         client.rpc('get_wld105_grade_tower', { p_gradebook_id: session.id }),
+        client.rpc('get_wld105_homework_status', { p_gradebook_id: session.id }),
       ]);
       if (rosterResult.error) throw rosterResult.error;
       if (attemptsResult.error) throw attemptsResult.error;
       if (towerResult.error) throw towerResult.error;
+      if (homeworkResult.error) throw homeworkResult.error;
       if (!alive) return;
       const roster = (rosterResult.data ?? []) as Student[];
       setStudents(roster);
       setAttempts((attemptsResult.data ?? []) as FabricationAttempt[]);
       setTower(((towerResult.data as { students?: TowerStudent[] } | null)?.students ?? []));
+      setHomework((homeworkResult.data as HomeworkPayload | null) ?? null);
       setStudentId(current => current || roster.find(s => s.active)?.student_id || '');
     })().catch(cause => {
       if (alive) setError(formatError(cause, 'Fabrication grading could not load.'));
@@ -148,6 +179,7 @@ export default function PlannerFabricationGradingPanel({ pathname }: { pathname:
   }, [client, session, pathname, reload]);
 
   const selectedTower = tower.find(row => row.student_id === studentId);
+  const selectedHomework = homework?.students.find(row => row.student_id === studentId);
   const selectedAttempts = attempts.filter(row =>
     row.student_id === studentId && row.project_code === projectCode
   );
@@ -175,6 +207,32 @@ export default function PlannerFabricationGradingPanel({ pathname }: { pathname:
     setScores({ layout: '', prep: '', fitup: '', welding: '', finish: '' });
     setNa({ layout: false, prep: false, fitup: false, welding: false, finish: false });
     setNote('');
+  }
+
+  async function setHomeworkStatus(chapter: HomeworkChapter, complete: boolean) {
+    if (!session || !studentId || homework?.deadline_passed) return;
+    setSaveBlocked(true);
+    setError('');
+    setSaved('');
+    try {
+      const today = new Date();
+      const completedOn = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      const result = await client.rpc('record_wld105_homework_status', {
+        p_gradebook_id: session.id,
+        p_student_id: studentId,
+        p_chapter_code: chapter.code,
+        p_complete: complete,
+        p_completed_on: complete ? completedOn : null,
+        p_note: complete ? 'Marked complete in WLD 105 Grade Tower' : 'Corrected to pending in WLD 105 Grade Tower',
+      });
+      if (result.error) throw result.error;
+      setSaved(`${chapter.label}: ${complete ? 'Complete — 12.5 course points earned' : 'Pending'}`);
+      setReload(value => value + 1);
+    } catch (cause) {
+      setError(formatError(cause, 'The AWS homework status could not be saved.'));
+    } finally {
+      setSaveBlocked(false);
+    }
   }
 
   async function saveGrade() {
@@ -235,12 +293,47 @@ export default function PlannerFabricationGradingPanel({ pathname }: { pathname:
             </select>
           </label>
           <div className={styles.metrics}>
-            <div><span>AWS / Homework</span><strong>{pct(selectedTower?.homework_avg ?? null)}</strong><small>50%</small></div>
+            <div><span>AWS / Homework</span><strong>{selectedTower ? `${selectedTower.homework_completed_count}/4` : '—'}</strong><small>{selectedTower ? `${Number(selectedTower.homework_course_points).toFixed(1)} / 50 course pts` : '50%'}</small></div>
             <div><span>Live Classroom</span><strong>{pct(selectedTower?.classroom_avg ?? null)}</strong><small>25%</small></div>
             <div><span>Fabrication</span><strong>{pct(selectedTower?.fabrication_avg ?? null)}</strong><small>25%</small></div>
             <div><span>Current Grade</span><strong>{pct(selectedTower?.current_grade ?? null)}</strong><small>available work</small></div>
           </div>
         </div>
+
+        <section className={styles.homework}>
+          <div className={styles.homeworkHeading}>
+            <div>
+              <strong>AWS Homework</strong>
+              <small>Four required chapters · 12.5 course points each · Complete or not complete</small>
+            </div>
+            <span>{homework?.final_day ? `Deadline: ${new Date(homework.final_day + 'T12:00:00').toLocaleDateString()}` : 'Deadline unavailable'}</span>
+          </div>
+          {homework?.deadline_passed && <p className={styles.deadlineClosed}>
+            Homework deadline has passed. Any chapter not completed by the final instructional day is 0.
+          </p>}
+          {!homework?.deadline_passed && selectedTower && !selectedTower.homework_locked && <p className={styles.pendingNote}>
+            Pending chapters do not lower the current course grade before the final instructional day.
+          </p>}
+          <div className={styles.homeworkList}>
+            {(selectedHomework?.chapters ?? []).map(chapter => <div className={styles.homeworkRow} key={chapter.code}>
+              <div>
+                <strong>{chapter.label}</strong>
+                <small>{chapter.status === 'complete'
+                  ? `Completed ${chapter.completed_on ? new Date(chapter.completed_on + 'T12:00:00').toLocaleDateString() : ''}`
+                  : chapter.status === 'incomplete' ? 'Not complete by deadline' : 'Pending'}</small>
+              </div>
+              <span className={chapter.status === 'complete' ? styles.complete : chapter.status === 'incomplete' ? styles.incomplete : styles.pending}>
+                {chapter.status === 'complete' ? '+12.5' : chapter.status === 'incomplete' ? '0' : 'Pending'}
+              </span>
+              <button type="button"
+                disabled={saveBlocked || Boolean(homework?.deadline_passed)}
+                onClick={() => void setHomeworkStatus(chapter, chapter.status !== 'complete')}>
+                {chapter.status === 'complete' ? 'Mark pending' : 'Mark complete'}
+              </button>
+            </div>)}
+          </div>
+          {!selectedHomework && <p>Select a student to view AWS homework.</p>}
+        </section>
 
         <div className={styles.projectRow}>
           <label>Fabrication project
