@@ -29,7 +29,7 @@ function addSuppression_(email, employerId, companyName, reason, source, notes) 
     'Source': source || 'Employer Reply',
     'Date Added': new Date(),
     'Permanent': 'Yes',
-    'Notes': notes || ''
+    'Notes': boundedCellText_(notes || '', 8000)
   });
 
   markContactDoNotContact_(normalized, employerId);
@@ -73,6 +73,7 @@ function applyReplyLabel_(messageId, classification) {
   else if (classification.primary === 'Internship Interest') suffix = 'Internship';
   else if (classification.primary === 'Not Interested' || classification.primary === 'Not Currently Hiring') suffix = 'Not Interested';
   else if (classification.primary === 'Unsubscribe') suffix = 'Unsubscribed';
+  else if (classification.primary === 'Bounce') suffix = 'Bounced';
   else if (classification.primary === 'Automatic Reply' || classification.primary === 'Out of Office') suffix = 'Automatic Reply';
 
   var labelId = ensureNJCWWALabel_(suffix);
@@ -83,6 +84,6 @@ function appendNote_(existing, note) {
   var current = safeString_(existing);
   var addition = safeString_(note);
   if (!current) return addition;
-  if (!addition) return current;
+  if (!addition || current.indexOf(addition) !== -1) return current;
   return current + '\n' + addition;
 }

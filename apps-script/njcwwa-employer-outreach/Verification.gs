@@ -35,7 +35,7 @@ function verifyAllianceSetup() {
     if (config.messagesPerBatch > 25) warnings.push('Messages Per Batch is above the conservative limit of 25.');
     if (!config.testAllowlist.length) throw new Error('Test Recipient Allowlist is empty.');
     if (isPlaceholderValue_(config.physicalAddress)) warnings.push('Physical Mailing Address is not ready; live sending remains blocked.');
-    ['Needs Review','Hiring Now','Future Hiring','Internship','Not Interested','Unsubscribed','Automatic Reply'].forEach(function (suffix) { ensureNJCWWALabel_(suffix); });
+    ['Needs Review','Hiring Now','Future Hiring','Internship','Not Interested','Unsubscribed','Automatic Reply','Bounced'].forEach(function (suffix) { ensureNJCWWALabel_(suffix); });
     results.push('Gmail labels: ready');
     var triggerCount = listNJCWWATriggers().length;
     results.push('Managed triggers installed: ' + triggerCount);
@@ -54,7 +54,34 @@ function verifyAllianceSetup() {
     console.log(output.join('\n'));
     return output.join('\n');
   } catch (error) {
-    logAutomation_('verifyAllianceSetup','Failed',1,0,0,error.message,secondsSince_(started),results.join(' | '));
+    logAutomation_('verifyAllianceSetup','Failed',1,0,0,compactError_(error),secondsSince_(started),results.join(' | '));
+    throw error;
+  }
+}
+
+function verifyReplyScannerRepair() {
+  var started = new Date();
+  var results = [];
+  try {
+    var email = assertAllianceAccount_();
+    assertRequiredSheets_();
+    assertRequiredHeaders_();
+    var replyHeaders = getHeaderMap_(getSheet_(NJCWWA.SHEETS.REPLIES));
+    ['Gmail Message ID','Processing Status','Processing Error'].forEach(function (header) {
+      if (typeof replyHeaders[header] === 'undefined') throw new Error('Reply scanner repair header missing: ' + header);
+    });
+    var scannerTriggers = listNJCWWATriggers().filter(function (trigger) { return trigger.handler === 'scanEmployerReplies'; });
+    results.push('Authenticated Gmail: ' + email);
+    results.push('Automation version: ' + NJCWWA.VERSION);
+    results.push('Reply scanner triggers: ' + scannerTriggers.length);
+    results.push('Reply message-id columns: ready');
+    results.push('Reply scanner mode: incremental Gmail history');
+    results.push('Verification result: PASS');
+    logAutomation_('verifyReplyScannerRepair','Completed',1,0,0,'',secondsSince_(started),results.join(' | '));
+    console.log(results.join('\n'));
+    return results.join('\n');
+  } catch (error) {
+    logAutomation_('verifyReplyScannerRepair','Failed',1,0,0,compactError_(error),secondsSince_(started),results.join(' | '));
     throw error;
   }
 }

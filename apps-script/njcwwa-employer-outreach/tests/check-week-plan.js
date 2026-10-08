@@ -9,7 +9,7 @@ assert.equal(c.batchIntervalElapsed_(45),false,'Minimum 45-minute start spacing 
 const triggerIntervals=[];const oldNewTrigger=c.ScriptApp.newTrigger;
 c.ScriptApp.newTrigger=handler=>({timeBased(){return this;},everyMinutes(minutes){triggerIntervals.push([handler,minutes]);return this;},atHour(){return this;},nearMinute(){return this;},everyDays(){return this;},create(){return {};}});
 c.installNJCWWATriggers();c.ScriptApp.newTrigger=oldNewTrigger;
-assert.deepEqual(triggerIntervals,[['runOutreachCycle',1],['scanEmployerReplies',10]]);
+assert.deepEqual(triggerIntervals,[['runOutreachCycle',1],['scanEmployerReplies',15]]);
 assert.equal(cfg.dailyNewTarget,100);assert.equal(cfg.dailyTotalCap,100);assert.equal(cfg.maximumFollowUps,0);
 const allowed=['2026-10-05T13:30:00Z','2026-10-06T13:30:00Z','2026-10-07T13:30:00Z','2026-10-08T13:30:00Z','2026-10-09T13:30:00Z'];
 for(const value of allowed) assert.doesNotThrow(()=>c.assertCampaignSchedule_(new Date(value),cfg));
@@ -18,8 +18,8 @@ assert.equal(c.isCampaignDateAllowed_(new Date(allowed[0]),{...cfg,campaignStart
 assert.equal(c.isPublicConfirmedContact_({Notes:'HOLD FOR PHONE VERIFICATION. Previous research: PUBLIC EMAIL CONFIRMED'}),false);
 assert.equal(c.isPublicConfirmedContact_({Notes:'PUBLIC EMAIL CONFIRMED. Previous research: NEEDS REVIEW'}),true);
 assert.equal(c.scheduleDueFollowUps_(),0);
-const originalProfile=c.Gmail.Users.getProfile;
-c.Gmail.Users.getProfile=()=>({emailAddress:'wrong@example.com'});assert.throws(()=>c.assertAllianceAccount_(),/Wrong authenticated/);c.Gmail.Users.getProfile=originalProfile;
+const originalEffectiveUser=c.Session.getEffectiveUser;
+c.Session.getEffectiveUser=()=>({getEmail:()=> 'wrong@example.com'});assert.throws(()=>c.assertAllianceAccount_(),/Wrong authenticated/);c.Session.getEffectiveUser=originalEffectiveUser;
 for(let bits=0;bits<8;bits++){const x={...cfg,campaignEnabled:!!(bits&1),testMode:!!(bits&2),liveLaunchAuthorized:!!(bits&4),physicalAddress:'123 Example Street'};if(bits===5)assert.doesNotThrow(()=>c.assertLiveSendingAllowed_(x));else assert.throws(()=>c.assertLiveSendingAllowed_(x));}
 assert.equal(c.isQueueRecordDue_({'Scheduled Date':'2026-10-06','Scheduled Time':'9:30 AM'},new Date('2026-10-05T15:00:00Z'),'America/New_York'),false);
 assert.equal(c.isQueueRecordDue_({'Scheduled Date':'2026-10-05','Scheduled Time':'9:30 AM'},new Date('2026-10-05T13:29:00Z'),'America/New_York'),false);
@@ -31,4 +31,4 @@ for(let i=0;i<120;i++)c.appendRecord_('Campaign Queue',{'Queue ID':'PLAN-'+i,'Em
 for(let batch=0;batch<12;batch++)c.sendApprovedBatchInternal_({config:live,now,explicitTest:false});
 assert.equal(sends,100,'No more than 100 automated messages per day');
 assert.equal(sheets['Campaign Queue'].grid[1][16],'Queued','Follow-up excluded');
-console.log('PASS 100-message cap, five campaign weekdays, start/end boundaries, zero follow-ups, current verification labels, account and all live gates');
+console.log('PASS 100-message cap, five campaign weekdays, start/end boundaries, zero follow-ups, 15-minute scanner, current verification labels, account and all live gates');

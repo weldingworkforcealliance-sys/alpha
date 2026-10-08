@@ -125,13 +125,37 @@ function buildColumnSet_(sheetName, header, filterFn) {
   return set;
 }
 
+function findReplyByMessageId_(messageId) {
+  var target = safeString_(messageId);
+  if (!target) return null;
+  return findFirstRecord_(NJCWWA.SHEETS.REPLIES, function (record) {
+    return safeString_(record['Gmail Message ID']) === target;
+  });
+}
+
 function getProcessedMessageIdSet_() {
   var set = {};
   getRecords_(NJCWWA.SHEETS.ACTIVITY).forEach(function (entry) {
     var messageId = safeString_(entry.record['Gmail Message ID']);
-    if (messageId) set[messageId] = true;
+    var eventType = safeString_(entry.record['Event Type']).toLowerCase();
+    if (messageId && (eventType === 'reply' || eventType === 'bounce')) set[messageId] = true;
+  });
+  getRecords_(NJCWWA.SHEETS.REPLIES).forEach(function (entry) {
+    var messageId = safeString_(entry.record['Gmail Message ID']);
+    var status = safeString_(entry.record['Processing Status']).toLowerCase();
+    if (messageId && status === 'processed') set[messageId] = true;
   });
   return set;
+}
+
+function hasEmailActivityForMessage_(messageId, eventType) {
+  var targetId = safeString_(messageId);
+  var targetType = safeString_(eventType).toLowerCase();
+  if (!targetId) return false;
+  return Boolean(findFirstRecord_(NJCWWA.SHEETS.ACTIVITY, function (record) {
+    return safeString_(record['Gmail Message ID']) === targetId &&
+      (!targetType || safeString_(record['Event Type']).toLowerCase() === targetType);
+  }));
 }
 
 function getSuppressedEmailSet_() {
@@ -156,7 +180,7 @@ function logEmailActivity_(fields) {
     'Event Type': fields.eventType || '',
     'Gmail Thread ID': fields.threadId || '',
     'Gmail Message ID': fields.messageId || '',
-    'Details': fields.details || '',
+    'Details': boundedCellText_(fields.details || '', 8000),
     'Processed': fields.processed || 'Yes'
   });
 }
@@ -170,10 +194,63 @@ function logAutomation_(process, status, checked, changed, sent, errors, duratio
     'Records Checked': checked || 0,
     'Records Changed': changed || 0,
     'Messages Sent': sent || 0,
-    'Errors': errors || '',
+    'Errors': boundedCellText_(errors || '', 8000),
     'Duration Seconds': duration || 0,
-    'Details': details || ''
+    'Details': boundedCellText_(details || '', 8000)
   });
+}
+
+function boundedCellText_(value, limit, suffix) {
+  var text = String(value === null || typeof value === 'undefined' ? '' : value);
+  var maximum = Math.max(100, Number(limit || 45000));
+  var ending = String(suffix || '\n[Content truncated safely]');
+  if (text.length <= maximum) return text;
+  var keep = Math.max(0, maximum - ending.length);
+  return text.slice(0, keep) + ending;
+}
+
+function compactError_(error) {
+  var text = error && error.message ? error.message : String(error || 'Unknown error');
+  return boundedCellText_(text.replace(/[\r\n\t]+/g, ' ').replace(/\s{2,}/g, ' ').trim(), 2000);
+}
+
+function archiveReplyBody_(messageId, threadId, replyId, queue, contactEmail, subject, body) {
+  var archiveSheet = getSpreadsheet_().getSheetByName('Reply Archive');
+  if (!archiveSheet || !body) return '';
+
+  var existing = findFirstRecord_('Reply Archive', function (record) {
+    return safeString_(record['Source Message ID']) === safeString_(messageId);
+  });
+  if (existing) return safeString_(existing.record['Archive ID']);
+
+  var archiveId = makeId_('ARCH');
+  var chunkSize = 30000;
+  var chunks = [];
+  for (var offset = 0; offset < body.length; offset += chunkSize) {
+    chunks.push(body.slice(offset, offset + chunkSize));
+  }
+  if (!chunks.length) chunks.push('');
+
+  var records = chunks.map(function (chunk, index) {
+    return {
+      'Archive ID': archiveId,
+      'Created At': new Date(),
+      'Source Message ID': messageId,
+      'Source Thread ID': threadId || '',
+      'Source RFC Message ID': '',
+      'Source Reply ID': replyId,
+      'Queue ID': queue['Queue ID'] || '',
+      'Contact ID': queue['Contact ID'] || '',
+      'Employer ID': queue['Employer ID'] || '',
+      'Company Name': queue['Company Name'] || '',
+      'Contact Email': contactEmail || queue['Email'] || '',
+      'Subject': subject || '',
+      'Body Type': 'Original Reply ' + (index + 1) + '/' + chunks.length,
+      'Body Content': chunk
+    };
+  });
+  appendRecords_('Reply Archive', records);
+  return archiveId;
 }
 
 function updateLastContact_(employerId, contactId, timestamp) {
