@@ -58,17 +58,27 @@ describe('official finals in the student record',()=>{
  });
 });
 
-function initialized() {
+function initialized(context?:{view:string}) {
   const r=runtime();
   r.listeners.message({origin:'https://ltg.test',source:r.parent,data:{type:'tower-init',payload:{
     book:{id:'class-1',course_code:'WLD 110',section_name:'Synthetic test class'},
     weldSizer:WELD_SIZER,
     students:[{id:'student-1',name:'Synthetic Student',weldTestId:'0017',active:true,revision:0,data:{}}],
     assignments:[{id:'smaw-fillet-1F',name:'SMAW 1F',processId:'smaw',process:'SMAW',material:'Carbon Steel',family:'Fillet',backing:'N/A',position:'1F',type:'position',rubricType:'weld'}],
-  }}});
+  },context}});
   return r;
 }
 describe('Tower authenticated-data adapter',()=>{
+  it('requires a deliberate assignment selection rather than grading the first catalog entry',()=>{
+    const r=initialized({view:'lab'});
+    expect(r.run('state.ui.labAssignmentId')).toBe('');
+    expect(r.element('appContent').innerHTML).toContain('Choose the assignment being graded');
+    expect(r.element('appContent').innerHTML).not.toContain('data-score-criterion');
+    expect(r.sent.some(m=>(m as {type:string}).type==='tower-save')).toBe(false);
+    r.events.appContent.change({target:{id:'labAssignmentSelect',value:'smaw-fillet-1F'}});
+    expect(r.element('appContent').innerHTML).toContain('data-score-criterion');
+    expect(r.run('state.ui.labAssignmentId')).toBe('smaw-fillet-1F');
+  });
   it('uses the shared, unchanged weld-sizer parameters',()=>{
     const r=initialized();
     expect(r.run('RUBRIC.find(c=>c.id==="beadSize").help')).toBe(WELD_SIZER.help);
@@ -147,7 +157,7 @@ describe('Gradebook context',()=>{
 
 describe('shared lab coaching bridge',()=>{
  it('offers coaching and QR for the currently rendered student and assignment',()=>{
-  const r=initialized();r.run("setView('lab')");
+  const r=initialized();r.run("applyGradebookContext({assignmentId:'smaw-fillet-1F'});setView('lab')");
   expect(r.element('appContent').innerHTML).toContain('data-lab-coaching="coach"');
   expect(r.element('appContent').innerHTML).toContain('data-lab-coaching="qr"');
   expect(r.sent.filter(m=>(m as {type:string}).type==='tower-selection').at(-1)).toEqual({type:'tower-selection',studentId:'student-1',assignmentId:'smaw-fillet-1F',view:'lab'});

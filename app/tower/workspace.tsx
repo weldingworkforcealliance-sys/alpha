@@ -4,6 +4,7 @@ import {getSupabase} from '@/lib/supabase-browser';
 import {readGradebookRows,type Gradebook} from '@/lib/gradebook';
 import {formatError} from '@/lib/format-error';
 import LabCoachingPanel from '../lab/coaching-panel';
+import WeldingHistory from '../lab/welding-history';
 import type {LabContext} from '@/lib/lab-coaching';
 import {WELD_SIZER} from '@/lib/weld-sizer';
 import {courseFinalRecords,type SavedCourseFinal} from '@/lib/course-final-records';
@@ -15,6 +16,7 @@ export default function TowerWorkspace(props:Props){
  const [client]=useState(getSupabase),[books,setBooks]=useState<Gradebook[]>([]),[selected,setSelected]=useState('');
  const [payload,setPayload]=useState<Payload|null>(null),[error,setError]=useState(''),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
  const [labContext,setLabContext]=useState<LabContext|null>(null),[frameBlocked,setFrameBlocked]=useState(false),[coachingBlocked,setCoachingBlocked]=useState(false);
+ const [recordStudent,setRecordStudent]=useState('');
  const coachingState=useRef(false);coachingState.current=coachingBlocked;
  const actionSequence=useRef(0);
  useEffect(()=>{props.onSaveState?.(frameBlocked||coachingBlocked||busy);},[frameBlocked,coachingBlocked,busy,props.onSaveState]);
@@ -37,6 +39,7 @@ export default function TowerWorkspace(props:Props){
     if(coachingState.current)return;
     if(!current.current.students.some(s=>s.id===m.studentId&&s.active))return;
     context.current.onStudentChange?.(m.studentId);
+    setRecordStudent(m.studentId);
     setLabContext(m.view==='lab'?{studentId:m.studentId,assignmentId:m.assignmentId}:null);return;
    }
    if(m?.type==='tower-coaching'){
@@ -94,6 +97,7 @@ export default function TowerWorkspace(props:Props){
  {error&&<p role="alert">{error}</p>}{loading&&<p role="status">Loading class…</p>}
  {!loading&&!books.length&&!error&&<p>No active lab classes are assigned to your account. A school administrator can configure course pairs and instructor assignments.</p>}
  {payload&&<>
+  {props.view==='passport'&&recordStudent&&<WeldingHistory key={payload.book.id+':'+recordStudent} gradebookId={payload.book.id} studentId={recordStudent}/>}
   {labContext&&<LabCoachingPanel key={payload.book.id} gradebookId={payload.book.id} context={labContext}
    assignments={payload.assignments.map(a=>({id:String(a.id),name:String(a.name)}))}
    disabled={busy||frameBlocked} onBlocked={setCoachingBlocked} onSelect={(studentId,assignmentId)=>{

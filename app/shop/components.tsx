@@ -6,6 +6,7 @@ import styles from './shop.module.css';
 
 export function StudentShopCard({student,busy,onRequest}:{student:ShopStudent;busy:boolean;onRequest:()=>void}) {
  const current=COMPETENCIES[student.current_competency];
+ const next=COMPETENCIES.findIndex((_,index)=>index>student.current_competency&&!student.completions.some(completion=>completion.competency===index));
  const latest=student.attempts.at(-1);
  const completed=student.completions.at(-1);
  return <section className={styles.card} aria-label="Your shop assignment">
@@ -18,7 +19,7 @@ export function StudentShopCard({student,busy,onRequest}:{student:ShopStudent;bu
   {latest&&<p>Latest graded weld: <strong>{latest.total}%</strong> · {assignmentLabel(latest.competency)} · Weld {latest.attempt_number}</p>}
   {completed&&<p>Completed: {assignmentLabel(completed.competency)} · Competency grade <strong>{completed.grade}%</strong></p>}
   {student.current_competency>=8&&<p>Core SMAW complete. Advanced 2G is enrichment.</p>}
-  {current&&<p>Next assignment: {student.current_competency<8?assignmentLabel(student.current_competency+1):'All competencies complete'}</p>}
+  {current&&<p>Next assignment: {next>=0?assignmentLabel(next):'None after this competency'}</p>}
   <p className={styles.muted}>Practice is ungraded. Advance when your instructor verifies two demonstrations.</p>
  </section>;
 }
