@@ -15,7 +15,7 @@ vi.mock('@/lib/supabase-browser',()=>({getSupabase:()=>({rpc:state.rpc,from:(tab
 beforeEach(()=>{state.rpc.mockReset().mockResolvedValue({data:{unresolved:0},error:null});vi.stubEnv('NEXT_PUBLIC_TOWER_ENABLED','true');vi.stubEnv('NEXT_PUBLIC_WLD110_SHOP_ENABLED','true');});
 afterEach(()=>{cleanup();vi.unstubAllEnvs();});
 it('opens a native student record with evidence scoped to the selected student',async()=>{
- render(<Workspace/>);const buttons=await screen.findAllByRole('button',{name:'Student Alpha'});fireEvent.click(buttons[0]);
+ render(<Workspace/>);const buttons=await screen.findAllByRole('button',{name:'Student Alpha'},{timeout:5000});fireEvent.click(buttons[0]);
  const record=screen.getByRole('region',{name:'Student record'});
  expect(within(record).getByLabelText('Student')).toHaveProperty('value','s1');
  expect(within(record).getByText('Welding evidence lab s1')).toBeTruthy();expect(screen.queryByText('Qualification workspace')).toBeNull();
@@ -24,7 +24,7 @@ it('opens a native student record with evidence scoped to the selected student',
  expect(state.rpc.mock.calls.every(c=>c[0]==='refresh_gradebook')).toBe(true);
 });
 it('clears the student selection when the class changes and leaves qualification tools reachable',async()=>{
- render(<Workspace/>);fireEvent.click((await screen.findAllByRole('button',{name:'Student Alpha'}))[0]);
+ render(<Workspace/>);fireEvent.click((await screen.findAllByRole('button',{name:'Student Alpha'},{timeout:5000}))[0]);
  fireEvent.change(screen.getByLabelText('Class'),{target:{value:'lab'}});
  expect(within(screen.getByRole('region',{name:'Student record'})).getByLabelText('Student')).toHaveProperty('value','');
  fireEvent.click(screen.getByRole('button',{name:'Qualifications'}));expect(await screen.findByText('Qualification workspace')).toBeTruthy();

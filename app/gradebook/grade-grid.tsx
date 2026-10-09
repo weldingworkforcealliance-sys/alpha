@@ -19,7 +19,7 @@ export function cellAttempts(attempts:Attempt[],student:string,item:Item,counted
 }
 
 export default function GradeGrid(props:Props){
- const [search,setSearch]=useState(''),[assessment,setAssessment]=useState(''),[showAll,setShowAll]=useState(false);
+ const [search,setSearch]=useState(''),[assessment,setAssessment]=useState(''),[showAll,setShowAll]=useState(()=>props.items.some(i=>i.assessment_slug?.startsWith('wld110-shop:')));
  const [detail,setDetail]=useState<{student:Student;item:Item;rows:Attempt[]}|null>(null);
  const students=props.students.filter(s=>(!props.studentId||s.student_id===props.studentId)&&s.display_name.toLowerCase().includes(search.toLowerCase().trim()));
  const items=props.items.filter(i=>(!assessment||i.id===assessment)&&(showAll||assessment||props.attempts.some(a=>a.item_id===i.id&&(!props.studentId||a.student_id===props.studentId))));
