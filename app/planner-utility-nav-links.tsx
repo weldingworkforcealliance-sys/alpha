@@ -46,7 +46,6 @@ export default function PlannerUtilityNavLinks() {
 
   return (
     <>
-      {process.env.NEXT_PUBLIC_WLD110_SHOP_ENABLED === 'true' && <Link href="/shop" className={`ltg-nav-link ${pathname === '/shop' ? 'active' : ''}`}>WLD 110 Shop</Link>}
       <Link
         href="/training"
         className={`ltg-nav-link ${pathname.startsWith('/training') ? 'active' : ''}`}

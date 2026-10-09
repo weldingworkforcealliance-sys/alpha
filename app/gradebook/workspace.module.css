@@ -48,3 +48,8 @@
  .workspace .filters select,.workspace .filters input { box-sizing:border-box; width:100%; }
  .workspace .filters input[type=checkbox] { width:auto; }
 }
+
+.workspace .gradeAction { background:#f97316; color:#172b36; border:2px solid #f97316; border-radius:.45rem; font-weight:750; min-height:48px; cursor:pointer; }
+.workspace .gradeAction:disabled { opacity:.55; cursor:default; }
+.moreViews summary { padding:.6rem; }
+.moreViews div { display:flex; flex-wrap:wrap; gap:.5rem; padding:.5rem; }
