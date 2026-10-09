@@ -708,6 +708,7 @@ export default function PlannerPage() {
       {viewPrefs.eligible && (
         <PlannerViewSelector
           preset={viewPrefs.preset}
+          personalChoice={viewPrefs.personalChoice}
           schoolPreset={viewPrefs.schoolPreset}
           canManageSchool={viewPrefs.canManageSchool}
           onSchoolChange={viewPrefs.saveSchoolPreset}
