@@ -18,7 +18,7 @@ export function usePlannerViewPreference(
 ) {
   const eligible = useMemo(
     () => isAnthonyWld205PilotSection(section),
-    [section?.course_code, section?.section_code]
+    [section?.school_id, section?.section_id, section?.course_code, section?.section_code]
   );
   const [preset, setPreset] = useState<PlannerViewPreset>('standard');
   const [source, setSource] = useState<'core' | 'school' | 'instructor'>('core');
