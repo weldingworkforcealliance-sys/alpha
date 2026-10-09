@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
+import { parseRecoveryRedirect } from '@/lib/auth-recovery-redirect';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -19,28 +20,57 @@ export default function ResetPasswordPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    let active = true;
     const prepare = async () => {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const code = params.get('code');
+      setError('');
+      const recovery = parseRecoveryRedirect(window.location.search, window.location.hash);
+      // Never leave tokens, single-use hashes, or auth error text in the address bar.
+      if (recovery.kind !== 'none') {
+        window.history.replaceState({}, '', window.location.pathname);
+      }
 
-        if (code) {
-          const { error: exchangeError } =
-            await supabase.auth.exchangeCodeForSession(code);
-          if (!exchangeError) {
-            setReady(true);
-            return;
-          }
+      try {
+        if (recovery.kind === 'error') throw new Error(recovery.message);
+
+        if (recovery.kind === 'implicit') {
+          const { data, error: sessionError } = await supabase.auth.setSession({
+            access_token: recovery.accessToken,
+            refresh_token: recovery.refreshToken,
+          });
+          if (sessionError) throw sessionError;
+          if (!data.session) throw new Error('Could not start a password recovery session.');
+        } else if (recovery.kind === 'pkce') {
+          const { data, error: exchangeError } =
+            await supabase.auth.exchangeCodeForSession(recovery.code);
+          if (exchangeError) throw exchangeError;
+          if (!data.session) throw new Error('This password recovery link did not create a session.');
+        } else if (recovery.kind === 'token_hash') {
+          const { data, error: verifyError } = await supabase.auth.verifyOtp({
+            token_hash: recovery.tokenHash,
+            type: 'recovery',
+          });
+          if (verifyError) throw verifyError;
+          if (!data.session) throw new Error('This password recovery link did not create a session.');
         }
 
-        const { data } = await supabase.auth.getSession();
-        if (data.session) setReady(true);
+        // Supabase can also complete the callback itself before this effect.
+        // In that case it has already established a session in the browser.
+        const { data: sessionData, error: readError } = await supabase.auth.getSession();
+        if (readError) throw readError;
+
+        if (active && sessionData.session) {
+          setReady(true);
+          setMessage('Email verification complete. Create and save your password below.');
+        }
       } catch (err) {
-        console.error(err);
+        if (!active) return;
+        setReady(false);
+        setError(err instanceof Error ? err.message : 'Could not verify your recovery link.');
       }
     };
 
-    prepare();
+    void prepare();
+    return () => { active = false; };
   }, [supabase]);
 
   const sendResetCode = async () => {
@@ -63,7 +93,7 @@ export default function ResetPasswordPage() {
       if (sendError) throw sendError;
 
       setCodeSent(true);
-      setMessage('Reset code sent. Check your email, then enter the code below.');
+      setMessage('Recovery email sent. Open the link in that email to create your password. If it contains a numeric code, enter it below.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not send reset code.');
     } finally {
@@ -87,13 +117,14 @@ export default function ResetPasswordPage() {
 
     setSaving(true);
     try {
-      const { error: verifyError } = await supabase.auth.verifyOtp({
+      const { data, error: verifyError } = await supabase.auth.verifyOtp({
         email: email.trim().toLowerCase(),
         token: otp.trim(),
         type: 'recovery',
       });
 
       if (verifyError) throw verifyError;
+      if (!data.session) throw new Error('Code verified without a recovery session. Open the email link instead.');
 
       setReady(true);
       setMessage('Code verified. Create your new password below.');
@@ -127,10 +158,17 @@ export default function ResetPasswordPage() {
       const { error: updateError } = await supabase.auth.updateUser({ password });
       if (updateError) throw updateError;
 
-      await supabase.rpc('activate_my_invited_memberships');
+      const { error: activationError } = await supabase.rpc('activate_my_invited_memberships');
+      if (activationError) {
+        setMessage('Password saved, but school access could not be activated automatically. Sign in again or contact your LTG staging administrator.');
+        return;
+      }
 
-      setMessage('Password updated successfully. Opening your dashboard…');
-      window.setTimeout(() => router.push('/dashboard'), 1200);
+      setMessage('Password saved and school access activated. Opening your dashboard…');
+      window.setTimeout(() => {
+        router.replace('/dashboard');
+        router.refresh();
+      }, 900);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
