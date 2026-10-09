@@ -28,6 +28,13 @@ export function usePlannerViewPreference(
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [revisionEpoch, setRevisionEpoch] = useState(0);
+
+  useEffect(() => {
+    const onRevision = () => setRevisionEpoch((value) => value + 1);
+    window.addEventListener('ltg:planner-view-changed', onRevision);
+    return () => window.removeEventListener('ltg:planner-view-changed', onRevision);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -69,7 +76,7 @@ export function usePlannerViewPreference(
       if (!cancelled) setLoading(false);
     });
     return () => { cancelled = true; };
-  }, [supabase, section?.school_id, section?.section_id, eligible]);
+  }, [supabase, section?.school_id, section?.section_id, eligible, revisionEpoch]);
 
   const saveInstructorPreset = useCallback(async (next: PlannerViewPreset) => {
     if (!section || !eligible || saving) return;
@@ -92,6 +99,7 @@ export function usePlannerViewPreference(
       setPreset(next);
       setSource('instructor');
       setLoadedSectionId(section.section_id);
+      window.dispatchEvent(new Event('ltg:planner-view-changed'));
     } catch (cause: unknown) {
       setError(cause instanceof Error ? cause.message : String(cause));
     } finally {
