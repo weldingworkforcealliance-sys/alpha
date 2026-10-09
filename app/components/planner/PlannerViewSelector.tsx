@@ -1,9 +1,10 @@
 'use client';
 
-import { ANTHONY_WLD205_PRESET, type PlannerViewPreset } from '@/lib/wld205-anthony-view';
+import { ANTHONY_WLD205_PRESET, type PlannerViewChoice, type PlannerViewPreset } from '@/lib/wld205-anthony-view';
 
 export default function PlannerViewSelector({
   preset,
+  personalChoice,
   schoolPreset,
   canManageSchool,
   onSchoolChange,
@@ -14,6 +15,7 @@ export default function PlannerViewSelector({
   onChange,
 }: {
   preset: PlannerViewPreset;
+  personalChoice: PlannerViewChoice;
   schoolPreset: PlannerViewPreset;
   canManageSchool: boolean;
   onSchoolChange: (preset: PlannerViewPreset) => void;
@@ -21,7 +23,7 @@ export default function PlannerViewSelector({
   loading: boolean;
   saving: boolean;
   error: string;
-  onChange: (preset: PlannerViewPreset) => void;
+  onChange: (choice: PlannerViewChoice) => void;
 }) {
   return (
     <div
@@ -39,21 +41,22 @@ export default function PlannerViewSelector({
       }}
     >
       <label htmlFor="wld205-view-preset" style={{ color: '#dbeae4', fontWeight: 700 }}>
-        WLD 205 lesson view
+        My WLD 205 lesson view
       </label>
       <select
         id="wld205-view-preset"
         aria-label="WLD 205 teaching presentation"
-        value={preset}
+        value={personalChoice}
         disabled={loading || saving}
-        onChange={(event) => onChange(event.target.value as PlannerViewPreset)}
+        onChange={(event) => onChange(event.target.value as PlannerViewChoice)}
         style={{ padding: '7px 12px', maxWidth: '100%', color: '#eef8f4', background: '#203831', borderRadius: 7, border: '1px solid #72998c' }}
       >
-        <option value="standard">Original teacher view</option>
+        <option value="inherit">Use school default</option>
+        <option value="standard">Original teacher view (my override)</option>
         <option value={ANTHONY_WLD205_PRESET}>Anthony v1 · streamlined</option>
       </select>
       <small style={{ color: '#a6c1b8' }}>
-        {saving ? 'Saving…' : loading ? 'Checking preference…' : 'Source: ' + source + ' · Approved curriculum unchanged'}
+        {saving ? 'Saving…' : loading ? 'Checking preference…' : 'Effective: ' + (preset === ANTHONY_WLD205_PRESET ? 'Anthony v1' : 'Original') + ' · Source: ' + source + ' · Core unchanged'}
       </small>
       {canManageSchool && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', width: '100%', paddingTop: 8, borderTop: '1px solid #314e44' }}>
