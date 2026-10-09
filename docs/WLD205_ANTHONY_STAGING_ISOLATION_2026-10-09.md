@@ -7,11 +7,11 @@
 
 The pilot presentation preset is only eligible for:
 
-- School: LTG Welding Demonstration School in staging, school ID \`08ccb452-83ab-482f-bb28-5576e02741b2\`.
-- Course code: \`WLD 205\`.
-- Section: \`PCCC-DAY-L2-WLD205-2627\`, section ID \`310623e6-c518-47b5-b7a0-8a1887df226e\`.
+- School: LTG Welding Demonstration School in staging, school ID `08ccb452-83ab-482f-bb28-5576e02741b2`.
+- Course code: `WLD 205`.
+- Section: `PCCC-DAY-L2-WLD205-2627`, section ID `310623e6-c518-47b5-b7a0-8a1887df226e`.
 
-FABTECH 2026 workspaces reside in the same staging Supabase project but use *different* schools (school IDs \`b905a2d8-4d5a-4f53-b052-0f69de04a7b6\` and \`39939e9a-4f2e-49d8-b5d4-f4c533249352\`). Their duplicated human-readable course and section codes no longer enable the Anthony option.
+FABTECH 2026 workspaces reside in the same staging Supabase project but use *different* schools (school IDs `b905a2d8-4d5a-4f53-b052-0f69de04a7b6` and `39939e9a-4f2e-49d8-b5d4-f4c533249352`). Their duplicated human-readable course and section codes no longer enable the Anthony option.
 
 Both the frontend selector and database RLS policies check the exact school/section IDs. The underlying curricula, grades, attendance, and production records are not rewritten by the presentation override.
 
