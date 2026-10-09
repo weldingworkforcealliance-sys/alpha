@@ -26,7 +26,7 @@ describe('Anthony WLD 205 view is isolated', () => {
     expect(isAnthonyWld205PilotSection(section)).toBe(true);
     expect(isAnthonyWld205PilotSection({ ...section, section_code: 'PVHS-A-WLD205-2627' })).toBe(false);
     expect(isAnthonyWld205PilotSection({ ...section, course_code: 'WLD 210' })).toBe(false);
-    expect(isAnthonyWld205PilotSection({ course_code: 'WLD 205', section_code: 'SYNTHETIC' }, true)).toBe(true);
+    expect(isAnthonyWld205PilotSection({ course_code: 'WLD 205', section_code: 'SYNTHETIC' })).toBe(false);
   });
 
   it('uses inherited school view when no teacher override exists', () => {
