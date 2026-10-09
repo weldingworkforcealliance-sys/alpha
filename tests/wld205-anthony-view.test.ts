@@ -47,6 +47,25 @@ describe('Anthony WLD 205 view is isolated', () => {
     expect(resolvePlannerViewPreset(revisions, 'teacher-2')).toEqual({ preset: ANTHONY_WLD205_PRESET, source: 'instructor' });
   });
 
+  it('allows an audited instructor inherit revision to follow school instead of pinning core', () => {
+    const school = revision({ id: 'school', preset: ANTHONY_WLD205_PRESET });
+    const teacher = revision({
+      id: 'teacher',
+      scope: 'instructor',
+      instructor_id: 'teacher-1',
+      preset: 'inherit',
+      changed_at: '2026-10-09T10:15:00Z',
+    });
+    expect(resolvePlannerViewPreset([school, teacher], 'teacher-1')).toEqual({
+      preset: ANTHONY_WLD205_PRESET,
+      source: 'school',
+    });
+    expect(resolvePlannerViewPreset([teacher], 'teacher-1')).toEqual({
+      preset: 'standard',
+      source: 'core',
+    });
+  });
+
   it('defaults to protected core when no revisions exist', () => {
     expect(resolvePlannerViewPreset([], 'teacher-1')).toEqual({ preset: 'standard', source: 'core' });
   });
