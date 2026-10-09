@@ -9,6 +9,13 @@ import PlannerTeachingConsole, {
   type PlannerSupportItem,
 } from '@/app/components/planner/PlannerTeachingConsole';
 import { getSupabase } from '@/lib/supabase-browser';
+import PlannerViewSelector from '@/app/components/planner/PlannerViewSelector';
+import { usePlannerViewPreference } from '@/app/components/planner/usePlannerViewPreference';
+import {
+  anthonyDaySupport,
+  anthonyMathDisplayText,
+  usableMathBookReference,
+} from '@/lib/wld205-anthony-view';
 import {
   publishSelectedSection,
   readSelectedSectionId,
@@ -159,6 +166,7 @@ export default function PlannerPage() {
   const [supabase] = useState(getSupabase);
   const [sections, setSections] = useState<TeachingSection[]>([]);
   const [selectedSection, setSelectedSection] = useState<TeachingSection | null>(null);
+  const viewPrefs = usePlannerViewPreference(supabase, selectedSection);
   const [guideDay, setGuideDay] = useState<GuideDay | null>(null);
   const [guideDayRefs, setGuideDayRefs] = useState<PlannerDayOption[]>([]);
   const [viewedGuideDayId, setViewedGuideDayId] = useState<string | null>(null);
@@ -415,38 +423,56 @@ export default function PlannerPage() {
         title: resource.resource_title,
         url,
         type: resource.resource_type,
-        notes: resource.resource_notes,
+        notes: viewPrefs.isStreamlined ? null : resource.resource_notes,
         required: resource.required,
       };
     });
-  }, [resources, selectedSection?.section_id]);
+  }, [resources, selectedSection?.section_id, viewPrefs.isStreamlined]);
 
   const bookAndAwsReferences = useMemo(() => {
     const lines = [
       guideDay?.aws_alignment ? `AWS alignment: ${guideDay.aws_alignment}` : '',
       guideDay?.aws_key_indicators ? `AWS key indicators: ${guideDay.aws_key_indicators}` : '',
-      mathLesson?.book_connection ? `Math book: ${mathLesson.book_connection}` : '',
+      (viewPrefs.isStreamlined ? usableMathBookReference(mathLesson?.book_connection) : mathLesson?.book_connection)
+        ? `Math book: ${viewPrefs.isStreamlined ? usableMathBookReference(mathLesson?.book_connection) : mathLesson?.book_connection}` : '',
       ...resources
         .filter((resource) => ['book_reference', 'aws_reference'].includes(resource.resource_type))
         .map((resource) => `${resource.resource_title}${resource.resource_notes ? ` — ${resource.resource_notes}` : ''}`),
     ].filter(Boolean);
     return lines.join('\n\n');
-  }, [guideDay, mathLesson, resources]);
+  }, [guideDay, mathLesson, resources, viewPrefs.isStreamlined]);
 
   const supportItems = useMemo<PlannerSupportItem[]>(() => {
     const coaching = [guideDay?.weekly_coaching_focus, guideDay?.coaching_focus]
       .filter(Boolean)
       .join('\n\n');
     const mathInstructor = [
-      mathLesson?.instructor_notes ? `Math instructor notes: ${mathLesson.instructor_notes}` : '',
+      mathLesson?.instructor_notes ? `Math instructor notes: ${viewPrefs.isStreamlined ? anthonyMathDisplayText(mathLesson.instructor_notes, guideDay?.planner_day_number ?? 0) : mathLesson.instructor_notes}` : '',
       mathLesson?.answers_quick_check
-        ? `Math answers / quick check: ${mathLesson.answers_quick_check}`
+        ? `Math answers / quick check: ${viewPrefs.isStreamlined ? anthonyMathDisplayText(mathLesson.answers_quick_check, guideDay?.planner_day_number ?? 0) : mathLesson.answers_quick_check}`
         : '',
     ]
       .filter(Boolean)
       .join('\n\n');
 
+    const resourceDetails = resources
+      .filter((resource) => resource.resource_notes && !['book_reference', 'aws_reference'].includes(resource.resource_type))
+      .map((resource) => resource.resource_title + ': ' + resource.resource_notes)
+      .join('\n\n');
     return [
+      ...(viewPrefs.isStreamlined
+        ? anthonyDaySupport(guideDay?.planner_day_number ?? 0).map((extra, index) => ({
+            key: 'anthony-' + index,
+            label: extra.label,
+            body: extra.body,
+          }))
+        : []),
+      ...(viewPrefs.isStreamlined && mathLesson?.goal
+        ? [{ key: 'math-goal', label: 'Welding Math Goal', body: mathLesson.goal }]
+        : []),
+      ...(viewPrefs.isStreamlined && resourceDetails
+        ? [{ key: 'resource-details', label: 'Additional Resource Details', body: resourceDetails }]
+        : []),
       {
         key: 'before',
         label: 'Before Class',
@@ -476,7 +502,7 @@ export default function PlannerPage() {
       },
       { key: 'instructor-only', label: 'Instructor Notes / Answer Keys', body: mathInstructor },
     ];
-  }, [guideDay, mathLesson, bookAndAwsReferences]);
+  }, [guideDay, mathLesson, bookAndAwsReferences, resources, viewPrefs.isStreamlined]);
 
   const startToday = async () => {
     if (!selectedSection || !isCurrentDay) return;
@@ -679,6 +705,16 @@ export default function PlannerPage() {
         </div>
       )}
 
+      {viewPrefs.eligible && (
+        <PlannerViewSelector
+          preset={viewPrefs.preset}
+          source={viewPrefs.source}
+          loading={viewPrefs.loading}
+          saving={viewPrefs.saving}
+          error={viewPrefs.error}
+          onChange={viewPrefs.saveInstructorPreset}
+        />
+      )}
       {guideDay ? (
         <PlannerTeachingConsole
           courseLabel={selectedSection.course_code || selectedSection.course_name || 'Course'}
@@ -693,9 +729,16 @@ export default function PlannerPage() {
               : `${segments.reduce((sum, row) => sum + row.planned_minutes, 0)} min plan`
           }
           protectedOutcomes={outcomes.map((outcome) => ({ id: outcome.id, code: outcome.outcome_code, text: outcome.outcome_text }))}
-          rows={planRows}
+          rows={viewPrefs.isStreamlined
+            ? planRows.map((row) => ({
+                ...row,
+                instructor: anthonyMathDisplayText(row.instructor, guideDay.planner_day_number) || row.instructor,
+                students: anthonyMathDisplayText(row.students, guideDay.planner_day_number),
+              }))
+            : planRows}
           resources={resolvedResources}
           supportItems={supportItems}
+          compactInstructorView={viewPrefs.isStreamlined}
           dayOptions={guideDayRefs}
           selectedGuideDayId={guideDay.id}
           isCurrentDay={isCurrentDay}
