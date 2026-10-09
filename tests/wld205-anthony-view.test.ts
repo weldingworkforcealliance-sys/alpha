@@ -1,0 +1,72 @@
+import { describe, expect, it } from 'vitest';
+import {
+  ANTHONY_WLD205_PRESET,
+  anthonyDaySupport,
+  anthonyMathDisplayText,
+  isAnthonyWld205PilotSection,
+  resolvePlannerViewPreset,
+  usableMathBookReference,
+  type PlannerViewRevision,
+} from '../lib/wld205-anthony-view';
+
+const section = { course_code: 'WLD 205', section_code: 'PCCC-DAY-L2-WLD205-2627' };
+const revision = (
+  changes: Partial<PlannerViewRevision>
+): PlannerViewRevision => ({
+  id: '001',
+  scope: 'school',
+  instructor_id: null,
+  preset: ANTHONY_WLD205_PRESET,
+  changed_at: '2026-10-09T10:00:00Z',
+  ...changes,
+});
+
+describe('Anthony WLD 205 view is isolated', () => {
+  it('applies only to the PCCC 30-day section in production', () => {
+    expect(isAnthonyWld205PilotSection(section)).toBe(true);
+    expect(isAnthonyWld205PilotSection({ ...section, section_code: 'PVHS-A-WLD205-2627' })).toBe(false);
+    expect(isAnthonyWld205PilotSection({ ...section, course_code: 'WLD 210' })).toBe(false);
+    expect(isAnthonyWld205PilotSection({ course_code: 'WLD 205', section_code: 'SYNTHETIC' }, true)).toBe(true);
+  });
+
+  it('uses inherited school view when no teacher override exists', () => {
+    expect(resolvePlannerViewPreset([revision({})], 'teacher-1')).toEqual({
+      preset: ANTHONY_WLD205_PRESET,
+      source: 'school',
+    });
+  });
+
+  it('prefers latest matching instructor revision over school preset', () => {
+    const revisions = [
+      revision({}),
+      revision({ id: 'a', scope: 'instructor', instructor_id: 'teacher-1', preset: ANTHONY_WLD205_PRESET, changed_at: '2026-10-09T10:05:00Z' }),
+      revision({ id: 'b', scope: 'instructor', instructor_id: 'teacher-1', preset: 'standard', changed_at: '2026-10-09T10:10:00Z' }),
+      revision({ id: 'c', scope: 'instructor', instructor_id: 'teacher-2', preset: ANTHONY_WLD205_PRESET, changed_at: '2026-10-09T10:20:00Z' }),
+    ];
+    expect(resolvePlannerViewPreset(revisions, 'teacher-1')).toEqual({ preset: 'standard', source: 'instructor' });
+    expect(resolvePlannerViewPreset(revisions, 'teacher-2')).toEqual({ preset: ANTHONY_WLD205_PRESET, source: 'instructor' });
+  });
+
+  it('defaults to protected core when no revisions exist', () => {
+    expect(resolvePlannerViewPreset([], 'teacher-1')).toEqual({ preset: 'standard', source: 'core' });
+  });
+
+  it('filters empty book disclaimers without removing real references', () => {
+    expect(usableMathBookReference('No textbook exercises reproduced; page references omitted.')).toBeNull();
+    expect(usableMathBookReference('Chapter 2, welding dimensions')).toBe('Chapter 2, welding dimensions');
+  });
+
+  it('retains calculation accuracy on Days 10 and 11 only', () => {
+    for (const day of [10, 11]) {
+      const result = anthonyMathDisplayText('eep guard digits until the requested final precision', day);
+      expect(result).toContain('round only the final result');
+    }
+    expect(anthonyMathDisplayText('Keep guard digits until the requested final precision', 9))
+      .toBe('Keep guard digits until the requested final precision');
+  });
+
+  it('marks the Day 3 blueprint as pending approval rather than approved', () => {
+    expect(anthonyDaySupport(1)).toEqual([]);
+    expect(anthonyDaySupport(3)[0].body).toContain('only after school approval');
+  });
+});
