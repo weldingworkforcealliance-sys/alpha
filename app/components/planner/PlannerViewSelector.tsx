@@ -4,6 +4,9 @@ import { ANTHONY_WLD205_PRESET, type PlannerViewPreset } from '@/lib/wld205-anth
 
 export default function PlannerViewSelector({
   preset,
+  schoolPreset,
+  canManageSchool,
+  onSchoolChange,
   source,
   loading,
   saving,
@@ -11,6 +14,9 @@ export default function PlannerViewSelector({
   onChange,
 }: {
   preset: PlannerViewPreset;
+  schoolPreset: PlannerViewPreset;
+  canManageSchool: boolean;
+  onSchoolChange: (preset: PlannerViewPreset) => void;
   source: 'core' | 'school' | 'instructor';
   loading: boolean;
   saving: boolean;
@@ -49,6 +55,24 @@ export default function PlannerViewSelector({
       <small style={{ color: '#a6c1b8' }}>
         {saving ? 'Saving…' : loading ? 'Checking preference…' : 'Source: ' + source + ' · Approved curriculum unchanged'}
       </small>
+      {canManageSchool && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', width: '100%', paddingTop: 8, borderTop: '1px solid #314e44' }}>
+          <label htmlFor="wld205-school-view-preset" style={{ color: '#dbeae4', fontWeight: 600 }}>
+            School default for this section
+          </label>
+          <select
+            id="wld205-school-view-preset"
+            value={schoolPreset}
+            disabled={loading || saving}
+            onChange={(event) => onSchoolChange(event.target.value as PlannerViewPreset)}
+            style={{ padding: '7px 12px', maxWidth: '100%', color: '#eef8f4', background: '#203831', borderRadius: 7, border: '1px solid #72998c' }}
+          >
+            <option value="standard">Original teacher view</option>
+            <option value={ANTHONY_WLD205_PRESET}>Anthony v1 · streamlined</option>
+          </select>
+          <small style={{ color: '#a6c1b8' }}>Instructor-specific overrides still take priority.</small>
+        </div>
+      )}
       {error && <small role="alert" style={{ color: '#ffbaba' }}>Preference not saved: {error}</small>}
     </div>
   );
