@@ -17,10 +17,7 @@ export function usePlannerViewPreference(
   section: PlannerViewSection | null
 ) {
   const eligible = useMemo(
-    () => isAnthonyWld205PilotSection(
-      section,
-      process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging'
-    ),
+    () => isAnthonyWld205PilotSection(section),
     [section?.course_code, section?.section_code]
   );
   const [preset, setPreset] = useState<PlannerViewPreset>('standard');
