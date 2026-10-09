@@ -1,4 +1,4 @@
-import {assignmentLabel} from './wld110-shop';
+import {assignmentLabel,shopItemTitle} from './wld110-shop';
 
 export type EvidenceGrade = {id:string;student_id:string;item_id:string;score:number|null;possible_score:number|null;status_label:string;attempted_at:string};
 export type EvidenceItem = {id:string;title:string;assessment_slug:string|null};
@@ -14,7 +14,7 @@ export function weldingEvidence(grades:EvidenceGrade[],items:EvidenceItem[],weld
   ...grades.flatMap(grade=>{
    const item=catalog.get(grade.item_id);
    if(!item||!(/^(tower:|wld110-shop:)/.test(item.assessment_slug??'')))return [];
-   return [{id:'grade:'+grade.id,studentId:grade.student_id,title:item.title,score:grade.score,possible:grade.possible_score,date:grade.attempted_at,
+   return [{id:'grade:'+grade.id,studentId:grade.student_id,title:shopItemTitle(item),score:grade.score,possible:grade.possible_score,date:grade.attempted_at,
     status:item.assessment_slug?.startsWith('tower:')?(counted.has(grade.id)?'Earlier welding system · Counted grade':'Earlier welding system · Retained attempt'):'Completed competency · '+grade.status_label}];
   }),
   ...welds.map(weld=>({id:'weld:'+weld.id,studentId:weld.student_id,title:assignmentLabel(weld.competency)+' · Weld '+weld.attempt_number,score:weld.total,possible:100,date:weld.recorded_at,

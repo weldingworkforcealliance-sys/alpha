@@ -10,6 +10,7 @@ import ShopWorkspace from '../shop/workspace';
 import CourseFinals from './course-finals';
 import WeldingHistory from '../lab/welding-history';
 import GradeGrid from './grade-grid';
+import {shopItemTitle} from '@/lib/wld110-shop';
 
 type Student = { student_id: string; active: boolean; display_name: string };
 type Item = { id: string; title: string; category_id: string; assessment_slug: string | null };
@@ -69,7 +70,7 @@ export default function GradebookWorkspace() {
       ]);
       const students = results[0];
       return { book: one, students: students.sort((a, b) => a.display_name.localeCompare(b.display_name)),
-        items: results[1], categories: results[2], statuses: results[3], attempts: results[4], towerSelections: results[5],
+        items: results[1].map(item=>({...item,title:shopItemTitle(item)})).sort((a,b)=>a.assessment_slug?.startsWith('wld110-shop:')&&b.assessment_slug?.startsWith('wld110-shop:')?a.assessment_slug.localeCompare(b.assessment_slug):0), categories: results[2], statuses: results[3], attempts: results[4], towerSelections: results[5],
         unresolved: Number(refreshed.data?.unresolved ?? 0) };
     }
     const partner = linked ? linkedGradebook(book, books) : null;
@@ -154,7 +155,7 @@ export default function GradebookWorkspace() {
       {process.env.NEXT_PUBLIC_GRADEBOOK_FINALS_ENABLED==='true' ? <details><summary>Course totals and final grades</summary><CourseFinals key={panel.book.id} bookId={panel.book.id} students={panel.students}/></details> : <p>Official course finalization is not enabled yet.</p>}
       {panel.unresolved > 0 && <p role="status">{panel.unresolved} assessment submission(s) need identity or score review before import. No student matches were guessed.</p>}
       <GradeGrid key={panel.book.id} bookId={panel.book.id} students={panel.students} items={panel.items} attempts={panel.attempts} statuses={panel.statuses} countedIds={panel.towerSelections.map(s=>s.attempt_id)} disabled={busy||saveBlocked} onRecord={openRecord} onWelding={(student,slug)=>openGradeWelding(panel.book.id,student,slug)} onRefresh={()=>{setNotice('Correction saved. Original grade retained in history.');setReload(v=>v+1);}}/>
-      {panel.book.course_role==='lab'&&<p>Open a student record to see individual welding demonstrations alongside course grades.</p>}
+      {panel.book.course_role==='lab'&&towerEnabled&&<WeldingHistory gradebookId={panel.book.id} refreshKey={reload}/>}
       <details><summary>Gradebook setup</summary>
         <p>Configure assessment categories and statuses here. Course finals use the approved shop and theory weights shown above.</p>
         <form onSubmit={e => { e.preventDefault(); const data = new FormData(e.currentTarget); void mutate('configure_gradebook', {

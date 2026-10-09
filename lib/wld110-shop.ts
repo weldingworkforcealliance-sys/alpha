@@ -53,7 +53,11 @@ export const PACING = [
 ];
 export function assignmentLabel(index: number) {
   const c = COMPETENCIES[index];
-  return c ? `${c.position} · ${c.electrode} · 1/8 in` : 'All competencies complete';
+  return c ? `${c.position === 'Flat' ? '1F (flat)' : c.position} · ${c.electrode === 'E6010' ? 'E6010/11' : c.electrode} · 1/8 in` : 'All competencies complete';
+}
+export function shopItemTitle(item: {title:string;assessment_slug:string|null}) {
+  const match = /^wld110-shop:([0-8])$/.exec(item.assessment_slug ?? '');
+  return match ? `WLD 110 · ${assignmentLabel(Number(match[1]))}` : item.title;
 }
 export function gradeTotal(ratings: Ratings) {
   if (Object.keys(ratings).length !== 5 || CATEGORIES.some(c => !RATINGS.some(r => r.points === ratings[c.key]))) {

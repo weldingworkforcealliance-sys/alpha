@@ -21,7 +21,7 @@ afterEach(()=>{cleanup();vi.restoreAllMocks();});
 describe('quick grading',()=>{
  it('skips completed competencies when showing the next assignment',()=>{
   render(<StudentShopCard student={student({completions:[{competency:1,grade:90,first_attempt_id:'a',second_attempt_id:'b'}]})} busy={false} onRequest={()=>{}}/>);
-  expect(screen.getByText('Next assignment: 2F · E6010 · 1/8 in')).toBeTruthy();
+  expect(screen.getByText('Next assignment: 2F · E6010/11 · 1/8 in')).toBeTruthy();
  });
  it('supports the one-tap Good grade and exact numeric total',()=>{
   const save=vi.fn();
@@ -205,9 +205,9 @@ describe('student QR after coaching',()=>{
 describe('minimal student workflow',()=>{
  it('shows assignment, focus, post-grading grade and next assignment',()=>{
   render(<StudentShopCard student={student({focus:['Travel speed'],attempts:[attempt(1)]})} busy={false} onRequest={()=>{}}/>);
-  expect(screen.getByRole('heading',{name:'Flat · E6010 · 1/8 in'})).toBeTruthy();
+  expect(screen.getByRole('heading',{name:'1F (flat) · E6010/11 · 1/8 in'})).toBeTruthy();
   expect(screen.getByText('Current focus: Travel speed')).toBeTruthy();
-  expect(screen.getByText(/Next assignment: Flat · E7018/)).toBeTruthy();
+  expect(screen.getByText(/Next assignment: 1F \(flat\) · E7018/)).toBeTruthy();
   expect(screen.queryByRole('group',{name:'Execution'})).toBeNull();
   expect(screen.getByText('90%')).toBeTruthy();
  });

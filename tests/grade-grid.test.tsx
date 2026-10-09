@@ -52,3 +52,10 @@ it('routes welding to its rubric instead of the generic correction form',async()
  const p={...props(),items:[{...items[0],assessment_slug:'tower:smaw'}],countedIds:['a1']};render(<GradeGrid {...p}/>);const d=open();await within(d).findByText('Original');
  expect(within(d).queryByRole('button',{name:'Correct this grade'})).toBeNull();fireEvent.click(within(d).getByRole('button',{name:'Open welding assessment'}));expect(p.onWelding).toHaveBeenCalledWith('s1','tower:smaw');expect(mock.rpc).not.toHaveBeenCalled();
 });
+
+it('shows ungraded shop projects and the full roster by default',()=>{
+ const p=props();render(<GradeGrid {...p} items={[{id:'shop',title:'WLD 110 · 1F (flat) · E6010/11 · 1/8 in',assessment_slug:'wld110-shop:0'}]} attempts={[]}/>);
+ expect(screen.getByRole('checkbox')).toHaveProperty('checked',true);
+ expect(screen.getAllByText('Not recorded')).toHaveLength(4);
+ expect(screen.getAllByRole('button',{name:'Student Beta'})).toHaveLength(2);
+});
