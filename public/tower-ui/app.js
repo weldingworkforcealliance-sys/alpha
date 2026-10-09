@@ -734,7 +734,8 @@ function towerCard(title,body,view,button){
 
 function renderLab(){
   if(!state.students.length) return '<div class="card">No students.</div>';
-  const assignment=assignmentById(state.ui.labAssignmentId)||state.assignments[0];
+  const assignment=assignmentById(state.ui.labAssignmentId);
+  if(!assignment) return '<div class="card"><h3>Choose the assignment being graded</h3><p>Confirm the welding process, position and electrode before entering any scores.</p><label>Grade one assignment for the whole class<select id="labAssignmentSelect"><option value="">Choose assignment…</option>'+state.assignments.filter(a=>a.rubricType==="weld").map(a=>'<option value="'+escapeHtml(a.id)+'">'+escapeHtml(a.name+' · '+(a.electrode||a.process))+'</option>').join('')+'</select></label></div>';
   state.ui.labAssignmentId=assignment.id;
   state.ui.labIndex=Math.max(0,Math.min(state.ui.labIndex,state.students.length-1));
   const student=studentAt(state.ui.labIndex);
@@ -1351,7 +1352,7 @@ window.addEventListener("message",e=>{
    gradingPolicy:{version:"tower-shop-v1",passingScore:65,categories:[{code:"weld_performance",label:"Weld Performance",weight:75},{code:"shop_projects",label:"Shop Projects",weight:25}]}};
   state={schemaVersion:6,program:{name:book.section_name,instructorEmail:"",certificatePrintEmail:"",certificatePrintNote:""},
    courseCatalog:[course],assignments:m.payload.assignments.map(a=>({...a,courseId:book.id})),students:[],
-   testIdRegistry:[],ui:{view:"home",courseId:book.id,labAssignmentId:m.payload.assignments[0]?.id,labIndex:0,labAttempt:"attempt1",moduleId:"m4",competencyIndex:0,competencyIndexStudent:0,examModuleId:"m2",examStudentIndex:0,qualificationProcessId:"smaw",qualificationFamily:"Groove",qualificationBacking:"Backing",qualificationPosition:"1G",qualificationStudentIndex:0,destructiveProcessId:"smaw",destructiveFamily:"Groove",destructiveBacking:"Backing",destructivePosition:"2G",certificatePreviewId:""}};
+   testIdRegistry:[],ui:{view:"home",courseId:book.id,labAssignmentId:"",labIndex:0,labAttempt:"attempt1",moduleId:"m4",competencyIndex:0,competencyIndexStudent:0,examModuleId:"m2",examStudentIndex:0,qualificationProcessId:"smaw",qualificationFamily:"Groove",qualificationBacking:"Backing",qualificationPosition:"1G",qualificationStudentIndex:0,destructiveProcessId:"smaw",destructiveFamily:"Groove",destructiveBacking:"Backing",destructivePosition:"2G",certificatePreviewId:""}};
   for(const row of m.payload.students.filter(r=>r.active)){
    const s=blankStudent(row.name,row.weldTestId);
    Object.assign(s,row.data,{id:row.id,ltgStudentId:row.id,name:row.name,studentId:row.weldTestId,weldTestId:row.weldTestId,cohort:book.section_name,courseRecords:blankCourseRecords([course])});

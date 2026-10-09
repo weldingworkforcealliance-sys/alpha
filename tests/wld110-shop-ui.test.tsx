@@ -19,6 +19,10 @@ const attempt=(number:number,total=90):ShopAttempt=>({
 beforeEach(()=>{mocks.rpc.mockReset();mocks.qr.mockReset().mockResolvedValue('data:image/png;base64,synthetic-qr');sessionStorage.clear();window.history.replaceState(null,'','/');});
 afterEach(()=>{cleanup();vi.restoreAllMocks();});
 describe('quick grading',()=>{
+ it('skips completed competencies when showing the next assignment',()=>{
+  render(<StudentShopCard student={student({completions:[{competency:1,grade:90,first_attempt_id:'a',second_attempt_id:'b'}]})} busy={false} onRequest={()=>{}}/>);
+  expect(screen.getByText('Next assignment: 2F · E6010 · 1/8 in')).toBeTruthy();
+ });
  it('supports the one-tap Good grade and exact numeric total',()=>{
   const save=vi.fn();
   render(<GradeForm student={student()} busy={false} locked={false} onSave={save} onCancel={()=>{}}/>);
@@ -56,6 +60,19 @@ describe('quick grading',()=>{
  });
 });
 describe('instructor board saves and coaching',()=>{
+ it('selects the actual competency, resets the draft, and holds its identity on retry',async()=>{
+  mocks.rpc.mockImplementation(async(name:string)=>name==='open_wld110_shop'?{data:{night:3,students:[student()]},error:null}:{data:null,error:{message:'Connection interrupted'}});
+  render(<ShopWorkspace gradebookId="book-1"/>);
+  fireEvent.click(await screen.findByRole('button',{name:'Grade weld'}));
+  fireEvent.click(within(screen.getByRole('group',{name:'Execution'})).getByRole('button',{name:/Needs Work/}));
+  fireEvent.change(screen.getByRole('combobox',{name:'Project / position / electrode'}),{target:{value:'3'}});
+  expect(screen.getByText('Grade: 90%')).toBeTruthy();
+  fireEvent.click(screen.getByRole('button',{name:'Save grade'}));
+  await screen.findByRole('alert');
+  expect(mocks.rpc.mock.calls.find(c=>c[0]==='grade_wld110_weld')?.[1].p_competency).toBe(3);
+  expect(screen.getByRole('combobox',{name:'Project / position / electrode'})).toHaveProperty('disabled',true);
+  expect(screen.getByRole('option',{name:/Advanced 2G/})).toHaveProperty('disabled',true);
+ });
  it('holds an immutable failed save, retries its ID, then refreshes advancement',async()=>{
   const original=student({requested_at:'2026-09-19T12:00:00Z'});
   const advanced=student({current_competency:1,revision:2});

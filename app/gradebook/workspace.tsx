@@ -8,6 +8,7 @@ import styles from './workspace.module.css';
 import TowerWorkspace from '../tower/workspace';
 import ShopWorkspace from '../shop/workspace';
 import CourseFinals from './course-finals';
+import WeldingHistory from '../lab/welding-history';
 
 type Student = { student_id: string; active: boolean; display_name: string };
 type Item = { id: string; title: string; category_id: string; assessment_slug: string | null };
@@ -97,7 +98,7 @@ export default function GradebookWorkspace() {
   const partner=chosen ? linkedGradebook(chosen,books) : null;
   const labBook=chosen?.course_role==='lab' ? chosen : partner?.course_role==='lab' ? partner : null;
   const shopEnabled=process.env.NEXT_PUBLIC_WLD110_SHOP_ENABLED==='true'&&labBook?.course_code==='WLD 110';
-  function openWelding(book:string,student:string,assignment:string){setSelected(book);setStudentId(student);setAssignmentId(assignment);setWeldingOpened(true);setTab('lab');}
+  function openWelding(book:string,student:string,assignment:string){setSelected(book);setStudentId(student);setAssignmentId(assignment);setWeldingOpened(true);setTab(process.env.NEXT_PUBLIC_WLD110_SHOP_ENABLED==='true'&&books.find(row=>row.id===book)?.course_code==='WLD 110'?'legacy':'lab');}
   function changeTab(next:string){setWeldingOpened(true);setTab(next);if(next==='grades')setReload(value=>value+1);}
   function chooseFilter(kind: string, value: string) {
     const nextProgram = kind === 'program' ? value : program;
@@ -117,15 +118,15 @@ export default function GradebookWorkspace() {
       <label>Semester<select disabled={busy || saveBlocked} value={semester} onChange={e => chooseFilter('semester', e.target.value)}><option value="">All semesters</option>{options(books.filter(b => (!program || b.program_id === program) && (!level || b.level_id === level)), 'semester_id', 'semester_name')}</select></label>
       <label>Class<select disabled={busy || saveBlocked} value={selected} onChange={e => setSelected(e.target.value)}>{!available.length && <option value="">No classes</option>}{available.map(book => <option key={book.id} value={book.id}>{book.course_code} · {book.section_name}{book.section_status !== 'active' ? ' (archived)' : ''}</option>)}</select></label>
       <label><input type="checkbox" disabled={busy || saveBlocked} checked={linked} onChange={e => setLinked(e.target.checked)} /> Show linked course</label>
-      <button disabled={loading || busy || !selected} onClick={() => setReload(value => value + 1)}>Refresh roster and theory grades</button>
+      <button disabled={loading || busy || saveBlocked || !selected} onClick={() => setReload(value => value + 1)}>Refresh roster and theory grades</button>
     </div>
     {towerEnabled && labBook && <nav aria-label="Gradebook views">
-      {[['grades','Grades'],['lab',shopEnabled?'Shop board':'Welding assessment'],['passport','Student record']].map(([id,label])=><button key={id} disabled={saveBlocked} aria-pressed={tab===id} onClick={()=>changeTab(id)}>{label}</button>)}
+      {[['grades','Grades'],['lab',shopEnabled?'Shop board':'Welding assessment'],...(shopEnabled?[['legacy','Earlier welding assessments']]:[]),['passport','Student record']].map(([id,label])=><button key={id} disabled={saveBlocked} aria-pressed={tab===id} onClick={()=>changeTab(id)}>{label}</button>)}
     </nav>}
     {saveBlocked&&<p role="status">Finish saving in the welding workspace before changing class or view.</p>}
     {towerEnabled&&labBook&&weldingOpened&&(shopEnabled&&tab==='lab'
       ? <ShopWorkspace key={labBook.id} gradebookId={labBook.id} onSaveState={setSaveBlocked}/>
-      : <div hidden={tab==='grades'}><TowerWorkspace key={labBook.id} gradebookId={labBook.id} view={tab==='grades'?'lab':tab} studentId={studentId} assignmentId={assignmentId} onStudentChange={setStudentId} onSaveState={setSaveBlocked}/></div>)}
+      : <div hidden={tab==='grades'}>{tab==='legacy'&&<p>Earlier welding assessments use a separate rubric. Check the assignment and process before editing; these grades do not automatically complete SMAW shop competencies.</p>}<TowerWorkspace key={labBook.id} gradebookId={labBook.id} view={tab==='grades'||tab==='legacy'?'lab':tab} studentId={studentId} assignmentId={assignmentId} onStudentChange={setStudentId} onSaveState={setSaveBlocked}/></div>)}
     {shopEnabled&&labBook&&<p><a href={'/shop?book='+labBook.id}>Open WLD 110 shop board</a></p>}
     <div hidden={tab!=='grades'&&Boolean(labBook)&&towerEnabled}>
     {error && <p role="alert">{error}</p>}
@@ -139,11 +140,12 @@ export default function GradebookWorkspace() {
       {process.env.NEXT_PUBLIC_GRADEBOOK_FINALS_ENABLED==='true' ? <CourseFinals key={panel.book.id} bookId={panel.book.id} students={panel.students}/> : <p>Official course finalization is not enabled yet.</p>}
       {panel.unresolved > 0 && <p role="status">{panel.unresolved} assessment submission(s) need identity or score review before import. No student matches were guessed.</p>}
       <h3>Students and attempts</h3>
+      {panel.book.course_role==='lab'&&towerEnabled&&<WeldingHistory key={panel.book.id} gradebookId={panel.book.id} refreshKey={reload}/>}
       {!panel.students.length && <p>No enrolled students yet. Students appear from the existing class enrollment roster.</p>}
       <div className={styles.scroll}><table><thead><tr><th>Student</th><th>Assessment</th><th>Attempt / status</th><th>Score</th><th>History</th></tr></thead><tbody>
         {panel.students.flatMap(student => {
           const attempts = panel.attempts.filter(attempt => attempt.student_id === student.student_id);
-          if (!attempts.length) return [<tr key={student.student_id}><td>{student.display_name}{!student.active && ' (inactive)'}</td><td colSpan={4}>No grades recorded</td></tr>];
+          if (!attempts.length) return [<tr key={student.student_id}><td>{student.display_name}{!student.active && ' (inactive)'}</td><td colSpan={4}>{panel.book.course_role==='lab'?'No completed course-grade entries. See combined welding history for demonstrations.':'No grades recorded'}</td></tr>];
           return attempts.map(attempt => <tr key={attempt.id}><td>{student.display_name}{!student.active && ' (inactive)'}</td><td>{panel.items.find(item => item.id === attempt.item_id)?.title}</td><td>{new Date(attempt.attempted_at).toLocaleString()}<br />{attempt.status_label}</td><td>{scoreLabel(attempt.score, attempt.possible_score)}</td><td>
             <button disabled={busy || saveBlocked} onClick={async () => {
               setBusy(true); setError(''); setHistory(null); setHistoryTitle(student.display_name);
@@ -206,5 +208,3 @@ export default function GradebookWorkspace() {
     </div>
   </main>;
 }
-
-

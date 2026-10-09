@@ -4,7 +4,8 @@ import {StudentQrCache} from '@/lib/student-qr';
 import {StudentQrCard,type StudentQr} from './student-qr-card';
 import {getSupabase} from '@/lib/supabase-browser';
 import {formatError} from '@/lib/format-error';
-import {assignmentLabel,CATEGORIES,PACING,sortedQueue,type ShopBoard,type ShopStudent} from '@/lib/wld110-shop';
+import {assignmentLabel,CATEGORIES,COMPETENCIES,PACING,sortedQueue,type ShopBoard,type ShopStudent} from '@/lib/wld110-shop';
+import WeldingHistory from '../lab/welding-history';
 import {AttemptHistory,GradeForm,type GradeDraft} from './components';
 import styles from './shop.module.css';
 
@@ -12,6 +13,7 @@ export default function ShopWorkspace({gradebookId,onSaveState}:{gradebookId:str
  const [client]=useState(getSupabase),[board,setBoard]=useState<ShopBoard|null>(null),[error,setError]=useState('');
  const [selected,setSelected]=useState<ShopStudent|null>(null),[busy,setBusy]=useState(false),[locked,setLocked]=useState(false);
  const [history,setHistory]=useState<string|null>(null),[notice,setNotice]=useState('');
+ const [gradingCompetency,setGradingCompetency]=useState(0);
  const [studentQr,setStudentQr]=useState<StudentQr|null>(null);
  const qrLinks=useRef(new StudentQrCache());
  const [coaching,setCoaching]=useState<ShopStudent|null>(null),[focus,setFocus]=useState<string[]>([]);
@@ -44,13 +46,13 @@ export default function ShopWorkspace({gradebookId,onSaveState}:{gradebookId:str
   if(!selected||saving.current)return;
   saving.current=true;setBusy(true);setError('');
   pending.current??={p_gradebook_id:gradebookId,p_student_id:selected.student_id,p_save_id:crypto.randomUUID(),
-   p_competency:selected.current_competency,p_revision:selected.revision,p_ratings:draft.ratings,p_tags:draft.tags,p_sizer_note:draft.sizerNote};
+   p_competency:gradingCompetency,p_revision:selected.revision,p_ratings:draft.ratings,p_tags:draft.tags,p_sizer_note:draft.sizerNote};
   setLocked(true);
   try{
    const result=await client.rpc('grade_wld110_weld',pending.current);
    if(result.error)throw result.error;
    const student=result.data as ShopStudent;accept(student);
-   setNotice(student.current_competency>selected.current_competency?'Competency complete. Next: '+assignmentLabel(student.current_competency):'Grade saved. Continue practice for the next demonstration.');
+   setNotice(student.completions.some(c=>c.competency===gradingCompetency)||student.current_competency>selected.current_competency?'Competency complete. Next: '+assignmentLabel(student.current_competency):'Grade saved. Continue practice for the next demonstration.');
    pending.current=null;setSelected(null);setLocked(false);
   }catch(e){setError(formatError(e,'The grade was not confirmed. Retry the same grade, or reload to check the saved record.'));}
   finally{saving.current=false;setBusy(false);}
@@ -94,23 +96,31 @@ export default function ShopWorkspace({gradebookId,onSaveState}:{gradebookId:str
   {error&&<p className={styles.error} role="alert">{error}</p>}
   {notice&&<p role="status">{notice}</p>}
   {!board&&!error&&<p role="status">Loading shop board…</p>}
-  {selected&&<GradeForm key={selected.student_id+':'+selected.revision} student={selected} busy={busy} locked={locked} onSave={save} onCancel={()=>{pending.current=null;setLocked(false);setSelected(null);setError('');}}/>}
+  {selected&&<>
+   <label>Project / position / electrode<select aria-label="Project / position / electrode" value={gradingCompetency} disabled={busy||locked} onChange={e=>setGradingCompetency(Number(e.target.value))}>
+    {COMPETENCIES.map((_,index)=><option key={index} value={index} disabled={selected.completions.some(c=>c.competency===index)||(index===8&&selected.completions.filter(c=>c.competency<8).length<8)}>
+     {assignmentLabel(index)}{selected.completions.some(c=>c.competency===index)?' · Complete':index===8&&selected.completions.filter(c=>c.competency<8).length<8?' · Complete core first':''}
+    </option>)}
+   </select></label>
+   <p>Choose the weld actually being evaluated. Changing the selection starts a fresh unsaved rubric. Earlier scores remain in history.</p>
+   <GradeForm key={selected.student_id+':'+selected.revision+':'+gradingCompetency} student={{...selected,current_competency:gradingCompetency}} busy={busy} locked={locked} onSave={save} onCancel={()=>{pending.current=null;setLocked(false);setSelected(null);setError('');}}/>
+  </>}
   {coaching&&<section className={styles.card}><h3>Practice focus · {coaching.display_name}</h3><p>Ungraded coaching and pacing review. The assignment stays the same.</p>
    <div className={styles.tags}>{['Continue current project','Targeted booth coaching','Instructor demonstration','Scrap exercise','Additional coupon',...CATEGORIES.flatMap(c=>[...c.tags])].map(tag=><button key={tag} disabled={busy} aria-pressed={focus.includes(tag)} onClick={()=>setFocus(f=>f.includes(tag)?f.filter(t=>t!==tag):f.length<12?[...f,tag]:f)}>{tag}</button>)}</div>
    <button className={styles.primary} disabled={busy} onClick={practice}>Save practice focus</button> <button disabled={busy} onClick={()=>setCoaching(null)}>Cancel</button>
   </section>}
   {studentQr&&<StudentQrCard key={studentQr.student.student_id} qr={studentQr} busy={busy} onRetry={()=>{const student=board?.students.find(s=>s.student_id===studentQr.student.student_id);if(student)void showStudentQr(student,studentQr.afterCoaching);}}/>}
   {board&&<div className={styles.card+' '+styles.scroll}><table><caption>Check queue and current work</caption><thead><tr><th>Student</th><th>Current work</th><th>Status / focus</th><th>Action</th></tr></thead><tbody>
-   {students.map(s=><tr key={s.student_id}><td>{s.display_name}{!s.active?' (inactive)':''}</td><td>{assignmentLabel(s.current_competency)}<br/><small>Core {Math.min(s.current_competency,8)} / 8</small></td>
+   {students.map(s=><tr key={s.student_id}><td>{s.display_name}{!s.active?' (inactive)':''}</td><td>{assignmentLabel(s.current_competency)}<br/><small>Core {s.completions.filter(c=>c.competency<8).length} / 8</small><br/><small>{s.attempts.length} graded shop demonstration(s)</small></td>
     <td>{s.current_competency===9?'Complete':s.requested_at?'Ready for check':'Practice'}{s.requested_at&&<small> · {new Date(s.requested_at).toLocaleTimeString()}</small>}
      {s.current_competency<8&&s.position_meetings>=6&&<p className={styles.alert}>Pacing review · {s.position_meetings} meetings in position</p>}
      {s.focus.length>0&&<p>{s.focus.join(' · ')}</p>}</td>
-    <td><div className={styles.actions}><button className={styles.primary} disabled={busy||Boolean(selected||coaching)||!s.active||s.current_competency===9} onClick={()=>{setSelected(s);setNotice('');setStudentQr(null);setError('');}}>Grade weld</button>
+    <td><div className={styles.actions}><button className={styles.primary} disabled={busy||Boolean(selected||coaching)||!s.active||s.current_competency===9} onClick={()=>{setSelected(s);setGradingCompetency(s.current_competency);setNotice('');setStudentQr(null);setError('');}}>Grade weld</button>
      <button disabled={busy||Boolean(selected||coaching)||!s.active||s.current_competency===9} onClick={()=>{setCoaching(s);setFocus(s.focus.slice(0,12));setStudentQr(null);setNotice('');setError('');}}>Practice / coach</button>
      <button disabled={busy||Boolean(selected||coaching)||!s.active} onClick={()=>void showStudentQr(s)}>Student QR</button>
      <button onClick={()=>setHistory(s.student_id)}>History</button></div></td></tr>)}
   </tbody></table>{!students.length&&<p>No students enrolled in this class.</p>}</div>}
-  {selectedHistory&&<AttemptHistory student={selectedHistory}/>}
+  {selectedHistory&&<><AttemptHistory student={selectedHistory}/><WeldingHistory key={gradebookId+':'+selectedHistory.student_id} gradebookId={gradebookId} studentId={selectedHistory.student_id} refreshKey={selectedHistory.revision}/></>}
   <details className={styles.card}><summary>23-night pacing guide{board?.night?' · Night '+board.night:''}</summary><p>Benchmarks guide instruction. Dates never advance students. All electrodes are 1/8 in. Grade workmanship and existing sizer requirements; no bead-count requirement.</p>
    <ol>{PACING.map((night,i)=><li key={night}><strong>{board?.night===i+1?'Tonight: ':''}</strong>{night}</li>)}</ol>
   </details>
