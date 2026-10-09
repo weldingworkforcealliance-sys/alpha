@@ -7,6 +7,7 @@ import {
   isAnthonyWld205PilotSection,
   resolvePlannerViewPreset,
   type PlannerViewPreset,
+  type PlannerViewChoice,
   type PlannerViewRevision,
   type PlannerViewSection,
 } from '@/lib/wld205-anthony-view';
@@ -25,6 +26,8 @@ export function usePlannerViewPreference(
   const [preset, setPreset] = useState<PlannerViewPreset>('standard');
   const [source, setSource] = useState<'core' | 'school' | 'instructor'>('core');
   const [schoolPreset, setSchoolPreset] = useState<PlannerViewPreset>('standard');
+  const [hasSchoolRevision, setHasSchoolRevision] = useState(false);
+  const [personalChoice, setPersonalChoice] = useState<PlannerViewChoice>('inherit');
   const [canManageSchool, setCanManageSchool] = useState(false);
   const [loadedSectionId, setLoadedSectionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -43,6 +46,8 @@ export function usePlannerViewPreference(
     setPreset('standard');
     setSource('core');
     setSchoolPreset('standard');
+    setHasSchoolRevision(false);
+    setPersonalChoice('inherit');
     setCanManageSchool(false);
     setLoadedSectionId(null);
     setError('');
@@ -68,6 +73,10 @@ export function usePlannerViewPreference(
       const latestSchool = (data ?? []).find(
         (revision: PlannerViewRevision) => revision.scope === 'school'
       );
+      const latestPersonal = (data ?? []).find(
+        (revision: PlannerViewRevision) =>
+          revision.scope === 'instructor' && revision.instructor_id === auth.user.id
+      );
       const effective = resolvePlannerViewPreset(
         (data ?? []) as PlannerViewRevision[],
         auth.user.id
@@ -76,6 +85,12 @@ export function usePlannerViewPreference(
         setPreset(effective.preset);
         setSource(effective.source);
         setSchoolPreset(latestSchool?.preset === ANTHONY_WLD205_PRESET ? ANTHONY_WLD205_PRESET : 'standard');
+        setHasSchoolRevision(Boolean(latestSchool));
+        setPersonalChoice(
+          latestPersonal?.preset === ANTHONY_WLD205_PRESET || latestPersonal?.preset === 'standard'
+            ? latestPersonal.preset
+            : 'inherit'
+        );
         setCanManageSchool(Boolean(schoolManagement));
         setLoadedSectionId(sectionId);
       }
@@ -90,7 +105,7 @@ export function usePlannerViewPreference(
     return () => { cancelled = true; };
   }, [supabase, section?.school_id, section?.section_id, eligible, revisionEpoch]);
 
-  const saveInstructorPreset = useCallback(async (next: PlannerViewPreset) => {
+  const saveInstructorPreset = useCallback(async (next: PlannerViewChoice) => {
     if (!section || !eligible || saving) return;
     setSaving(true);
     setError('');
@@ -108,8 +123,9 @@ export function usePlannerViewPreference(
           change_note: 'Instructor switched their WLD 205 lesson presentation.',
         });
       if (insertError) throw insertError;
-      setPreset(next);
-      setSource('instructor');
+      setPersonalChoice(next);
+      setPreset(next === 'inherit' ? schoolPreset : next);
+      setSource(next === 'inherit' ? (hasSchoolRevision ? 'school' : 'core') : 'instructor');
       setLoadedSectionId(section.section_id);
       window.dispatchEvent(new Event('ltg:planner-view-changed'));
     } catch (cause: unknown) {
@@ -117,7 +133,7 @@ export function usePlannerViewPreference(
     } finally {
       setSaving(false);
     }
-  }, [supabase, section?.school_id, section?.section_id, eligible, saving]);
+  }, [supabase, section?.school_id, section?.section_id, eligible, saving, schoolPreset, hasSchoolRevision]);
 
   const saveSchoolPreset = useCallback(async (next: PlannerViewPreset) => {
     if (!section || !eligible || !canManageSchool || saving) return;
@@ -136,17 +152,23 @@ export function usePlannerViewPreference(
       });
       if (insertError) throw insertError;
       setSchoolPreset(next);
+      setHasSchoolRevision(true);
+      if (personalChoice === 'inherit') {
+        setPreset(next);
+        setSource('school');
+      }
       window.dispatchEvent(new Event('ltg:planner-view-changed'));
     } catch (cause: unknown) {
       setError(cause instanceof Error ? cause.message : String(cause));
     } finally {
       setSaving(false);
     }
-  }, [supabase, section?.school_id, section?.section_id, eligible, canManageSchool, saving]);
+  }, [supabase, section?.school_id, section?.section_id, eligible, canManageSchool, saving, personalChoice]);
 
   return {
     eligible,
     schoolPreset,
+    personalChoice,
     canManageSchool,
     saveSchoolPreset,
     preset: eligible && section?.section_id === loadedSectionId ? preset : 'standard',
