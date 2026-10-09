@@ -23,14 +23,13 @@ export const ANTHONY_WLD205_PCCC_SECTION_CODE = 'PCCC-DAY-L2-WLD205-2627';
 export const ANTHONY_WLD205_PRESET: PlannerViewPreset = 'anthony_wld205_v1';
 
 export function isAnthonyWld205PilotSection(
-  section: Pick<PlannerViewSection, 'course_code' | 'section_code'> | null,
-  staging = false
+  section: Pick<PlannerViewSection, 'course_code' | 'section_code'> | null
 ): boolean {
   if (!section || (section.course_code ?? '').replace(/\s+/g, '').toUpperCase() !== 'WLD205') {
     return false;
   }
-  // Only the 30-day PCCC day class in production; staging uses synthetic sections.
-  return section.section_code === ANTHONY_WLD205_PCCC_SECTION_CODE || staging;
+  // Apply to the specifically scoped PCCC 30-day section, also in staging.
+  return section.section_code === ANTHONY_WLD205_PCCC_SECTION_CODE;
 }
 
 export function resolvePlannerViewPreset(
