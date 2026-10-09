@@ -27,5 +27,16 @@ it('clears the student selection when the class changes and leaves qualification
  render(<Workspace/>);fireEvent.click((await screen.findAllByRole('button',{name:'Student Alpha'},{timeout:5000}))[0]);
  fireEvent.change(screen.getByLabelText('Class'),{target:{value:'lab'}});
  expect(within(screen.getByRole('region',{name:'Student record'})).getByLabelText('Student')).toHaveProperty('value','');
- fireEvent.click(screen.getByRole('button',{name:'Qualifications'}));expect(await screen.findByText('Qualification workspace')).toBeTruthy();
+ fireEvent.click(screen.getByText('More'));fireEvent.click(screen.getByRole('button',{name:'Qualifications'}));expect(await screen.findByText('Qualification workspace')).toBeTruthy();
+});
+
+it('makes grading prominent and keeps secondary views under More',async()=>{
+ render(<Workspace/>);
+ const action=await screen.findByRole('button',{name:'Grade a weld · WLD 110'},{timeout:5000});
+ expect(screen.queryByRole('button',{name:'Shop board'})).toBeNull();
+ expect(screen.queryByRole('link',{name:'Open WLD 110 shop board'})).toBeNull();
+ expect(screen.getByRole('button',{name:'Qualifications'}).closest('details')?.open).toBe(false);
+ await screen.findAllByRole('button',{name:'Student Alpha'},{timeout:5000});
+ fireEvent.click(action);expect(await screen.findByText('Shop workspace')).toBeTruthy();
+ fireEvent.click(screen.getByText('More'));expect(screen.getByRole('button',{name:'Earlier welding assessments'})).toBeTruthy();
 });

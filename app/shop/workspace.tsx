@@ -91,7 +91,7 @@ export default function ShopWorkspace({gradebookId,onSaveState}:{gradebookId:str
  const students=board?sortedQueue(board.students):[];
  const selectedHistory=board?.students.find(s=>s.student_id===history);
  return <div className={styles.shop}>
-  <div className={styles.heading}><div><h2>WLD 110 shop board</h2><p>Ready for check: {students.filter(s=>s.active&&s.requested_at).length} · Pacing reviews: {students.filter(s=>s.active&&s.current_competency<8&&s.position_meetings>=6).length}</p></div>
+  <div className={styles.heading}><div><h2>Grade a weld · WLD 110</h2><p>1. Choose a student below → 2. Choose the project → 3. Complete the rubric → 4. Save grade.</p><p>Ready for check: {students.filter(s=>s.active&&s.requested_at).length} · Pacing reviews: {students.filter(s=>s.active&&s.current_competency<8&&s.position_meetings>=6).length}</p></div>
   <button disabled={busy||Boolean(selected||coaching)} onClick={()=>{setError('');void refresh().catch(e=>setError(formatError(e)));}}>Refresh board</button></div>
   {error&&<p className={styles.error} role="alert">{error}</p>}
   {notice&&<p role="status">{notice}</p>}

@@ -116,6 +116,7 @@ export default function GradebookWorkspace() {
     <header><h1>Gradebook</h1><p>Grades, welding assessments and student records in one class workspace.</p></header>
     <div className={styles.filters}>
       <label>Class<select disabled={busy || saveBlocked} value={selected} onChange={e => {setSelected(e.target.value);setStudentId('');setNotice('');}}>{!available.length && <option value="">No classes</option>}{available.map(book => <option key={book.id} value={book.id}>{book.course_code} · {book.section_name}{book.section_status !== 'active' ? ' (archived)' : ''}</option>)}</select></label>
+      {towerEnabled&&labBook&&<button className={styles.gradeAction} disabled={busy||saveBlocked||loading} aria-pressed={tab==='lab'} onClick={()=>changeTab('lab')}>Grade a weld · {labBook.course_code}</button>}
       <label><input type="checkbox" disabled={busy || saveBlocked} checked={linked} onChange={e => {setLinked(e.target.checked);setStudentId('');}} /> Show linked course</label>
       <button disabled={loading || busy || saveBlocked || !selected} onClick={() => setReload(value => value + 1)}>Refresh roster and theory grades</button>
       <details><summary>More filters</summary><div className={styles.filters}>      <label>Program<select disabled={busy || saveBlocked} value={program} onChange={e => chooseFilter('program', e.target.value)}>{<option value="">All programs</option>}{options(books, 'program_id', 'program_name')}</select></label>
@@ -124,13 +125,13 @@ export default function GradebookWorkspace() {
 </div></details>
     </div>
     {chosen && <nav aria-label="Gradebook views">
-      {[['grades','Class grades'],['record','Student record'],...(towerEnabled&&labBook?[['lab',shopEnabled?'Shop board':'Welding assessment'],...(shopEnabled?[['legacy','Earlier welding assessments']]:[]),['qualifications','Qualifications']]:[])].map(([id,label])=><button key={id} disabled={saveBlocked} aria-pressed={tab===id} onClick={()=>changeTab(id)}>{label}</button>)}
+      {[['grades','Class grades'],['record','Student record']].map(([id,label])=><button key={id} disabled={saveBlocked} aria-pressed={tab===id} onClick={()=>changeTab(id)}>{label}</button>)}
+      {towerEnabled&&labBook&&<details className={styles.moreViews}><summary>More</summary><div>{[...(shopEnabled?[['legacy','Earlier welding assessments']]:[]),['qualifications','Qualifications']].map(([id,label])=><button key={id} disabled={saveBlocked} aria-pressed={tab===id} onClick={()=>changeTab(id)}>{label}</button>)}</div></details>}
     </nav>}
     {saveBlocked&&<p role="status">Finish saving in the welding workspace before changing class or view.</p>}
     {towerEnabled&&labBook&&weldingOpened&&!['record','grades'].includes(tab)&&(shopEnabled&&tab==='lab'
       ? <ShopWorkspace key={labBook.id} gradebookId={labBook.id} onSaveState={setSaveBlocked}/>
       : <div hidden={tab==='grades'}>{tab==='legacy'&&<p>Earlier welding assessments use a separate rubric. Check the assignment and process before editing; these grades do not automatically complete SMAW shop competencies.</p>}<TowerWorkspace key={labBook.id} gradebookId={labBook.id} view={tab==='legacy'?'lab':tab==='qualifications'?'passport':tab} studentId={studentId} assignmentId={assignmentId} onStudentChange={setStudentId} onSaveState={setSaveBlocked}/></div>)}
-    {shopEnabled&&labBook&&<p><a href={'/shop?book='+labBook.id}>Open WLD 110 shop board</a></p>}
     {notice&&<p role="status">{notice}</p>}
     {tab==='record'&&<section aria-label="Student record">
       <h2>Student record</h2><label>Student<select value={studentId} onChange={e=>setStudentId(e.target.value)}><option value="">Choose student</option>{recordStudents.map(s=><option key={s.student_id} value={s.student_id}>{s.display_name}{!s.active?' (inactive)':''}</option>)}</select></label>
