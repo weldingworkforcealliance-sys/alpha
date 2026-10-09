@@ -21,7 +21,7 @@ beforeAll(async()=>{
  await db.exec(`create function private.wld110_snapshot(uuid,uuid) returns jsonb language sql as $$ select to_jsonb(p) from public.wld110_shop_progress p where gradebook_id=$1 and student_id=$2 $$;
  insert into wld110_shop_progress(gradebook_id,student_id,focus,requested_at) values('${id(2)}','${id(3)}',array['Current focus'],now());
  insert into gradebook_items select gen_random_uuid(),'${id(2)}','wld110-shop:'||n from generate_series(0,7) n;`);
- await db.exec(readFileSync('supabase/migrations/20261009190428_wld110_assignment_selection.sql','utf8'));
+ await db.exec(readFileSync('supabase/migrations/20261009212549_wld110_assignment_selection.sql','utf8'));
 },30000);
 afterAll(async()=>{await db?.close();});
 async function state(){return (await db.query<{current_competency:number;revision:number;focus:string[];requested_at:string|null}>('select * from wld110_shop_progress')).rows[0];}
