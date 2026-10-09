@@ -52,7 +52,8 @@ create policy planner_view_revisions_append
     and changed_by = (select auth.uid())
     and exists (
       select 1 from public.sections s
-      where s.id = section_id and s.school_id = school_id
+      where s.id = planner_view_revisions.section_id
+        and s.school_id = planner_view_revisions.school_id
     )
     and (public.is_platform_owner() or public.is_school_member(school_id))
     and (
@@ -69,8 +70,8 @@ create policy planner_view_revisions_append
             instructor_id = (select auth.uid())
             and exists (
               select 1 from public.section_instructors si
-              where si.school_id = school_id
-                and si.section_id = section_id
+              where si.school_id = planner_view_revisions.school_id
+                and si.section_id = planner_view_revisions.section_id
                 and si.instructor_id = (select auth.uid())
                 and si.active
             )
