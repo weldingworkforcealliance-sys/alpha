@@ -14,3 +14,37 @@
 
 .workspace nav { display:flex; flex-wrap:wrap; gap:.5rem; margin:1rem 0; }
 .workspace nav button[aria-pressed="true"] { background:#173f50; color:white; border-color:#173f50; }
+.gradeGrid { min-width: 650px; }
+.gradeGrid th { min-width: 190px; max-width: 260px; }
+.gradeGrid th:first-child { position: sticky; left: 0; z-index: 1; background: var(--ltg-surface, #17313f); color: var(--ltg-text, #f4f7f9); min-width: 180px; }
+.gradeGrid th:first-child button { color: inherit; background: transparent; border: 1px solid #78889a88; border-radius: .4rem; cursor: pointer; }
+.gradeGrid th span, .scoreButton span { display:block; margin-top:.35rem; font-size:.85rem; }
+.scoreButton { text-align:left; width:100%; min-height:52px; border:1px solid #78889a88; border-radius:.45rem; cursor:pointer; }
+.emptyScore { color:inherit; opacity:.7; }
+.mobileGrades { display:none; }
+.studentCard { border:1px solid #78889a66; border-radius:.6rem; padding:1rem; margin:1rem 0; }
+.studentCard h3 { margin-top:0; }
+.studentCard dl { margin:0; }
+.studentCard dl>div { border-top:1px solid #78889a55; padding:.8rem 0; }
+.studentCard dt { font-weight:600; margin-bottom:.4rem; }
+.studentCard dd { margin:0; }
+.gradeDialog { position:fixed; inset:0 0 0 auto; margin:0; width:min(540px,100vw); max-width:100vw; height:100dvh; max-height:100dvh; box-sizing:border-box; overflow-y:auto; padding:1.4rem; background:var(--ltg-surface, #17313f); color:var(--ltg-text, #f4f7f9); border:1px solid #78889a88; }
+.gradeDialog::backdrop { background:#0009; }
+.dialogHeader { display:flex; gap:1rem; justify-content:space-between; align-items:start; }
+.dialogHeader h2 { margin-top:0; }
+.gradeDialog label { display:flex; flex-direction:column; gap:.35rem; margin:.8rem 0; }
+.gradeDialog input,.gradeDialog select,.gradeDialog button { font:inherit; padding:.7rem; max-width:100%; box-sizing:border-box; }
+.gradeDialog select { width:100%; }
+.gradeDialog fieldset { border:0; padding:0; width:100%; }
+.gradeDialog form { display:block; }
+.gradeDialog fieldset button { margin:.4rem .5rem .4rem 0; }
+.gradeDialog ol { padding-left:1.5rem; }
+.gradeDialog li { margin-bottom:1rem; }
+@media(max-width:700px) {
+ .workspace { padding:.8rem; }
+ .desktopGrid { display:none; }
+ .mobileGrades { display:block; }
+ .workspace .filters>label, .workspace .filters>button { width:100%; }
+ .workspace .filters select,.workspace .filters input { box-sizing:border-box; width:100%; }
+ .workspace .filters input[type=checkbox] { width:auto; }
+}

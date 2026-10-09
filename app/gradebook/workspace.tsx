@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { getSupabase } from '@/lib/supabase-browser';
-import { Gradebook, linkedGradebook, scoreLabel, readGradebookRows } from '@/lib/gradebook';
+import { Gradebook, linkedGradebook, readGradebookRows } from '@/lib/gradebook';
 import { formatError } from '@/lib/format-error';
 import styles from './workspace.module.css';
 import TowerWorkspace from '../tower/workspace';
 import ShopWorkspace from '../shop/workspace';
 import CourseFinals from './course-finals';
 import WeldingHistory from '../lab/welding-history';
+import GradeGrid from './grade-grid';
 
 type Student = { student_id: string; active: boolean; display_name: string };
 type Item = { id: string; title: string; category_id: string; assessment_slug: string | null };
@@ -16,7 +17,6 @@ type Category = { id: string; code: string; label: string; active: boolean };
 type Status = { code: string; label: string; active: boolean; requires_score: boolean };
 type Attempt = { id: string; item_id: string; student_id: string; status_label: string; status_code: string;
   score: number | null; possible_score: number | null; attempted_at: string; note: string; revision_id: number };
-type Revision = { id: number; status_label: string; score: number | null; possible_score: number | null; recorded_at: string; note: string };
 type TowerSelection = { student_id: string; attempt_id: string };
 type BookData = { book: Gradebook; students: Student[]; items: Item[]; categories: Category[]; statuses: Status[]; attempts: Attempt[]; towerSelections: TowerSelection[]; unresolved: number };
 
@@ -39,9 +39,7 @@ export default function GradebookWorkspace() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [reload, setReload] = useState(0);
-  const [history, setHistory] = useState<Revision[] | null>(null);
-  const [historyTitle, setHistoryTitle] = useState('');
-  const [edit, setEdit] = useState<{ book: string; attempt: Attempt } | null>(null);
+  const [notice,setNotice]=useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -57,7 +55,7 @@ export default function GradebookWorkspace() {
     let cancelled = false;
     const book = books.find(row => row.id === selected);
     if (!book) { setPanels([]); setLoading(false); return; }
-    setLoading(true); setError(''); setPanels([]); setHistory(null); setEdit(null);
+    setLoading(true); setError(''); setPanels([]);
     async function load(one: Gradebook): Promise<BookData> {
       const refreshed = await client.rpc('refresh_gradebook', { p_gradebook_id: one.id });
       if (refreshed.error) throw refreshed.error;
@@ -99,12 +97,15 @@ export default function GradebookWorkspace() {
   const labBook=chosen?.course_role==='lab' ? chosen : partner?.course_role==='lab' ? partner : null;
   const shopEnabled=process.env.NEXT_PUBLIC_WLD110_SHOP_ENABLED==='true'&&labBook?.course_code==='WLD 110';
   function openWelding(book:string,student:string,assignment:string){setSelected(book);setStudentId(student);setAssignmentId(assignment);setWeldingOpened(true);setTab(process.env.NEXT_PUBLIC_WLD110_SHOP_ENABLED==='true'&&books.find(row=>row.id===book)?.course_code==='WLD 110'?'legacy':'lab');}
-  function changeTab(next:string){setWeldingOpened(true);setTab(next);if(next==='grades')setReload(value=>value+1);}
+  function changeTab(next:string){setWeldingOpened(true);setTab(next);if(next==='grades'||next==='record')setReload(value=>value+1);}
+  function openRecord(id:string){setStudentId(id);setTab('record');}
+  function openGradeWelding(book:string,student:string,slug:string){if(slug.startsWith('tower:'))openWelding(book,student,slug.slice(6));else{setSelected(book);setStudentId(student);setWeldingOpened(true);setTab('lab');}}
+  const recordStudents=Array.from(new Map(panels.flatMap(p=>p.students).map(s=>[s.student_id,s])).values());
   function chooseFilter(kind: string, value: string) {
     const nextProgram = kind === 'program' ? value : program;
     const nextLevel = kind === 'program' ? '' : kind === 'level' ? value : level;
     const nextSemester = kind === 'semester' ? value : '';
-    setProgram(nextProgram); setLevel(nextLevel); setSemester(nextSemester);
+    setProgram(nextProgram); setLevel(nextLevel); setSemester(nextSemester);setStudentId('');setNotice('');
     setSelected(books.find(book => (!nextProgram || book.program_id === nextProgram) && (!nextLevel || book.level_id === nextLevel) && (!nextSemester || book.semester_id === nextSemester))?.id ?? '');
   }
   const options = (rows: Gradebook[], key: 'program_id' | 'level_id' | 'semester_id', label: 'program_name' | 'level_name' | 'semester_name') =>
@@ -113,56 +114,47 @@ export default function GradebookWorkspace() {
   return <main className={styles.workspace}>
     <header><h1>Gradebook</h1><p>Grades, welding assessments and student records in one class workspace.</p></header>
     <div className={styles.filters}>
-      <label>Program<select disabled={busy || saveBlocked} value={program} onChange={e => chooseFilter('program', e.target.value)}>{<option value="">All programs</option>}{options(books, 'program_id', 'program_name')}</select></label>
+      <label>Class<select disabled={busy || saveBlocked} value={selected} onChange={e => {setSelected(e.target.value);setStudentId('');setNotice('');}}>{!available.length && <option value="">No classes</option>}{available.map(book => <option key={book.id} value={book.id}>{book.course_code} · {book.section_name}{book.section_status !== 'active' ? ' (archived)' : ''}</option>)}</select></label>
+      <label><input type="checkbox" disabled={busy || saveBlocked} checked={linked} onChange={e => {setLinked(e.target.checked);setStudentId('');}} /> Show linked course</label>
+      <button disabled={loading || busy || saveBlocked || !selected} onClick={() => setReload(value => value + 1)}>Refresh roster and theory grades</button>
+      <details><summary>More filters</summary><div className={styles.filters}>      <label>Program<select disabled={busy || saveBlocked} value={program} onChange={e => chooseFilter('program', e.target.value)}>{<option value="">All programs</option>}{options(books, 'program_id', 'program_name')}</select></label>
       <label>Level<select disabled={busy || saveBlocked} value={level} onChange={e => chooseFilter('level', e.target.value)}><option value="">All levels</option>{options(books.filter(b => !program || b.program_id === program), 'level_id', 'level_name')}</select></label>
       <label>Semester<select disabled={busy || saveBlocked} value={semester} onChange={e => chooseFilter('semester', e.target.value)}><option value="">All semesters</option>{options(books.filter(b => (!program || b.program_id === program) && (!level || b.level_id === level)), 'semester_id', 'semester_name')}</select></label>
-      <label>Class<select disabled={busy || saveBlocked} value={selected} onChange={e => setSelected(e.target.value)}>{!available.length && <option value="">No classes</option>}{available.map(book => <option key={book.id} value={book.id}>{book.course_code} · {book.section_name}{book.section_status !== 'active' ? ' (archived)' : ''}</option>)}</select></label>
-      <label><input type="checkbox" disabled={busy || saveBlocked} checked={linked} onChange={e => setLinked(e.target.checked)} /> Show linked course</label>
-      <button disabled={loading || busy || saveBlocked || !selected} onClick={() => setReload(value => value + 1)}>Refresh roster and theory grades</button>
+</div></details>
     </div>
-    {towerEnabled && labBook && <nav aria-label="Gradebook views">
-      {[['grades','Grades'],['lab',shopEnabled?'Shop board':'Welding assessment'],...(shopEnabled?[['legacy','Earlier welding assessments']]:[]),['passport','Student record']].map(([id,label])=><button key={id} disabled={saveBlocked} aria-pressed={tab===id} onClick={()=>changeTab(id)}>{label}</button>)}
+    {chosen && <nav aria-label="Gradebook views">
+      {[['grades','Class grades'],['record','Student record'],...(towerEnabled&&labBook?[['lab',shopEnabled?'Shop board':'Welding assessment'],...(shopEnabled?[['legacy','Earlier welding assessments']]:[]),['qualifications','Qualifications']]:[])].map(([id,label])=><button key={id} disabled={saveBlocked} aria-pressed={tab===id} onClick={()=>changeTab(id)}>{label}</button>)}
     </nav>}
     {saveBlocked&&<p role="status">Finish saving in the welding workspace before changing class or view.</p>}
-    {towerEnabled&&labBook&&weldingOpened&&(shopEnabled&&tab==='lab'
+    {towerEnabled&&labBook&&weldingOpened&&!['record','grades'].includes(tab)&&(shopEnabled&&tab==='lab'
       ? <ShopWorkspace key={labBook.id} gradebookId={labBook.id} onSaveState={setSaveBlocked}/>
-      : <div hidden={tab==='grades'}>{tab==='legacy'&&<p>Earlier welding assessments use a separate rubric. Check the assignment and process before editing; these grades do not automatically complete SMAW shop competencies.</p>}<TowerWorkspace key={labBook.id} gradebookId={labBook.id} view={tab==='grades'||tab==='legacy'?'lab':tab} studentId={studentId} assignmentId={assignmentId} onStudentChange={setStudentId} onSaveState={setSaveBlocked}/></div>)}
+      : <div hidden={tab==='grades'}>{tab==='legacy'&&<p>Earlier welding assessments use a separate rubric. Check the assignment and process before editing; these grades do not automatically complete SMAW shop competencies.</p>}<TowerWorkspace key={labBook.id} gradebookId={labBook.id} view={tab==='legacy'?'lab':tab==='qualifications'?'passport':tab} studentId={studentId} assignmentId={assignmentId} onStudentChange={setStudentId} onSaveState={setSaveBlocked}/></div>)}
     {shopEnabled&&labBook&&<p><a href={'/shop?book='+labBook.id}>Open WLD 110 shop board</a></p>}
-    <div hidden={tab!=='grades'&&Boolean(labBook)&&towerEnabled}>
+    {notice&&<p role="status">{notice}</p>}
+    {tab==='record'&&<section aria-label="Student record">
+      <h2>Student record</h2><label>Student<select value={studentId} onChange={e=>setStudentId(e.target.value)}><option value="">Choose student</option>{recordStudents.map(s=><option key={s.student_id} value={s.student_id}>{s.display_name}{!s.active?' (inactive)':''}</option>)}</select></label>
+      {loading&&<p role="status">Loading student records…</p>}{error&&<p role="alert">{error}</p>}
+      {!studentId&&<p>Choose a student to see course grades and welding evidence together.</p>}
+      {studentId&&panels.filter(p=>p.students.some(s=>s.student_id===studentId)).map(panel=><section className={styles.panel} key={panel.book.id+':'+studentId}>
+        <h3>{panel.book.course_code} · {panel.book.section_name}</h3>
+        <GradeGrid bookId={panel.book.id} students={panel.students} items={panel.items.filter(i=>!(/^(tower:|wld110-shop:)/.test(i.assessment_slug??'')))} attempts={panel.attempts} statuses={panel.statuses} countedIds={panel.towerSelections.map(s=>s.attempt_id)} studentId={studentId} onRecord={openRecord} onWelding={(student,slug)=>openGradeWelding(panel.book.id,student,slug)} onRefresh={()=>{setNotice('Correction saved. Original grade retained in history.');setReload(v=>v+1);}}/>
+        {panel.book.course_role==='lab'&&towerEnabled&&<WeldingHistory key={panel.book.id+':'+studentId} gradebookId={panel.book.id} studentId={studentId} refreshKey={reload}/>}
+        {process.env.NEXT_PUBLIC_GRADEBOOK_FINALS_ENABLED==='true'&&<details><summary>Course total and official grade</summary><CourseFinals key={panel.book.id+':'+studentId} bookId={panel.book.id} students={panel.students.filter(s=>s.student_id===studentId)}/></details>}
+      </section>)}
+    </section>}
+    <div hidden={tab!=='grades'}>
     {error && <p role="alert">{error}</p>}
     {loading && <p role="status">Loading gradebooks…</p>}
     {!loading && !books.length && !error && <p>No gradebooks are available for your assigned sections.</p>}
     {linked && chosen && !linkedGradebook(chosen, books) && <p>No unique linked course is available in this cohort and term, or you do not have access to it.</p>}
-    <div className={linked ? styles.pair : ''}>{panels.map(panel => <section key={panel.book.id} className={styles.panel}>
+    <div>{panels.map(panel => <section key={panel.book.id} className={styles.panel}>
       <h2>{panel.book.course_code} · {panel.book.section_name}</h2>
       <p>{[panel.book.program_name, panel.book.level_name, panel.book.semester_name].filter(Boolean).join(' / ')}</p>
       {!panel.book.course_pair_id && <p>Academic pair mapping is pending. A school administrator must configure this section before theory import.</p>}
-      {process.env.NEXT_PUBLIC_GRADEBOOK_FINALS_ENABLED==='true' ? <CourseFinals key={panel.book.id} bookId={panel.book.id} students={panel.students}/> : <p>Official course finalization is not enabled yet.</p>}
+      {process.env.NEXT_PUBLIC_GRADEBOOK_FINALS_ENABLED==='true' ? <details><summary>Course totals and final grades</summary><CourseFinals key={panel.book.id} bookId={panel.book.id} students={panel.students}/></details> : <p>Official course finalization is not enabled yet.</p>}
       {panel.unresolved > 0 && <p role="status">{panel.unresolved} assessment submission(s) need identity or score review before import. No student matches were guessed.</p>}
-      <h3>Students and attempts</h3>
-      {panel.book.course_role==='lab'&&towerEnabled&&<WeldingHistory key={panel.book.id} gradebookId={panel.book.id} refreshKey={reload}/>}
-      {!panel.students.length && <p>No enrolled students yet. Students appear from the existing class enrollment roster.</p>}
-      <div className={styles.scroll}><table><thead><tr><th>Student</th><th>Assessment</th><th>Attempt / status</th><th>Score</th><th>History</th></tr></thead><tbody>
-        {panel.students.flatMap(student => {
-          const attempts = panel.attempts.filter(attempt => attempt.student_id === student.student_id);
-          if (!attempts.length) return [<tr key={student.student_id}><td>{student.display_name}{!student.active && ' (inactive)'}</td><td colSpan={4}>{panel.book.course_role==='lab'?'No completed course-grade entries. See combined welding history for demonstrations.':'No grades recorded'}</td></tr>];
-          return attempts.map(attempt => <tr key={attempt.id}><td>{student.display_name}{!student.active && ' (inactive)'}</td><td>{panel.items.find(item => item.id === attempt.item_id)?.title}</td><td>{new Date(attempt.attempted_at).toLocaleString()}<br />{attempt.status_label}</td><td>{scoreLabel(attempt.score, attempt.possible_score)}</td><td>
-            <button disabled={busy || saveBlocked} onClick={async () => {
-              setBusy(true); setError(''); setHistory(null); setHistoryTitle(student.display_name);
-              try {
-                const rows = await readGradebookRows<Revision>((from, to) => client.from('gradebook_revisions').select('*').eq('gradebook_id', panel.book.id).eq('attempt_id', attempt.id).order('id', { ascending: false }).range(from, to));
-                setHistory(rows);
-              } catch { setError('Attempt history could not load.'); } finally { setBusy(false); }
-            }}>View history</button>
-            {panel.items.find(item=>item.id===attempt.item_id)?.assessment_slug?.startsWith('tower:') ? <span>
-              {process.env.NEXT_PUBLIC_TOWER_ENABLED === 'true' && <>{panel.towerSelections.some(selection=>selection.attempt_id===attempt.id) ? 'Counted Tower attempt' : 'Retained attempt history'} · </>}
-              <button disabled={saveBlocked} onClick={()=>openWelding(panel.book.id,student.student_id,panel.items.find(item=>item.id===attempt.item_id)?.assessment_slug?.slice(6)||'')}>Open welding assessment</button>
-            </span> : panel.items.find(item=>item.id===attempt.item_id)?.assessment_slug?.startsWith('wld110-shop:')
-              ? <a href={'/shop?book='+panel.book.id}>Shop competency history</a>
-              : <button disabled={busy || saveBlocked} onClick={() => setEdit({ book: panel.book.id, attempt })}>Correct</button>}
-          </td></tr>);
-        })}
-      </tbody></table></div>
+      <GradeGrid key={panel.book.id} bookId={panel.book.id} students={panel.students} items={panel.items} attempts={panel.attempts} statuses={panel.statuses} countedIds={panel.towerSelections.map(s=>s.attempt_id)} disabled={busy||saveBlocked} onRecord={openRecord} onWelding={(student,slug)=>openGradeWelding(panel.book.id,student,slug)} onRefresh={()=>{setNotice('Correction saved. Original grade retained in history.');setReload(v=>v+1);}}/>
+      {panel.book.course_role==='lab'&&<p>Open a student record to see individual welding demonstrations alongside course grades.</p>}
       <details><summary>Gradebook setup</summary>
         <p>Configure assessment categories and statuses here. Course finals use the approved shop and theory weights shown above.</p>
         <form onSubmit={e => { e.preventDefault(); const data = new FormData(e.currentTarget); void mutate('configure_gradebook', {
@@ -183,28 +175,25 @@ export default function GradebookWorkspace() {
           <button disabled={busy || saveBlocked}>Add assessment</button>
         </form>
       </details>
-      <details open={edit?.book === panel.book.id}><summary>{edit?.book === panel.book.id ? 'Correct an existing attempt' : 'Record an attempt'}</summary>
+      <details><summary>Record a new grade</summary>
         <p>Use this form for course assessments and projects. Enter weld rubric scores in Welding assessment.</p>
-        <form key={edit?.book === panel.book.id ? edit.attempt.id : 'new'} onSubmit={e => {
-          e.preventDefault(); const data = new FormData(e.currentTarget); const correction = edit?.book === panel.book.id ? edit.attempt : null;
-          void mutate('record_gradebook_attempt', { p_gradebook_id: panel.book.id, p_item_id: correction?.item_id ?? data.get('item'), p_student_id: correction?.student_id ?? data.get('student'),
+        <form onSubmit={e => {
+          e.preventDefault(); const data = new FormData(e.currentTarget);
+          void mutate('record_gradebook_attempt', { p_gradebook_id: panel.book.id, p_item_id: data.get('item'), p_student_id: data.get('student'),
             p_status_code: data.get('status'), p_score: data.get('score') === '' ? null : Number(data.get('score')),
-            p_possible_score: data.get('possible') === '' ? null : Number(data.get('possible')), p_note: data.get('note'), p_attempt_id: correction?.id ?? null });
+            p_possible_score: data.get('possible') === '' ? null : Number(data.get('possible')), p_note: data.get('note'), p_attempt_id: null });
         }}>
-          <label>Student<select name="student" required disabled={edit?.book === panel.book.id} defaultValue={edit?.book === panel.book.id ? edit.attempt.student_id : ''}><option value="">Choose student</option>{panel.students.map(s => <option key={s.student_id} value={s.student_id} disabled={!s.active && edit?.book !== panel.book.id}>{s.display_name}</option>)}</select></label>
-          <label>Assessment<select name="item" required disabled={edit?.book === panel.book.id} defaultValue={edit?.book === panel.book.id ? edit.attempt.item_id : ''}><option value="">Choose assessment</option>{panel.items.filter(i=>!i.assessment_slug?.startsWith('tower:')&&!i.assessment_slug?.startsWith('wld110-shop:')).map(i => <option key={i.id} value={i.id}>{i.title}</option>)}</select></label>
-          <label>Status<select name="status" defaultValue={edit?.book === panel.book.id ? edit.attempt.status_code : 'graded'}>{panel.statuses.filter(s => s.active).map(s => <option key={s.code} value={s.code}>{s.label}</option>)}</select></label>
-          <label>Score<input name="score" type="number" min="0" step="any" defaultValue={edit?.book === panel.book.id ? edit.attempt.score ?? '' : ''} /></label>
-          <label>Possible score<input name="possible" type="number" min="0.01" step="any" defaultValue={edit?.book === panel.book.id ? edit.attempt.possible_score ?? '' : ''} /></label>
-          <label>{edit?.book === panel.book.id ? 'Correction reason (required)' : 'Note'}<input name="note" required={edit?.book === panel.book.id} /></label>
-          <button disabled={busy || saveBlocked}>Save {edit?.book === panel.book.id ? 'correction' : 'attempt'}</button>
-          {edit?.book === panel.book.id && <button type="button" onClick={() => setEdit(null)}>Cancel correction</button>}
+          <label>Student<select name="student" required defaultValue=""><option value="">Choose student</option>{panel.students.map(s => <option key={s.student_id} value={s.student_id} disabled={!s.active}>{s.display_name}</option>)}</select></label>
+          <label>Assessment<select name="item" required defaultValue=""><option value="">Choose assessment</option>{panel.items.filter(i=>!i.assessment_slug?.startsWith('tower:')&&!i.assessment_slug?.startsWith('wld110-shop:')).map(i => <option key={i.id} value={i.id}>{i.title}</option>)}</select></label>
+          <label>Status<select name="status" defaultValue="graded">{panel.statuses.filter(s => s.active).map(s => <option key={s.code} value={s.code}>{s.label}</option>)}</select></label>
+          <label>Score<input name="score" type="number" min="0" step="any" /></label>
+          <label>Possible score<input name="possible" type="number" min="0.01" step="any" /></label>
+          <label>Note<input name="note" /></label>
+          <button disabled={busy || saveBlocked}>Save grade</button>
         </form>
       </details>
     </section>)}</div>
-    {history && <section className={styles.panel}><h2>Attempt history · {historyTitle}</h2><button onClick={() => setHistory(null)}>Close history</button>
-      <ol>{history.map(r => <li key={r.id}>{new Date(r.recorded_at).toLocaleString()} · {r.status_label} · {scoreLabel(r.score, r.possible_score)}<p>{r.note}</p></li>)}</ol>
-    </section>}
+
     </div>
   </main>;
 }
