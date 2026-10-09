@@ -19,17 +19,24 @@ export type PlannerViewSection = {
   section_code: string | null;
 };
 
+// Exact PCCC section identity (staging has the same synthetic row IDs).
+// Matching only visible course/section codes is unsafe: FABTECH demo schools
+// can contain WLD 205 sections with identical human-readable codes.
+export const ANTHONY_WLD205_PCCC_SCHOOL_ID = '08ccb452-83ab-482f-bb28-5576e02741b2';
+export const ANTHONY_WLD205_PCCC_SECTION_ID = '310623e6-c518-47b5-b7a0-8a1887df226e';
 export const ANTHONY_WLD205_PCCC_SECTION_CODE = 'PCCC-DAY-L2-WLD205-2627';
 export const ANTHONY_WLD205_PRESET: PlannerViewPreset = 'anthony_wld205_v1';
 
 export function isAnthonyWld205PilotSection(
-  section: Pick<PlannerViewSection, 'course_code' | 'section_code'> | null
+  section: PlannerViewSection | null
 ): boolean {
   if (!section || (section.course_code ?? '').replace(/\s+/g, '').toUpperCase() !== 'WLD205') {
     return false;
   }
-  // Apply to the specifically scoped PCCC 30-day section, also in staging.
-  return section.section_code === ANTHONY_WLD205_PCCC_SECTION_CODE;
+  // All four conditions must match. No user-supplied section-code lookalikes.
+  return section.school_id === ANTHONY_WLD205_PCCC_SCHOOL_ID
+    && section.section_id === ANTHONY_WLD205_PCCC_SECTION_ID
+    && section.section_code === ANTHONY_WLD205_PCCC_SECTION_CODE;
 }
 
 export function resolvePlannerViewPreset(
