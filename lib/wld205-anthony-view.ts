@@ -1,6 +1,7 @@
 // WLD 205 instructor presentation only. Canonical course guides and outcomes
 // remain unchanged. No student-facing or assessment data depends on this module.
 export type PlannerViewPreset = 'standard' | 'anthony_wld205_v1';
+export type PlannerViewChoice = PlannerViewPreset | 'inherit';
 export type PlannerViewScope = 'school' | 'instructor';
 
 export type PlannerViewRevision = {
@@ -49,10 +50,10 @@ export function resolvePlannerViewPreset(
 
   const teacher = latest('instructor');
   const school = latest('school');
-  const chosen = teacher || school;
+  const chosen = teacher?.preset === 'inherit' ? school : teacher || school;
   return {
     preset: chosen?.preset === ANTHONY_WLD205_PRESET ? ANTHONY_WLD205_PRESET : 'standard',
-    source: teacher ? 'instructor' : school ? 'school' : 'core',
+    source: chosen?.scope ?? 'core',
   };
 }
 
