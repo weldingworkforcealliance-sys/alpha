@@ -26,7 +26,7 @@ beforeAll(async()=>{
  await db.exec(`select private.wld110_grade('00000000-0000-0000-0000-000000000002','00000000-0000-0000-0000-000000000003','00000000-0000-0000-0000-000000000090',7,0,'{"straightness":18,"placement":18,"execution":18,"consistency":18,"weldSize":18}','{}','old');
 select private.wld110_grade('00000000-0000-0000-0000-000000000002','00000000-0000-0000-0000-000000000003','00000000-0000-0000-0000-000000000091',7,1,'{"straightness":18,"placement":18,"execution":18,"consistency":18,"weldSize":18}','{}','old');`);
  historical=(await db.query('select * from wld110_shop_completions where competency=7')).rows;
- await db.exec(readFileSync('supabase/migrations/20261010120057_wld110_instructor_decision.sql','utf8'));
+ await db.exec(readFileSync('supabase/migrations/20261010120625_wld110_instructor_decision.sql','utf8'));
 },30000);
 afterAll(async()=>{await db?.close();});
 async function state(){return (await db.query<{current_competency:number;revision:number;focus:string[];requested_at:string|null}>('select * from wld110_shop_progress')).rows[0];}
