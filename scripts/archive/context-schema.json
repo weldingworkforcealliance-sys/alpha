@@ -939,6 +939,10 @@
     {
       "name": "guide_id",
       "type": "uuid"
+    },
+    {
+      "name": "shared_math_day_number",
+      "type": "integer"
     }
   ],
   "course_guide_day_math_segments": [
@@ -1106,4 +1110,3 @@
     }
   ]
 }
-
