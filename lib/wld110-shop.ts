@@ -76,7 +76,7 @@ export type ShopAttempt = {
   total: number; tags: Tags; sizer_reference: string; sizer_note: string;
   recorded_at: string; recorded_by: string;
 };
-export type Completion = {competency: number; grade: number; first_attempt_id: string; second_attempt_id: string};
+export type Completion = {competency: number; grade: number; first_attempt_id: string; second_attempt_id: string|null};
 export type ShopStudent = {
   student_id: string; display_name: string; active: boolean; current_competency: number;
   revision: number; requested_at: string | null; focus: string[]; position_meetings: number;

@@ -46,15 +46,15 @@ export default function ShopWorkspace({gradebookId,onSaveState}:{gradebookId:str
   if(!selected||saving.current)return;
   saving.current=true;setBusy(true);setError('');
   pending.current??={p_gradebook_id:gradebookId,p_student_id:selected.student_id,p_save_id:crypto.randomUUID(),
-   p_competency:gradingCompetency,p_revision:selected.revision,p_ratings:draft.ratings,p_tags:draft.tags,p_sizer_note:draft.sizerNote};
+   p_competency:gradingCompetency,p_revision:selected.revision,p_ratings:draft.ratings,p_tags:draft.tags,p_sizer_note:draft.sizerNote,p_decision:draft.decision};
   setLocked(true);
   try{
-   const result=await client.rpc('grade_wld110_weld',pending.current);
+   const result=await client.rpc('decide_wld110_weld',pending.current);
    if(result.error)throw result.error;
    const student=result.data as ShopStudent;accept(student);
-   setNotice(student.completions.some(c=>c.competency===gradingCompetency)||student.current_competency>selected.current_competency?'Competency complete. Next: '+assignmentLabel(student.current_competency):'Grade saved. Continue practice for the next demonstration.');
+   setNotice(student.completions.some(c=>c.competency===gradingCompetency)||student.current_competency>selected.current_competency?'Competency complete. Next: '+assignmentLabel(student.current_competency):'Attempt saved. Try again on the same project.');
    pending.current=null;setSelected(null);setLocked(false);
-  }catch(e){setError(formatError(e,'The grade was not confirmed. Retry the same grade, or reload to check the saved record.'));}
+  }catch(e){setError(formatError(e,'The grade was not confirmed. Retry the same decision, or reload to check the saved record.'));}
   finally{saving.current=false;setBusy(false);}
  }
  async function practice(){
@@ -91,7 +91,7 @@ export default function ShopWorkspace({gradebookId,onSaveState}:{gradebookId:str
  const students=board?sortedQueue(board.students):[];
  const selectedHistory=board?.students.find(s=>s.student_id===history);
  return <div className={styles.shop}>
-  <div className={styles.heading}><div><h2>Grade a weld · WLD 110</h2><p>1. Choose a student below → 2. Choose the project → 3. Complete the rubric → 4. Save grade.</p><p>Ready for check: {students.filter(s=>s.active&&s.requested_at).length} · Pacing reviews: {students.filter(s=>s.active&&s.current_competency<8&&s.position_meetings>=6).length}</p></div>
+  <div className={styles.heading}><div><h2>Grade a weld · WLD 110</h2><p>1. Choose a student below → 2. Choose the project → 3. Complete the rubric → 4. Choose Grade or Try again.</p><p>Ready for check: {students.filter(s=>s.active&&s.requested_at).length} · Pacing reviews: {students.filter(s=>s.active&&s.current_competency<8&&s.position_meetings>=6).length}</p></div>
   <button disabled={busy||Boolean(selected||coaching)} onClick={()=>{setError('');void refresh().catch(e=>setError(formatError(e)));}}>Refresh board</button></div>
   {error&&<p className={styles.error} role="alert">{error}</p>}
   {notice&&<p role="status">{notice}</p>}
