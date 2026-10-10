@@ -45,6 +45,7 @@ type Props = {
   rows: PlannerPlanRow[];
   resources: PlannerLaunchResource[];
   supportItems: PlannerSupportItem[];
+  compactInstructorView?: boolean;
   dayOptions?: PlannerDayOption[];
   selectedGuideDayId?: string | null;
   isCurrentDay?: boolean;
@@ -103,6 +104,7 @@ export default function PlannerTeachingConsole({
   rows,
   resources,
   supportItems,
+  compactInstructorView = false,
   dayOptions = [],
   selectedGuideDayId,
   isCurrentDay = true,
@@ -315,7 +317,7 @@ export default function PlannerTeachingConsole({
                       <strong>{resource.title}</strong>
                       <span>
                         {teacherOnly ? 'Instructor only' : 'Student-safe when authorized'}
-                        {resource.notes ? ` · ${resource.notes}` : ''}
+                        {!compactInstructorView && resource.notes ? ` · ${resource.notes}` : ''}
                       </span>
                     </div>
                     {resource.url && !secureExam ? (
@@ -353,16 +355,32 @@ export default function PlannerTeachingConsole({
       </div>
 
       <div className={styles.supportGrid}>
-        {supportItems
-          .filter((item) => item.body || item.content)
-          .map((item) => (
-            <details className={styles.supportItem} key={item.key}>
-              <summary>{item.label}</summary>
-              <div className={styles.supportBody}>
-                {item.content ?? <p>{item.body}</p>}
-              </div>
-            </details>
-          ))}
+        {compactInstructorView ? (
+          <details className={styles.supportItem}>
+            <summary>Instructor Support · Optional notes, answers, references and evidence</summary>
+            <div className={styles.supportBody}>
+              {supportItems
+                .filter((item) => item.body || item.content)
+                .map((item) => (
+                  <section key={item.key} style={{ marginBottom: 16 }}>
+                    <strong>{item.label}</strong>
+                    {item.content ?? <p>{item.body}</p>}
+                  </section>
+                ))}
+            </div>
+          </details>
+        ) : (
+          supportItems
+            .filter((item) => item.body || item.content)
+            .map((item) => (
+              <details className={styles.supportItem} key={item.key}>
+                <summary>{item.label}</summary>
+                <div className={styles.supportBody}>
+                  {item.content ?? <p>{item.body}</p>}
+                </div>
+              </details>
+            ))
+        )}
       </div>
 
       {actionPanel && <div className={styles.actionSlot}>{actionPanel}</div>}
