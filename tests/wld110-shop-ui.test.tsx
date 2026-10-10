@@ -29,8 +29,8 @@ describe('quick grading',()=>{
   expect(screen.getByText('Grade: 90%')).toBeTruthy();
   expect(screen.getAllByRole('button',{pressed:true})).toHaveLength(5);
   expect(screen.queryByRole('button',{name:'Travel speed'})).toBeNull();
-  fireEvent.click(screen.getByRole('button',{name:'Save grade'}));
-  expect(save).toHaveBeenCalledWith({ratings:defaultRatings(),tags:{},sizerNote:''});
+  fireEvent.click(screen.getByRole('button',{name:'Grade'}));
+  expect(save).toHaveBeenCalledWith({ratings:defaultRatings(),tags:{},sizerNote:'',decision:'grade'});
  });
  it('expands only the deficient category and clears tags when rating improves',()=>{
   const save=vi.fn();render(<GradeForm student={student()} busy={false} locked={false} onSave={save} onCancel={()=>{}}/>);
@@ -41,16 +41,17 @@ describe('quick grading',()=>{
   expect(screen.queryByRole('button',{name:'Joint alignment'})).toBeNull();
   fireEvent.click(execution.getByRole('button',{name:/Good/}));
   expect(screen.queryByRole('button',{name:'Travel speed'})).toBeNull();
-  fireEvent.click(screen.getByRole('button',{name:'Save grade'}));
+  fireEvent.click(screen.getByRole('button',{name:'Grade'}));
   expect(save.mock.calls[0][0].tags).toEqual({});
  });
- it('shows later qualifying demonstrations against Weld 1',()=>{
+ it('lets the instructor accept or retry without averaging',()=>{
   const first=attempt(1,86);first.ratings={straightness:18,placement:18,execution:18,consistency:16,weldSize:16};
   render(<GradeForm student={student({attempts:[first,attempt(2,82)]})} busy={false} locked={false} onSave={()=>{}} onCancel={()=>{}}/>);
   expect(screen.getByText(/Weld 3/)).toBeTruthy();
-  expect(screen.getByText(/Competency grade: 88%/)).toBeTruthy();
+  expect(screen.getByText(/scores are not averaged/)).toBeTruthy();
   fireEvent.click(within(screen.getByRole('group',{name:'Placement'})).getByRole('button',{name:/Needs Work/}));
-  expect(screen.getByText(/Additional demonstration required/)).toBeTruthy();
+  expect(screen.getByRole('button',{name:'Grade'})).toBeTruthy();
+  expect(screen.getByRole('button',{name:'Try again'})).toBeTruthy();
  });
  it('displays every retained attempt and identifies the qualifying pair',()=>{
   render(<AttemptHistory student={student({attempts:[attempt(1,86),attempt(2,82),attempt(3,90)],completions:[{competency:0,grade:88,first_attempt_id:'attempt-1',second_attempt_id:'attempt-3'}]})}/>);
@@ -67,9 +68,9 @@ describe('instructor board saves and coaching',()=>{
   fireEvent.click(within(screen.getByRole('group',{name:'Execution'})).getByRole('button',{name:/Needs Work/}));
   fireEvent.change(screen.getByRole('combobox',{name:'Project / position / electrode'}),{target:{value:'3'}});
   expect(screen.getByText('Grade: 90%')).toBeTruthy();
-  fireEvent.click(screen.getByRole('button',{name:'Save grade'}));
+  fireEvent.click(screen.getByRole('button',{name:'Grade'}));
   await screen.findByRole('alert');
-  expect(mocks.rpc.mock.calls.find(c=>c[0]==='grade_wld110_weld')?.[1].p_competency).toBe(3);
+  expect(mocks.rpc.mock.calls.find(c=>c[0]==='decide_wld110_weld')?.[1].p_competency).toBe(3);
   expect(screen.getByRole('combobox',{name:'Project / position / electrode'})).toHaveProperty('disabled',true);
   expect(screen.getByRole('option',{name:/Advanced 2G/})).toHaveProperty('disabled',true);
  });
@@ -79,18 +80,18 @@ describe('instructor board saves and coaching',()=>{
   let saved=false,tries=0;
   mocks.rpc.mockImplementation(async(name:string)=>{
    if(name==='open_wld110_shop')return {data:{night:3,students:[saved?advanced:original]},error:null};
-   if(name==='grade_wld110_weld'){tries++;if(tries===1)return{data:null,error:{message:'Connection interrupted'}};saved=true;return{data:advanced,error:null};}
+   if(name==='decide_wld110_weld'){tries++;if(tries===1)return{data:null,error:{message:'Connection interrupted'}};saved=true;return{data:advanced,error:null};}
    throw Error(name);
   });
   const blocked=vi.fn();render(<ShopWorkspace gradebookId="book-1" onSaveState={blocked}/>);
   fireEvent.click(await screen.findByRole('button',{name:'Grade weld'}));
-  fireEvent.click(screen.getByRole('button',{name:'Save grade'}));
+  fireEvent.click(screen.getByRole('button',{name:'Grade'}));
   expect(await screen.findByRole('alert')).toHaveProperty('textContent','Connection interrupted');
   expect(screen.getByRole('group',{name:'Placement'})).toHaveProperty('disabled',true);
-  const originalCall=mocks.rpc.mock.calls.find(c=>c[0]==='grade_wld110_weld')![1];
-  fireEvent.click(screen.getByRole('button',{name:'Retry same grade'}));
+  const originalCall=mocks.rpc.mock.calls.find(c=>c[0]==='decide_wld110_weld')![1];
+  fireEvent.click(screen.getByRole('button',{name:'Retry same decision'}));
   await screen.findByText(/Competency complete. Next:/);
-  const calls=mocks.rpc.mock.calls.filter(c=>c[0]==='grade_wld110_weld');
+  const calls=mocks.rpc.mock.calls.filter(c=>c[0]==='decide_wld110_weld');
   expect(calls).toHaveLength(2);expect(calls[1][1]).toEqual(originalCall);
   expect(screen.queryByRole('region',{name:'Grade weld'})).toBeNull();
   expect(blocked).toHaveBeenLastCalledWith(false);
@@ -117,7 +118,7 @@ describe('instructor board saves and coaching',()=>{
   expect(mocks.qr).toHaveBeenCalledWith(window.location.origin+'/shop/student#synthetic-token',expect.objectContaining({width:280,margin:4,errorCorrectionLevel:'M'}));
   expect(screen.queryByRole('button',{name:'Save practice focus'})).toBeNull();
   expect(document.activeElement).toBe(screen.getByRole('region',{name:'Student QR code'}));
-  expect(mocks.rpc.mock.calls.some(c=>c[0]==='grade_wld110_weld')).toBe(false);
+  expect(mocks.rpc.mock.calls.some(c=>c[0]==='decide_wld110_weld')).toBe(false);
   expect(mocks.rpc).toHaveBeenCalledWith('coach_wld110_practice',{p_gradebook_id:'book-1',p_student_id:'student-1',p_revision:0,p_focus:['Travel speed']});
  });
  it('orders queued students before practice and prevents premature grading while saving',async()=>{
@@ -169,7 +170,7 @@ describe('student QR after coaching',()=>{
   await screen.findByRole('img',{name:'Scan to open the shop card for Synthetic Student'});
   expect(mocks.rpc.mock.calls.filter(c=>c[0]==='coach_wld110_practice')).toHaveLength(1);
   expect(mocks.rpc.mock.calls.filter(c=>c[0]==='issue_wld110_student_link')).toHaveLength(2);
-  expect(mocks.rpc.mock.calls.filter(c=>c[0]==='grade_wld110_weld')).toHaveLength(0);
+  expect(mocks.rpc.mock.calls.filter(c=>c[0]==='decide_wld110_weld')).toHaveLength(0);
  });
  it('retries QR encoding with the same link instead of replacing it again',async()=>{
   setup();mocks.qr.mockRejectedValueOnce(new Error('Canvas unavailable'));
@@ -231,4 +232,9 @@ describe('minimal student workflow',()=>{
   await waitFor(()=>expect(screen.getByRole('alert').textContent).toBe('Offline'));
   expect(screen.getByRole('button',{name:'Request check'})).toHaveProperty('disabled',false);
  });
+});
+
+it('Try again submits an explicit retry decision on the first weld',()=>{
+ const save=vi.fn();render(<GradeForm student={student()} busy={false} locked={false} onSave={save} onCancel={()=>{}}/>);
+ fireEvent.click(screen.getByRole('button',{name:'Try again'}));expect(save.mock.calls[0][0].decision).toBe('retry');
 });

@@ -1,6 +1,6 @@
 'use client';
 import {useState} from 'react';
-import {assignmentLabel,CATEGORIES,cleanTags,COMPETENCIES,defaultRatings,gradeTotal,qualifies,RATINGS,type Ratings,type ShopStudent,type Tags} from '@/lib/wld110-shop';
+import {assignmentLabel,CATEGORIES,cleanTags,COMPETENCIES,defaultRatings,gradeTotal,RATINGS,type Ratings,type ShopStudent,type Tags} from '@/lib/wld110-shop';
 import {WELD_SIZER} from '@/lib/weld-sizer';
 import styles from './shop.module.css';
 
@@ -20,18 +20,19 @@ export function StudentShopCard({student,busy,onRequest}:{student:ShopStudent;bu
   {completed&&<p>Completed: {assignmentLabel(completed.competency)} · Competency grade <strong>{completed.grade}%</strong></p>}
   {student.current_competency>=8&&<p>Core SMAW complete. Advanced 2G is enrichment.</p>}
   {current&&<p>Next assignment: {next>=0?assignmentLabel(next):'None after this competency'}</p>}
-  <p className={styles.muted}>Practice is ungraded. Advance when your instructor verifies two demonstrations.</p>
+  <p className={styles.muted}>Practice is ungraded. Advance when your instructor accepts a grade. Try again keeps you on this project.</p>
  </section>;
 }
 
-export type GradeDraft = {ratings:Ratings;tags:Tags;sizerNote:string};
+export type GradeDraft = {ratings:Ratings;tags:Tags;sizerNote:string;decision:'grade'|'retry'};
 export function GradeForm({student,busy,locked,onSave,onCancel}:{student:ShopStudent;busy:boolean;locked:boolean;onSave:(draft:GradeDraft)=>void;onCancel:()=>void}) {
  const [ratings,setRatings]=useState(defaultRatings);
  const [tags,setTags]=useState<Tags>({});
  const [sizerNote,setSizerNote]=useState('');
  const attempts=student.attempts.filter(a=>a.competency===student.current_competency);
  const first=attempts[0],total=gradeTotal(ratings);
- const success=first&&qualifies(first.ratings,ratings);
+ const [decision,setDecision]=useState<'grade'|'retry'>('grade');
+ const submit=(choice:'grade'|'retry')=>{setDecision(choice);onSave({ratings,tags:cleanTags(ratings,tags),sizerNote,decision:choice});};
  return <section className={styles.card+' '+styles.dialog} aria-label="Grade weld">
   <h2>{student.display_name} · Weld {attempts.length+1}</h2><p>{assignmentLabel(student.current_competency)}</p>
   {first&&<p>Weld 1: <strong>{first.total}%</strong> · Current change: {total-first.total>=0?'+':''}{total-first.total}</p>}
@@ -48,10 +49,8 @@ export function GradeForm({student,busy,locked,onSave,onCancel}:{student:ShopStu
   <p className={styles.muted}>Check size and profile with the existing sizer. Choose Needs Work when outside its requirements. Saving records your dimensional evaluation.</p>
   <details><summary>Optional measurement / inspection note</summary><label>Sizer evidence<input maxLength={500} value={sizerNote} disabled={locked||busy} onChange={e=>setSizerNote(e.target.value)}/></label></details>
   <p className={styles.grade} aria-live="polite">Grade: {total}%</p>
-  <p>{!first?'Weld 1 establishes the baseline. Continue practice before Weld 2.':success?
-   'Repeatability verified. Competency grade: '+((first.total+total)/2)+'%.':
-   'Additional demonstration required: every category must be at least Acceptable and the total must match or improve Weld 1.'}</p>
-  <div className={styles.actions}><button disabled={busy} className={styles.primary} onClick={()=>onSave({ratings,tags:cleanTags(ratings,tags),sizerNote})}>{busy?'Saving…':locked?'Retry same grade':'Save grade'}</button>
+  <p>Grade accepts this score as the project grade and advances to the next incomplete project. Try again saves this attempt and keeps the current project. Earlier attempts stay in history; scores are not averaged.</p>
+  <div className={styles.actions}>{locked?<button disabled={busy} className={styles.primary} onClick={()=>submit(decision)}>{busy?'Saving…':'Retry same decision'}</button>:<><button disabled={busy} className={styles.primary} onClick={()=>submit('grade')}>Grade</button><button disabled={busy} onClick={()=>submit('retry')}>Try again</button></>}
   <button disabled={busy} onClick={onCancel}>{locked?'Reload student':'Cancel'}</button></div>
  </section>;
 }

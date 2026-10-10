@@ -3,7 +3,7 @@ import {assignmentLabel,shopItemTitle} from './wld110-shop';
 export type EvidenceGrade = {id:string;student_id:string;item_id:string;score:number|null;possible_score:number|null;status_label:string;attempted_at:string};
 export type EvidenceItem = {id:string;title:string;assessment_slug:string|null};
 export type EvidenceWeld = {id:string;student_id:string;competency:number;attempt_number:number;total:number;recorded_at:string};
-export type EvidenceCompletion = {student_id:string;competency:number;first_attempt_id:string;second_attempt_id:string};
+export type EvidenceCompletion = {student_id:string;competency:number;first_attempt_id:string;second_attempt_id:string|null};
 export type WeldingEvidence = {id:string;studentId:string;title:string;score:number|null;possible:number|null;status:string;date:string};
 
 // Individual demonstrations are evidence, not additional weighted course grades.
