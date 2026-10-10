@@ -1,3 +1,4 @@
+import { archiveFailure } from './diagnostics.mjs';
 import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { requiredDatasets } from './school-bundle.mjs';
@@ -46,6 +47,7 @@ export async function captureCoreSnapshot(client, { environment, sourceRevision,
     throw new Error('Source environment and exact code revision are required.');
   }
   let started = false;
+  let stage = 'core-transaction';
   try {
     await client.query('BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY');
     started = true;
@@ -53,10 +55,13 @@ export async function captureCoreSnapshot(client, { environment, sourceRevision,
     // row_security=off does NOT bypass RLS: it makes filtered reads error instead
     // of silently producing an incomplete archive. The role needs explicit access.
     await client.query('SET LOCAL row_security = off');
+    stage = 'core-schema';
     checkSchema((await client.query(schemaCheckSql)).rows);
+    stage = 'core-read';
     const result = await client.query(snapshotSql());
     if (result.rows?.length !== 1 || !result.rows[0].snapshot) throw new Error('Snapshot returned incomplete output.');
     const snapshot = result.rows[0].snapshot;
+    stage = 'core-counts';
     for (const table of requiredDatasets) {
       if (!Array.isArray(snapshot.datasets?.[table]) || snapshot.datasets[table].length !== snapshot.sourceCounts?.[table]) {
         throw new Error('Snapshot counts do not reconcile.');
@@ -64,17 +69,19 @@ export async function captureCoreSnapshot(client, { environment, sourceRevision,
     }
     // Optional internal reader runs inside this same database snapshot, never as
     // a separate transaction that might observe different grades/templates.
+    stage = 'capture';
     const supplement = captureSupplement ? await captureSupplement(client) : null;
+    stage = 'core-commit';
     await client.query('COMMIT');
     started = false;
     return { ...snapshot, format: 'ltg-student-snapshot-v2', scope: 'all-schools',
       consistency: 'repeatable-read', exportId: randomUUID(), environment, sourceRevision,
       // An explicit attachment resolver must fill both fields. Empty is not assumed.
       files: null, fileInventory: null, supplement };
-  } catch {
+  } catch (error) {
     if (started) { try { await client.query('ROLLBACK'); } catch { /* caller must discard connection */ } }
     // Database errors can include record values; do not put them in CI logs.
-    throw new Error('Student snapshot failed; discard this connection and inspect through the protected administrator channel.');
+    throw archiveFailure(stage, error);
   }
 }
 

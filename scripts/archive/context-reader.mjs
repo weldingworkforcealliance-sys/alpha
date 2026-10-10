@@ -1,3 +1,4 @@
+import { archiveFailure } from './diagnostics.mjs';
 import { readFileSync } from 'node:fs';
 
 export const contextSchema = JSON.parse(readFileSync(new URL('./context-schema.json', import.meta.url), 'utf8'));
@@ -13,22 +14,29 @@ export const templateSql = `select school_id,layout,encode(pdf,'base64') as base
 export const storageSql = 'select count(*)::int as object_count from storage.objects';
 
 export async function captureSupplement(client) {
-  const actual = (await client.query(contextSchemaSql)).rows;
-  const datasets = {}, sourceCounts = {};
-  for (const [table, columns] of Object.entries(contextSchema)) {
-    const observed = actual.filter(r => r.table_name === table).map(r => ({ name: r.column_name, type: r.data_type }));
-    if (JSON.stringify(observed) !== JSON.stringify(columns)) throw Error('Context schema requires review');
-    const rows = (await client.query(contextDataSql(table))).rows;
-    if (rows.length !== 1 || !Array.isArray(rows[0].records) || rows[0].total !== rows[0].records.length) throw Error('Incomplete context');
-    datasets[table] = rows[0].records; sourceCounts[table] = rows[0].total;
-  }
-  const storage = (await client.query(storageSql)).rows;
-  // Current production inventory has zero Storage objects. Until an actual-byte
-  // resolver is installed, future uploads MUST block success instead of vanishing.
-  if (storage.length !== 1 || storage[0].object_count !== 0) throw Error('Storage objects require a reviewed file-transfer resolver');
-  const templates = (await client.query(templateSql)).rows;
-  return { format: 'ltg-archive-context-v1', datasets, sourceCounts, templates,
-    storage: { objectCount: 0, checkedInSnapshot: true },
-    schema: contextSchema };
+  let stage = 'context-schema';
+  try {
+    const actual = (await client.query(contextSchemaSql)).rows;
+    const datasets = {}, sourceCounts = {};
+    for (const [table, columns] of Object.entries(contextSchema)) {
+      stage = 'context-schema';
+      const observed = actual.filter(r => r.table_name === table).map(r => ({ name: r.column_name, type: r.data_type }));
+      if (JSON.stringify(observed) !== JSON.stringify(columns)) throw Error('Context schema requires review');
+      stage = 'context-read';
+      const rows = (await client.query(contextDataSql(table))).rows;
+      if (rows.length !== 1 || !Array.isArray(rows[0].records) || rows[0].total !== rows[0].records.length) throw Error('Incomplete context');
+      datasets[table] = rows[0].records; sourceCounts[table] = rows[0].total;
+    }
+    stage = 'storage-inventory';
+    const storage = (await client.query(storageSql)).rows;
+    // Current production inventory has zero Storage objects. Until an actual-byte
+    // resolver is installed, future uploads MUST block success instead of vanishing.
+    if (storage.length !== 1 || storage[0].object_count !== 0) throw Error('Storage objects require a reviewed file-transfer resolver');
+    stage = 'template-read';
+    const templates = (await client.query(templateSql)).rows;
+    return { format: 'ltg-archive-context-v1', datasets, sourceCounts, templates,
+      storage: { objectCount: 0, checkedInSnapshot: true },
+      schema: contextSchema };
+  } catch (error) { throw archiveFailure(stage, error); }
 }
 
