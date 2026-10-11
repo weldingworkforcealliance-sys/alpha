@@ -7,6 +7,7 @@ const PUBLIC_EXACT_ROUTES = new Set([
   '/reset-password',
   '/training/login',
   '/demo',
+  '/wld205-review',
 ]);
 
 const PUBLIC_ROUTE_PREFIXES = ['/join/', '/job/', '/demo/'];
