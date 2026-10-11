@@ -55,6 +55,7 @@ export default function RootLayout({
   const [navOpen, setNavOpen] = useState(false);
   const isMarketingRoute = pathname === '/';
   const isDemoRoute = pathname.startsWith('/demo');
+  const isWld205ReviewRoute = pathname === '/wld205-review';
   const isStudentJoin = pathname.startsWith('/join/') || pathname === '/shop/student' || pathname === '/lab/student';
   const isStudentDisplay = pathname.startsWith('/student-display/');
   const isTrainingRoute = pathname.startsWith('/training');
@@ -72,14 +73,15 @@ export default function RootLayout({
     pathname === '/planner' || pathname === '/dashboard' || pathname === '/agenda';
 
   const hideWorkspaceNav =
-    isMarketingRoute || isDemoRoute || isAuthRoute || isStudentJoin || isStudentDisplay;
+    isMarketingRoute || isDemoRoute || isWld205ReviewRoute || isAuthRoute || isStudentJoin || isStudentDisplay;
   const useNightShift = !isStudentJoin && !isMarketingRoute && !isDemoRoute;
   const isSecondaryRoute =
     useNightShift &&
     !isAuthRoute &&
     !isTrainingRoute &&
     !isPrimaryPlannerRoute &&
-    !isStudentDisplay;
+    !isStudentDisplay &&
+    !isWld205ReviewRoute;
 
   useEffect(() => {
     setNavOpen(false);
@@ -89,6 +91,7 @@ export default function RootLayout({
     useNightShift ? 'night-shift-shell' : '',
     isMarketingRoute ? 'ltg-marketing-route' : '',
     isDemoRoute ? 'ltg-demo-route' : '',
+    isWld205ReviewRoute ? 'ltg-wld205-review-route' : '',
     isAuthRoute ? 'ltg-auth-route' : '',
     isTrainingRoute ? 'ltg-training-route' : '',
     isSecondaryRoute ? 'ltg-secondary-route' : '',
@@ -132,7 +135,7 @@ export default function RootLayout({
               STAGING · NO LIVE DATA
             </div>
           )}
-          {!isMarketingRoute && !isDemoRoute && <UsageTracker pathname={pathname} />}
+          {!isMarketingRoute && !isDemoRoute && !isWld205ReviewRoute && <UsageTracker pathname={pathname} />}
           <div className="app-container">
             {!hideWorkspaceNav && (
               <nav
@@ -255,7 +258,7 @@ export default function RootLayout({
             )}
 
             <div className={hideWorkspaceNav ? 'ltg-public-content' : 'ltg-main-content'}>
-              {!isDemoRoute && (
+              {!isDemoRoute && !isWld205ReviewRoute && (
                 <>
                   {pathname === '/dashboard' && <DashboardHero />}
                   <DashboardPunchClock pathname={pathname} />
