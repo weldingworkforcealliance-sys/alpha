@@ -996,6 +996,18 @@ export default function DemoProgramWorkspace({ program, uxLab = false }: { progr
         .v2-sidebar-class small { color:#9bb1ba; text-transform:uppercase; font-size:9px; letter-spacing:.08em; font-weight:850; }
         .v2-sidebar-class strong { color:#f3f7f8; font-size:17px; }
         .v2-sidebar-class span { color:#b7cbd4; font-size:12px; }
+        .v2-sidebar-clock { display:grid; gap:8px; padding-top:11px; margin-top:5px; border-top:1px solid #38515d; }
+        .v2-sidebar-clock-top { display:flex; justify-content:space-between; gap:6px; align-items:center; }
+        .v2-sidebar-clock-top small { font-size:10px; font-weight:900; color:#c3d4dd; text-transform:none; letter-spacing:0; }
+        .v2-clock-badge { padding:4px 6px; border:1px solid #526772; border-radius:6px; font-size:10px!important; color:#c4d3d9!important; background:#27353c; }
+        .v2-clock-badge.punched-in { border-color:#51967c; color:#a9f1d5!important; background:#173d33; }
+        .v2-sidebar-clock-row { display:flex; align-items:center; gap:8px; justify-content:space-between; flex-wrap:wrap; }
+        .v2-sidebar-clock-row span { color:#bccbd2; font-size:11px; }
+        .v2-sidebar-clock-row strong { color:#f1f7f7; font-variant-numeric:tabular-nums; }
+        .v2-punch-button { border:1px solid #6899b5; border-radius:7px; background:#1d4963; color:#e6f5ff; padding:8px 11px; min-height:38px; font-size:12px; font-weight:900; cursor:pointer; }
+        .v2-punch-button.punched-in { border-color:#c58d6a; background:#57382b; color:#ffdfcb; }
+        .v2-punch-button:hover { filter:brightness(1.13); }
+
         .v2-link { display:flex; gap:8px; justify-content:space-between; align-items:center; text-align:left; min-height:42px; border:1px solid transparent; border-radius:8px; background:#111c23; color:#d9e2e6; font-size:13px; font-weight:800; padding:10px 12px; cursor:pointer; }
         .v2-link:hover { border-color:#5d7d89; background:#1a2e39; }
         .v2-link.active { border-color:#d59b72; background:#342920; color:#ffd2a8; }
@@ -1015,6 +1027,8 @@ export default function DemoProgramWorkspace({ program, uxLab = false }: { progr
         .v2-active-course span { color:#aabec7; font-size:11px; }
         .v2-header-pills { display:flex; gap:7px; flex-wrap:wrap; }
         .v2-header-pills button { border:1px solid #486a79; border-radius:99px; padding:9px 12px; background:#18303b; color:#d8ebf3; font-size:11px; font-weight:750; cursor:pointer; }
+        .v2-header-pills .v2-mobile-punch { display:none; }
+
         .v2-planner-wrap { padding:16px 18px 40px; }
         .v2-workflow-notice { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:center; margin:14px 18px 0; padding:12px 14px; border:1px solid #c08f59; border-radius:8px; color:#ffe3b9; background:#3a2c1e; font-size:13px; line-height:1.5; }
         .v2-workflow-notice button { border:1px solid #ba946d; color:#ffe2b3; background:transparent; padding:6px 8px; border-radius:6px; cursor:pointer; font-size:12px; }
@@ -1026,6 +1040,7 @@ export default function DemoProgramWorkspace({ program, uxLab = false }: { progr
           .v2-mode .workspace { min-width:0; width:100%; }
           .v2-workspace-header { align-items:flex-start; gap:11px; }
           .v2-header-pills { width:100%; }
+          .v2-header-pills .v2-mobile-punch { display:inline-flex; align-items:center; min-height:44px; border-color:#6899b5; background:#1d4963; color:#e6f5ff; font-weight:850; }
           .v2-planner-wrap { padding:10px 8px 30px; }
           .v2-experiment-bar { padding:10px; }
           .v2-mobile-nav { position:fixed; bottom:0; left:0; right:0; z-index:100; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:0; border-top:2px solid #53717b; background:#101d25; padding-bottom:env(safe-area-inset-bottom,0px); box-shadow:0 -8px 25px rgba(0,0,0,.34); }
