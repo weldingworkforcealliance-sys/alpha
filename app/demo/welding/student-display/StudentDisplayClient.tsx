@@ -132,7 +132,7 @@ export default function StudentDisplayClient({ joinCode }: { joinCode: string })
           <label className="name-field">Student name<input autoFocus value={studentName} onChange={(event) => { setStudentName(event.target.value); setError(''); }} placeholder="Enter your name" /></label>
           {error && <div className="inline-error">{error}</div>}
           <button className="submit" disabled={busy || studentName.trim().length < 2} onClick={enterActivity}>{busy ? 'Joining…' : 'Enter Activity'}</button>
-          <p className="temporary-note">This session is isolated from live school records and expires after 30 minutes of inactivity.</p>
+          <p className="temporary-note">This session is isolated from live school records and expires after 30 minutes of inactivity or two hours total.</p>
         </div>
         <style jsx>{styles}</style>
       </main>

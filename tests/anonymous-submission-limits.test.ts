@@ -8,7 +8,7 @@ const migration = readFileSync(
     'supabase/migrations/20260910210000_harden_anonymous_submission_limits.sql'
   ),
   'utf8'
-);
+).replace(/\r\n/g, '\n');
 
 describe('anonymous submission hardening', () => {
   it('bounds Live Classroom identity and response payloads', () => {

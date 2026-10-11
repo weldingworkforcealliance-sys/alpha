@@ -25,9 +25,17 @@ export function loginRouteFor(pathname: string) {
 }
 
 export function safePostLoginRoute(value: string | null) {
-  if (!value || !value.startsWith('/') || value.startsWith('//')) {
+  if (!value || !value.startsWith('/') || value.startsWith('//') ||
+      /[\\\u0000-\u001f\u007f]/.test(value)) {
     return '/dashboard';
   }
 
-  return isPublicRoute(value) ? '/dashboard' : value;
+  const origin = 'https://ltg.invalid';
+  try {
+    const target = new URL(value, origin);
+    if (target.origin !== origin || isPublicRoute(target.pathname)) return '/dashboard';
+    return value;
+  } catch {
+    return '/dashboard';
+  }
 }

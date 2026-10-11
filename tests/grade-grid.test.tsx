@@ -38,7 +38,7 @@ it('saves a correction against the original identity and refreshes only after su
  fireEvent.change(within(d).getByLabelText('Score'),{target:{value:'9'}});fireEvent.change(within(d).getByLabelText('Correction reason'),{target:{value:'Rechecked calculation'}});
  fireEvent.click(within(d).getByRole('button',{name:'Save correction'}));
  await waitFor(()=>expect(p.onRefresh).toHaveBeenCalledOnce());
- expect(mock.rpc).toHaveBeenCalledWith('record_gradebook_attempt',{p_gradebook_id:'b1',p_item_id:'i1',p_student_id:'s1',p_status_code:'graded',p_score:9,p_possible_score:10,p_note:'Rechecked calculation',p_attempt_id:'a1'});
+ expect(mock.rpc).toHaveBeenCalledWith('correct_gradebook_attempt',{p_gradebook_id:'b1',p_item_id:'i1',p_student_id:'s1',p_status_code:'graded',p_score:9,p_possible_score:10,p_note:'Rechecked calculation',p_attempt_id:'a1',p_expected_revision:1});
 });
 it('retains a failed correction and does not show a success',async()=>{
  mock.rpc.mockResolvedValue({error:{message:'Network unavailable'}});const p=props();render(<GradeGrid {...p}/>);const d=open();await within(d).findByText('Original');fireEvent.click(within(d).getByRole('button',{name:'Correct this grade'}));

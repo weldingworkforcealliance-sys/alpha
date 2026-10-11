@@ -8,7 +8,7 @@ const migration = readFileSync(
     'supabase/migrations/20260910211500_harden_assessment_library_listing.sql'
   ),
   'utf8'
-);
+).replace(/\r\n/g, '\n');
 
 describe('assessment library authorization', () => {
   it('requires an authenticated user inside the SECURITY DEFINER function', () => {
