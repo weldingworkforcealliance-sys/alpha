@@ -1,5 +1,15 @@
 # Weekly student archive activation
 
+## October 11, 2026 repair prepared; not activated
+
+The September 26, October 3 and October 10 scheduled runs failed. Do not infer current backup health from the original activation below. The October 10 worker was pinned to `bd6e603732eec7a9079e328fee5228bce4684ac2` and failed during capture/recovery; its sanitized log did not identify the underlying exception.
+
+Read-only comparison found missing `course_guide_day_math.shared_math_day_number` in both the pinned and current archive inventory, and missing `wld110_shop_attempts.decision` in the current core inventory. The prepared repair includes both fields and accepts instructor-approved single-attempt completions while retaining validation of historical paired completions. All 28 core and 25 context table column inventories match the live database observed October 11; live join codes remain intentionally excluded. Required archive reader SELECT grants were present; Storage contained no objects.
+
+The repair also emits only allowlisted failure stages and diagnostic codes. It never emits raw database/provider exception messages, student rows or credentials. Schema drift still blocks export; no wildcard inventory or automatic acceptance of unknown fields was introduced.
+
+Before activation, require the isolated PostgreSQL recovery CI job to pass. After approval, set the existing scheduler's worker revision to the reviewed repair commit and dispatch one archive run. Require capture, retained exact-version readback, isolated recovery and success metric to pass; inspect the completion receipt and notification delivery. A code merge alone does not change the pinned scheduler. Do not claim production recovery until that run succeeds.
+
 Updated September 19, 2026. Weekly production student archives are ENABLED following successful supervised backup and recovery. The owner changed the schedule to Fridays at 22:00 America/New_York, starting September 25, 2026. The supervised September 19 backup remains retained; the first scheduled run has not yet occurred. The live gradebook is unaffected.
 
 ## Verified setup checkpoint

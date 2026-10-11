@@ -21,7 +21,11 @@ test('real PostgreSQL restores historical rows and exact certificate bytes witho
     await client.connect();
     try {
       const exportId = '20000000-0000-4000-8000-000000000001';
-      const artifacts = [...buildSchoolBundles(fixture()).map(bundle => ({ name: `school-${bundle.schoolId}.json`, bytes: bundle.bytes })),
+      const source = fixture();
+      source.datasets.wld110_shop_attempts[0].decision = 'retry';
+      source.datasets.wld110_shop_attempts[2].decision = 'grade';
+      Object.assign(source.datasets.wld110_shop_completions[0], {first_attempt_id:'shop-a-3', second_attempt_id:null, grade:90});
+      const artifacts = [...buildSchoolBundles(source).map(bundle => ({ name: `school-${bundle.schoolId}.json`, bytes: bundle.bytes })),
         { name: 'administrative-context.json', bytes: Buffer.from(JSON.stringify({ exportId, environment: 'staging', datasets: {
         grade_history: [{ student: 'synthetic', active: false, score: 0, revision: '9007199254740993' },
           { student: 'synthetic', active: false, score: 76, revision: '9007199254740994', note: "'; DROP SCHEMA public CASCADE; --" }],

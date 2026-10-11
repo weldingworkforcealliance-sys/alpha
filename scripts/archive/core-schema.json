@@ -1011,6 +1011,10 @@
     {
       "name": "recorded_at",
       "type": "timestamp with time zone"
+    },
+    {
+      "name": "decision",
+      "type": "text"
     }
   ],
   "wld110_shop_completions": [

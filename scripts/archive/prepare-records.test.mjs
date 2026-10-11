@@ -82,3 +82,7 @@ test('database connection is pinned to expected environment, read role and verif
   assert.throws(() => databaseConfig(JSON.stringify(valid), 'staging'));
 });
 
+test('shared math day mapping is included in the reviewed context projection',()=>{
+  assert.match(contextDataSql('course_guide_day_math'),/t\."shared_math_day_number"/);
+});
+

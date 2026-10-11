@@ -21,7 +21,23 @@ test('shop archive restores every failed and qualifying attempt for each inactiv
     assert.ok(!requiredDatasets.includes('wld110_student_links'));
   }
 });
+test('single accepted demonstration and retry decisions survive archive recovery alongside legacy pairs',()=>{
+  const source=fixture();
+  source.datasets.wld110_shop_attempts[0].decision='retry';
+  source.datasets.wld110_shop_attempts[1].decision='retry';
+  source.datasets.wld110_shop_attempts[2].decision='grade';
+  Object.assign(source.datasets.wld110_shop_completions[0],{first_attempt_id:'shop-a-3',second_attempt_id:null,grade:90});
+  const bundles=buildSchoolBundles(source);
+  const restored=bundles.map(b=>recoverSchoolBundle(b.bytes,{expectedDigest:b.sha256,schoolId:b.schoolId,exportId:b.exportId}));
+  assert.deepEqual(restored[0].datasets.wld110_shop_attempts.map(a=>a.decision),['retry','retry','grade']);
+  assert.equal(restored[0].datasets.wld110_shop_completions[0].second_attempt_id,null);
+  assert.equal(restored[0].datasets.wld110_shop_completions[0].grade,90);
+  assert.equal(restored[1].datasets.wld110_shop_completions[0].second_attempt_id,'shop-b-3');
+});
 for(const [name,mutate] of Object.entries({
+  'unaccepted single demonstration':s=>{s.datasets.wld110_shop_completions[0].second_attempt_id=null;},
+  'retry marked complete':s=>{s.datasets.wld110_shop_completions[0].second_attempt_id=null;s.datasets.wld110_shop_attempts[0].decision='retry';},
+  'accepted grade mismatch':s=>{s.datasets.wld110_shop_completions[0].second_attempt_id=null;s.datasets.wld110_shop_attempts[0].decision='grade';},
   'missing history':s=>s.datasets.wld110_shop_attempts.pop(),
   'missing new dataset':s=>delete s.datasets.wld110_shop_completions,
   'orphan attempt':s=>{s.datasets.wld110_shop_progress=[];s.sourceCounts.wld110_shop_progress=0;},
