@@ -632,7 +632,32 @@ export default function DemoProgramWorkspace({ program, uxLab = false }: { progr
           </div>
         )}
 
-        {state.activeModule === 'planner' && (
+        {state.activeModule === 'planner' && (isV2 ? (
+          <div className="v2-planner-wrap">
+            <FabtechTeachingDayV2
+              courseCode={selectedCourse.code}
+              day={selectedDay}
+              dayCount={maxDay}
+              started={Boolean(startedAt)}
+              completed={selectedCompleted}
+              elapsed={formatDuration(elapsedSeconds)}
+              attendanceFinalized={currentAttendance.finalized}
+              note={state.notes[selectedKey] ?? ''}
+              followUp={Boolean(state.followUps[selectedKey])}
+              gradedCount={gradedCount}
+              onDay={goToDay}
+              onStart={startCourseDay}
+              onComplete={completeCourseDayV2}
+              onAttendance={() => switchDemoModule('attendance')}
+              onGrade={() => switchDemoModule('grading')}
+              onClassroom={() => switchDemoModule('classroom')}
+              onResources={() => switchDemoModule('resources')}
+              onLaunch={(resource) => launchActivity(resource)}
+              onNote={(value) => setState((current) => ({ ...current, notes: { ...current.notes, [selectedKey]: value } }))}
+              onFollowUp={(value) => setState((current) => ({ ...current, followUps: { ...current.followUps, [selectedKey]: value } }))}
+            />
+          </div>
+        ) : (
           <div className="planner-wrap">
             <PlannerTeachingConsole
               courseLabel={`${selectedCourse.code} · ${selectedCourse.name}`}
@@ -689,6 +714,17 @@ export default function DemoProgramWorkspace({ program, uxLab = false }: { progr
                   </div>
                 </div>
               )}
+            />
+          </div>
+        ))}
+
+        {isV2 && state.activeModule === 'grading' && (
+          <div className="v2-planner-wrap">
+            <FabtechGradingPracticeV2
+              students={program.students}
+              scoresByStudent={state.sampleRubricScores ?? {}}
+              onScore={gradeSample}
+              onToday={() => switchDemoModule('planner')}
             />
           </div>
         )}
@@ -786,7 +822,12 @@ export default function DemoProgramWorkspace({ program, uxLab = false }: { progr
           <section className="panel wide-panel">
             <div className="panel-heading">
               <div><div className="eyebrow">Student Attendance</div><h2>Day {state.currentDay} · WLD 105 / 110 pair</h2><p>Initial attendance and end-of-pair confirmation are tracked separately.</p></div>
-              <div className="attendance-actions"><button onClick={markAllPresent}>Mark All Present</button><button onClick={carryInitialToFinal}>Carry Initial → Final</button><button className="accent" onClick={finalizeAttendance}>Finalize Pair Attendance</button></div>
+              <div className="attendance-actions"><button onClick={markAllPresent}>Mark All Present</button><button onClick={carryInitialToFinal}>Carry Initial → Final</button><button className="accent" onClick={() => {
+                  finalizeAttendance();
+                  if (isV2) {
+                    setWorkflowNotice('Pair attendance finalized. Return to Today when ready to complete the day.');
+                  }
+                }}>Finalize Pair Attendance</button></div>
             </div>
             <div className="attendance-summary">
               <Metric label="Present" value={String(attendanceCounts.present)} />
