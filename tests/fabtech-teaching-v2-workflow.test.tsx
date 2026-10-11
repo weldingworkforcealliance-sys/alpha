@@ -39,7 +39,7 @@ describe('FABTECH A/B session actions', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'Complete Day' }).hasAttribute('disabled')).toBe(false));
     fireEvent.click(screen.getByRole('button', { name: 'Complete Day' }));
 
-    expect(await screen.findByText(/WLD 110 · Course Orientation/)).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Course Orientation + Entry Requirements' })).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'Original FABTECH' }));
     expect(screen.getByRole('navigation', { name: 'Demo workspace navigation' })).toBeTruthy();
