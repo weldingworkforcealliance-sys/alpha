@@ -285,7 +285,7 @@ export default function WeldingDemoLiveWorkspace({ program }: { program: DemoPro
                   <article className="launch-card" key={`${activity.courseCode}-${activity.title}`}>
                     <span>{activity.courseCode}</span>
                     <h2>{activity.title}</h2>
-                    <p>Creates a temporary 30-minute Live Classroom session with a cross-device join code and student link.</p>
+                    <p>Creates a temporary Live Classroom session (30-minute inactivity limit, two-hour maximum) with a cross-device join code and student link.</p>
                     <button className="accent" disabled={creating} onClick={() => launchUnderlyingSession(index)}>{creating ? 'Starting…' : 'Launch Temporary Session'}</button>
                   </article>
                 )) : (
@@ -365,7 +365,7 @@ export default function WeldingDemoLiveWorkspace({ program }: { program: DemoPro
                   </section>
                 )}
 
-                <div className="privacy-note">Demo classroom data is isolated from attendance, payroll, student records, and the live classroom tables. The session becomes inaccessible after 30 minutes of inactivity and is deleted from the demo store.</div>
+                <div className="privacy-note">Demo classroom data is isolated from attendance, payroll, student records, and the live classroom tables. The session becomes inaccessible after 30 minutes of inactivity or two hours total and is deleted from the demo store.</div>
               </>
             )}
           </div>

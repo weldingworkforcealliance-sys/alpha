@@ -44,7 +44,7 @@ export default function JoinClient({ initialCode }: { initialCode: string }) {
         <label>Join code<input autoFocus value={code} onChange={(event) => { setCode(event.target.value.toUpperCase()); setError(''); }} placeholder="A1B2C3" /></label>
         {error && <div className="error">{error}</div>}
         <button type="submit" disabled={busy}>{busy ? 'Checking code…' : 'Join Activity'}</button>
-        <small>Closed demo system · temporary session only · expires after 30 minutes of inactivity</small>
+        <small>Closed demo system · temporary session only · expires after 30 minutes of inactivity or two hours total</small>
       </form>
       <style jsx>{`
         :global(body) { margin:0; background:#091014; font-family:Arial,Helvetica,sans-serif; }

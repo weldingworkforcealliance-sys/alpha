@@ -9,6 +9,18 @@ const punch = (overrides: Partial<ReportPunch> = {}): ReportPunch => ({
 });
 
 describe('weekly attendance workbook', () => {
+  it('round-trips spreadsheet formatting that generates UUIDs', async () => {
+    const book = new ExcelJS.Workbook();
+    const sheet = book.addWorksheet('Compatibility');
+    sheet.getCell('A1').value = 42;
+    sheet.addConditionalFormatting({ ref: 'A1', rules: [{ type: 'iconSet', iconSet: '3Triangles', priority: 1,
+      cfvo: [{ type: 'percent', value: 0 }, { type: 'percent', value: 33 }, { type: 'percent', value: 67 }] }] });
+    const restored = new ExcelJS.Workbook();
+    await restored.xlsx.load(await book.xlsx.writeBuffer());
+    expect(restored.worksheets[0].getCell('A1').value).toBe(42);
+    expect(restored.worksheets[0]).toHaveProperty('conditionalFormattings.0.rules.0.iconSet', '3Triangles');
+  });
+
   it('groups by employee ID and Monday week, preserves precision and raw records, and leaves payroll editable', async () => {
     const rows = [punch({ hours: 8.1234 }), punch({ hours: 1.2345 }), punch({ employeeId: 'two' }), punch({ date: '2026-10-04' }), punch({ date: '2026-10-05' })];
     const before = JSON.stringify(rows);

@@ -19,11 +19,16 @@
     "@supabase/ssr": "0.12.6",
     "@supabase/supabase-js": "2.116.0",
     "exceljs": "^4.4.0",
-    "next": "^16.3.3",
+    "next": "16.3.8",
     "pdf-lib": "1.17.1",
     "qrcode": "^1.5.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
+  },
+  "overrides": {
+    "exceljs": {
+      "uuid": "11.1.1"
+    }
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.3.14",

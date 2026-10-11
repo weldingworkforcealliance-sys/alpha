@@ -29,4 +29,19 @@ describe('server route protection', () => {
     expect(safePostLoginRoute('//attacker.example')).toBe('/dashboard');
     expect(safePostLoginRoute('/login')).toBe('/dashboard');
   });
+
+  it.each(['/\\attacker.example', '/\t/attacker.example', '/\n/attacker.example', '/\r/attacker.example', '//attacker.example', 'https://attacker.example', '', '/path\u0000'])('rejects unsafe login target %j after query decoding', (target) => {
+    const query = new URLSearchParams({ next: target });
+    expect(safePostLoginRoute(new URLSearchParams(query.toString()).get('next'))).toBe('/dashboard');
+  });
+
+  it.each(['/planner?day=3', '/gradebook#student', '/planner?label=a%20b', '/planner?return=https://example.com', '/%5cattacker.example', '/%2fattacker.example'])('preserves a same-origin destination %s', (target) => {
+    const result = safePostLoginRoute(target);
+    expect(result).toBe(target);
+    expect(new URL(result, 'https://ltgeducation.com').origin).toBe('https://ltgeducation.com');
+  });
+
+  it.each(['/login?next=/planner', '/login#form', '/gradebook/../login', '/demo/programs'])('avoids returning to public entry route %s', (target) => {
+    expect(safePostLoginRoute(target)).toBe('/dashboard');
+  });
 });
