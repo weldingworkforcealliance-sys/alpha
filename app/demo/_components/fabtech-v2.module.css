@@ -61,8 +61,22 @@
 .actionStatus span { font-size: 10px; font-weight: 800; color: #9db0b8; text-transform: uppercase; letter-spacing: .08em; }
 .actionStatus strong { font-size: 15px; color: #f5f7f8; }
 .actionStatus small { font-size: 11px; color: #bad0d7; }
-.actionButtons { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.primaryAction,.secondaryAction,.completeAction,.textAction {
+.actionButtons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  align-items: stretch;
+  flex: 1 1 390px;
+  width: min(100%, 460px);
+}
+.actionButtons button {
+  min-width: 0;
+  min-height: 44px;
+  width: 100%;
+  white-space: normal;
+  text-align: center;
+}
+.primaryAction,.secondaryAction,.gradingAction,.completeAction,.textAction {
   padding: 11px 15px;
   border-radius: 9px;
   border: 1px solid #4b6875;
@@ -74,6 +88,8 @@
   cursor: pointer;
 }
 .primaryAction { border-color: #e2a16c; color: #1e2023; background: #eeb17d; }
+.gradingAction { border-color: #497ca0; color: #d7efff; background: #19425a; }
+.gradingAction:hover { border-color: #6bb4e0; background: #215674; }
 .completeAction { border-color: #56947d; color: #c8f5e3; background: #1c473c; }
 .primaryAction:disabled, .completeAction:disabled { opacity: .48; cursor: not-allowed; }
 .textAction { padding: 8px 11px; background: transparent; }
@@ -145,8 +161,8 @@
   .dayHeading { flex-direction: column; }
   .dayNavigation { justify-content:space-between; width:100%; }
   .actionBar { flex-direction: column; align-items:stretch; }
-  .actionButtons { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); }
-  .actionButtons button { min-width:0; padding:11px 7px; }
+  .actionButtons { grid-template-columns: repeat(2, minmax(0, 1fr)); flex: none; width: 100%; }
+  .actionButtons button { min-width: 0; padding: 11px 7px; }
   .resourceItem { align-items:flex-start; }
 }
 @media (max-width:500px) {
@@ -159,8 +175,8 @@
   .panelHeading { padding:12px; }
   .panelHeading h3 { font-size:17px; }
   .actionBar { top:0; padding:10px; }
-  .actionButtons { grid-template-columns:repeat(2,minmax(0,1fr)); }
-  .actionButtons .completeAction { grid-column:span 2; }
+  .actionButtons { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .actionButtons .completeAction { grid-column: auto; }
   .workflowChecks { grid-template-columns:1fr; }
   .rubricRow select { width:100%; }
   .rubricRow label { width:100%; }
