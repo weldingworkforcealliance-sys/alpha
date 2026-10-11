@@ -478,22 +478,17 @@ export default function DemoProgramWorkspace({ program, uxLab = false }: { progr
             <div><strong>Teaching View v2</strong><span>FABTECH UX Lab</span></div>
           </div>
           <div className="demo-chip">STAGING TEST · NOT LIVE</div>
-          <div className="v2-sidebar-class">
-            <small>Current class</small>
-            <strong>{selectedCourse.code}</strong>
-            <span>Day {state.currentDay} / {maxDay}</span>
-            <div className="v2-sidebar-clock" role="group" aria-label="Instructor Punch Clock">
-              <div className="v2-sidebar-clock-top">
-                <small>Instructor punch clock</small>
-                <span className={state.clockedInAt ? 'v2-clock-badge punched-in' : 'v2-clock-badge'}>
-                  {state.clockedInAt ? 'IN' : 'OUT'}
-                </span>
-              </div>
-              <div className="v2-sidebar-clock-row">
-                <span>Today: <strong>{formatDuration(clockSeconds)}</strong></span>
-                <button type="button" className={state.clockedInAt ? 'v2-punch-button punched-in' : 'v2-punch-button'}
-                  onClick={punchClock}>{state.clockedInAt ? 'Punch Out' : 'Punch In'}</button>
-              </div>
+          <div className="v2-sidebar-clock" role="group" aria-label="Instructor Punch Clock">
+            <div className="v2-sidebar-clock-top">
+              <small>Instructor punch clock</small>
+              <span className={state.clockedInAt ? 'v2-clock-badge punched-in' : 'v2-clock-badge'}>
+                {state.clockedInAt ? 'IN' : 'OUT'}
+              </span>
+            </div>
+            <div className="v2-sidebar-clock-row">
+              <span>Today: <strong>{formatDuration(clockSeconds)}</strong></span>
+              <button type="button" className={state.clockedInAt ? 'v2-punch-button punched-in' : 'v2-punch-button'}
+                onClick={punchClock}>{state.clockedInAt ? 'Punch Out' : 'Punch In'}</button>
             </div>
           </div>
           <nav aria-label="Teaching View v2 main navigation">
@@ -992,11 +987,7 @@ export default function DemoProgramWorkspace({ program, uxLab = false }: { progr
         /* The new layout is opt-in at /demo/welding/ux-lab and never changes
            the production public FABTECH demonstration. */
         .v2-sidebar nav { display:grid; gap:5px; }
-        .v2-sidebar-class { display:grid; gap:4px; margin:12px 6px 18px; padding:11px 12px; border:1px solid #37515d; background:#14252e; border-radius:9px; }
-        .v2-sidebar-class small { color:#9bb1ba; text-transform:uppercase; font-size:9px; letter-spacing:.08em; font-weight:850; }
-        .v2-sidebar-class strong { color:#f3f7f8; font-size:17px; }
-        .v2-sidebar-class span { color:#b7cbd4; font-size:12px; }
-        .v2-sidebar-clock { display:grid; gap:8px; padding-top:11px; margin-top:5px; border-top:1px solid #38515d; }
+        .v2-sidebar-clock { display:grid; gap:12px; margin:12px 6px 18px; padding:13px 12px; border:1px solid #37515d; border-radius:9px; background:#14252e; }
         .v2-sidebar-clock-top { display:flex; justify-content:space-between; gap:6px; align-items:center; }
         .v2-sidebar-clock-top small { font-size:10px; font-weight:900; color:#c3d4dd; text-transform:none; letter-spacing:0; }
         .v2-clock-badge { padding:4px 6px; border:1px solid #526772; border-radius:6px; font-size:10px!important; color:#c4d3d9!important; background:#27353c; }
