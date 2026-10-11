@@ -579,7 +579,7 @@ export default function DemoProgramWorkspace({ program, uxLab = false }: { progr
         )}
         <div className="banner">
           <span>{isV2 ? 'FABTECH UX TEST · TEMPORARY DATA ONLY' : 'PUBLIC DEMO · CLOSED SYSTEM · NO LIVE SCHOOL RECORDS'}</span>
-          <span>Demo resets after 30 minutes of inactivity</span>
+          <span>{isV2 ? 'Demo resets after 30 minutes of inactivity' : 'Demo activity is forgotten after 30 minutes of inactivity'}</span>
         </div>
 
         {isV2 ? (
