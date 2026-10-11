@@ -26,6 +26,12 @@ describe('FABTECH A/B session actions', () => {
     expect(within(mainNav).getByRole('button', { name: 'Today' })).toBeTruthy();
     expect(within(mainNav).getByRole('button', { name: /Grading Tower/ })).toBeTruthy();
     expect(within(mainNav).getByRole('button', { name: /More tools/ })).toBeTruthy();
+    // Course and day belong in the top class selector, not duplicated in the sidebar.
+    const sidebar = mainNav.closest('aside');
+    expect(sidebar).not.toBeNull();
+    if (!sidebar) throw new Error('Instructor sidebar not rendered');
+    expect(within(sidebar).queryByText(/Current class/i)).toBeNull();
+    expect(within(sidebar).queryByText(/Day 1 \/ 5/i)).toBeNull();
 
     const punch = screen.getByRole('group', { name: 'Instructor Punch Clock' });
     expect(within(punch).getByRole('button', { name: 'Punch In' })).toBeTruthy();
