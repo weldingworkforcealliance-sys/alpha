@@ -3,6 +3,9 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getSupabase } from '@/lib/supabase-browser';
+import { readSelectedSectionId, subscribeSelectedSection } from '@/lib/section-selection';
+import { usePlannerViewPreference } from '@/app/components/planner/usePlannerViewPreference';
+import type { PlannerViewSection } from '@/lib/wld205-anthony-view';
 
 type Employee = {
   id: string;
@@ -52,6 +55,9 @@ function formatClockTime(value: string) {
 
 export default function DashboardPunchClock({ pathname }: { pathname: string }) {
   const [supabase] = useState(getSupabase);
+  const [sectionId, setSectionId] = useState<string | null>(() => readSelectedSectionId());
+  const [viewSection, setViewSection] = useState<PlannerViewSection | null>(null);
+  const viewPrefs = usePlannerViewPreference(supabase, viewSection);
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [openEntry, setOpenEntry] = useState<TimeEntry | null>(null);
@@ -61,6 +67,27 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
   const [now, setNow] = useState(Date.now());
 
   const supported = pathname === '/dashboard';
+
+  useEffect(() => {
+    return subscribeSelectedSection(setSectionId);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setViewSection(null);
+    if (!supported || !sectionId) return;
+    (async () => {
+      const { data, error: sectionError } = await supabase
+        .from('current_teaching_sections')
+        .select('school_id,section_id,course_code,section_code')
+        .eq('section_id', sectionId)
+        .maybeSingle();
+      if (!cancelled && !sectionError) {
+        setViewSection((data ?? null) as PlannerViewSection | null);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [supported, sectionId, supabase]);
 
   const load = useCallback(async () => {
     if (!supported) return;
@@ -164,7 +191,9 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
     }
   };
 
-  if (!supported) return null;
+  // This affects presentation only: the separate /time-clock page still
+  // contains the actual employee clock, payroll trail and hours review.
+  if (!supported || viewPrefs.isStreamlined) return null;
 
   const todayLabel = new Date().toLocaleDateString('en-US', {
     weekday: 'short',

@@ -92,6 +92,42 @@ export default function LoginPage() {
             <p>Use the account assigned to your school or program.</p>
           </div>
 
+          {process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging' && (
+            <div
+              style={{
+                border: '1px solid #5a816f',
+                background: '#15251f',
+                padding: '15px',
+                borderRadius: 10,
+                marginBottom: 20,
+                display: 'grid',
+                gap: 9,
+              }}
+            >
+              <strong style={{ color: '#c4f3db', fontSize: 15 }}>
+                WLD 205 · One-click instructor preview
+              </strong>
+              <p style={{ margin: 0, color: '#acc3b5', lineHeight: 1.4, fontSize: 12 }}>
+                Review all 30 example days and Anthony's streamlined layout. No account, password, or email required. Read-only.
+              </p>
+              <button
+                type="button"
+                onClick={() => router.push('/wld205-review')}
+                style={{
+                  border: '1px solid #7bbb95',
+                  borderRadius: 8,
+                  padding: '13px',
+                  color: '#f4fff9',
+                  background: '#286247',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                }}
+              >
+                Open WLD 205 Preview →
+              </button>
+            </div>
+          )}
+
           <form onSubmit={handleLogin}>
             <label>
               Email

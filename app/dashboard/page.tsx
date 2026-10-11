@@ -7,6 +7,13 @@ import PlannerActivity from '../planner-activity';
 import PlannerTimeBudget from '../planner-time-budget';
 import { getPlannerTimeBudget } from '@/lib/planner-time-budget';
 import { getSupabase } from '@/lib/supabase-browser';
+import PlannerViewSelector from '@/app/components/planner/PlannerViewSelector';
+import { usePlannerViewPreference } from '@/app/components/planner/usePlannerViewPreference';
+import {
+  anthonyDaySupport,
+  anthonyMathDisplayText,
+  usableMathBookReference,
+} from '@/lib/wld205-anthony-view';
 import { SCHOOL_DASHBOARD_ROLES } from '@/lib/access-roles';
 import { guardedSignOut } from '@/lib/guarded-signout';
 import {
@@ -224,6 +231,7 @@ export default function DashboardPage() {
   const [canOpenOwnerDashboard, setCanOpenOwnerDashboard] = useState(false);
 
   const [supabase] = useState(getSupabase);
+  const viewPrefs = usePlannerViewPreference(supabase, selectedSection);
 
   const refreshSections = async () => {
     const { data, error: queryError } = await supabase
@@ -898,6 +906,21 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
+                {viewPrefs.eligible && (
+                  <PlannerViewSelector
+                    preset={viewPrefs.preset}
+                    personalChoice={viewPrefs.personalChoice}
+                    schoolPreset={viewPrefs.schoolPreset}
+                    canManageSchool={viewPrefs.canManageSchool}
+                    onSchoolChange={viewPrefs.saveSchoolPreset}
+                    source={viewPrefs.source}
+                    loading={viewPrefs.loading}
+                    saving={viewPrefs.saving}
+                    error={viewPrefs.error}
+                    onChange={viewPrefs.saveInstructorPreset}
+                  />
+                )}
+
                 <div className="details-grid">
                   <div className="detail-item">
                     <label>Current Planner Day</label>
@@ -918,6 +941,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
+                  {(!viewPrefs.isStreamlined || selectedSection.manual_hold) && (
                   <div className="detail-item">
                     <label>Hold Status</label>
                     <div
@@ -930,6 +954,7 @@ export default function DashboardPage() {
                         : 'Active'}
                     </div>
                   </div>
+                  )}
                 </div>
 
                 <section className="teacher-guide-section">
@@ -1138,13 +1163,13 @@ export default function DashboardPage() {
                                 <span className="agenda-duration">{mathLesson.planned_minutes} min</span>
                               </div>
 
-                              {mathLesson.goal && (
+                              {mathLesson.goal && !viewPrefs.isStreamlined && (
                                 <p className="math-goal">
                                   <strong>Goal:</strong> {mathLesson.goal}
                                 </p>
                               )}
 
-                              {mathLesson.book_connection && (
+                              {mathLesson.book_connection && !viewPrefs.isStreamlined && (
                                 <p className="book-connection">
                                   <strong>Book connection:</strong> {mathLesson.book_connection}
                                 </p>
@@ -1168,14 +1193,16 @@ export default function DashboardPage() {
                                             segment.planned_minutes
                                           )}
                                         </td>
-                                        <td>{segment.activity}</td>
+                                        <td>{viewPrefs.isStreamlined
+                                            ? anthonyMathDisplayText(segment.activity, guideDay.planner_day_number)
+                                            : segment.activity}</td>
                                       </tr>
                                     ))}
                                   </tbody>
                                 </table>
                               </div>
 
-                              {(mathLesson.instructor_notes ||
+                              {!viewPrefs.isStreamlined && (mathLesson.instructor_notes ||
                                 mathLesson.answers_quick_check) && (
                                 <div className="math-instructor-only">
                                   <span className="guide-label">Instructor Only</span>
@@ -1199,7 +1226,7 @@ export default function DashboardPage() {
                         <aside className="guide-side-column">
                           <div className="guide-info-card">
                             <span className="guide-label">Resources</span>
-                            {guideDay.materials_equipment && (
+                            {!viewPrefs.isStreamlined && guideDay.materials_equipment && (
                               <p>{guideDay.materials_equipment}</p>
                             )}
 
@@ -1232,6 +1259,8 @@ export default function DashboardPage() {
                             )}
                           </div>
 
+                          {!viewPrefs.isStreamlined && (
+                            <>
                           <div className="guide-info-card">
                             <span className="guide-label">Corresponding Application</span>
                             <p>
@@ -1249,8 +1278,51 @@ export default function DashboardPage() {
                                 'No evidence check entered.'}
                             </p>
                           </div>
+                            </>
+                          )}
                         </aside>
                       </div>
+
+                      {viewPrefs.isStreamlined && (
+                        <details className="coaching-card planner-reference">
+                          <summary>Instructor Support · Answers, references, applications and checks</summary>
+                          <div className="coaching-grid">
+                            {anthonyDaySupport(guideDay.planner_day_number).map((extra) => (
+                              <div key={extra.label}>
+                                <strong>{extra.label}</strong>
+                                <p>{extra.body}</p>
+                              </div>
+                            ))}
+                            {guideDay.materials_equipment && (
+                              <div><strong>Materials / Equipment</strong><p>{guideDay.materials_equipment}</p></div>
+                            )}
+                            {mathLesson?.goal && (
+                              <div><strong>Welding Math Goal</strong><p>{mathLesson.goal}</p></div>
+                            )}
+                            {usableMathBookReference(mathLesson?.book_connection) && (
+                              <div><strong>Book Connection</strong><p>{usableMathBookReference(mathLesson?.book_connection)}</p></div>
+                            )}
+                            {mathLesson?.instructor_notes && (
+                              <div>
+                                <strong>Instructor Math Notes</strong>
+                                <p>{anthonyMathDisplayText(mathLesson.instructor_notes, guideDay.planner_day_number)}</p>
+                              </div>
+                            )}
+                            {mathLesson?.answers_quick_check && (
+                              <div>
+                                <strong>Answers / Quick Check</strong>
+                                <p>{anthonyMathDisplayText(mathLesson.answers_quick_check, guideDay.planner_day_number)}</p>
+                              </div>
+                            )}
+                            {guideDay.corresponding_application && (
+                              <div><strong>Corresponding Application</strong><p>{guideDay.corresponding_application}</p></div>
+                            )}
+                            {guideDay.evidence_check_for_understanding && (
+                              <div><strong>Evidence / Check for Understanding</strong><p>{guideDay.evidence_check_for_understanding}</p></div>
+                            )}
+                          </div>
+                        </details>
+                      )}
 
                       <details className="coaching-card planner-reference">
                         <summary>Instructor coaching &amp; support</summary>
