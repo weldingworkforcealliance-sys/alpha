@@ -1,0 +1,167 @@
+.dayPage, .gradePage {
+  display: grid;
+  gap: 12px;
+  margin: 0 auto;
+  width: min(1400px, 100%);
+  color: #e9eff2;
+}
+
+.dayHeading, .actionBar, .objective, .teachingPanel, .resources, .collapse, .gradePage {
+  border: 1px solid #334750;
+  border-radius: 13px;
+  background: #111c23;
+}
+
+.dayHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px 20px;
+}
+
+.dayTitle h2 { margin: 4px 0 9px; font-size: clamp(20px, 2.2vw, 28px); line-height: 1.2; color: #f3f7f9; }
+.kicker, .sectionLabel {
+  display: block;
+  color: #f5b080;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.lessonLength { font-size: 12px; color: #b7c5cb; }
+
+.dayNavigation { display: flex; gap: 7px; align-items: flex-end; }
+.dayNavigation label { display: grid; gap: 4px; color: #b0c0c6; font-size: 11px; }
+.dayNavigation button, .dayNavigation select {
+  min-height: 41px;
+  padding: 8px 11px;
+  color: #f1f5f7;
+  border: 1px solid #527080;
+  border-radius: 8px;
+  background: #1d333e;
+}
+.dayNavigation button { cursor: pointer; font-size: 19px; }
+.dayNavigation button:disabled { opacity: .4; cursor: not-allowed; }
+
+.actionBar {
+  display: flex;
+  position: sticky;
+  top: 0;
+  z-index: 12;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-color: #4e6b72;
+  background: #172833;
+  box-shadow: 0 8px 20px rgba(0,0,0,.2);
+}
+.actionStatus { display: grid; gap: 3px; }
+.actionStatus span { font-size: 10px; font-weight: 800; color: #9db0b8; text-transform: uppercase; letter-spacing: .08em; }
+.actionStatus strong { font-size: 15px; color: #f5f7f8; }
+.actionStatus small { font-size: 11px; color: #bad0d7; }
+.actionButtons { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.primaryAction,.secondaryAction,.completeAction,.textAction {
+  padding: 11px 15px;
+  border-radius: 9px;
+  border: 1px solid #4b6875;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  color: #eff5f7;
+  background: #203640;
+  cursor: pointer;
+}
+.primaryAction { border-color: #e2a16c; color: #1e2023; background: #eeb17d; }
+.completeAction { border-color: #56947d; color: #c8f5e3; background: #1c473c; }
+.primaryAction:disabled, .completeAction:disabled { opacity: .48; cursor: not-allowed; }
+.textAction { padding: 8px 11px; background: transparent; }
+
+.objective { padding: 17px 20px; }
+.objective > p { color: #f3f6f7; font-size: 16px; line-height: 1.52; margin: 8px 0 0; }
+.safety { margin-top: 15px; padding: 11px 13px; border-left: 3px solid #d6a05e; background: #32291d; border-radius: 6px; }
+.safety strong { display: block; color: #ffd59b; font-size: 12px; }
+.safety p { color: #f0dec3; margin: 4px 0 0; font-size: 12px; line-height: 1.55; }
+
+.teachingPanel, .resources { overflow: hidden; }
+.panelHeading { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; padding: 14px 18px; border-bottom: 1px solid #314751; }
+.panelHeading h3 { font-size: 20px; line-height: 1.25; margin: 3px 0 0; color: #f0f6f8; }
+.studentToggle { display:flex; align-items:center; gap:7px; font-size:12px; color:#c6d3d8; cursor:pointer; }
+.studentToggle input { width:16px; height:16px; accent-color:#e9a66f; }
+.stepList { display: grid; }
+.step { display: grid; grid-template-columns: 38px minmax(0,1fr); gap: 11px; padding: 14px 18px; border-top: 1px solid #2c414a; }
+.step:first-child { border-top: 0; }
+.stepMarker { border: 1px solid #496675; border-radius: 8px; background: #1b3540; color: #a8d6e8; font-size: 13px; font-weight: 900; height: 36px; display: grid; place-items: center; }
+.stepBody { min-width: 0; }
+.stepBody > strong { color: #9ec9db; font-size: 12px; }
+.stepBody > p { margin: 4px 0 0; line-height: 1.48; font-size: 14px; color: #edf1f3; overflow-wrap: anywhere; }
+.studentActions { border-left: 2px solid #5d8578; margin-top: 8px; padding: 8px 10px; color: #d4e8df; background: #183129; font-size: 12px; line-height: 1.4; }
+
+.quickResources { display: grid; gap: 8px; padding: 12px 16px 14px; }
+.resourceItem { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding: 10px 12px; border-radius: 9px; border: 1px solid #36505b; background: #172732; }
+.resourceItem > div { display: grid; gap: 4px; min-width: 0; flex: 1; overflow-wrap: anywhere; }
+.resourceItem strong { color: #ecf4f5; font-size: 13px; }
+.resourceItem span, .resourceItem small { color: #a4bbc5; font-size: 11px; text-transform: capitalize; }
+.resourceItem a,.resourceItem button,.resourceLinks button { border:1px solid #527a8d; border-radius:7px; background:#203b4a; color:#d4effb; padding:9px 12px; text-decoration:none; font:inherit; font-size:12px; font-weight:850; cursor:pointer; }
+.resourceLinks { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.collapse { overflow: hidden; }
+.collapse > summary { display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; cursor:pointer; font-size:15px; font-weight:850; padding:17px 19px; color:#eaf3f5; }
+.collapse > summary::marker { color: #f1b17d; }
+.collapse > summary span { color:#a8bbc5; font-size:12px; font-weight:500; }
+.collapseBody { border-top:1px solid #344b56; padding:15px 18px 19px; display:grid; gap:13px; }
+.supportItem { border-left: 2px solid #477186; padding-left: 11px; }
+.supportItem strong { font-size:13px; color:#d7ecf5; }
+.supportItem p { color:#c0d1d9; font-size:12px; line-height:1.55; margin:5px 0 0; white-space:pre-wrap; overflow-wrap:anywhere; }
+.nested { border-top:1px solid #2d4652; padding-top:12px; }
+.nested summary { color:#beddeb; cursor:pointer; font-size:13px; font-weight:700; }
+.nested li { color:#cfdee4; font-size:12px; line-height:1.5; margin-top:8px; }
+.noteLabel { display:grid; gap:8px; font-weight:700; color:#e1edf2; font-size:13px; }
+.noteLabel select, .noteLabel textarea { width:100%; min-height:42px; border:1px solid #527080; border-radius:8px; background:#0e1a22; color:#f0f6f9; padding:10px; font:inherit; font-size:13px; }
+.noteLabel textarea { resize: vertical; }
+.checkboxLine { display:flex; align-items:center; gap:8px; color:#dae7ed; font-size:13px; }
+.quiet { color:#a4b7c0; font-size:12px; margin:0; line-height:1.48; }
+.workflowChecks { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+.workflowChecks span { padding:9px; border:1px solid #31596b; border-radius:7px; color:#d1e4eb; background:#17313e; font-size:12px; }
+
+.gradePage { width:min(1050px, 100%); padding: 20px; gap:16px; }
+.gradeHeader { display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:12px; }
+.gradeHeader h2 { margin:6px 0; color:#fff; font-size:25px; }
+.gradeHeader p { max-width:670px; color:#b6c8d0; margin:0; line-height:1.55; font-size:13px; }
+.gradeSummary { display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; border:1px solid #3b655c; border-radius:9px; padding:13px; background:#16332e; }
+.gradeSummary strong { color:#ceeddc; font-size:16px; }
+.gradeSummary span { color:#bcd8cd; font-size:12px; }
+.gradeStudentChooser { width:min(350px, 100%); }
+.rubricRows { display:grid; gap:7px; }
+.rubricRow { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px; padding:14px; border:1px solid #354d59; border-radius:9px; background:#1a2c35; }
+.rubricRow div { display:grid; gap:4px; }
+.rubricRow strong { font-size:13px; color:#e5eff4; }
+.rubricRow small { font-size:11px; color:#adc1cc; }
+.rubricRow select { padding:10px; border-radius:8px; background:#10212b; color:#eff6f8; border:1px solid #547487; font-size:13px; }
+.visuallyHidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+@media (max-width:800px) {
+  .dayHeading { flex-direction: column; }
+  .dayNavigation { justify-content:space-between; width:100%; }
+  .actionBar { flex-direction: column; align-items:stretch; }
+  .actionButtons { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .actionButtons button { min-width:0; padding:11px 7px; }
+  .resourceItem { align-items:flex-start; }
+}
+@media (max-width:500px) {
+  .dayPage,.gradePage { gap: 9px; }
+  .dayHeading,.objective,.gradePage { padding: 14px 12px; }
+  .objective>p { font-size: 14px; }
+  .step { grid-template-columns:30px minmax(0,1fr); gap:9px; padding:12px; }
+  .stepMarker { height:30px; }
+  .stepBody>p { font-size:13px; }
+  .panelHeading { padding:12px; }
+  .panelHeading h3 { font-size:17px; }
+  .actionBar { top:0; padding:10px; }
+  .actionButtons { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .actionButtons .completeAction { grid-column:span 2; }
+  .workflowChecks { grid-template-columns:1fr; }
+  .rubricRow select { width:100%; }
+  .rubricRow label { width:100%; }
+}
