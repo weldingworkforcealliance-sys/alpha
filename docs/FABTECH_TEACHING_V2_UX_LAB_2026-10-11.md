@@ -12,7 +12,8 @@ Compare the original FABTECH teaching demo with the proposed Teaching View v2, u
 - Class selection is one dropdown in the header.
 - Desktop menu: Today, Attendance, Grading Tower, Live Classroom, Resources, More (Agenda, Time Clock, Reports, School).
 - Mobile bottom navigation: Today, Attendance, Grading, More.
-- Start Today, Attendance, Complete Day at the top of the lesson. V2 Complete Day requires pair attendance finalized first. The original demo retains its existing behavior.
+- Start Today, Attendance, Grading, Complete Day grouped at the top of the lesson (two-by-two at normal widths). V2 Complete Day requires pair attendance finalized first. The original demo retains its existing behavior.
+- Instructor Punch In/Out is directly under Current Class in the v2 sidebar, with an IN/OUT indicator and running hours. Mobile keeps direct punch access in the compact header, while the full Time Clock remains under More. The teaching start/finish timer is separate from the employee punch clock.
 - Objective, visible welding safety, and timed instructor steps appear above secondary resources.
 - Student actions, coaching guidance, AWS alignment, and follow-up notes are available on demand.
 - Sample 5-criterion grading tests navigation and data entry only. Sample grades are not official WLD 110 results.
