@@ -470,7 +470,49 @@ export default function DemoProgramWorkspace({ program, uxLab = false }: { progr
   }
 
   return (
-    <div className="demo-app">
+    <div className={isV2 ? 'demo-app v2-mode' : 'demo-app'}>
+      {isV2 ? (
+        <aside className="sidebar v2-sidebar">
+          <div className="brand-block">
+            <div className="brand-mark">LTG</div>
+            <div><strong>Teaching View v2</strong><span>FABTECH UX Lab</span></div>
+          </div>
+          <div className="demo-chip">STAGING TEST · NOT LIVE</div>
+          <div className="v2-sidebar-class">
+            <small>Current class</small>
+            <strong>{selectedCourse.code}</strong>
+            <span>Day {state.currentDay} / {maxDay}</span>
+          </div>
+          <nav aria-label="Teaching View v2 main navigation">
+            <div className="nav-label">Instructor Essentials</div>
+            {V2_PRIMARY_MODULES.map(([id, label]) => (
+              <button
+                type="button"
+                key={id}
+                className={state.activeModule === id ? 'v2-link active' : 'v2-link'}
+                aria-current={state.activeModule === id ? 'page' : undefined}
+                onClick={() => switchDemoModule(id)}
+              >
+                {label}
+                {id === 'attendance' && !currentAttendance.finalized && <small>Needs final</small>}
+              </button>
+            ))}
+            <button className="v2-link" type="button" onClick={() => setMoreOpen((open) => !open)} aria-expanded={moreOpen}>More tools {moreOpen ? '▴' : '▾'}</button>
+            {moreOpen && (
+              <div className="v2-more-nav">
+                {V2_MORE_MODULES.map(([id, label]) => (
+                  <button key={id} type="button" className={state.activeModule === id ? 'v2-link active' : 'v2-link'} onClick={() => switchDemoModule(id)}>{label}</button>
+                ))}
+              </div>
+            )}
+          </nav>
+          <div className="sidebar-footer">
+            <button onClick={() => switchDesign('original')}>Compare Original Demo</button>
+            <button onClick={resetDemo}>Reset Temporary Demo</button>
+            <button onClick={() => router.push('/demo/programs')}>Change Program</button>
+          </div>
+        </aside>
+      ) : (
       <aside className="sidebar">
         <div className="brand-block">
           <div className="brand-mark">LTG</div>
@@ -520,13 +562,47 @@ export default function DemoProgramWorkspace({ program, uxLab = false }: { progr
           <button onClick={() => router.push('/demo')}>Demo Home</button>
         </div>
       </aside>
+      )}
 
       <main className="workspace">
+        {isLabRoute && (
+          <section className="v2-experiment-bar" aria-label="FABTECH teaching layout comparison">
+            <div>
+              <strong>FABTECH · Teaching Workflow Experiment</strong>
+              <span>Same 5-day WLD 105/110 demo content and temporary browser records in both views</span>
+            </div>
+            <div className="v2-mode-switch" role="group" aria-label="Choose interface layout">
+              <button type="button" aria-pressed={!isV2} onClick={() => switchDesign('original')} className={!isV2 ? 'selected' : ''}>Original FABTECH</button>
+              <button type="button" aria-pressed={isV2} onClick={() => switchDesign('v2')} className={isV2 ? 'selected' : ''}>Teaching View v2</button>
+            </div>
+          </section>
+        )}
         <div className="banner">
-          <span>PUBLIC DEMO · CLOSED SYSTEM · NO LIVE SCHOOL RECORDS</span>
-          <span>Demo activity is forgotten after 30 minutes of inactivity</span>
+          <span>{isV2 ? 'FABTECH UX TEST · TEMPORARY DATA ONLY' : 'PUBLIC DEMO · CLOSED SYSTEM · NO LIVE SCHOOL RECORDS'}</span>
+          <span>Demo resets after 30 minutes of inactivity</span>
         </div>
 
+        {isV2 ? (
+          <header className="v2-workspace-header">
+            <div className="v2-active-course">
+              <label htmlFor="fabtech-v2-class">Current Class</label>
+              <select
+                id="fabtech-v2-class"
+                value={selectedCourse.code}
+                onChange={(event) => update({ selectedCourseCode: event.target.value })}
+              >
+                {program.courses.map((course) => (
+                  <option key={course.code} value={course.code}>{course.code} · {course.name}</option>
+                ))}
+              </select>
+              <span>{program.instructorName} · Day {state.currentDay}/{maxDay}</span>
+            </div>
+            <div className="v2-header-pills">
+              <button onClick={() => switchDemoModule('attendance')}>{currentAttendance.finalized ? '✓ Attendance done' : 'Attendance open'}</button>
+              <button onClick={() => switchDemoModule('timeclock')}>{state.clockedInAt ? 'Clocked in' : 'Clocked out'}</button>
+            </div>
+          </header>
+        ) : (
         <header className="workspace-header">
           <div>
             <div className="eyebrow">{program.name}</div>
@@ -538,15 +614,23 @@ export default function DemoProgramWorkspace({ program, uxLab = false }: { progr
             <b>{startedAt ? 'IN PROGRESS' : selectedCompleted ? 'COMPLETED' : 'READY'}</b>
           </div>
         </header>
+        )}
 
-        <section className="context-strip">
+        {!isV2 && <section className="context-strip">
           <div><span>School</span><strong>{program.schoolName}</strong></div>
           <div><span>Course</span><strong>{selectedCourse.code}</strong></div>
           <div><span>Instructor</span><strong>{program.instructorName}</strong></div>
           <div><span>Pair Day</span><strong>{state.currentDay} / {maxDay}</strong></div>
           <div><span>Attendance</span><strong>{attendanceCounts.rate}%</strong></div>
           <div><span>Clock</span><strong>{state.clockedInAt ? 'CLOCKED IN' : 'CLOCKED OUT'}</strong></div>
-        </section>
+        </section>}
+
+        {isV2 && workflowNotice && (
+          <div className="v2-workflow-notice" role="alert">
+            <span>{workflowNotice}</span>
+            <button type="button" onClick={() => setWorkflowNotice('')}>Dismiss</button>
+          </div>
+        )}
 
         {state.activeModule === 'planner' && (
           <div className="planner-wrap">
