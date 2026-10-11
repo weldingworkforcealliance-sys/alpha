@@ -60,7 +60,7 @@ function readGenericState(programId: string): GenericDemoState | null {
   }
 }
 
-export default function WeldingDemoLiveWorkspace({ program }: { program: DemoProgram }) {
+export default function WeldingDemoLiveWorkspace({ program, uxLab = false }: { program: DemoProgram; uxLab?: boolean }) {
   const [genericState, setGenericState] = useState<GenericDemoState | null>(null);
   const [owner, setOwner] = useState<RemoteOwnerSession | null>(null);
   const [results, setResults] = useState<DemoResultsPayload | null>(null);
@@ -263,7 +263,7 @@ export default function WeldingDemoLiveWorkspace({ program }: { program: DemoPro
 
   return (
     <>
-      <DemoProgramWorkspace program={program} />
+      <DemoProgramWorkspace program={program} uxLab={uxLab} />
 
       {liveMode && (
         <div className="live-overlay" role="region" aria-label="Working Live Classroom demo">
