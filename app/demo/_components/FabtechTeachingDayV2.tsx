@@ -112,6 +112,9 @@ export default function FabtechTeachingDayV2({
           <button className={styles.secondaryAction} type="button" onClick={onAttendance}>
             Attendance{attendanceFinalized ? ' ✓' : ' · Needed'}
           </button>
+          <button className={styles.gradingAction} type="button" onClick={onGrade} title="Open the demo Grading Tower">
+            Grading
+          </button>
           <button className={styles.completeAction} type="button" onClick={onComplete} disabled={!started || completed}>
             Complete Day
           </button>
@@ -174,7 +177,6 @@ export default function FabtechTeachingDayV2({
           )) : <p className={styles.quiet}>No student-safe resources linked for this day. Check the full resource library.</p>}
           <div className={styles.resourceLinks}>
             <button type="button" onClick={onClassroom}>Open Live Classroom ›</button>
-            <button type="button" onClick={onGrade}>Open Practice Grading ›</button>
           </div>
         </div>
       </section>
