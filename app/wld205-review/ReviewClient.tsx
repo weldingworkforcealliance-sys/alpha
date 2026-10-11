@@ -80,7 +80,7 @@ function sampleRows(day: number, topic: PreviewTopic): PlannerPlanRow[] {
 
   if (topic.kind === 'assessment') {
     return [
-      row('a', '0–10 min', 'Check readiness and approved assessment procedures.', 'Review the day's assessment directions.'),
+      row('a', '0–10 min', 'Check readiness and approved assessment procedures.', "Review the day's assessment directions."),
       row('b', '10–15 min', 'Explain the secure testing process; do not display exam content.', 'Prepare for the authorized assessment.', 'assessment'),
       row('c', '15–55 min', 'Supervise the official assessment outside this sample environment.', 'Complete work using the school-approved assessment process.', 'assessment'),
       row('d', '55–60 min', 'Close the session and document completion in the actual system.', 'Submit materials as instructed.'),
