@@ -49,7 +49,7 @@ describe('core lab coaching handoff',()=>{
   expect(screen.queryByRole('region',{name:'Practice coaching form'})).toBeNull();
   expect(mocks.rpc.mock.calls.filter(c=>c[0].includes('grade')||c[0]==='save_tower_student')).toHaveLength(0);
   expect(mocks.qr).toHaveBeenCalledWith(window.location.origin+'/lab/student#token-one',expect.objectContaining({width:280,margin:4}));
-  expect(props.onBlocked).toHaveBeenLastCalledWith(false);
+  await waitFor(()=>expect(props.onBlocked).toHaveBeenLastCalledWith(false));
  });
  it('keeps an uncertain coaching save immutable and retries the same ID',async()=>{
   setup({saveError:true});render(<LabCoachingPanel {...props}/>);
