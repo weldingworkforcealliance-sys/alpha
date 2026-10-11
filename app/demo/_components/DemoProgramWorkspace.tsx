@@ -8,6 +8,8 @@ import PlannerTeachingConsole, {
   type PlannerSupportItem,
 } from '@/app/components/planner/PlannerTeachingConsole';
 import type { DemoCourseDay, DemoModule, DemoProgram, DemoResource } from '../_lib/demo-types';
+import FabtechTeachingDayV2 from './FabtechTeachingDayV2';
+import FabtechGradingPracticeV2, { scoredSampleCount } from './FabtechGradingPracticeV2';
 
 type AttendanceStatus = 'Present' | 'Late' | 'Absent' | 'Not recorded';
 type AttendanceFlag = 'None' | 'Unprepared' | 'Left early' | 'Other';
@@ -47,7 +49,25 @@ type DemoState = {
   accumulatedSeconds: number;
   liveSession: LiveSession | null;
   attendanceByDay: Record<string, AttendanceDay>;
+  sampleRubricScores: Record<string, number[]>;
 };
+
+const V2_PRIMARY_MODULES: Array<[DemoModule, string]> = [
+  ['planner', 'Today'],
+  ['attendance', 'Attendance'],
+  ['grading', 'Grading Tower'],
+  ['classroom', 'Live Classroom'],
+  ['resources', 'Resources'],
+];
+
+const V2_MORE_MODULES: Array<[DemoModule, string]> = [
+  ['agenda', 'Paired Agenda'],
+  ['timeclock', 'Time Clock'],
+  ['reports', 'Reports'],
+  ['school', 'School Dashboard'],
+];
+
+const V2_MOBILE_MODULES: Array<[DemoModule, string]> = V2_PRIMARY_MODULES.slice(0, 3);
 
 const MODULES: Array<[DemoModule, string, string]> = [
   ['planner', 'Planner', 'Teaching'],
@@ -73,7 +93,7 @@ function formatDuration(totalSeconds: number) {
 }
 
 function isDemoModule(value: unknown): value is DemoModule {
-  return MODULES.some(([id]) => id === value);
+  return MODULES.some(([id]) => id === value) || value === 'grading';
 }
 
 function makeAttendance(program: DemoProgram): AttendanceDay {
@@ -144,7 +164,7 @@ function supportItems(day: DemoCourseDay): PlannerSupportItem[] {
   ].map(([key, label, body]) => ({ key: String(key), label: String(label), body: body as string | null | undefined }));
 }
 
-export default function DemoProgramWorkspace({ program }: { program: DemoProgram }) {
+export default function DemoProgramWorkspace({ program, uxLab = false }: { program: DemoProgram; uxLab?: boolean }) {
   const router = useRouter();
   const storageKey = `ltg_demo_${program.id}_full_system_v1`;
   const firstCourse = program.courses[0];
@@ -160,11 +180,17 @@ export default function DemoProgramWorkspace({ program }: { program: DemoProgram
     accumulatedSeconds: 0,
     liveSession: null,
     attendanceByDay: { '1': makeAttendance(program) },
+    sampleRubricScores: {},
   };
 
   const [state, setState] = useState<DemoState>(initialState);
   const [hydrated, setHydrated] = useState(false);
   const [now, setNow] = useState(() => Date.now());
+  const isLabRoute = uxLab && program.id === 'welding' && process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging';
+  const [designMode, setDesignMode] = useState<'original' | 'v2'>(isLabRoute ? 'v2' : 'original');
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [workflowNotice, setWorkflowNotice] = useState('');
+  const isV2 = isLabRoute && designMode === 'v2';
 
   useEffect(() => {
     try {
@@ -174,7 +200,8 @@ export default function DemoProgramWorkspace({ program }: { program: DemoProgram
         setState((current) => ({
           ...current,
           ...parsed,
-          activeModule: isDemoModule(parsed.activeModule) ? parsed.activeModule : 'planner',
+          activeModule: isDemoModule(parsed.activeModule) && (isLabRoute || parsed.activeModule !== 'grading')
+            ? parsed.activeModule : 'planner',
           selectedCourseCode: program.courses.some((course) => course.code === parsed.selectedCourseCode)
             ? String(parsed.selectedCourseCode)
             : firstCourse.code,
@@ -185,7 +212,7 @@ export default function DemoProgramWorkspace({ program }: { program: DemoProgram
     } finally {
       setHydrated(true);
     }
-  }, [storageKey, firstCourse.code, program.courses]);
+  }, [storageKey, firstCourse.code, program.courses, isLabRoute]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -219,6 +246,23 @@ export default function DemoProgramWorkspace({ program }: { program: DemoProgram
 
   const clockSeconds = state.accumulatedSeconds + (state.clockedInAt ? Math.max(0, Math.floor((now - state.clockedInAt) / 1000)) : 0);
 
+  const gradedCount = scoredSampleCount(state.sampleRubricScores ?? {}, program.students);
+
+  const switchDemoModule = (next: DemoModule) => {
+    update({ activeModule: next });
+    setMoreOpen(false);
+    setWorkflowNotice('');
+  };
+
+  const switchDesign = (next: 'original' | 'v2') => {
+    if (!isLabRoute) return;
+    setDesignMode(next);
+    setMoreOpen(false);
+    setWorkflowNotice('');
+    // The sample Grade Tower only exists in the experimental instructor view.
+    if (next === 'original' && state.activeModule === 'grading') update({ activeModule: 'planner' });
+  };
+
   const groupedModules = useMemo(() => {
     const groups = new Map<string, Array<[DemoModule, string]>>();
     MODULES.forEach(([id, label, group]) => {
@@ -251,6 +295,8 @@ export default function DemoProgramWorkspace({ program }: { program: DemoProgram
   const resetDemo = () => {
     sessionStorage.removeItem(storageKey);
     setState(initialState);
+    setMoreOpen(false);
+    setWorkflowNotice('');
   };
 
   const startCourseDay = () => {
@@ -259,6 +305,28 @@ export default function DemoProgramWorkspace({ program }: { program: DemoProgram
       ...current,
       startedAtByKey: { ...current.startedAtByKey, [selectedKey]: Date.now() },
     }));
+  };
+
+  const completeCourseDayV2 = () => {
+    if (!startedAt || selectedCompleted) return;
+    if (!currentAttendance.finalized) {
+      setWorkflowNotice('Attendance must be finalized before completing the demo day. Use Carry Initial → Final, then Finalize Pair Attendance.');
+      update({ activeModule: 'attendance' });
+      return;
+    }
+    setWorkflowNotice('');
+    completeCourseDay();
+  };
+
+  const gradeSample = (student: string, criterionIndex: number, points: number) => {
+    if (criterionIndex < 0 || criterionIndex >= 5 || ![0, 10, 15, 19].includes(points)) return;
+    if (!program.students.includes(student)) return;
+    setState((current) => {
+      const rubric = current.sampleRubricScores ?? {};
+      const scores = [...(rubric[student] ?? [])];
+      scores[criterionIndex] = points;
+      return { ...current, sampleRubricScores: { ...rubric, [student]: scores } };
+    });
   };
 
   const completeCourseDay = () => {
