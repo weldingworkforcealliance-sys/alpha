@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import FabtechTeachingDayV2 from '../app/demo/_components/FabtechTeachingDayV2';
 import FabtechGradingPracticeV2, { scoredSampleCount } from '../app/demo/_components/FabtechGradingPracticeV2';
@@ -44,7 +44,10 @@ describe('FABTECH teaching workflow v2 is a safe opt-in experiment', () => {
     expect(onStart).toHaveBeenCalledOnce();
     fireEvent.click(screen.getByRole('button',{name:/Attendance · Needed/}));
     expect(onAttendance).toHaveBeenCalledOnce();
-    fireEvent.click(screen.getByRole('button',{name:/Open Practice Grading/}));
+    const classActions = screen.getByRole('region', { name: "Today's class actions" });
+    expect(within(classActions).getByRole('button',{name:'Grading'})).toBeTruthy();
+    expect(within(classActions).queryByRole('button',{name:/Punch (In|Out)/})).toBeNull();
+    fireEvent.click(within(classActions).getByRole('button',{name:'Grading'}));
     expect(onGrade).toHaveBeenCalledOnce();
   });
 
@@ -73,6 +76,11 @@ describe('FABTECH teaching workflow v2 is a safe opt-in experiment', () => {
     expect(app).toContain('FabtechGradingPracticeV2');
     expect(app).toContain('V2_PRIMARY_MODULES');
     expect(app).toContain('v2-mobile-nav');
+    expect(app).toContain('Instructor Punch Clock');
+    expect(app).toContain("onClick={punchClock}");
+    expect(app).toContain("className=\"v2-mobile-punch\"");
+    expect(app).toContain("'timeclock', 'Time Clock'");
+
     expect(app).toContain("sessionStorage.setItem(storageKey, JSON.stringify(state))");
     expect(app).toContain('Original FABTECH');
     expect(app).not.toContain("public.planner_days");
