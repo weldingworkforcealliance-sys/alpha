@@ -13,7 +13,8 @@ describe('standalone LTG product shell', () => {
 
     expect(layout).toContain("const isMarketingRoute = pathname === '/';");
     expect(layout).toContain("const isDemoRoute = pathname.startsWith('/demo');");
-    expect(layout).toContain('isMarketingRoute || isDemoRoute || isAuthRoute');
+    expect(layout).toContain("const isWld205ReviewRoute = pathname === '/wld205-review';");
+    expect(layout).toContain('isMarketingRoute || isDemoRoute || isWld205ReviewRoute || isAuthRoute');
     expect(home).toContain('FOUNDING SCHOOL BETA');
     expect(home).toContain('href="/login"');
   });
@@ -52,7 +53,7 @@ describe('standalone LTG product shell', () => {
   it('does not run authenticated usage tracking on public marketing or demo routes', () => {
     const layout = read('app/layout.tsx');
     expect(layout).toContain(
-      '{!isMarketingRoute && !isDemoRoute && <UsageTracker pathname={pathname} />}'
+      '{!isMarketingRoute && !isDemoRoute && !isWld205ReviewRoute && <UsageTracker pathname={pathname} />}'
     );
   });
 
