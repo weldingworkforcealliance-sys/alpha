@@ -27,6 +27,21 @@ describe('FABTECH A/B session actions', () => {
     expect(within(mainNav).getByRole('button', { name: /Grading Tower/ })).toBeTruthy();
     expect(within(mainNav).getByRole('button', { name: /More tools/ })).toBeTruthy();
 
+    const punch = screen.getByRole('group', { name: 'Instructor Punch Clock' });
+    expect(within(punch).getByRole('button', { name: 'Punch In' })).toBeTruthy();
+    fireEvent.click(within(punch).getByRole('button', { name: 'Punch In' }));
+    expect(within(punch).getByRole('button', { name: 'Punch Out' })).toBeTruthy();
+    expect(within(punch).getByText('IN')).toBeTruthy();
+    fireEvent.click(within(punch).getByRole('button', { name: 'Punch Out' }));
+    expect(within(punch).getByRole('button', { name: 'Punch In' })).toBeTruthy();
+    expect(within(punch).getByText('OUT')).toBeTruthy();
+
+    const actionBar = screen.getByRole('region', { name: "Today's class actions" });
+    fireEvent.click(within(actionBar).getByRole('button', { name: 'Grading' }));
+    expect(await screen.findByRole('heading', { name: 'Shop Performance Scoring' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Back to Today' }));
+    expect(await screen.findByRole('region', { name: "Today's class actions" })).toBeTruthy();
+
     fireEvent.click(screen.getByRole('button', { name: 'Start Today' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'Complete Day' }).hasAttribute('disabled')).toBe(false));
 
