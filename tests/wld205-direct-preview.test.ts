@@ -30,7 +30,7 @@ describe('WLD205 one-click, public-safe layout review', () => {
     expect(client).toContain('PlannerTeachingConsole');
     expect(client).toContain('compactInstructorView={compact}');
     expect(client).toContain('onSelectDay={changeDay}');
-    expect(client).toContain('READ');
+    expect(client).toContain('Read-only');
     expect(client).toContain('anthonyDaySupport(day)');
     expect(client).toContain('sampleResources(day, topic)');
   });
