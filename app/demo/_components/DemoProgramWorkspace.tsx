@@ -482,6 +482,19 @@ export default function DemoProgramWorkspace({ program, uxLab = false }: { progr
             <small>Current class</small>
             <strong>{selectedCourse.code}</strong>
             <span>Day {state.currentDay} / {maxDay}</span>
+            <div className="v2-sidebar-clock" role="group" aria-label="Instructor Punch Clock">
+              <div className="v2-sidebar-clock-top">
+                <small>Instructor punch clock</small>
+                <span className={state.clockedInAt ? 'v2-clock-badge punched-in' : 'v2-clock-badge'}>
+                  {state.clockedInAt ? 'IN' : 'OUT'}
+                </span>
+              </div>
+              <div className="v2-sidebar-clock-row">
+                <span>Today: <strong>{formatDuration(clockSeconds)}</strong></span>
+                <button type="button" className={state.clockedInAt ? 'v2-punch-button punched-in' : 'v2-punch-button'}
+                  onClick={punchClock}>{state.clockedInAt ? 'Punch Out' : 'Punch In'}</button>
+              </div>
+            </div>
           </div>
           <nav aria-label="Teaching View v2 main navigation">
             <div className="nav-label">Instructor Essentials</div>
@@ -599,7 +612,10 @@ export default function DemoProgramWorkspace({ program, uxLab = false }: { progr
             </div>
             <div className="v2-header-pills">
               <button onClick={() => switchDemoModule('attendance')}>{currentAttendance.finalized ? '✓ Attendance done' : 'Attendance open'}</button>
-              <button onClick={() => switchDemoModule('timeclock')}>{state.clockedInAt ? 'Clocked in' : 'Clocked out'}</button>
+              <button type="button" className="v2-mobile-punch" onClick={punchClock}
+                aria-label={state.clockedInAt ? 'Instructor Punch Out' : 'Instructor Punch In'}>
+                {state.clockedInAt ? 'Punch Out' : 'Punch In'} · {formatDuration(clockSeconds)}
+              </button>
             </div>
           </header>
         ) : (
