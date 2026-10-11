@@ -145,11 +145,16 @@ export function validateSnapshot(snapshot) {
       check(shopProgress.has(JSON.stringify([row.gradebook_id, row.student_id])), 'Missing shop progress record.');
     }
     if (table === 'wld110_shop_completions') {
-      check(row.first_attempt_id !== row.second_attempt_id, 'Two shop demonstrations required.');
-      for (const id of [row.first_attempt_id, row.second_attempt_id]) {
+      const single = row.second_attempt_id === null;
+      check(row.first_attempt_id !== row.second_attempt_id, 'Distinct shop demonstrations required.');
+      for (const id of single ? [row.first_attempt_id] : [row.first_attempt_id, row.second_attempt_id]) {
         const source = shopAttempts.get(id);
         sameBook(row, source);
         check(source.student_id === row.student_id && source.competency === row.competency, 'Shop demonstration does not match.');
+        if (single) {
+          check(source.decision === 'grade', 'Single demonstration must be instructor accepted.');
+          check(Number(row.grade) === Number(source.total), 'Accepted shop grade does not match demonstration.');
+        }
       }
       if (row.gradebook_attempt_id != null) {
         const posted = attempts.get(row.gradebook_attempt_id);

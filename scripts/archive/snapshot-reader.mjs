@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { requiredDatasets } from './school-bundle.mjs';
+import { archiveError } from './failure-diagnostics.mjs';
 
 const schema = JSON.parse(readFileSync(new URL('./core-schema.json', import.meta.url), 'utf8'));
 const identifier = (value) => {
@@ -35,7 +36,7 @@ select jsonb_build_object(
 function checkSchema(rows) {
   const actual = Object.fromEntries(requiredDatasets.map((table) => [table,
     rows.filter((row) => row.table_name === table).map((row) => ({ name: row.column_name, type: row.data_type }))]));
-  if (JSON.stringify(actual) !== JSON.stringify(schema)) throw new Error('Student archive schema changed; review the inventory before export.');
+  if (JSON.stringify(actual) !== JSON.stringify(schema)) throw archiveError('CORE_SCHEMA_MISMATCH');
 }
 
 // client must be a dedicated server-side database connection with audited read
@@ -71,10 +72,12 @@ export async function captureCoreSnapshot(client, { environment, sourceRevision,
       consistency: 'repeatable-read', exportId: randomUUID(), environment, sourceRevision,
       // An explicit attachment resolver must fill both fields. Empty is not assumed.
       files: null, fileInventory: null, supplement };
-  } catch {
+  } catch (error) {
     if (started) { try { await client.query('ROLLBACK'); } catch { /* caller must discard connection */ } }
     // Database errors can include record values; do not put them in CI logs.
-    throw new Error('Student snapshot failed; discard this connection and inspect through the protected administrator channel.');
+    const safe = new Error('Student snapshot failed; discard this connection and inspect through the protected administrator channel.');
+    if (['CORE_SCHEMA_MISMATCH', 'CONTEXT_SCHEMA_MISMATCH', 'STORAGE_REQUIRES_RESOLVER'].includes(error?.archiveCode)) safe.archiveCode = error.archiveCode;
+    throw safe;
   }
 }
 

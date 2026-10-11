@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { requiredDatasets, buildSchoolBundles } from './school-bundle.mjs';
 import { captureCoreSnapshot, snapshotSql, schemaCheckSql } from './snapshot-reader.mjs';
+import {archiveError} from './failure-diagnostics.mjs';
 const schema = JSON.parse(readFileSync(new URL('./core-schema.json', import.meta.url), 'utf8'));
 const options = { environment: 'staging', sourceRevision: 'b'.repeat(40) };
 function fake({ drift = false, fail = false, truncate = false } = {}) {
@@ -46,9 +47,17 @@ test('projection preserves bigint identities and excludes live join codes', () =
   assert.match(sql, /"revision"::text/);
   assert.ok(!sql.includes('join_code'));
   assert.ok(!sql.includes('wld110_student_links'));
+  assert.ok(sql.includes('t."decision"'));
   for (const table of ['wld110_shop_progress','wld110_shop_attempts','wld110_shop_completions']) assert.ok(sql.includes(table));
   assert.ok(!/\blimit\b|\boffset\b|\bwhere\b/i.test(sql));
   assert.ok(!snapshotSql({ countsOnly: true }).includes('as records'));
+});
+
+test('schema failures retain only a safe diagnostic code through snapshot rollback', async()=>{
+  const {client}=fake({drift:true});
+  await assert.rejects(captureCoreSnapshot(client,options),e=>e.archiveCode==='CORE_SCHEMA_MISMATCH');
+  const context=fake();
+  await assert.rejects(captureCoreSnapshot(context.client,{...options,captureSupplement:async()=>{throw archiveError('CONTEXT_SCHEMA_MISMATCH');}}),e=>e.archiveCode==='CONTEXT_SCHEMA_MISMATCH');
 });
 test('supplement shares the snapshot and a failure rolls back instead of producing mixed records', async () => {
   const { calls, client } = fake();

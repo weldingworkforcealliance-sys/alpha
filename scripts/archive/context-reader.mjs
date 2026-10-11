@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { archiveError } from './failure-diagnostics.mjs';
 
 export const contextSchema = JSON.parse(readFileSync(new URL('./context-schema.json', import.meta.url), 'utf8'));
 const quote = value => { if (!/^[a-z_][a-z_0-9]*$/.test(value)) throw Error('Invalid inventory'); return `"${value}"`; };
@@ -17,7 +18,7 @@ export async function captureSupplement(client) {
   const datasets = {}, sourceCounts = {};
   for (const [table, columns] of Object.entries(contextSchema)) {
     const observed = actual.filter(r => r.table_name === table).map(r => ({ name: r.column_name, type: r.data_type }));
-    if (JSON.stringify(observed) !== JSON.stringify(columns)) throw Error('Context schema requires review');
+    if (JSON.stringify(observed) !== JSON.stringify(columns)) throw archiveError('CONTEXT_SCHEMA_MISMATCH');
     const rows = (await client.query(contextDataSql(table))).rows;
     if (rows.length !== 1 || !Array.isArray(rows[0].records) || rows[0].total !== rows[0].records.length) throw Error('Incomplete context');
     datasets[table] = rows[0].records; sourceCounts[table] = rows[0].total;
@@ -25,7 +26,7 @@ export async function captureSupplement(client) {
   const storage = (await client.query(storageSql)).rows;
   // Current production inventory has zero Storage objects. Until an actual-byte
   // resolver is installed, future uploads MUST block success instead of vanishing.
-  if (storage.length !== 1 || storage[0].object_count !== 0) throw Error('Storage objects require a reviewed file-transfer resolver');
+  if (storage.length !== 1 || storage[0].object_count !== 0) throw archiveError('STORAGE_REQUIRES_RESOLVER');
   const templates = (await client.query(templateSql)).rows;
   return { format: 'ltg-archive-context-v1', datasets, sourceCounts, templates,
     storage: { objectCount: 0, checkedInSnapshot: true },
