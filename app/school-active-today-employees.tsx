@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getSupabase } from '@/lib/supabase-browser';
+import { eligibleCompletedHours, isActiveOpenPunch, isUnresolvedOpenPunch } from '@/lib/timeclock-safety';
 
 type Employee = {
   id: string;
@@ -29,6 +30,7 @@ type EmployeeRow = {
   schoolName: string;
   entries: Entry[];
   openEntry: Entry | null;
+  unresolvedEntry: Entry | null;
   lastEntry: Entry;
 };
 
@@ -62,6 +64,8 @@ function workedTodayMs(entries: Entry[], nowMs: number) {
   const dayEnd = end.getTime();
 
   return entries.reduce((sum, entry) => {
+    // Do not turn a forgotten punch into today's time worked.
+    if (entry.clock_out_at === null ? !isActiveOpenPunch(entry, nowMs) : eligibleCompletedHours(entry) === 0) return sum;
     const rawStart = new Date(entry.clock_in_at).getTime();
     const rawEnd = entry.clock_out_at
       ? new Date(entry.clock_out_at).getTime()
@@ -180,28 +184,32 @@ export default function SchoolActiveTodayEmployees({ pathname }: { pathname: str
           (a, b) => new Date(b.clock_in_at).getTime() - new Date(a.clock_in_at).getTime()
         );
         if (!employeeEntries.length) return null;
-        const openEntry = employeeEntries.find((entry) => !entry.clock_out_at) ?? null;
+        const openEntry = employeeEntries.find((entry) => isActiveOpenPunch(entry, nowMs)) ?? null;
+        const unresolvedEntry = employeeEntries.find((entry) => isUnresolvedOpenPunch(entry, nowMs)) ?? null;
         return {
           employee,
           schoolName: schoolMap.get(employee.school_id) ?? 'School',
           entries: employeeEntries,
           openEntry,
+          unresolvedEntry,
           lastEntry: employeeEntries[0],
         };
       })
       .filter((row): row is EmployeeRow => Boolean(row))
       .sort((a, b) => {
         if (Boolean(a.openEntry) !== Boolean(b.openEntry)) return a.openEntry ? -1 : 1;
+        if (Boolean(a.unresolvedEntry) !== Boolean(b.unresolvedEntry)) return a.unresolvedEntry ? -1 : 1;
         return (
           new Date(b.lastEntry.clock_in_at).getTime() -
           new Date(a.lastEntry.clock_in_at).getTime()
         );
       });
-  }, [employees, entries, schoolMap]);
+  }, [employees, entries, schoolMap, nowMs]);
 
   if (pathname !== '/school') return null;
 
   const clockedInCount = rows.filter((row) => Boolean(row.openEntry)).length;
+  const unresolvedCount = rows.filter((row) => Boolean(row.unresolvedEntry)).length;
   const showSchoolName = new Set(rows.map((row) => row.employee.school_id)).size > 1;
 
   return (
@@ -210,11 +218,12 @@ export default function SchoolActiveTodayEmployees({ pathname }: { pathname: str
         <div>
           <span className="ltg-school-live-punch-eyebrow">Live Time Clock</span>
           <h2>Active Today Employees</h2>
-          <p>View-only live punch status. Corrections and payroll controls remain in Employee Time Clock.</p>
+          <p>Only current shifts count as clocked in. Prior open punches require manager reconciliation in Employee Time Clock.</p>
+          {unresolvedCount > 0 && <p role="status">{unresolvedCount} unresolved previous {unresolvedCount === 1 ? 'shift' : 'shifts'} require review.</p>}
         </div>
         <div className="ltg-school-live-punch-count">
           <strong>{clockedInCount}</strong>
-          <span>Clocked In</span>
+          <span>Clocked In Now</span>
         </div>
       </div>
 
@@ -228,7 +237,8 @@ export default function SchoolActiveTodayEmployees({ pathname }: { pathname: str
         <div className="ltg-school-live-punch-list">
           {rows.map((row) => {
             const active = Boolean(row.openEntry);
-            const last = row.openEntry ?? row.lastEntry;
+            const unresolved = Boolean(row.unresolvedEntry);
+            const last = row.openEntry ?? row.unresolvedEntry ?? row.lastEntry;
             return (
               <article className="ltg-school-live-punch-row" key={row.employee.id}>
                 <div className="ltg-school-live-punch-person">
@@ -245,17 +255,19 @@ export default function SchoolActiveTodayEmployees({ pathname }: { pathname: str
                 <div className="ltg-school-live-punch-times">
                   <span>
                     <small>Clock In</small>
-                    <strong>{formatClock(last.clock_in_at)}</strong>
+                    <strong>{unresolved ? new Date(last.clock_in_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : formatClock(last.clock_in_at)}</strong>
                   </span>
                   <span>
-                    <small>{active ? 'Current Time' : 'Clock Out'}</small>
+                    <small>{unresolved ? 'Old open punch' : active ? 'Hours Today' : 'Clock Out'}</small>
                     <strong>
-                      {active
-                        ? formatElapsed(workedTodayMs(row.entries, nowMs))
-                        : formatClock(last.clock_out_at)}
+                      {unresolved
+                        ? 'Manager review required'
+                        : active
+                          ? formatElapsed(workedTodayMs(row.entries, nowMs))
+                          : formatClock(last.clock_out_at)}
                     </strong>
                   </span>
-                  {!active && (
+                  {!active && !unresolved && (
                     <span>
                       <small>Today</small>
                       <strong>{formatElapsed(workedTodayMs(row.entries, nowMs))}</strong>
@@ -264,7 +276,7 @@ export default function SchoolActiveTodayEmployees({ pathname }: { pathname: str
                 </div>
 
                 <span className={`ltg-school-live-punch-status ${active ? 'active' : 'complete'}`}>
-                  {active ? 'CLOCKED IN' : 'CLOCKED OUT'}
+                  {unresolved ? 'REVIEW NEEDED' : active ? 'CLOCKED IN' : 'CLOCKED OUT'}
                 </span>
               </article>
             );
