@@ -54,7 +54,7 @@ describe('time-clock stale-session protections', () => {
       { clock_in_at: at('2026-10-08T17:00:00-04:00'), clock_out_at: at('2026-10-08T22:00:00-04:00') },
       { clock_in_at: at('2026-10-09T11:00:00-04:00'), clock_out_at: at('2026-10-09T14:00:00-04:00') },
     ];
-    expect(entries.map(eligibleCompletedHours)).toEqual([6, 5, 3]);
+    expect(entries.map(entry => eligibleCompletedHours(entry))).toEqual([6, 5, 3]);
     expect(entries.reduce((sum, entry) => sum + eligibleCompletedHours(entry), 0)).toBe(14);
   });
 });
