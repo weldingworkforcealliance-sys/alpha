@@ -132,7 +132,7 @@
 
 .summaryGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
   gap: 14px;
   margin-bottom: 18px;
 }
@@ -517,4 +517,30 @@
   .rangeTotal {
     grid-column: auto;
   }
+}
+
+/* Unresolved punches are distinct from active employees and payable time. */
+.statusReview {
+  color: #ffce90;
+  border: 1px solid rgba(255, 180, 81, 0.5);
+  border-radius: 8px;
+  padding: 7px 11px;
+  background: rgba(112, 67, 24, 0.28);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.reviewNotice {
+  display: block;
+  margin: 12px 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 180, 81, 0.45);
+  border-radius: 9px;
+  color: #ffe5c0;
+  background: rgba(110, 62, 16, 0.23);
+  line-height: 1.5;
+}
+
+.reviewNotice button {
+  margin-left: 12px;
 }
