@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
+import { eligibleCompletedHours, isActiveOpenPunch, isUnresolvedOpenPunch } from '@/lib/timeclock-safety';
 import { PAYROLL_ROLES, SCHOOL_MANAGEMENT_ROLES } from '@/lib/access-roles';
 import styles from './time-clock.module.css';
 
@@ -163,6 +164,14 @@ export default function TimeClockPage() {
     return map;
   }, [entries]);
 
+  const unresolvedByEmployee = useMemo(() => {
+    const map = new Map<string, TimeEntry>();
+    openByEmployee.forEach((entry, employeeId) => {
+      if (isUnresolvedOpenPunch(entry, now)) map.set(employeeId, entry);
+    });
+    return map;
+  }, [openByEmployee, now]);
+
   const myEmployee = useMemo(
     () => employees.find((employee) => employee.profile_id === userId) ?? null,
     [employees, userId]
@@ -183,8 +192,8 @@ export default function TimeClockPage() {
   }, [entries, rangeStart, rangeEnd]);
 
   const totalHours = useMemo(
-    () => filteredEntries.reduce((sum, entry) => sum + hoursBetween(entry.clock_in_at, entry.clock_out_at, now), 0),
-    [filteredEntries, now]
+    () => filteredEntries.reduce((sum, entry) => sum + eligibleCompletedHours(entry), 0),
+    [filteredEntries]
   );
 
   const currentSchool = schools.find((school) => school.id === schoolId) ?? null;
@@ -334,6 +343,10 @@ export default function TimeClockPage() {
 
   const handlePunch = async (employee: Employee) => {
     const openEntry = openByEmployee.get(employee.id);
+    if (openEntry && isUnresolvedOpenPunch(openEntry, Date.now())) {
+      setError('A previous shift is still open and requires a manager correction. Do not clock out at the current time.');
+      return;
+    }
     const selfPunch = employee.profile_id === userId;
     const enteredPin = selfPunch ? null : pin.trim();
 
@@ -501,6 +514,9 @@ export default function TimeClockPage() {
       setActionLoading(false);
     }
   };
+  const myUnresolved = Boolean(myEmployee && unresolvedByEmployee.has(myEmployee.id));
+  const kioskUnresolved = Boolean(selectedEmployee && unresolvedByEmployee.has(selectedEmployee.id));
+
   if (loading) {
     return <main className={styles.loading}>Opening LTG Time Clock…</main>;
   }
@@ -543,11 +559,15 @@ export default function TimeClockPage() {
           </div>
           <div className={styles.summaryCard}>
             <span>Clocked In Now</span>
-            <strong>{openByEmployee.size}</strong>
+            <strong>{openByEmployee.size - unresolvedByEmployee.size}</strong>
           </div>
           <div className={styles.summaryCard}>
-            <span>Hours in Report</span>
+            <span>Completed Hours (excluding exceptions)</span>
             <strong>{totalHours.toFixed(2)}</strong>
+          </div>
+          <div className={styles.summaryCard}>
+            <span>Prior Open Shifts Needing Review</span>
+            <strong>{unresolvedByEmployee.size}</strong>
           </div>
         </section>
 
@@ -567,24 +587,32 @@ export default function TimeClockPage() {
                     <strong>{myEmployee.display_name}</strong>
                     <span>{myEmployee.employee_code || 'LTG employee'}</span>
                   </div>
-                  <div className={openByEmployee.has(myEmployee.id) ? styles.statusIn : styles.statusOut}>
-                    {openByEmployee.has(myEmployee.id) ? 'CLOCKED IN' : 'CLOCKED OUT'}
+                  <div className={myUnresolved ? styles.statusReview : openByEmployee.has(myEmployee.id) ? styles.statusIn : styles.statusOut}>
+                    {myUnresolved ? 'REVIEW NEEDED' : openByEmployee.has(myEmployee.id) ? 'CLOCKED IN' : 'CLOCKED OUT'}
                   </div>
                 </div>
 
-                {openByEmployee.get(myEmployee.id) && (
+                {openByEmployee.get(myEmployee.id) && !myUnresolved && (
                   <div className={styles.elapsed}>
                     Clocked in at {formatTime(openByEmployee.get(myEmployee.id)!.clock_in_at)} ·{' '}
                     {elapsedLabel(openByEmployee.get(myEmployee.id)!.clock_in_at, now)}
                   </div>
                 )}
 
+                {myUnresolved && (
+                  <div className={styles.reviewNotice} role="alert">
+                    A previous clock-in from {formatDate(openByEmployee.get(myEmployee.id)!.clock_in_at)} is unresolved.
+                    Ask a manager to record the actual clock-out time before punching again.
+                    This open shift is excluded from payroll totals.
+                  </div>
+                )}
+
                 <button
                   className={openByEmployee.has(myEmployee.id) ? styles.clockOutButton : styles.clockInButton}
-                  disabled={actionLoading || !myEmployee.clocking_enabled}
+                  disabled={actionLoading || !myEmployee.clocking_enabled || myUnresolved}
                   onClick={() => handlePunch(myEmployee)}
                 >
-                  {openByEmployee.has(myEmployee.id) ? 'CLOCK OUT' : 'CLOCK IN'}
+                  {myUnresolved ? 'REVIEW REQUIRED' : openByEmployee.has(myEmployee.id) ? 'CLOCK OUT' : 'CLOCK IN'}
                 </button>
 
                 <div className={styles.pinRow}>
@@ -638,8 +666,8 @@ export default function TimeClockPage() {
                         {selectedEmployee.profile_id ? ' · LTG linked' : ' · Kiosk only'}
                       </span>
                     </div>
-                    <div className={openByEmployee.has(selectedEmployee.id) ? styles.statusIn : styles.statusOut}>
-                      {openByEmployee.has(selectedEmployee.id) ? 'IN' : 'OUT'}
+                    <div className={kioskUnresolved ? styles.statusReview : openByEmployee.has(selectedEmployee.id) ? styles.statusIn : styles.statusOut}>
+                      {kioskUnresolved ? 'REVIEW' : openByEmployee.has(selectedEmployee.id) ? 'IN' : 'OUT'}
                     </div>
                   </div>
 
@@ -657,12 +685,13 @@ export default function TimeClockPage() {
                     </label>
                   )}
 
+                  {kioskUnresolved && <div className={styles.reviewNotice}>This employee has an unresolved earlier shift. A manager must correct it before clocking again.</div>}
                   <button
                     className={openByEmployee.has(selectedEmployee.id) ? styles.clockOutButton : styles.clockInButton}
-                    disabled={actionLoading || !selectedEmployee.clocking_enabled}
+                    disabled={actionLoading || !selectedEmployee.clocking_enabled || kioskUnresolved}
                     onClick={() => handlePunch(selectedEmployee)}
                   >
-                    {openByEmployee.has(selectedEmployee.id) ? 'CLOCK OUT' : 'CLOCK IN'}
+                    {kioskUnresolved ? 'REVIEW REQUIRED' : openByEmployee.has(selectedEmployee.id) ? 'CLOCK OUT' : 'CLOCK IN'}
                   </button>
                 </>
               )}
@@ -744,6 +773,26 @@ export default function TimeClockPage() {
           </section>
         )}
 
+        {isManager && unresolvedByEmployee.size > 0 && (
+          <section className={styles.panel}>
+            <div className={styles.panelHeading}>
+              <div>
+                <span className={styles.kicker}>PAYROLL EXCEPTIONS</span>
+                <h2>Unresolved Open Shifts</h2>
+              </div>
+            </div>
+            <p>These prior shifts are not current clock-ins and are excluded from payable totals. Correct the actual times, preserving the audit trail.</p>
+            {[...unresolvedByEmployee.values()].map((entry) => (
+              <div className={styles.reviewNotice} key={entry.id}>
+                <strong>{employeeById.get(entry.employee_id)?.display_name ?? 'Employee'}</strong>
+                {' · Open since '}{formatDate(entry.clock_in_at)}{' at '}{formatTime(entry.clock_in_at)}
+                {' · '}
+                <button disabled={actionLoading} onClick={() => beginAdjustment(entry)}>Correct Shift</button>
+              </div>
+            ))}
+          </section>
+        )}
+
         <section className={styles.panel}>
           <div className={styles.panelHeading}>
             <div>
@@ -766,7 +815,7 @@ export default function TimeClockPage() {
               <input type="date" value={rangeEnd} onChange={(event) => setRangeEnd(event.target.value)} />
             </label>
             <div className={styles.rangeTotal}>
-              <span>Total hours</span>
+              <span>Completed hours (excluding exceptions)</span>
               <strong>{totalHours.toFixed(2)}</strong>
             </div>
           </div>
