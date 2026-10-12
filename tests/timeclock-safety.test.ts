@@ -86,7 +86,11 @@ describe('weekly Excel payroll exception isolation', () => {
     const sheet = book.getWorksheet('Week 2026-10-05');
     expect(sheet).toBeDefined();
     const rows = [6, 7, 8, 9].map(number => sheet!.getRow(number));
-    const totals = new Map(rows.map(row => [String(row.getCell(1).value), Number((row.getCell(9).value as { result: number }).result)]));
+    const totals = new Map(rows.map(row => [
+      String(row.getCell(1).value),
+      [2, 3, 4, 5, 6, 7, 8].reduce((sum, col) => sum + Number(row.getCell(col).value ?? 0), 0),
+    ]));
+    for (const row of rows) expect(row.getCell(9).formula).toBe(`SUM(B${row.number}:H${row.number})`);
     expect(totals.get('Anthony Ruffino')).toBe(3);
     expect(totals.get('Naji Halil')).toBe(11);
     expect(totals.get('Finsen Sierra')).toBe(0);
