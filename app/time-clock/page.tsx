@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
-import { eligibleCompletedHours, isActiveOpenPunch, isUnresolvedOpenPunch } from '@/lib/timeclock-safety';
+import { eligibleCompletedHours, isUnresolvedOpenPunch } from '@/lib/timeclock-safety';
 import { PAYROLL_ROLES, SCHOOL_MANAGEMENT_ROLES } from '@/lib/access-roles';
 import styles from './time-clock.module.css';
 
@@ -195,6 +195,10 @@ export default function TimeClockPage() {
     () => filteredEntries.reduce((sum, entry) => sum + eligibleCompletedHours(entry), 0),
     [filteredEntries]
   );
+
+  const completedReviewCount = filteredEntries.filter(
+    (entry) => entry.clock_out_at !== null && eligibleCompletedHours(entry) === 0
+  ).length;
 
   const currentSchool = schools.find((school) => school.id === schoolId) ?? null;
 
@@ -566,8 +570,8 @@ export default function TimeClockPage() {
             <strong>{totalHours.toFixed(2)}</strong>
           </div>
           <div className={styles.summaryCard}>
-            <span>Prior Open Shifts Needing Review</span>
-            <strong>{unresolvedByEmployee.size}</strong>
+            <span>Shifts Needing Review</span>
+            <strong>{unresolvedByEmployee.size + completedReviewCount}</strong>
           </div>
         </section>
 
@@ -845,6 +849,13 @@ export default function TimeClockPage() {
             </div>
           )}
 
+          {completedReviewCount > 0 && (
+            <div className={styles.reviewNotice} role="status">
+              {completedReviewCount} completed {completedReviewCount === 1 ? 'shift is' : 'shifts are'} over the 16-hour review threshold in this report.
+              They appear in the audit table but are excluded from completed totals until corrected and approved.
+            </div>
+          )}
+
           <div className={styles.tableWrap}>
             <table>
               <thead>
@@ -861,16 +872,18 @@ export default function TimeClockPage() {
               <tbody>
                 {filteredEntries.map((entry) => {
                   const employee = employeeById.get(entry.employee_id);
+                  const longCompleted = entry.clock_out_at !== null && eligibleCompletedHours(entry) === 0;
+                  const staleOpen = isUnresolvedOpenPunch(entry, now);
                   return (
                     <tr key={entry.id}>
                       {canReport && <td><strong>{employee?.display_name ?? 'Unknown employee'}</strong></td>}
                       <td>{formatDate(entry.clock_in_at)}</td>
                       <td>{formatTime(entry.clock_in_at)}</td>
                       <td>{formatTime(entry.clock_out_at)}</td>
-                      <td>{hoursBetween(entry.clock_in_at, entry.clock_out_at, now).toFixed(2)}</td>
+                      <td>{hoursBetween(entry.clock_in_at, entry.clock_out_at, now).toFixed(2)}{longCompleted || staleOpen ? ' (excluded)' : ''}</td>
                       <td>
-                        <span className={entry.clock_out_at ? styles.completePill : styles.openPill}>
-                          {entry.clock_out_at ? 'Complete' : 'Clocked In'}
+                        <span className={longCompleted || staleOpen ? styles.statusReview : entry.clock_out_at ? styles.completePill : styles.openPill}>
+                          {longCompleted ? 'REVIEW LONG SHIFT' : staleOpen ? 'REVIEW OLD PUNCH' : entry.clock_out_at ? 'Complete' : 'Clocked In'}
                         </span>
                       </td>
                       {isManager && (
