@@ -30,9 +30,26 @@ describe('time-clock stale-session protections', () => {
     const open = { clock_in_at: clockIn, clock_out_at: null };
     expect(isActiveOpenPunch(open, Date.parse('2026-10-12T02:00:00-04:00'))).toBe(true);
     expect(isUnresolvedOpenPunch(open, Date.parse('2026-10-12T14:00:01-04:00'))).toBe(true);
-    expect(isActiveOpenPunch(open, Date.parse('2026-10-12T14:00:00-04:00'))).toBe(true);
+    expect(isActiveOpenPunch(open, Date.parse('2026-10-12T14:00:00-04:00'))).toBe(false);
+    // An open shift that starts today can reach exactly 16 hours before
+    // crossing the long-shift cutoff.
+    const sameDay = { clock_in_at: at('2026-10-13T00:00:00-04:00'), clock_out_at: null };
+    expect(isActiveOpenPunch(sameDay, Date.parse('2026-10-13T16:00:00-04:00'))).toBe(true);
     expect(DEFAULT_REVIEW_HOURS).toBe(16);
     expect(isUnresolvedOpenPunch({ clock_in_at: at('2026-10-13T11:00:00-04:00'), clock_out_at: null }, now)).toBe(true);
+  });
+
+  it('flags yesterday\'s unclosed punch this morning before the 16-hour limit', () => {
+    const overnight = { clock_in_at: at('2026-10-12T16:59:08-04:00'), clock_out_at: null };
+    const nextMorning = Date.parse('2026-10-13T08:37:00-04:00');
+    expect(recordedShiftHours(overnight, nextMorning)).toBeLessThan(16);
+    expect(isUnresolvedOpenPunch(overnight, nextMorning)).toBe(true);
+    expect(isActiveOpenPunch(overnight, nextMorning)).toBe(false);
+
+    // A legitimate short overnight shift is not blocked simply at midnight.
+    const nightShift = { clock_in_at: at('2026-10-12T22:00:00-04:00'), clock_out_at: null };
+    expect(isActiveOpenPunch(nightShift, Date.parse('2026-10-13T06:00:00-04:00'))).toBe(true);
+    expect(isUnresolvedOpenPunch(nightShift, Date.parse('2026-10-13T09:00:00-04:00'))).toBe(true);
   });
 
   it('excludes unfinished and over-16-hour completed shifts from automated totals', () => {
