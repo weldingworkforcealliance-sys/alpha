@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getSupabase } from '@/lib/supabase-browser';
+import { eligibleCompletedHours, isActiveOpenPunch, isUnresolvedOpenPunch } from '@/lib/timeclock-safety';
 
 type Employee = {
   id: string;
@@ -27,6 +28,7 @@ function localDayBounds() {
 function hoursToday(entries: TimeEntry[], now: number) {
   const { start, end } = localDayBounds();
   return entries.reduce((sum, entry) => {
+    if (entry.clock_out_at === null ? !isActiveOpenPunch(entry, now) : eligibleCompletedHours(entry) === 0) return sum;
     const inMs = Math.max(new Date(entry.clock_in_at).getTime(), start.getTime());
     const outMs = Math.min(
       entry.clock_out_at ? new Date(entry.clock_out_at).getTime() : now,
@@ -142,14 +144,17 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
   }, [supported]);
 
   const todayHours = useMemo(() => hoursToday(entries, now), [entries, now]);
+  const activeOpen = Boolean(openEntry && isActiveOpenPunch(openEntry, now));
+  const unresolvedOpen = Boolean(openEntry && isUnresolvedOpenPunch(openEntry, now));
 
   const handlePunch = async () => {
-    if (!employee || busy || !employee.clocking_enabled) return;
+    // A stale session must be corrected by a manager, never clocked out now.
+    if (!employee || busy || !employee.clocking_enabled || unresolvedOpen) return;
     setBusy(true);
     setError('');
     try {
       const { error: rpcError } = await supabase.rpc(
-        openEntry ? 'timeclock_clock_out' : 'timeclock_clock_in',
+        activeOpen ? 'timeclock_clock_out' : 'timeclock_clock_in',
         {
           p_employee_id: employee.id,
           p_pin: null,
@@ -198,22 +203,24 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
           </div>
         ) : (
           <div className="ltg-punch-action-row">
-            <div className={`ltg-punch-status ${openEntry ? 'in' : 'out'}`}>
+            <div className={`ltg-punch-status ${activeOpen ? 'in' : unresolvedOpen ? 'neutral' : 'out'}`}>
               <span className="ltg-punch-dot" aria-hidden="true" />
-              <strong>{openEntry ? 'Clocked In' : 'Clocked Out'}</strong>
+              <strong>{unresolvedOpen ? 'Previous Punch Needs Review' : activeOpen ? 'Clocked In' : 'Clocked Out'}</strong>
               <span>
-                {openEntry
-                  ? `Since ${formatClockTime(openEntry.clock_in_at)}`
-                  : 'You are not currently on the clock.'}
+                {unresolvedOpen && openEntry
+                  ? `Previous punch from ${new Date(openEntry.clock_in_at).toLocaleString('en-US')} must be corrected by a manager.`
+                  : activeOpen && openEntry
+                    ? `Since ${formatClockTime(openEntry.clock_in_at)}`
+                    : 'You are not currently on the clock.'}
               </span>
             </div>
             <button
               type="button"
               className="ltg-punch-primary"
               onClick={handlePunch}
-              disabled={busy || !employee.clocking_enabled}
+              disabled={busy || !employee.clocking_enabled || unresolvedOpen}
             >
-              {busy ? 'Working…' : openEntry ? 'Clock Out' : 'Clock In'}
+              {busy ? 'Working…' : unresolvedOpen ? 'Review Required' : activeOpen ? 'Clock Out' : 'Clock In'}
             </button>
           </div>
         )}
@@ -228,10 +235,10 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
         </div>
         <div className="ltg-today-session">
           <span aria-hidden="true">◷</span>
-          {openEntry ? `Active since ${formatClockTime(openEntry.clock_in_at)}` : 'No active clock session'}
+          {unresolvedOpen ? 'Previous punch requires review' : activeOpen && openEntry ? `Active since ${formatClockTime(openEntry.clock_in_at)}` : 'No active clock session'}
         </div>
         <div className="ltg-today-total">
-          <span>Total Hours Today</span>
+          <span>Recorded Hours Today (reviewed + current)</span>
           <strong>{formatDuration(todayHours)}</strong>
         </div>
       </div>

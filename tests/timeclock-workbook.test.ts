@@ -44,7 +44,7 @@ describe('weekly attendance workbook', () => {
   });
 
   it('flags open, high, multi-day and clock-hour mismatches without changing hours', () => {
-    expect(punchExceptions(punch({ status: 'Clocked In', clockOut: '—' }))).toEqual(['Open punch — provisional hours']);
+    expect(punchExceptions(punch({ status: 'Clocked In', clockOut: '—' }))).toEqual(['Open punch — EXCLUDED from completed/payroll totals pending correction']);
     expect(punchExceptions(punch({ hours: 32 }))).toContain('Clock-time/hour mismatch — check punch dates');
     expect(punchExceptions(punch({ hours: 32 }))).toContain('High hours (>12)');
     expect(punchExceptions(punch({ clockIn: '10:00 PM', clockOut: '6:00 AM' }))).toEqual([]);

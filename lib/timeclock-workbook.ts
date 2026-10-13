@@ -1,4 +1,5 @@
 import ExcelJS from 'exceljs';
+import { DEFAULT_REVIEW_HOURS, eligibleWorkbookHours } from './timeclock-safety';
 
 export type ReportPunch = {
   employeeId: string;
@@ -6,7 +7,7 @@ export type ReportPunch = {
   date: string; // Local calendar date, matching the attendance report.
   clockIn: string;
   clockOut: string;
-  hours: number; // Existing LTG export hours, never recalculated here.
+  hours: number; // Raw recorded/elapsed hours for audit, NOT automatically payable.
   status: string;
   methodIn: string;
   methodOut: string;
@@ -29,7 +30,10 @@ function clockMinutes(value: string) {
 
 export function punchExceptions(punch: ReportPunch): string[] {
   const flags: string[] = [];
-  if (punch.status === 'Clocked In') flags.push('Open punch — provisional hours');
+  if (punch.status === 'Clocked In') flags.push('Open punch — EXCLUDED from completed/payroll totals pending correction');
+  if (punch.status === 'Complete' && punch.hours > DEFAULT_REVIEW_HOURS) {
+    flags.push('Long shift (>16 hours) — EXCLUDED from totals pending manager review');
+  }
   if (punch.hours > 12) flags.push('High hours (>12)');
   const start = clockMinutes(punch.clockIn);
   const end = clockMinutes(punch.clockOut);
@@ -73,10 +77,10 @@ export function buildTimeclockWorkbook(punches: readonly ReportPunch[], start: s
     sheet.mergeCells('A2:K2');
     sheet.getCell('A2').value = `Payroll week: ${weekStart} – ${weekEnd} | Selected range: ${start} – ${end}`;
     sheet.mergeCells('A3:K3');
-    sheet.getCell('A3').value = 'Hours use existing LTG calculations. Open punches are provisional. Enter approved paid hours in the yellow Payroll Hours column.';
+    sheet.getCell('A3').value = 'Completed shifts <=16 hours are included. Open and longer shifts are excluded pending correction or review. Enter approved paid hours manually in the yellow Payroll Hours column.';
     sheet.mergeCells('A4:K4');
-    sheet.getCell('A4').value = 'Review flags: punch/day >12 hours; week >40 hours; displayed clock interval differs by >2 minutes. Outside-range days are shaded.';
-    sheet.getRow(5).values = ['Instructor', ...dayNames.map((day, i) => `${day}\n${shortDate(isoDay(week + i * DAY))}`), 'LTG Weekly Total', 'Payroll Hours', 'Review / Exceptions'];
+    sheet.getCell('A4').value = 'Review flags: open punch; shift >16 hours; punch/day >12 hours; week >40 hours; clock-time mismatch. Raw Data retains every original punch.';
+    sheet.getRow(5).values = ['Instructor', ...dayNames.map((day, i) => `${day}\n${shortDate(isoDay(week + i * DAY))}`), 'Completed Reviewed Hours', 'Payroll Hours', 'Review / Exceptions'];
     sheet.getRow(5).height = 34;
     sheet.getRow(5).eachCell(cell => {
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: navy } };
@@ -96,7 +100,7 @@ export function buildTimeclockWorkbook(punches: readonly ReportPunch[], start: s
       const hours = dayNames.map((_, i) => {
         const date = isoDay(week + i * DAY);
         if (date < start || date > end) return null;
-        const daily = group.filter(p => p.date === date).reduce((sum, p) => sum + p.hours, 0);
+        const daily = group.filter(p => p.date === date).reduce((sum, p) => sum + eligibleWorkbookHours(p.status, p.hours), 0);
         if (daily > 12 && !group.some(p => p.date === date && p.hours > 12)) flags.push(`${shortDate(date)}: Daily total >12 hours`);
         return daily;
       });
@@ -126,11 +130,12 @@ export function buildTimeclockWorkbook(punches: readonly ReportPunch[], start: s
   }
 
   const raw = workbook.addWorksheet('Raw Data', { views: [{ state: 'frozen', ySplit: 1 }] });
-  raw.columns = ['Employee', 'Date', 'Clock In', 'Clock Out', 'Hours', 'Status', 'Method In', 'Method Out', 'Employee ID', 'Entry ID', 'Clock In Timestamp', 'Clock Out Timestamp'].map(header => ({ header, width: header.includes('Timestamp') ? 30 : 23 }));
-  for (const punch of selected) raw.addRow([punch.employee, punch.date, punch.clockIn, punch.clockOut, punch.hours, punch.status, punch.methodIn, punch.methodOut || null, punch.employeeId, punch.entryId ?? null, punch.clockInAt ?? null, punch.clockOutAt ?? null]);
+  raw.columns = ['Employee', 'Date', 'Clock In', 'Clock Out', 'Raw Hours (unverified)', 'Status', 'Method In', 'Method Out', 'Employee ID', 'Entry ID', 'Clock In Timestamp', 'Clock Out Timestamp', 'Eligible Completed Hours', 'Review / Exceptions'].map(header => ({ header, width: header.includes('Timestamp') ? 30 : header === 'Review / Exceptions' ? 56 : 23 }));
+  for (const punch of selected) raw.addRow([punch.employee, punch.date, punch.clockIn, punch.clockOut, punch.hours, punch.status, punch.methodIn, punch.methodOut || null, punch.employeeId, punch.entryId ?? null, punch.clockInAt ?? null, punch.clockOutAt ?? null, eligibleWorkbookHours(punch.status, punch.hours), punchExceptions(punch).join('; ') || null]);
   raw.getColumn(5).numFmt = '0.0000';
+  raw.getColumn(13).numFmt = '0.0000';
   raw.getRow(1).font = { bold: true, color: { argb: 'FFFFFF' } };
   raw.getRow(1).eachCell(cell => { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: navy } }; });
-  raw.autoFilter = { from: 'A1', to: `L${raw.rowCount}` };
+  raw.autoFilter = { from: 'A1', to: `N${raw.rowCount}` };
   return workbook;
 }
