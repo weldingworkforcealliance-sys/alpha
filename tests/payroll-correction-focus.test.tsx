@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, configure, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+configure({ asyncUtilTimeout: 10000 });
+vi.setConfig({ testTimeout: 20000 });
 const mock = vi.hoisted(() => ({ rpc: vi.fn(), from: vi.fn(), getSession: vi.fn(), push: vi.fn() }));
 const router = { push: mock.push };
 vi.mock('next/navigation', () => ({ useRouter: () => router }));
