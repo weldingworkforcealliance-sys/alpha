@@ -11,9 +11,9 @@ vi.mock('@/lib/supabase-browser', () => ({ getSupabase: () => client }));
 import TimeClockPage from '../app/time-clock/page';
 const employees = ['First instructor', 'Second instructor'].map((display_name,i)=>({id:`employee-${i}`,school_id:'school',profile_id:`user-${i}`,display_name,active:true,clocking_enabled:true,pin_configured:false}));
 const entries = employees.map((e,i)=>({id:`entry-${i}`,school_id:'school',employee_id:e.id,clock_in_at:`2020-10-${12+i}T14:29:25.000Z`,clock_out_at:null,clock_in_method:'self',clock_out_method:null,notes:null}));
-let scroll: ReturnType<typeof vi.fn>;
+const scroll = vi.fn<(arg?: boolean | ScrollIntoViewOptions) => void>();
 beforeEach(() => {
- vi.clearAllMocks(); scroll=vi.fn(); HTMLElement.prototype.scrollIntoView=scroll;
+ vi.clearAllMocks(); HTMLElement.prototype.scrollIntoView=scroll;
  mock.getSession.mockResolvedValue({data:{session:{user:{id:'user-0'}}}});
  mock.rpc.mockResolvedValue({data:true,error:null});
  mock.from.mockImplementation((table:string)=>{
