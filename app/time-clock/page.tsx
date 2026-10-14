@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
 import { eligibleCompletedHours, isUnresolvedOpenPunch } from '@/lib/timeclock-safety';
@@ -136,6 +136,15 @@ export default function TimeClockPage() {
   const [adjustIn, setAdjustIn] = useState('');
   const [adjustOut, setAdjustOut] = useState('');
   const [adjustReason, setAdjustReason] = useState('');
+  const [adjustmentRequest, setAdjustmentRequest] = useState(0);
+  const adjustmentRef = useRef<HTMLDivElement>(null);
+  const clockOutRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!adjustmentRequest) return;
+    adjustmentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    clockOutRef.current?.focus({ preventScroll: true });
+  }, [adjustmentRequest]);
 
   const currentMembership = useMemo(
     () => memberships.find((membership) => membership.school_id === schoolId) ?? null,
@@ -448,6 +457,7 @@ export default function TimeClockPage() {
 
   const beginAdjustment = (entry: TimeEntry) => {
     setAdjustingEntryId(entry.id);
+    setAdjustmentRequest((request) => request + 1);
     setAdjustIn(toLocalDateTimeInput(entry.clock_in_at));
     setAdjustOut(toLocalDateTimeInput(entry.clock_out_at));
     setAdjustReason('');
@@ -791,7 +801,7 @@ export default function TimeClockPage() {
                 <strong>{employeeById.get(entry.employee_id)?.display_name ?? 'Employee'}</strong>
                 {' · Open since '}{formatDate(entry.clock_in_at)}{' at '}{formatTime(entry.clock_in_at)}
                 {' · '}
-                <button disabled={actionLoading} onClick={() => beginAdjustment(entry)}>Correct Shift</button>
+                <button type="button" disabled={actionLoading} aria-expanded={adjustingEntryId === entry.id} aria-controls="time-entry-correction" onClick={() => beginAdjustment(entry)}>Correct Shift</button>
               </div>
             ))}
           </section>
@@ -825,8 +835,10 @@ export default function TimeClockPage() {
           </div>
 
           {adjustingEntryId && isManager && (
-            <div className={styles.adjustBox}>
-              <h3>Correct Time Entry</h3>
+            <div id="time-entry-correction" ref={adjustmentRef} className={styles.adjustBox} role="region" aria-labelledby="time-entry-correction-title">
+              <h3 id="time-entry-correction-title">Correct Time Entry</h3>
+              <p><strong>{employeeById.get(entries.find((entry) => entry.id === adjustingEntryId)?.employee_id ?? '')?.display_name ?? 'Selected employee'}</strong></p>
+              {error && <div role="alert" className={styles.error}>{error}</div>}
               <p>Every correction is retained in the adjustment history with the manager and reason.</p>
               <div className={styles.formGrid}>
                 <label className={styles.field}>
@@ -835,7 +847,7 @@ export default function TimeClockPage() {
                 </label>
                 <label className={styles.field}>
                   Clock out
-                  <input type="datetime-local" value={adjustOut} onChange={(event) => setAdjustOut(event.target.value)} />
+                  <input ref={clockOutRef} type="datetime-local" value={adjustOut} onChange={(event) => setAdjustOut(event.target.value)} />
                 </label>
                 <label className={styles.fieldWide}>
                   Reason
