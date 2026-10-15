@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import TeachingView from './teaching-view';
 import PlannerAttendancePanel from '../planner-attendance-panel';
 import PlannerActivity from '../planner-activity';
@@ -189,8 +189,22 @@ function formatClockTime(timestamp: string) {
 }
 
 export default function DashboardPage() {
+  return <Suspense fallback={<main>Loading planner…</main>}><DashboardContent /></Suspense>;
+}
+
+function DashboardContent() {
   const router = useRouter();
-  const [detailed, setDetailed] = useState(false);
+  const searchParams = useSearchParams();
+  const requestedView = searchParams.get('view');
+  const [detailed, setDetailed] = useState(requestedView === 'detailed');
+  useEffect(() => { setDetailed(requestedView === 'detailed'); }, [requestedView]);
+  const showDetailed = (next: boolean) => {
+    setDetailed(next);
+    const params = new URLSearchParams(searchParams.toString());
+    if (next) params.set('view', 'detailed');
+    else params.delete('view');
+    router.replace(`/dashboard${params.size ? `?${params}` : ''}`, { scroll: false });
+  };
   const teachingViewEnabled = process.env.NEXT_PUBLIC_TEACHING_VIEW_V2 === 'true';
   const [sections, setSections] = useState<TeachingSection[]>([]);
   const [selectedSection, setSelectedSection] = useState<TeachingSection | null>(null);
@@ -836,7 +850,7 @@ export default function DashboardPage() {
       onStart={() => void handleStartToday()} onComplete={() => void handleCompleteDay()}
       onDate={date => { setActualDate(date); setAttendanceDateOverride({dayKey: attendanceDayKey, date}); }}
       onSummary={setDeviationSummary} onFollowUp={setFollowUpNeeded} onFollowUpNotes={setFollowUpNotes}
-      onDetailed={() => setDetailed(true)}
+      onDetailed={() => showDetailed(true)}
       attendance={viewedAttendanceDate ? <PlannerAttendancePanel guardOnly key={selectedSection.section_id + '/' + viewedAttendanceDate} sectionId={selectedSection.section_id} attendanceDate={viewedAttendanceDate} /> : null}
     />;
   }
@@ -882,7 +896,7 @@ export default function DashboardPage() {
       </header>
 
       <main className="dashboard-main">
-        {teachingViewEnabled && <button type="button" className="guide-browser-button" onClick={() => setDetailed(false)}>Back to Teaching View</button>}
+        {teachingViewEnabled && <button type="button" className="guide-browser-button" onClick={() => showDetailed(false)}>Back to Teaching View</button>}
         {selectedSection && viewedAttendanceDate && (
           <PlannerAttendancePanel
             key={selectedSection.section_id + '/' + viewedAttendanceDate}

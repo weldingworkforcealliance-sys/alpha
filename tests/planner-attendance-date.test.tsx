@@ -3,8 +3,8 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import Dashboard from '@/app/dashboard/page';
 
-const mocks = vi.hoisted(() => ({ selectedId: '110', from: vi.fn(), rpc: vi.fn(), push: vi.fn(), select: null as null | ((id: string) => void) }));
-vi.mock('next/navigation', () => { const router = { push: mocks.push }; return { useRouter: () => router }; });
+const mocks = vi.hoisted(() => ({ selectedId: '110', search: '', from: vi.fn(), rpc: vi.fn(), push: vi.fn(), replace: vi.fn(), select: null as null | ((id: string) => void) }));
+vi.mock('next/navigation', () => { const router = { push: mocks.push, replace: mocks.replace }; return { useRouter: () => router, useSearchParams: () => new URLSearchParams(mocks.search) }; });
 vi.mock('@/lib/section-selection', () => ({ readSelectedSectionId: () => mocks.selectedId, publishSelectedSection: vi.fn(), subscribeSelectedSection: (fn: (id: string) => void) => { mocks.select = (id: string) => { mocks.selectedId = id; fn(id); }; return () => {}; } }));
 const client = { from: mocks.from, rpc: mocks.rpc, auth: { getSession: async () => ({ data: { session: { user: { id: 'teacher' } } } }) } };
 vi.mock('@/lib/supabase-browser', () => ({ getSupabase: () => client }));
@@ -19,6 +19,7 @@ let delayCalendar: null | Promise<unknown>;
 const sections = ['110', '210'].map(section => ({ school_id: 'school', section_id: section, course_code: `WLD ${section}`, current_planner_day_number: 4, planner_day_id: `${section}-p4`, scheduled_date: '2026-09-28', guide_day_id: `${section}-g4` }));
 beforeEach(() => {
   vi.stubEnv('NEXT_PUBLIC_TEACHING_VIEW_V2', mode);
+  mocks.search = '';
   mocks.selectedId = '110'; currentStarted = false;
   actualDay3 = '2026-09-24'; delayCalendar = null; delayedGuide = null; delayedIndex = null;
   mocks.rpc.mockResolvedValue({ data: false });
@@ -129,6 +130,22 @@ it('blocks completion until attendance is finalized and passes the same notes to
   finalized = true;
   fireEvent.click(screen.getByRole('button', {name:'Complete Day'}));
   await waitFor(() => expect(mocks.rpc).toHaveBeenCalledWith('complete_current_planner_day', expect.objectContaining({p_section_id:'110', p_actual_date:'2026-09-28', p_deviation_summary:'Review setup tomorrow'})));
+});
+
+if (mode === 'true') it('opens the detailed menu destination and retains unsaved notes across view navigation',async()=>{
+  mocks.search='view=detailed';
+  const view=render(<Dashboard/>);
+  await screen.findByRole('button',{name:'Back to Teaching View'});
+  await waitFor(()=>expect(screen.getByLabelText('Daily Comments / Deviation Summary')).toBeTruthy());
+  fireEvent.change(screen.getByLabelText('Daily Comments / Deviation Summary'),{target:{value:'Keep these unsaved notes'}});
+  fireEvent.click(screen.getByRole('button',{name:'Back to Teaching View'}));
+  expect(mocks.replace).toHaveBeenCalledWith('/dashboard',{scroll:false});
+  mocks.search='';view.rerender(<Dashboard/>);
+  await screen.findByRole('main',{name:'Teaching View'});
+  expect(screen.getByLabelText('Daily Comments / Deviation Summary')).toHaveProperty('value','Keep these unsaved notes');
+  fireEvent.click(screen.getByRole('button',{name:'Open Full Detailed Planner →'}));
+  expect(mocks.replace).toHaveBeenCalledWith('/dashboard?view=detailed',{scroll:false});
+  expect(screen.getByLabelText('Daily Comments / Deviation Summary')).toHaveProperty('value','Keep these unsaved notes');
 });
 
 it.each([['Start Today', 'start_current_planner_day'], ['Complete Day', 'complete_current_planner_day']])('keeps the current class when a previous class %s finishes', async (button, rpc) => {

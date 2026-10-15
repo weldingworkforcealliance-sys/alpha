@@ -54,6 +54,7 @@ export default function ReviewQueueLink() {
   return (
     <Link
       href="/review-queue"
+      aria-current={pathname === '/review-queue' ? 'page' : undefined}
       className={`ltg-nav-link ${pathname === '/review-queue' ? 'active' : ''}`}
     >
       Review Queue
