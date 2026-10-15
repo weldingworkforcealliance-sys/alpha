@@ -22,6 +22,7 @@ import ClassTimeWatchdog from './class-time-watchdog';
 import SchoolActiveTodayEmployees from './school-active-today-employees';
 import UsageTracker from './usage-tracker';
 import DemoSessionGuard from './demo-session-guard';
+import PasswordRecoveryRedirect from './password-recovery-redirect';
 import PcccSkinController from './pccc-skin-controller';
 import './styles.css';
 import './agenda/agenda.css';
@@ -108,6 +109,7 @@ export default function RootLayout({
       </head>
       <body className={bodyClassName || undefined}>
         <ThemeProvider>
+          <PasswordRecoveryRedirect pathname={pathname} />
           <PcccSkinController pathname={pathname} />
           <DemoSessionGuard />
           {IS_STAGING && (

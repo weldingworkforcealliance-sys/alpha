@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
+import { RECOVERY_REQUEST_KEY } from '@/lib/password-recovery';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -22,21 +23,51 @@ export default function ResetPasswordPage() {
     const prepare = async () => {
       try {
         const params = new URLSearchParams(window.location.search);
+        const fragment = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+        const callbackError = params.get('error_description') || fragment.get('error_description');
+        if (callbackError) throw new Error('This reset link is expired or invalid. Request a new reset email below.');
+        const accessToken = fragment.get('access_token');
+        const refreshToken = fragment.get('refresh_token');
         const code = params.get('code');
+        const tokenHash = params.get('token_hash');
+
+        if (accessToken && refreshToken) {
+          const { error: sessionError } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+          if (sessionError) throw sessionError;
+          window.history.replaceState({}, '', window.location.pathname);
+          setReady(true);
+          return;
+        }
+
+        if (tokenHash) {
+          const { error: verifyError } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
+          if (verifyError) throw verifyError;
+          window.history.replaceState({}, '', window.location.pathname);
+          setReady(true);
+          return;
+        }
+
+        // Browser-client initialization may already have exchanged a PKCE code.
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          window.history.replaceState({}, '', window.location.pathname);
+          setReady(true);
+          return;
+        }
 
         if (code) {
           const { error: exchangeError } =
             await supabase.auth.exchangeCodeForSession(code);
           if (!exchangeError) {
+            window.history.replaceState({}, '', window.location.pathname);
             setReady(true);
             return;
           }
+          throw new Error('This reset link could not be verified. Open it in the browser that requested it, or request a new reset email below.');
         }
-
-        const { data } = await supabase.auth.getSession();
-        if (data.session) setReady(true);
       } catch (err) {
-        console.error(err);
+        window.history.replaceState({}, '', window.location.pathname);
+        setError(err instanceof Error ? err.message : 'The reset link could not be verified. Request a new reset email below.');
       }
     };
 
@@ -55,6 +86,7 @@ export default function ResetPasswordPage() {
 
     setSaving(true);
     try {
+      try { window.localStorage.setItem(RECOVERY_REQUEST_KEY, String(Date.now())); } catch { /* Link recovery still works without storage. */ }
       const { error: sendError } = await supabase.auth.resetPasswordForEmail(
         normalizedEmail,
         { redirectTo: `${window.location.origin}/reset-password` }
@@ -63,7 +95,7 @@ export default function ResetPasswordPage() {
       if (sendError) throw sendError;
 
       setCodeSent(true);
-      setMessage('Reset code sent. Check your email, then enter the code below.');
+      setMessage('Reset email sent. Open the newest link in this browser. If your email includes a code, you can enter it below instead.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not send reset code.');
     } finally {
@@ -126,6 +158,7 @@ export default function ResetPasswordPage() {
     try {
       const { error: updateError } = await supabase.auth.updateUser({ password });
       if (updateError) throw updateError;
+      try { window.localStorage.removeItem(RECOVERY_REQUEST_KEY); } catch { /* Storage may be disabled. */ }
 
       await supabase.rpc('activate_my_invited_memberships');
 
@@ -147,8 +180,8 @@ export default function ResetPasswordPage() {
         {!ready ? (
           <>
             <p>
-              Enter your email address. We will send a verification code so you
-              can safely create a new password.
+              Enter your email address. We will send a reset email. Open its link
+              in this browser to create a new password, or use the optional code if one is included.
             </p>
 
             {error && <div className="error">{error}</div>}
@@ -166,13 +199,13 @@ export default function ResetPasswordPage() {
               </label>
 
               <button disabled={saving} onClick={sendResetCode}>
-                {saving && !codeSent ? 'Sending…' : codeSent ? 'Resend Reset Code' : 'Send Reset Code'}
+                {saving && !codeSent ? 'Sending…' : codeSent ? 'Resend Reset Email' : 'Send Reset Email'}
               </button>
 
               {codeSent && (
                 <>
                   <label>
-                    Verification Code
+                    Verification Code (optional)
                     <input
                       type="text"
                       inputMode="numeric"
