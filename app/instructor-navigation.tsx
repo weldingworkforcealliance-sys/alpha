@@ -45,7 +45,7 @@ function InstructorNavigationContent({ pathname, onNavigate }: Props) {
     <div className="ltg-essential-links">
       {link('Today', '/dashboard', pathname === '/dashboard' && !detailed)}
       {link('Attendance', contextual('/attendance'), pathname.startsWith('/attendance'))}
-      {process.env.NEXT_PUBLIC_GRADEBOOK_ENABLED === 'true' && link('Grading', '/gradebook', pathname.startsWith('/gradebook'))}
+      {process.env.NEXT_PUBLIC_GRADEBOOK_ENABLED === 'true' && link('Grading', contextual('/gradebook'), pathname.startsWith('/gradebook'))}
       {link('Live Classroom', contextual('/classroom'), pathname === '/classroom')}
       {link('Resources', '/resources', pathname.startsWith('/resources'))}
     </div>

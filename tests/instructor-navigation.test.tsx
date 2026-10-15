@@ -37,7 +37,7 @@ it('shows the five demo essentials and keeps additional tools collapsed',async()
 
 it('carries the selected class into attendance, classroom activities and job cards',()=>{
   renderNav();fireEvent.click(more());
-  for(const [name,path] of [['Attendance','/attendance'],['Live Classroom','/classroom'],['Classroom Activities','/classroom/planner'],['Student Job Cards','/classroom/job-card']]) {
+  for(const [name,path] of [['Attendance','/attendance'],['Grading','/gradebook'],['Live Classroom','/classroom'],['Classroom Activities','/classroom/planner'],['Student Job Cards','/classroom/job-card']]) {
     expect(screen.getByRole('link',{name}).getAttribute('href')).toBe(`${path}?section=class-a`);
   }
   act(()=>publishSelectedSection('class-b'));
