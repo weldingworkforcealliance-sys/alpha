@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
 import { eligibleCompletedHours, isUnresolvedOpenPunch } from '@/lib/timeclock-safety';
+import { notifyTimeclockChanged, subscribeTimeclockChanges } from '@/lib/timeclock-events';
 import { PAYROLL_ROLES, SCHOOL_MANAGEMENT_ROLES } from '@/lib/access-roles';
 import styles from './time-clock.module.css';
 
@@ -139,6 +140,8 @@ export default function TimeClockPage() {
   const [adjustmentRequest, setAdjustmentRequest] = useState(0);
   const adjustmentRef = useRef<HTMLDivElement>(null);
   const clockOutRef = useRef<HTMLInputElement>(null);
+  const reviewedEntryId = useRef('');
+  const loadVersion = useRef(0);
 
   useEffect(() => {
     if (!adjustmentRequest) return;
@@ -213,6 +216,7 @@ export default function TimeClockPage() {
 
   const loadSchoolData = useCallback(async () => {
     if (!schoolId) return;
+    const version = ++loadVersion.current;
     setRefreshing(true);
     setError('');
 
@@ -241,6 +245,7 @@ export default function TimeClockPage() {
           .is('clock_out_at', null),
       ]);
 
+      if (version !== loadVersion.current) return;
       const loadError = employeeResult.error || rangeEntryResult.error || openEntryResult.error;
       if (loadError) throw loadError;
 
@@ -252,6 +257,7 @@ export default function TimeClockPage() {
 
       setEmployees(loadedEmployees);
       setEntries(Array.from(combinedEntries.values()));
+      setNow(Date.now());
 
       setSelectedEmployeeId((current) => {
         if (current && loadedEmployees.some((employee) => employee.id === current)) return current;
@@ -270,6 +276,7 @@ export default function TimeClockPage() {
           .eq('school_id', schoolId)
           .eq('status', 'active');
 
+        if (version !== loadVersion.current) return;
         if (!memberResult.error) {
           const ids = (memberResult.data ?? []).map((row: { user_id: string }) => row.user_id);
           if (ids.length > 0) {
@@ -278,7 +285,7 @@ export default function TimeClockPage() {
               .select('id,display_name,email')
               .in('id', ids)
               .order('display_name');
-            if (!profileResult.error) setProfileOptions((profileResult.data ?? []) as ProfileOption[]);
+            if (version === loadVersion.current && !profileResult.error) setProfileOptions((profileResult.data ?? []) as ProfileOption[]);
           } else {
             setProfileOptions([]);
           }
@@ -287,10 +294,11 @@ export default function TimeClockPage() {
         setProfileOptions([]);
       }
     } catch (err) {
+      if (version !== loadVersion.current) return;
       const message = err instanceof Error ? err.message : 'Unable to load time clock data';
       setError(message);
     } finally {
-      setRefreshing(false);
+      if (version === loadVersion.current) setRefreshing(false);
     }
   }, [schoolId, rangeStart, rangeEnd, supabase, isManager]);
 
@@ -333,7 +341,8 @@ export default function TimeClockPage() {
         if (schoolResult.error) throw schoolResult.error;
         const loadedSchools = (schoolResult.data ?? []) as School[];
         setSchools(loadedSchools);
-        setSchoolId(loadedSchools[0]?.id ?? '');
+        const requestedSchool = new URLSearchParams(window.location.search).get('school');
+        setSchoolId(loadedSchools.find((school) => school.id === requestedSchool)?.id ?? loadedSchools[0]?.id ?? '');
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Unable to open the time clock';
         setError(message);
@@ -346,7 +355,12 @@ export default function TimeClockPage() {
   }, [router, supabase]);
 
   useEffect(() => {
-    loadSchoolData();
+    void loadSchoolData();
+    const unsubscribe = subscribeTimeclockChanges('workspace', () => { void loadSchoolData(); });
+    return () => {
+      unsubscribe();
+      loadVersion.current += 1;
+    };
   }, [loadSchoolData]);
 
   useEffect(() => {
@@ -386,6 +400,7 @@ export default function TimeClockPage() {
 
       setNotice(`${employee.display_name} ${openEntry ? 'clocked out' : 'clocked in'} successfully.`);
       setPin('');
+      notifyTimeclockChanged('workspace');
       await loadSchoolData();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Clock action failed';
@@ -455,14 +470,24 @@ export default function TimeClockPage() {
     }
   };
 
-  const beginAdjustment = (entry: TimeEntry) => {
+  const beginAdjustment = useCallback((entry: TimeEntry) => {
     setAdjustingEntryId(entry.id);
     setAdjustmentRequest((request) => request + 1);
     setAdjustIn(toLocalDateTimeInput(entry.clock_in_at));
     setAdjustOut(toLocalDateTimeInput(entry.clock_out_at));
     setAdjustReason('');
     setError('');
-  };
+  }, []);
+
+  useEffect(() => {
+    const requestedEntry = new URLSearchParams(window.location.search).get('review');
+    if (!isManager || !requestedEntry || reviewedEntryId.current === requestedEntry) return;
+    // Only open records returned by the signed-in user's authorized school query.
+    const entry = entries.find((candidate) => candidate.id === requestedEntry && candidate.school_id === schoolId);
+    if (!entry) return;
+    reviewedEntryId.current = requestedEntry;
+    beginAdjustment(entry);
+  }, [beginAdjustment, entries, isManager, schoolId]);
 
   const saveAdjustment = async () => {
     if (!adjustingEntryId || !adjustIn || adjustReason.trim().length < 3) {
@@ -481,11 +506,14 @@ export default function TimeClockPage() {
         p_reason: adjustReason.trim(),
       });
       if (rpcError) throw rpcError;
-      setNotice('Time entry corrected and audit history recorded.');
+      const correctedEntry = entries.find((entry) => entry.id === adjustingEntryId);
+      const name = employeeById.get(correctedEntry?.employee_id ?? '')?.display_name ?? 'Selected employee';
+      setNotice(`${name}: time entry corrected and audit history recorded.${adjustOut ? '' : ' This punch remains open because no clock-out time was entered.'}`);
       setAdjustingEntryId('');
       setAdjustIn('');
       setAdjustOut('');
       setAdjustReason('');
+      notifyTimeclockChanged('workspace');
       await loadSchoolData();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unable to adjust time entry';
@@ -618,6 +646,7 @@ export default function TimeClockPage() {
                     A previous clock-in from {formatDate(openByEmployee.get(myEmployee.id)!.clock_in_at)} is unresolved.
                     Ask a manager to record the actual clock-out time before punching again.
                     This open shift is excluded from payroll totals.
+                    {isManager && <button type="button" disabled={actionLoading} onClick={() => beginAdjustment(openByEmployee.get(myEmployee.id)!)}>Correct My Previous Punch</button>}
                   </div>
                 )}
 
@@ -815,7 +844,7 @@ export default function TimeClockPage() {
             </div>
             <div className={styles.reportActions}>
               {canReport && <button onClick={exportWorkbook} disabled={actionLoading || filteredEntries.length === 0}>Export Weekly Excel</button>}
-              <button onClick={loadSchoolData} disabled={refreshing}>{refreshing ? 'Refreshing…' : 'Refresh'}</button>
+              <button onClick={() => { notifyTimeclockChanged('workspace'); void loadSchoolData(); }} disabled={refreshing}>{refreshing ? 'Refreshing…' : 'Refresh'}</button>
             </div>
           </div>
 
