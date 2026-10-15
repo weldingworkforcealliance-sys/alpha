@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { getSupabase } from '@/lib/supabase-browser';
+import styles from './cohort-workspace-bar.module.css';
 import {
   publishSelectedSection,
   readSelectedSectionId,
@@ -179,119 +180,61 @@ export default function CohortWorkspaceBar({ pathname }: { pathname: string }) {
   };
 
   return (
-    <section
-      aria-label="Class workspace selector"
-      style={{
-        padding: '14px 16px',
-        borderBottom: '1px solid var(--ltg-border-soft)',
-        background: 'var(--ltg-surface-2)',
-        color: 'var(--ltg-text)',
-      }}
-    >
-      <div
-        style={{
-          maxWidth: '1180px',
-          margin: '0 auto',
-          display: 'grid',
-          gap: '10px',
-        }}
-      >
-        <div
-          style={{
-            color: 'var(--ltg-muted)',
-            fontSize: '11px',
-            fontWeight: 900,
-            letterSpacing: '.1em',
-            textTransform: 'uppercase',
-          }}
-        >
-          Select Class
-        </div>
+    <section className={styles.selector} aria-label="Select class and course">
+      <div className={styles.inner}>
+        <header className={styles.header}>
+          <h2>Select class</h2>
+          {selectedGroup && selectedRow && (
+            <p className={styles.current} aria-live="polite" aria-atomic="true">
+              Current: <strong>{className(selectedGroup)} · Level {levelOf(selectedGroup)} · {courseLabel(selectedRow)}</strong>
+            </p>
+          )}
+        </header>
 
-        {[1, 2].map((level) => {
-          const levelGroups = groups.filter((group) => levelOf(group) === level);
-          if (!levelGroups.length) return null;
-          return <div key={level} style={{ display: 'grid', gap: '7px' }}>
-            <div style={{ color: 'var(--ltg-muted)', fontSize: '12px', fontWeight: 850 }}>
-              Level {level}
-            </div>
-            <div style={{ display: 'flex', gap: '9px', flexWrap: 'wrap' }}>
-          {levelGroups.map((group) => {
-            const active = selectedGroup?.id === group.id;
+        <div className={styles.levels}>
+          {[1, 2].map((level) => {
+            const levelGroups = groups.filter((group) => levelOf(group) === level);
+            if (!levelGroups.length) return null;
             return (
-              <button
-                key={group.id}
-                type="button"
-                className="ltg-class-choice ltg-class-workspace-choice"
-                aria-pressed={active}
-                onClick={() => selectWorkspace(group)}
-                style={{
-                  minWidth: '135px',
-                  padding: '11px 16px',
-                  borderRadius: '8px',
-                  border: active
-                    ? '1px solid var(--ltg-accent)'
-                    : '1px solid var(--ltg-border)',
-                  background: active
-                    ? 'var(--ltg-accent-soft)'
-                    : 'var(--ltg-surface-3)',
-                  color: active ? 'var(--ltg-accent-text)' : 'var(--ltg-text)',
-                  fontWeight: 900,
-                  cursor: 'pointer',
-                }}
-              >
-                {className(group)}
-              </button>
+              <section key={level} className={styles.level} aria-label={`Level ${level} classes`}>
+                <h3>Level {level}</h3>
+                <div className={styles.classes}>
+                  {levelGroups.map((group) => (
+                    <button
+                      key={group.id}
+                      type="button"
+                      className={styles.choice}
+                      aria-label={`${className(group)}, Level ${level}`}
+                      aria-pressed={selectedGroup?.id === group.id}
+                      onClick={() => selectWorkspace(group)}
+                    >
+                      <span className={styles.check} aria-hidden="true">✓</span>
+                      <span>{className(group)}</span>
+                    </button>
+                  ))}
+                </div>
+              </section>
             );
           })}
-            </div>
-          </div>;
-        })}
+        </div>
 
         {selectedGroup && (
-          <div
-            style={{
-              display: 'grid',
-              gap: '8px',
-              paddingTop: '10px',
-              borderTop: '1px solid var(--ltg-border-soft)',
-            }}
-          >
-            <div style={{ color: 'var(--ltg-muted)', fontSize: '12px', fontWeight: 850 }}>
-              {selectedGroup.name} · Select course
-            </div>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {selectedGroup.rows.map((row) => {
-              const active = selectedSectionId === row.section_id;
-              return (
+          <div className={styles.courseRow}>
+            <h3 className={styles.courseLabel}>Course</h3>
+            <div className={styles.courses} role="group" aria-label={`Courses for ${selectedGroup.name}`}>
+              {selectedGroup.rows.map((row) => (
                 <button
                   key={row.section_id}
                   type="button"
-                  className="ltg-class-choice ltg-class-course-choice"
-                  aria-pressed={active}
+                  className={`${styles.choice} ${styles.course}`}
+                  aria-pressed={selectedSectionId === row.section_id}
                   onClick={() => activateSection(row)}
-                  style={{
-                    padding: '8px 13px',
-                    borderRadius: '7px',
-                    border: active
-                      ? '1px solid var(--ltg-accent)'
-                      : '1px solid var(--ltg-border)',
-                    background: active
-                      ? 'var(--ltg-accent-soft)'
-                      : 'var(--ltg-surface)',
-                    color: active ? 'var(--ltg-accent-text)' : 'var(--ltg-muted)',
-                    fontSize: '12px',
-                    fontWeight: 850,
-                    cursor: 'pointer',
-                  }}
                 >
-                  {courseLabel(row)}
-                  {row.planned_instructional_days
-                    ? ` · ${row.planned_instructional_days} days`
-                    : ''}
+                  <span className={styles.check} aria-hidden="true">✓</span>
+                  <span>{courseLabel(row)}</span>
+                  {row.planned_instructional_days ? <span className={styles.days}>{row.planned_instructional_days} days</span> : null}
                 </button>
-              );
-            })}
+              ))}
             </div>
           </div>
         )}

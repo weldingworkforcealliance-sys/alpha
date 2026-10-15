@@ -64,15 +64,16 @@ describe('LTG visual theme consistency', () => {
 
   it('removes legacy neon styling from shared planner chrome', () => {
     const workspace = read('app/cohort-workspace-bar.tsx');
+    const workspaceCss = read('app/cohort-workspace-bar.module.css');
     const identity = read('app/teacher-identity-bar.tsx');
     const reviewLink = read('app/review-queue-link.tsx');
     const agendaBanner = read('app/agenda-note-policy-banner.tsx');
 
-    for (const source of [workspace, identity, reviewLink, agendaBanner]) {
+    for (const source of [workspace, workspaceCss, identity, reviewLink, agendaBanner]) {
       expect(source).not.toContain('#00ff88');
     }
 
-    expect(workspace).toContain('var(--ltg-accent)');
+    expect(workspaceCss).toContain('var(--ltg-accent)');
     expect(identity).toContain('var(--ltg-accent)');
   });
 
