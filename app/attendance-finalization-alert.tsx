@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { getSupabase } from '@/lib/supabase-browser';
+import { subscribeAttendanceFinalized } from '@/lib/attendance-events';
 
 type AttendanceAlert = {
   session_id: string;
@@ -29,52 +30,52 @@ function displayDate(value: string) {
 }
 
 export default function AttendanceFinalizationAlert({ pathname }: { pathname: string }) {
+  // Discard the previous dashboard's results while attendance is being edited.
+  return pathname === '/dashboard' ? <DashboardAttendanceAlert /> : null;
+}
+
+function DashboardAttendanceAlert() {
   const [supabase] = useState(getSupabase);
   const [alerts, setAlerts] = useState<AttendanceAlert[]>([]);
   const [checkFailed, setCheckFailed] = useState(false);
+  const requestVersion = useRef(0);
 
   const refresh = useCallback(async () => {
-    if (pathname !== '/dashboard') return;
+    const version = ++requestVersion.current;
+    try {
+      const { data: auth, error: authError } = await supabase.auth.getSession();
+      if (version !== requestVersion.current) return;
+      if (authError) throw authError;
+      if (!auth.session) {
+        setAlerts([]);
+        setCheckFailed(false);
+        return;
+      }
 
-    const { data: auth } = await supabase.auth.getSession();
-    if (!auth.session) {
-      setAlerts([]);
+      const { data, error } = await supabase.rpc('get_unfinalized_attendance_alerts', {
+        p_as_of: localDate(),
+      });
+      if (version !== requestVersion.current) return;
+      if (error) throw error;
       setCheckFailed(false);
-      return;
-    }
-
-    const { data, error } = await supabase.rpc('get_unfinalized_attendance_alerts', {
-      p_as_of: localDate(),
-    });
-
-    if (error) {
+      setAlerts((data ?? []) as AttendanceAlert[]);
+    } catch {
+      if (version !== requestVersion.current) return;
       setCheckFailed(true);
-      return;
     }
-
-    setCheckFailed(false);
-    setAlerts((data ?? []) as AttendanceAlert[]);
-  }, [pathname, supabase]);
+  }, [supabase]);
 
   useEffect(() => {
-    if (pathname !== '/dashboard') return;
-
     void refresh();
     const interval = window.setInterval(() => void refresh(), 30_000);
-    const onFocus = () => void refresh();
-    const onAttendanceFinalized = () => void refresh();
-
-    window.addEventListener('focus', onFocus);
-    window.addEventListener('ltg:attendance-finalized', onAttendanceFinalized);
+    const unsubscribe = subscribeAttendanceFinalized(() => void refresh());
 
     return () => {
+      requestVersion.current += 1;
       window.clearInterval(interval);
-      window.removeEventListener('focus', onFocus);
-      window.removeEventListener('ltg:attendance-finalized', onAttendanceFinalized);
+      unsubscribe();
     };
-  }, [pathname, refresh]);
-
-  if (pathname !== '/dashboard') return null;
+  }, [refresh]);
 
   if (checkFailed) {
     return (
@@ -117,8 +118,9 @@ export default function AttendanceFinalizationAlert({ pathname }: { pathname: st
       </strong>
       <div style={{ fontSize: 13, lineHeight: 1.45, marginBottom: 10 }}>
         {alerts.length === 1
-          ? 'One attendance session has recorded student statuses but has not been finalized. A PVHS email is not queued until finalization is complete.'
-          : `${alerts.length} attendance sessions have recorded student statuses but have not been finalized. PVHS emails are not queued until finalization is complete.`}
+          ? 'Student statuses are saved, but this attendance session still needs Finalize Pair Attendance.'
+          : `${alerts.length} attendance sessions have saved student statuses but still need Finalize Pair Attendance.`}
+        {' '}Review the class and date below, then confirm the full course pair.
       </div>
       <div style={{ display: 'grid', gap: 8 }}>
         {alerts.map((alert) => (
@@ -142,6 +144,9 @@ export default function AttendanceFinalizationAlert({ pathname }: { pathname: st
                 {alert.is_overdue ? 'OVERDUE · ' : ''}
                 {displayDate(alert.attendance_date)} · {alert.marked_count}/{alert.student_count} students marked
               </div>
+              {alert.attendance_mode === 'pvhs' && (
+                <div style={{ marginTop: 2, fontSize: 12 }}>The final PVHS email is queued after pair finalization.</div>
+              )}
             </div>
             <Link
               href={`/attendance?section=${encodeURIComponent(alert.completion_section_id)}&date=${encodeURIComponent(
