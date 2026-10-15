@@ -20,6 +20,7 @@
   command = "rm -rf .next && npm run build"
 
 [context.deploy-preview.environment]
+  NEXT_PUBLIC_TEACHING_VIEW_V2 = "true"
   NEXT_PUBLIC_WLD110_SHOP_ENABLED = "true"
   NEXT_PUBLIC_GRADEBOOK_FINALS_ENABLED = "true"
   NEXT_PUBLIC_TOWER_ENABLED = "true"
@@ -29,6 +30,9 @@
   NEXT_PUBLIC_DEPLOYMENT_ENV = "staging"
 
 # Gradebook migrations verified in production September 17, 2026.
+# Teaching View activates for all instructors when this reviewed branch is merged.
 [context.production.environment]
+  NEXT_PUBLIC_TEACHING_VIEW_V2 = "true"
   NEXT_PUBLIC_GRADEBOOK_ENABLED = "true"
   NEXT_PUBLIC_GRADEBOOK_FINALS_ENABLED = "true"
+

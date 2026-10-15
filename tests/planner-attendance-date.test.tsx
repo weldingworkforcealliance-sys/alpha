@@ -10,6 +10,7 @@ const client = { from: mocks.from, rpc: mocks.rpc, auth: { getSession: async () 
 vi.mock('@/lib/supabase-browser', () => ({ getSupabase: () => client }));
 vi.mock('@/app/planner-activity', () => ({ default: () => null }));
 vi.mock('@/app/attendance/attendance-workspace', () => ({ default: ({ lockedSectionId, lockedDate }: { lockedSectionId: string; lockedDate: string }) => <div data-testid="attendance-context">{lockedSectionId}/{lockedDate}</div> }));
+describe.each(['false', 'true'])('planner layout Teaching View=%s', (mode) => {
 let delayedGuide: null | { id: string; result: Promise<unknown> };
 let delayedIndex: null | Promise<unknown>;
 let currentStarted = false;
@@ -17,6 +18,7 @@ let actualDay3: string | null;
 let delayCalendar: null | Promise<unknown>;
 const sections = ['110', '210'].map(section => ({ school_id: 'school', section_id: section, course_code: `WLD ${section}`, current_planner_day_number: 4, planner_day_id: `${section}-p4`, scheduled_date: '2026-09-28', guide_day_id: `${section}-g4` }));
 beforeEach(() => {
+  vi.stubEnv('NEXT_PUBLIC_TEACHING_VIEW_V2', mode);
   mocks.selectedId = '110'; currentStarted = false;
   actualDay3 = '2026-09-24'; delayCalendar = null; delayedGuide = null; delayedIndex = null;
   mocks.rpc.mockResolvedValue({ data: false });
@@ -44,15 +46,15 @@ beforeEach(() => {
     return q;
   });
 });
-afterEach(() => { cleanup(); vi.clearAllMocks(); });
+afterEach(() => { cleanup(); vi.clearAllMocks(); vi.unstubAllEnvs(); });
 async function expectDate(value: string) { await waitFor(() => expect(screen.getByTestId('attendance-context').textContent).toBe(value), { timeout: 5000 }); }
-async function previewDay3() { fireEvent.change(screen.getByRole('combobox', { name: 'Go to Day' }), { target: { value: '3' } }); }
+async function previewDay3() { fireEvent.change(screen.getByRole('combobox', { name: /Go to Day|Choose teaching day/i }), { target: { value: '3' } }); }
 
 describe('planner attendance follows the viewed lesson', () => {
   it('loads September 24 while previewing Day 3, then returns to September 28 for Day 4', async () => {
     render(<Dashboard />); await expectDate('110/2026-09-28');
     await previewDay3(); await expectDate('110/2026-09-24');
-    fireEvent.click(screen.getByRole('button', { name: 'Back to Current Day' }));
+    fireEvent.click(screen.getByRole('button', { name: /Back to current day/i }));
     await expectDate('110/2026-09-28');
   });
   it('uses the scheduled date when the preview has no actual delivery date', async () => {
@@ -106,6 +108,21 @@ it('ignores a stale lesson index after switching class during initial loading', 
 });
 
 
+it('blocks completion until attendance is finalized and passes the same notes to the live RPC', async () => {
+  currentStarted = true;
+  Object.defineProperty(Element.prototype, 'scrollIntoView', { configurable: true, value: vi.fn() });
+  let finalized = false;
+  mocks.rpc.mockImplementation((name: string) => Promise.resolve({ data: name === 'attendance_completion_requirement' ? [{ attendance_required: true, finalized }] : false, error: null }));
+  render(<Dashboard />); await expectDate('110/2026-09-28');
+  fireEvent.change(screen.getByLabelText('Daily Comments / Deviation Summary'), {target:{value:'Review setup tomorrow'}});
+  fireEvent.click(screen.getByRole('button', {name:'Complete Day'}));
+  await screen.findByText(/must be finalized before this class day can be completed/);
+  expect(mocks.rpc.mock.calls.some(([name]) => name === 'complete_current_planner_day')).toBe(false);
+  finalized = true;
+  fireEvent.click(screen.getByRole('button', {name:'Complete Day'}));
+  await waitFor(() => expect(mocks.rpc).toHaveBeenCalledWith('complete_current_planner_day', expect.objectContaining({p_section_id:'110', p_actual_date:'2026-09-28', p_deviation_summary:'Review setup tomorrow'})));
+});
+
 it.each([['Start Today', 'start_current_planner_day'], ['Complete Day', 'complete_current_planner_day']])('keeps the current class when a previous class %s finishes', async (button, rpc) => {
   currentStarted = button === 'Complete Day';
   render(<Dashboard />); await expectDate('110/2026-09-28');
@@ -119,3 +136,6 @@ it.each([['Start Today', 'start_current_planner_day'], ['Complete Day', 'complet
   await act(async () => resolve({ error: null }));
   expect(screen.queryByTestId('attendance-context')?.textContent).toBe('210/2026-09-28');
 });
+
+});
+
