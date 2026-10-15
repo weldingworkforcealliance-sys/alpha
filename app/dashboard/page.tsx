@@ -837,7 +837,7 @@ export default function DashboardPage() {
       onDate={date => { setActualDate(date); setAttendanceDateOverride({dayKey: attendanceDayKey, date}); }}
       onSummary={setDeviationSummary} onFollowUp={setFollowUpNeeded} onFollowUpNotes={setFollowUpNotes}
       onDetailed={() => setDetailed(true)}
-      attendance={viewedAttendanceDate ? <PlannerAttendancePanel key={selectedSection.section_id + '/' + viewedAttendanceDate} sectionId={selectedSection.section_id} attendanceDate={viewedAttendanceDate} /> : null}
+      attendance={viewedAttendanceDate ? <PlannerAttendancePanel guardOnly key={selectedSection.section_id + '/' + viewedAttendanceDate} sectionId={selectedSection.section_id} attendanceDate={viewedAttendanceDate} /> : null}
     />;
   }
   return (

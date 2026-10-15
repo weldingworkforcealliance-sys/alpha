@@ -17,8 +17,8 @@ function displayDate(value: string) {
 }
 
 export default function PlannerAttendancePanel({
-  sectionId, attendanceDate,
-}: { sectionId: string; attendanceDate: string }) {
+  sectionId, attendanceDate, guardOnly = false,
+}: { sectionId: string; attendanceDate: string; guardOnly?: boolean }) {
   const [supabase] = useState(getSupabase);
   const [completionNotice, setCompletionNotice] = useState('');
   const completionBypassRef = useRef(false);
@@ -61,7 +61,7 @@ export default function PlannerAttendancePanel({
 
         if (row?.attendance_required && !row?.finalized) {
           setCompletionNotice(
-            `Attendance for ${displayDate(completionDate)} must be finalized before this class day can be completed. Review the paired-class attendance below and select Finalize Pair Attendance. Then tap Complete Day again.`
+            `Attendance for ${displayDate(completionDate)} must be finalized before this class day can be completed. ${guardOnly ? 'Open Attendance from Class Status and finalize the paired-class attendance.' : 'Review the paired-class attendance below and select Finalize Pair Attendance.'} Then tap Complete Day again.`
           );
 
           window.setTimeout(() => {
@@ -81,7 +81,9 @@ export default function PlannerAttendancePanel({
 
     document.addEventListener('click', handleCompleteDayClick, true);
     return () => document.removeEventListener('click', handleCompleteDayClick, true);
-  }, [attendanceDate, sectionId, supabase]);
+  }, [attendanceDate, sectionId, supabase, guardOnly]);
+
+  if (guardOnly && !completionNotice) return null;
 
   return (
     <section
@@ -111,11 +113,11 @@ export default function PlannerAttendancePanel({
         </div>
       )}
 
-      <AttendanceWorkspace
+      {!guardOnly && <AttendanceWorkspace
         embedded
         lockedSectionId={sectionId}
         lockedDate={attendanceDate}
-      />
+      />}
     </section>
   );
 }

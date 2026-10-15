@@ -62,7 +62,7 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
   const [error, setError] = useState('');
   const [now, setNow] = useState(Date.now());
 
-  const supported = pathname === '/dashboard';
+  const supported = !['/', '/login', '/account-setup', '/reset-password'].includes(pathname) && !pathname.startsWith('/demo');
 
   const load = useCallback(async () => {
     if (!supported) return;

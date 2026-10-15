@@ -47,7 +47,15 @@ beforeEach(() => {
   });
 });
 afterEach(() => { cleanup(); vi.clearAllMocks(); vi.unstubAllEnvs(); });
-async function expectDate(value: string) { await waitFor(() => expect(screen.getByTestId('attendance-context').textContent).toBe(value), { timeout: 5000 }); }
+function attendanceContext() {
+  if (mode === 'false') return screen.queryByTestId('attendance-context');
+  expect(screen.queryByTestId('attendance-context')).toBeNull();
+  const link = screen.queryAllByRole('link', { name: 'Attendance' })[0];
+  if (!link) return null;
+  const url = new URL(link.getAttribute('href')!, 'https://staging.example');
+  return { textContent: `${url.searchParams.get('section')}/${url.searchParams.get('date')}` };
+}
+async function expectDate(value: string) { await waitFor(() => expect(attendanceContext()?.textContent).toBe(value), { timeout: 5000 }); }
 async function previewDay3() { fireEvent.change(screen.getByRole('combobox', { name: /Go to Day|Choose teaching day/i }), { target: { value: '3' } }); }
 
 describe('planner attendance follows the viewed lesson', () => {
@@ -72,7 +80,7 @@ describe('planner attendance follows the viewed lesson', () => {
     let resolve!: (value: unknown) => void;
     delayCalendar = new Promise(r => { resolve = r; });
     act(() => mocks.select?.('210'));
-    await waitFor(() => expect(screen.queryByTestId('attendance-context')).toBeNull());
+    await waitFor(() => expect(attendanceContext()).toBeNull());
     await act(async () => resolve({ data: [{ id: '210-p4', planner_day_number: 4, scheduled_date: '2026-09-30' }], error: null }));
     await expectDate('210/2026-09-30');
   });
@@ -85,11 +93,11 @@ describe('planner ignores stale lesson responses', () => {
     let resolve!: (value: unknown) => void;
     delayedGuide = { id: '110-g3', result: new Promise(r => { resolve = r; }) };
     await previewDay3();
-    await waitFor(() => expect(screen.queryByTestId('attendance-context')).toBeNull());
+    await waitFor(() => expect(attendanceContext()).toBeNull());
     act(() => mocks.select?.('210'));
     await expectDate('210/2026-09-28');
     await act(async () => resolve({ data: { id: '110-g3', guide_id: '110', planner_day_number: 3, title: 'Stale 110 lesson' }, error: null }));
-    expect(screen.queryByTestId('attendance-context')?.textContent).toBe('210/2026-09-28');
+    expect(attendanceContext()?.textContent).toBe('210/2026-09-28');
     expect(screen.queryByText('Stale 110 lesson')).toBeNull();
   });
 });
@@ -104,7 +112,7 @@ it('ignores a stale lesson index after switching class during initial loading', 
   await expectDate('210/2026-09-28');
   await act(async () => resolve({ data: [{ id: '110-g3', planner_day_number: 3, title: 'Stale index' }], error: null }));
   expect(screen.queryByRole('option', { name: /Stale index/ })).toBeNull();
-  expect(screen.getByTestId('attendance-context').textContent).toBe('210/2026-09-28');
+  expect(attendanceContext()?.textContent).toBe('210/2026-09-28');
 });
 
 
@@ -134,7 +142,7 @@ it.each([['Start Today', 'start_current_planner_day'], ['Complete Day', 'complet
   act(() => mocks.select?.('210'));
   await expectDate('210/2026-09-28');
   await act(async () => resolve({ error: null }));
-  expect(screen.queryByTestId('attendance-context')?.textContent).toBe('210/2026-09-28');
+  expect(attendanceContext()?.textContent).toBe('210/2026-09-28');
 });
 
 });

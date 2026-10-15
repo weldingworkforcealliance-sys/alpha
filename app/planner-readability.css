@@ -137,3 +137,12 @@
 .planner-time-budget strong { font-size: 19px; line-height: 1.35; }
 .planner-time-budget span { font-size: 14px; line-height: 1.45; }
 .planner-time-budget p { margin: 0; font-size: 15px; line-height: 1.5; }
+
+/* Sidebar clock stacks within the narrow navigation column. */
+.ltg-sidebar-punch-clock { width: 100%; min-width: 0; padding: 12px; box-sizing: border-box; }
+.ltg-sidebar-punch-clock .ltg-punch-row { display: grid; grid-template-columns: minmax(0, 1fr); margin: 0 0 12px; padding: 0; gap: 8px; }
+.ltg-sidebar-punch-clock .ltg-punch-action-row { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.ltg-sidebar-punch-clock .ltg-punch-card-heading { flex-wrap: wrap; gap: 8px; }
+.ltg-sidebar-punch-clock .ltg-today-total { flex-wrap: wrap; gap: 6px; }
+.ltg-sidebar-punch-clock .ltg-punch-card, .ltg-sidebar-punch-clock .ltg-today-card { min-width: 0; padding: 12px; }
+.ltg-sidebar-punch-clock .ltg-punch-primary { width: 100%; }

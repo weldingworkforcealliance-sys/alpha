@@ -141,6 +141,7 @@ export default function RootLayout({
                 aria-label="Planner workspace navigation"
                 className={navOpen ? 'ltg-sidebar mobile-open' : 'ltg-sidebar'}
               >
+                <div className="ltg-sidebar-punch-clock"><DashboardPunchClock pathname={pathname} /></div>
                 <div className="ltg-sidebar-header">
                   <div className="ltg-brand">
                     <span className="ltg-brand-mark">LTG</span>
@@ -260,7 +261,6 @@ export default function RootLayout({
               {!isDemoRoute && (
                 <>
                   {pathname === '/dashboard' && <DashboardHero />}
-                  <DashboardPunchClock pathname={pathname} />
                   <SchoolActiveTodayEmployees pathname={pathname} />
                   {!isStudentDisplay && <CohortWorkspaceBar pathname={pathname} />}
                   {!isStudentDisplay && <TeacherIdentityBar pathname={pathname} />}
