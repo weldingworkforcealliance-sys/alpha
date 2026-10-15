@@ -5,7 +5,8 @@ import { recoveryCallbackPath, RECOVERY_REQUEST_KEY } from '@/lib/password-recov
 import ResetPasswordPage from '@/app/reset-password/page';
 
 const mock = vi.hoisted(() => ({
-  auth: { getSession: vi.fn(), setSession: vi.fn(), exchangeCodeForSession: vi.fn(), verifyOtp: vi.fn(), resetPasswordForEmail: vi.fn() },
+  auth: { getSession: vi.fn(), setSession: vi.fn(), exchangeCodeForSession: vi.fn(), verifyOtp: vi.fn(), resetPasswordForEmail: vi.fn(), updateUser: vi.fn(), mfa: { getAuthenticatorAssuranceLevel: vi.fn(), listFactors: vi.fn(), challengeAndVerify: vi.fn() } },
+  rpc: vi.fn(),
 }));
 vi.mock('@/lib/supabase-browser', () => ({ getSupabase: () => mock }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
@@ -18,10 +19,45 @@ beforeEach(() => {
   mock.auth.exchangeCodeForSession.mockResolvedValue({ error: null });
   mock.auth.verifyOtp.mockResolvedValue({ error: null });
   mock.auth.resetPasswordForEmail.mockResolvedValue({ error: null });
+  mock.auth.mfa.getAuthenticatorAssuranceLevel.mockResolvedValue({ data: { currentLevel: 'aal1', nextLevel: 'aal1' }, error: null });
+  mock.auth.mfa.listFactors.mockResolvedValue({ data: { totp: [{ id: 'synthetic-factor', status: 'verified' }] }, error: null });
+  mock.auth.mfa.challengeAndVerify.mockResolvedValue({ error: null });
+  mock.auth.updateUser.mockResolvedValue({ error: null });
+  mock.rpc.mockResolvedValue({ error: null });
 });
 afterEach(cleanup);
 
 describe('recovery callbacks', () => {
+  it('requires verified AAL2 before updating a password on an MFA account', async () => {
+    mock.auth.getSession.mockResolvedValue({ data: { session: { user: { id: 'synthetic' } } } });
+    mock.auth.mfa.getAuthenticatorAssuranceLevel.mockResolvedValueOnce({ data: { currentLevel: 'aal1', nextLevel: 'aal2' }, error: null }).mockResolvedValue({ data: { currentLevel: 'aal2', nextLevel: 'aal2' }, error: null });
+    render(<ResetPasswordPage />);
+    await screen.findByLabelText('Authenticator Code');
+    fireEvent.change(screen.getByLabelText('New Password'), { target: { value: 'Synthetic-test-password' } });
+    fireEvent.change(screen.getByLabelText('Confirm Password'), { target: { value: 'Synthetic-test-password' } });
+    const update = screen.getByRole('button', { name: 'Update Password' });
+    expect((update as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(update);
+    expect(mock.auth.updateUser).not.toHaveBeenCalled();
+    fireEvent.change(screen.getByLabelText('Authenticator Code'), { target: { value: '123456' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Verify Authenticator' }));
+    await screen.findByText('Authenticator verified. You can now set your new password.');
+    expect(mock.auth.mfa.challengeAndVerify).toHaveBeenCalledWith({ factorId: 'synthetic-factor', code: '123456' });
+    fireEvent.click(update);
+    await waitFor(() => expect(mock.auth.updateUser).toHaveBeenCalledWith({ password: 'Synthetic-test-password' }));
+  });
+  it('keeps password updates blocked if authenticator verification fails', async () => {
+    mock.auth.getSession.mockResolvedValue({ data: { session: {} } });
+    mock.auth.mfa.getAuthenticatorAssuranceLevel.mockResolvedValue({ data: { currentLevel: 'aal1', nextLevel: 'aal2' }, error: null });
+    mock.auth.mfa.challengeAndVerify.mockResolvedValue({ error: new Error('Invalid authenticator code') });
+    render(<ResetPasswordPage />);
+    await screen.findByLabelText('Authenticator Code');
+    fireEvent.change(screen.getByLabelText('Authenticator Code'), { target: { value: '123456' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Verify Authenticator' }));
+    await screen.findByText('Invalid authenticator code');
+    expect((screen.getByRole('button', { name: 'Update Password' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(mock.auth.updateUser).not.toHaveBeenCalled();
+  });
   it('routes explicit recovery fragments locally without following a supplied next URL', () => {
     expect(recoveryCallbackPath('?next=https://example.com', '#type=recovery&access_token=test', null)).toBe('/reset-password?next=https://example.com#type=recovery&access_token=test');
   });

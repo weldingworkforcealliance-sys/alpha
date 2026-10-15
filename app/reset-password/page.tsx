@@ -18,6 +18,63 @@ export default function ResetPasswordPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [saving, setSaving] = useState(false);
+  const [mfaChecked, setMfaChecked] = useState(false);
+  const [mfaRequired, setMfaRequired] = useState(false);
+  const [factors, setFactors] = useState<Array<{ id: string; friendly_name?: string }>>([]);
+  const [factorId, setFactorId] = useState('');
+  const [authenticatorCode, setAuthenticatorCode] = useState('');
+
+  useEffect(() => {
+    if (!ready) return;
+    let active = true;
+    const checkMfa = async () => {
+      try {
+        const { data, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+        if (assuranceError) throw assuranceError;
+        if (!data) throw new Error('Could not check account verification. Refresh this page to try again.');
+        const required = data.nextLevel === 'aal2' && data.currentLevel !== 'aal2';
+        if (!active) return;
+        setMfaRequired(required);
+        if (required) {
+          const { data: factorData, error: factorError } = await supabase.auth.mfa.listFactors();
+          if (factorError) throw factorError;
+          const verified = (factorData?.totp ?? []).filter((factor: { id: string; status: string; friendly_name?: string }) => factor.status === 'verified');
+          if (!active) return;
+          setFactors(verified);
+          setFactorId(verified[0]?.id ?? '');
+        }
+        if (active) setMfaChecked(true);
+      } catch (err) {
+        if (active) setError(err instanceof Error ? err.message : 'Could not check account verification. Refresh this page to try again.');
+      }
+    };
+    void checkMfa();
+    return () => { active = false; };
+  }, [ready, supabase]);
+
+  const verifyAuthenticator = async () => {
+    setError('');
+    setMessage('');
+    if (!factorId || !/^\d{6}$/.test(authenticatorCode)) {
+      setError('Enter the six-digit code from your authenticator app.');
+      return;
+    }
+    setSaving(true);
+    try {
+      const { error: verificationError } = await supabase.auth.mfa.challengeAndVerify({ factorId, code: authenticatorCode });
+      if (verificationError) throw verificationError;
+      const { data, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (assuranceError) throw assuranceError;
+      if (data?.currentLevel !== 'aal2') throw new Error('Authenticator verification is incomplete. Try a new code.');
+      setMfaRequired(false);
+      setAuthenticatorCode('');
+      setMessage('Authenticator verified. You can now set your new password.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Authenticator verification failed. Try the current code from your app.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   useEffect(() => {
     const prepare = async () => {
@@ -143,6 +200,10 @@ export default function ResetPasswordPage() {
   const updatePassword = async () => {
     setError('');
     setMessage('');
+    if (!mfaChecked || mfaRequired) {
+      setError('Complete authenticator verification before changing your password.');
+      return;
+    }
 
     if (password.length < 8) {
       setError('Password must be at least 8 characters.');
@@ -257,7 +318,19 @@ export default function ResetPasswordPage() {
                 />
               </label>
 
-              <button disabled={saving} onClick={updatePassword}>
+              {!mfaChecked && <p role="status">Checking account verification…</p>}
+              {mfaChecked && mfaRequired && <section aria-label="Authenticator verification">
+                <p>This account uses multi-factor authentication. Verify with your authenticator app before updating your password. This is not the email code.</p>
+                {factors.length > 0 ? <>
+                  {factors.length > 1 && <label>Authenticator<select value={factorId} onChange={event => setFactorId(event.target.value)} disabled={saving}>
+                    {factors.map((factor, index) => <option key={factor.id} value={factor.id}>{factor.friendly_name || `Authenticator ${index + 1}`}</option>)}
+                  </select></label>}
+                  <label>Authenticator Code<input type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={authenticatorCode} onChange={event => setAuthenticatorCode(event.target.value.replace(/\D/g, '').slice(0, 6))} disabled={saving} /></label>
+                  <button type="button" disabled={saving} onClick={verifyAuthenticator}>{saving ? 'Verifying…' : 'Verify Authenticator'}</button>
+                  <p>If you no longer have this authenticator, contact your account administrator for account recovery.</p>
+                </> : <p>This account requires an additional verification method that is not available on this page. Contact your account administrator for recovery.</p>}
+              </section>}
+              <button disabled={saving || !mfaChecked || mfaRequired} onClick={updatePassword}>
                 {saving ? 'Updating…' : 'Update Password'}
               </button>
             </div>
