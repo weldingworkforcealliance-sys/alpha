@@ -31,6 +31,7 @@ const protectedRoutes = [
   ['/time-clock', '/login'],
   ['/reports', '/login'],
   ['/school', '/login'],
+  ['/tower-ui/index.html', '/login'],
   ['/owner', '/login'],
   ['/accounts', '/login'],
   ['/training', '/training/login'],
@@ -54,9 +55,11 @@ async function waitForServer() {
 await waitForServer();
 
 const failures = [];
-// Check actual HTTP output, including the static workspace used inside the Tower.
-for (const route of ['/login', '/tower-ui/index.html']) {
+// Test both SSR and a public static asset. The Tower HTML requires login;
+// its redirect is checked with the protected routes, not as a rendered page.
+for (const route of ['/login', '/skins/pccc-metalflake-texture.svg']) {
   const response = await fetch(`${baseUrl}${route}`, { redirect: 'manual' });
+  if (response.status !== 200) failures.push(`${route}: expected rendered response for header checks`);
   if (response.headers.get('x-content-type-options') !== 'nosniff') failures.push(`${route}: missing MIME protection`);
   if (response.headers.get('x-frame-options') !== 'SAMEORIGIN') failures.push(`${route}: same-origin Tower framing policy missing`);
   if (!response.headers.get('content-security-policy')?.includes("frame-ancestors 'self'")) failures.push(`${route}: missing frame ancestry protection`);
