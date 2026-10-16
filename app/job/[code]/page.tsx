@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { getSupabase } from '@/lib/supabase-browser';
+import { getPublicSupabase } from '@/lib/supabase-public';
 import { getJobCardByCode, submitJobCard } from '@/lib/job-card-session';
 import type {
   JobCardEvidenceType,
@@ -79,7 +79,7 @@ function checkLabel(value: string | null, fallback: string) {
 
 export default function StudentJobCardPage() {
   const { code } = useParams<{ code: string }>();
-  const [supabase] = useState(getSupabase);
+  const [supabase] = useState(getPublicSupabase);
   const joinCode = String(code ?? '').trim().toUpperCase();
   const storageKey = `ltg-live-job-card-${joinCode}`;
 

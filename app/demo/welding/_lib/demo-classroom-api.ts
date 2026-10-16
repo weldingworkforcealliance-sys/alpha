@@ -1,6 +1,6 @@
 'use client';
 
-import { getSupabase } from '@/lib/supabase-browser';
+import { getPublicSupabase } from '@/lib/supabase-public';
 
 export type DemoClassroomSession = {
   session_id: string;
@@ -76,7 +76,7 @@ type CreateResult = {
 };
 
 async function rpc<T>(name: string, args: Record<string, unknown>): Promise<T> {
-  const { data, error } = await getSupabase().rpc(name, args);
+  const { data, error } = await getPublicSupabase().rpc(name, args);
   if (error) throw new Error(error.message);
   return data as T;
 }

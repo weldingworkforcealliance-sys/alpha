@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { getSupabase } from '@/lib/supabase-browser';
+import { getPublicSupabase } from '@/lib/supabase-public';
 
 type Question={
   key:string;
@@ -38,7 +38,7 @@ type SessionInfo={
 
 export default function StudentAssessmentPage(){
   const {code}=useParams<{code:string}>();
-  const [supabase]=useState(getSupabase);
+  const [supabase]=useState(getPublicSupabase);
   const [info,setInfo]=useState<SessionInfo|null>(null);
   const [questions,setQuestions]=useState<Question[]>([]);
   const [name,setName]=useState('');

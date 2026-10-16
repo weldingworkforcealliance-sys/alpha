@@ -8,6 +8,7 @@ import {defaultRatings,type ShopAttempt,type ShopStudent} from '../lib/wld110-sh
 const mocks=vi.hoisted(()=>({rpc:vi.fn(),qr:vi.fn()}));
 vi.mock('qrcode',()=>({default:{toDataURL:mocks.qr}}));
 vi.mock('@/lib/supabase-browser',()=>({getSupabase:()=>({rpc:mocks.rpc})}));
+vi.mock('@/lib/supabase-public',()=>({getPublicSupabase:()=>({rpc:mocks.rpc})}));
 const student=(patch:Partial<ShopStudent>={}):ShopStudent=>({
  student_id:'student-1',display_name:'Synthetic Student',active:true,current_competency:0,revision:0,
  requested_at:null,focus:[],position_meetings:0,attempts:[],completions:[],...patch,
