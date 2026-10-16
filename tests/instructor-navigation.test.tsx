@@ -28,15 +28,19 @@ it('shows the five demo essentials and keeps additional tools collapsed',async()
   expect(screen.queryByRole('link',{name:'Full Detailed Planner'})).toBeNull();
   expect(screen.getByRole('link',{name:'Today'}).getAttribute('aria-current')).toBe('page');
   fireEvent.click(more());
+  expect(screen.queryByRole('link',{name:'Full Detailed Planner'})).toBeNull();
+  fireEvent.click(screen.getByRole('button',{name:'Plan & teach'}));
   expect(screen.getByRole('link',{name:'Full Detailed Planner'}).getAttribute('href')).toBe('/dashboard?view=detailed');
   expect(screen.getByRole('link',{name:'Planner Workspace'}).getAttribute('href')).toBe('/planner');
   expect(screen.getByRole('link',{name:'Agenda Workspace'}).getAttribute('href')).toBe('/agenda');
+  fireEvent.click(screen.getByRole('button',{name:'Time & reports'}));
+  expect(screen.queryByRole('link',{name:'Full Detailed Planner'})).toBeNull();
   expect(screen.getByRole('link',{name:'Employee Time Clock'}).getAttribute('href')).toBe('/time-clock');
   expect(screen.getByRole('link',{name:'Reporting & Analytics'}).getAttribute('href')).toBe('/reports');
 });
 
 it('carries the selected class into attendance, classroom activities and job cards',()=>{
-  renderNav();fireEvent.click(more());
+  renderNav();fireEvent.click(more());fireEvent.click(screen.getByRole('button',{name:'Plan & teach'}));
   for(const [name,path] of [['Attendance','/attendance'],['Grading','/gradebook'],['Live Classroom','/classroom'],['Classroom Activities','/classroom/planner'],['Student Job Cards','/classroom/job-card']]) {
     expect(screen.getByRole('link',{name}).getAttribute('href')).toBe(`${path}?section=class-a`);
   }
@@ -54,11 +58,14 @@ it.each([
   renderNav();fireEvent.click(more());
   await waitFor(()=>expect(mock.rpc).toHaveBeenCalledTimes(3));
   await act(async()=>{});
+  fireEvent.click(screen.getByRole('button',{name:'Administration'}));
   expect(Boolean(screen.queryByRole('link',{name:'School Dashboard'}))).toBe(expected.school);
-  expect(Boolean(screen.queryByRole('link',{name:'Weekly Time Reports'}))).toBe(expected.payroll);
-  expect(Boolean(screen.queryByRole('link',{name:'Review Queue'}))).toBe(expected.review);
   expect(Boolean(screen.queryByRole('link',{name:'Owner Dashboard'}))).toBe(expected.owner);
   expect(screen.getByRole('link',{name:'Training Mode'})).toBeTruthy();
+  fireEvent.click(screen.getByRole('button',{name:'Time & reports'}));
+  expect(Boolean(screen.queryByRole('link',{name:'Weekly Time Reports'}))).toBe(expected.payroll);
+  fireEvent.click(screen.getByRole('button',{name:'Plan & teach'}));
+  expect(Boolean(screen.queryByRole('link',{name:'Review Queue'}))).toBe(expected.review);
 });
 
 it('opens More tools for secondary destinations and marks only the actual page current',()=>{
@@ -85,4 +92,13 @@ it('retains the contextual account tools and closes the mobile menu on navigatio
 it('does not advertise grading when its feature flag is disabled',()=>{
   vi.stubEnv('NEXT_PUBLIC_GRADEBOOK_ENABLED','false');renderNav();
   expect(screen.queryByRole('link',{name:'Grading'})).toBeNull();
+});
+
+it('allows a category to collapse without navigating and opens the current category on route changes',()=>{
+ const onNavigate=vi.fn();const view=render(<InstructorNavigation pathname="/dashboard" onNavigate={onNavigate}/>);
+ fireEvent.click(more());const admin=screen.getByRole('button',{name:'Administration'});fireEvent.click(admin);fireEvent.click(admin);
+ expect(admin.getAttribute('aria-expanded')).toBe('false');expect(onNavigate).not.toHaveBeenCalled();
+ view.rerender(<InstructorNavigation pathname="/reports" onNavigate={onNavigate}/>);
+ expect(screen.getByRole('button',{name:'Time & reports'}).getAttribute('aria-expanded')).toBe('true');
+ expect(screen.getByRole('link',{name:'Reporting & Analytics'}).getAttribute('aria-current')).toBe('page');
 });

@@ -64,3 +64,8 @@
   .night-shift-shell .ltg-sidebar-header { padding-top: 8px; }
   .night-shift-shell .ltg-sidebar .ltg-mobile-menu-button { min-height: 44px; }
 }
+
+.ltg-category-links { display: grid; gap: 4px; padding: 5px 0 7px 8px; }
+.ltg-category-links[hidden] { display: none !important; }
+.night-shift-shell .ltg-sidebar .ltg-category-button { margin-top: 0; border-color: transparent; background: #172d38; }
+.night-shift-shell .ltg-sidebar .ltg-category-button[aria-expanded="true"] { border-color: #688b9c; }
