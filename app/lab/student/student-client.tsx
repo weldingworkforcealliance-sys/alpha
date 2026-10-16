@@ -1,12 +1,12 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
-import {getSupabase} from '@/lib/supabase-browser';
+import {getPublicSupabase} from '@/lib/supabase-public';
 import {formatError} from '@/lib/format-error';
 import type {LabCoaching} from '@/lib/lab-coaching';
 import styles from '../lab.module.css';
 
 export default function LabStudentClient(){
- const [client]=useState(getSupabase),[student,setStudent]=useState<LabCoaching|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
+ const [client]=useState(getPublicSupabase),[student,setStudent]=useState<LabCoaching|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
  const token=useRef(''),requesting=useRef(false),generation=useRef(0);
  useEffect(()=>{
   let alive=true;

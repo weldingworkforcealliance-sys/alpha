@@ -8,6 +8,7 @@ import {defaultRatings,type ShopAttempt,type ShopStudent} from '../lib/wld110-sh
 const mocks=vi.hoisted(()=>({rpc:vi.fn(),qr:vi.fn()}));
 vi.mock('qrcode',()=>({default:{toDataURL:mocks.qr}}));
 vi.mock('@/lib/supabase-browser',()=>({getSupabase:()=>({rpc:mocks.rpc})}));
+vi.mock('@/lib/supabase-public',()=>({getPublicSupabase:()=>({rpc:mocks.rpc})}));
 const student=(patch:Partial<ShopStudent>={}):ShopStudent=>({
  student_id:'student-1',display_name:'Synthetic Student',active:true,current_competency:0,revision:0,
  requested_at:null,focus:[],position_meetings:0,attempts:[],completions:[],...patch,
@@ -94,7 +95,8 @@ describe('instructor board saves and coaching',()=>{
   const calls=mocks.rpc.mock.calls.filter(c=>c[0]==='decide_wld110_weld');
   expect(calls).toHaveLength(2);expect(calls[1][1]).toEqual(originalCall);
   expect(screen.queryByRole('region',{name:'Grade weld'})).toBeNull();
-  expect(blocked).toHaveBeenLastCalledWith(false);
+  // The saved notice renders before the passive onSaveState effect settles.
+  await waitFor(()=>expect(blocked).toHaveBeenLastCalledWith(false));
   expect(screen.getByText('Practice')).toBeTruthy();
  });
  it('shows pacing review at six meetings, and practice records no grade',async()=>{

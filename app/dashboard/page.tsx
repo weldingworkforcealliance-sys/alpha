@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import TeachingView from './teaching-view';
 import PlannerAttendancePanel from '../planner-attendance-panel';
 import PlannerActivity from '../planner-activity';
 import PlannerTimeBudget from '../planner-time-budget';
@@ -15,7 +16,7 @@ import {
   subscribeSelectedSection,
 } from '@/lib/section-selection';
 
-interface TeachingSection {
+export interface TeachingSection {
   school_id: string;
   section_id: string;
   section_name: string | null;
@@ -62,7 +63,7 @@ interface DayDelivery {
   updated_at: string | null;
 }
 
-interface GuideDay {
+export interface GuideDay {
   id: string;
   guide_id: string;
   planner_day_number: number;
@@ -77,13 +78,13 @@ interface GuideDay {
   keep_momentum: string | null;
 }
 
-interface GuideDayRef {
+export interface GuideDayRef {
   id: string;
   planner_day_number: number;
   title: string | null;
 }
 
-interface GuideSegment {
+export interface GuideSegment {
   id: string;
   sequence_number: number;
   segment_type: string;
@@ -95,7 +96,7 @@ interface GuideSegment {
   end_minute: number | null;
 }
 
-interface GuideResource {
+export interface GuideResource {
   id: string;
   sequence_number: number;
   resource_type: string;
@@ -105,14 +106,14 @@ interface GuideResource {
   required: boolean;
 }
 
-interface ProtectedOutcome {
+export interface ProtectedOutcome {
   id: string;
   outcome_code: string;
   outcome_text: string;
   locked: boolean;
 }
 
-interface MathLesson {
+export interface MathLesson {
   id: string;
   math_day_number: number;
   title: string;
@@ -123,7 +124,7 @@ interface MathLesson {
   answers_quick_check: string | null;
 }
 
-interface MathSegment {
+export interface MathSegment {
   id: string;
   sequence_number: number;
   start_minute: number | null;
@@ -188,7 +189,23 @@ function formatClockTime(timestamp: string) {
 }
 
 export default function DashboardPage() {
+  return <Suspense fallback={<main>Loading planner…</main>}><DashboardContent /></Suspense>;
+}
+
+function DashboardContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedView = searchParams.get('view');
+  const [detailed, setDetailed] = useState(requestedView === 'detailed');
+  useEffect(() => { setDetailed(requestedView === 'detailed'); }, [requestedView]);
+  const showDetailed = (next: boolean) => {
+    setDetailed(next);
+    const params = new URLSearchParams(searchParams.toString());
+    if (next) params.set('view', 'detailed');
+    else params.delete('view');
+    router.replace(`/dashboard${params.size ? `?${params}` : ''}`, { scroll: false });
+  };
+  const teachingViewEnabled = process.env.NEXT_PUBLIC_TEACHING_VIEW_V2 === 'true';
   const [sections, setSections] = useState<TeachingSection[]>([]);
   const [selectedSection, setSelectedSection] = useState<TeachingSection | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -819,6 +836,24 @@ export default function DashboardPage() {
     );
   }
 
+  if (teachingViewEnabled && !detailed && selectedSection) {
+    return <TeachingView
+      section={selectedSection} guide={guideDay} days={guideDayRefs}
+      segments={guideSegments} resources={guideResources} outcomes={protectedOutcomes}
+      mathLesson={mathLesson} mathSegments={mathSegments}
+      loading={guideLoading || calendarLoading || calendarSectionId !== selectedSection.section_id || Boolean(viewedGuideDayId && guideDay?.id !== viewedGuideDayId)}
+      busy={actionLoading} current={isViewingCurrentDay} inProgress={currentDayInProgress}
+      completed={Boolean(currentDelivery?.completed_at)} elapsed={formatElapsedTime(elapsedSeconds)}
+      actualDate={actualDate} attendanceDate={viewedAttendanceDate} error={error}
+      summary={deviationSummary} followUp={followUpNeeded} followUpNotes={followUpNotes}
+      onDay={viewGuideDayByNumber} onCurrentDay={returnToCurrentGuideDay}
+      onStart={() => void handleStartToday()} onComplete={() => void handleCompleteDay()}
+      onDate={date => { setActualDate(date); setAttendanceDateOverride({dayKey: attendanceDayKey, date}); }}
+      onSummary={setDeviationSummary} onFollowUp={setFollowUpNeeded} onFollowUpNotes={setFollowUpNotes}
+      onDetailed={() => showDetailed(true)}
+      attendance={viewedAttendanceDate ? <PlannerAttendancePanel guardOnly key={selectedSection.section_id + '/' + viewedAttendanceDate} sectionId={selectedSection.section_id} attendanceDate={viewedAttendanceDate} /> : null}
+    />;
+  }
   return (
     <div className="dashboard-container">
       <header className="dashboard-header">
@@ -861,6 +896,7 @@ export default function DashboardPage() {
       </header>
 
       <main className="dashboard-main">
+        {teachingViewEnabled && <button type="button" className="guide-browser-button" onClick={() => showDetailed(false)}>Back to Teaching View</button>}
         {selectedSection && viewedAttendanceDate && (
           <PlannerAttendancePanel
             key={selectedSection.section_id + '/' + viewedAttendanceDate}
@@ -2462,3 +2498,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+

@@ -16,10 +16,14 @@ it('does not let a previous class restriction intercept Start Today while the ne
     return q;
   });
   const onStart = vi.fn();
+  const scroll = vi.fn();
+  Object.defineProperty(Element.prototype, 'scrollIntoView', { configurable:true, value:scroll });
   render(<><Guard /><button onClick={onStart}>Start Today</button></>);
   await screen.findByRole('status');
   fireEvent.click(screen.getByRole('button', { name: 'Start Today' }));
   expect(onStart).not.toHaveBeenCalled();
+  expect(scroll).toHaveBeenCalledOnce();
+  expect(document.activeElement).toBe(screen.getByRole('status'));
   act(() => mocks.select?.('today'));
   await waitFor(() => expect(screen.queryByRole('status')).toBeNull());
   fireEvent.click(screen.getByRole('button', { name: 'Start Today' }));

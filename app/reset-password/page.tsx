@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
+import { RECOVERY_REQUEST_KEY } from '@/lib/password-recovery';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -17,26 +18,113 @@ export default function ResetPasswordPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [saving, setSaving] = useState(false);
+  const [mfaChecked, setMfaChecked] = useState(false);
+  const [mfaRequired, setMfaRequired] = useState(false);
+  const [factors, setFactors] = useState<Array<{ id: string; friendly_name?: string }>>([]);
+  const [factorId, setFactorId] = useState('');
+  const [authenticatorCode, setAuthenticatorCode] = useState('');
+
+  useEffect(() => {
+    if (!ready) return;
+    let active = true;
+    const checkMfa = async () => {
+      try {
+        const { data, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+        if (assuranceError) throw assuranceError;
+        if (!data) throw new Error('Could not check account verification. Refresh this page to try again.');
+        const required = data.nextLevel === 'aal2' && data.currentLevel !== 'aal2';
+        if (!active) return;
+        setMfaRequired(required);
+        if (required) {
+          const { data: factorData, error: factorError } = await supabase.auth.mfa.listFactors();
+          if (factorError) throw factorError;
+          const verified = (factorData?.totp ?? []).filter((factor: { id: string; status: string; friendly_name?: string }) => factor.status === 'verified');
+          if (!active) return;
+          setFactors(verified);
+          setFactorId(verified[0]?.id ?? '');
+        }
+        if (active) setMfaChecked(true);
+      } catch (err) {
+        if (active) setError(err instanceof Error ? err.message : 'Could not check account verification. Refresh this page to try again.');
+      }
+    };
+    void checkMfa();
+    return () => { active = false; };
+  }, [ready, supabase]);
+
+  const verifyAuthenticator = async () => {
+    setError('');
+    setMessage('');
+    if (!factorId || !/^\d{6}$/.test(authenticatorCode)) {
+      setError('Enter the six-digit code from your authenticator app.');
+      return;
+    }
+    setSaving(true);
+    try {
+      const { error: verificationError } = await supabase.auth.mfa.challengeAndVerify({ factorId, code: authenticatorCode });
+      if (verificationError) throw verificationError;
+      const { data, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (assuranceError) throw assuranceError;
+      if (data?.currentLevel !== 'aal2') throw new Error('Authenticator verification is incomplete. Try a new code.');
+      setMfaRequired(false);
+      setAuthenticatorCode('');
+      setMessage('Authenticator verified. You can now set your new password.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Authenticator verification failed. Try the current code from your app.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   useEffect(() => {
     const prepare = async () => {
       try {
         const params = new URLSearchParams(window.location.search);
+        const fragment = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+        const callbackError = params.get('error_description') || fragment.get('error_description');
+        if (callbackError) throw new Error('This reset link is expired or invalid. Request a new reset email below.');
+        const accessToken = fragment.get('access_token');
+        const refreshToken = fragment.get('refresh_token');
         const code = params.get('code');
+        const tokenHash = params.get('token_hash');
+
+        if (accessToken && refreshToken) {
+          const { error: sessionError } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+          if (sessionError) throw sessionError;
+          window.history.replaceState({}, '', window.location.pathname);
+          setReady(true);
+          return;
+        }
+
+        if (tokenHash) {
+          const { error: verifyError } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
+          if (verifyError) throw verifyError;
+          window.history.replaceState({}, '', window.location.pathname);
+          setReady(true);
+          return;
+        }
+
+        // Browser-client initialization may already have exchanged a PKCE code.
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          window.history.replaceState({}, '', window.location.pathname);
+          setReady(true);
+          return;
+        }
 
         if (code) {
           const { error: exchangeError } =
             await supabase.auth.exchangeCodeForSession(code);
           if (!exchangeError) {
+            window.history.replaceState({}, '', window.location.pathname);
             setReady(true);
             return;
           }
+          throw new Error('This reset link could not be verified. Open it in the browser that requested it, or request a new reset email below.');
         }
-
-        const { data } = await supabase.auth.getSession();
-        if (data.session) setReady(true);
       } catch (err) {
-        console.error(err);
+        window.history.replaceState({}, '', window.location.pathname);
+        setError(err instanceof Error ? err.message : 'The reset link could not be verified. Request a new reset email below.');
       }
     };
 
@@ -55,6 +143,7 @@ export default function ResetPasswordPage() {
 
     setSaving(true);
     try {
+      try { window.localStorage.setItem(RECOVERY_REQUEST_KEY, String(Date.now())); } catch { /* Link recovery still works without storage. */ }
       const { error: sendError } = await supabase.auth.resetPasswordForEmail(
         normalizedEmail,
         { redirectTo: `${window.location.origin}/reset-password` }
@@ -63,7 +152,7 @@ export default function ResetPasswordPage() {
       if (sendError) throw sendError;
 
       setCodeSent(true);
-      setMessage('Reset code sent. Check your email, then enter the code below.');
+      setMessage('Reset email sent. Open the newest link in this browser. If your email includes a code, you can enter it below instead.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not send reset code.');
     } finally {
@@ -111,6 +200,10 @@ export default function ResetPasswordPage() {
   const updatePassword = async () => {
     setError('');
     setMessage('');
+    if (!mfaChecked || mfaRequired) {
+      setError('Complete authenticator verification before changing your password.');
+      return;
+    }
 
     if (password.length < 8) {
       setError('Password must be at least 8 characters.');
@@ -126,6 +219,7 @@ export default function ResetPasswordPage() {
     try {
       const { error: updateError } = await supabase.auth.updateUser({ password });
       if (updateError) throw updateError;
+      try { window.localStorage.removeItem(RECOVERY_REQUEST_KEY); } catch { /* Storage may be disabled. */ }
 
       await supabase.rpc('activate_my_invited_memberships');
 
@@ -147,8 +241,8 @@ export default function ResetPasswordPage() {
         {!ready ? (
           <>
             <p>
-              Enter your email address. We will send a verification code so you
-              can safely create a new password.
+              Enter your email address. We will send a reset email. Open its link
+              in this browser to create a new password, or use the optional code if one is included.
             </p>
 
             {error && <div className="error">{error}</div>}
@@ -166,13 +260,13 @@ export default function ResetPasswordPage() {
               </label>
 
               <button disabled={saving} onClick={sendResetCode}>
-                {saving && !codeSent ? 'Sending…' : codeSent ? 'Resend Reset Code' : 'Send Reset Code'}
+                {saving && !codeSent ? 'Sending…' : codeSent ? 'Resend Reset Email' : 'Send Reset Email'}
               </button>
 
               {codeSent && (
                 <>
                   <label>
-                    Verification Code
+                    Verification Code (optional)
                     <input
                       type="text"
                       inputMode="numeric"
@@ -224,7 +318,19 @@ export default function ResetPasswordPage() {
                 />
               </label>
 
-              <button disabled={saving} onClick={updatePassword}>
+              {!mfaChecked && <p role="status">Checking account verification…</p>}
+              {mfaChecked && mfaRequired && <section aria-label="Authenticator verification">
+                <p>This account uses multi-factor authentication. Verify with your authenticator app before updating your password. This is not the email code.</p>
+                {factors.length > 0 ? <>
+                  {factors.length > 1 && <label>Authenticator<select value={factorId} onChange={event => setFactorId(event.target.value)} disabled={saving}>
+                    {factors.map((factor, index) => <option key={factor.id} value={factor.id}>{factor.friendly_name || `Authenticator ${index + 1}`}</option>)}
+                  </select></label>}
+                  <label>Authenticator Code<input type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={authenticatorCode} onChange={event => setAuthenticatorCode(event.target.value.replace(/\D/g, '').slice(0, 6))} disabled={saving} /></label>
+                  <button type="button" disabled={saving} onClick={verifyAuthenticator}>{saving ? 'Verifying…' : 'Verify Authenticator'}</button>
+                  <p>If you no longer have this authenticator, contact your account administrator for account recovery.</p>
+                </> : <p>This account requires an additional verification method that is not available on this page. Contact your account administrator for recovery.</p>}
+              </section>}
+              <button disabled={saving || !mfaChecked || mfaRequired} onClick={updatePassword}>
                 {saving ? 'Updating…' : 'Update Password'}
               </button>
             </div>

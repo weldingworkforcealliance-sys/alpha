@@ -47,6 +47,7 @@ export default function PayrollNavLink() {
   return (
     <Link
       href="/time-clock/payroll"
+      aria-current={pathname.startsWith('/time-clock/payroll') ? 'page' : undefined}
       className={`ltg-nav-link ${pathname.startsWith('/time-clock/payroll') ? 'active' : ''}`}
     >
       Weekly Time Reports

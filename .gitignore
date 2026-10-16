@@ -49,3 +49,6 @@ Thumbs.db
 /lib/pccc-certificate-background.ts
 /tmp/
 /output/
+
+# Local Netlify build state
+.netlify/

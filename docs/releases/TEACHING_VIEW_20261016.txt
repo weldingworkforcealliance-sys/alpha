@@ -1,0 +1,43 @@
+LTG TEACHING VIEW RELEASE CANDIDATE — 2026-10-14
+
+Scope approved: all live instructors. Preserve real class data, permissions,
+attendance, grading, Live Classroom, job cards, reports, payroll and time clock.
+The FABTECH demo and its printed QR URL remain separate and unchanged.
+
+Production baseline: 0a41f71ebec2158e08c56ba638afd9904ae170d1
+Production branch: product/standalone-mainline-2026-09-11
+Production deploy: 6acf810141cf7f12c5a4a6b4
+Staging branch: staging/teaching-view-live-20261016
+
+Do not merge or deploy production without the user's explicit final go-ahead.
+Friday October 16, 2026, 3 PM America/New_York is an approval reminder, not an
+automatic merge. Overnight staging work ends October 15 at 4 AM Eastern.
+
+Implementation:
+- New presentation component consumes the current live Dashboard's loaded data.
+- Existing RPCs, authorization, date resolution, scheduling guard, attendance
+  completion guard, time budget, notes and asynchronous request isolation remain.
+- Full Detailed Planner remains available, sharing current selection and notes.
+- No demo memory runtime, database migrations, auth changes or student data copies.
+- NEXT_PUBLIC_TEACHING_VIEW_V2 enables the presentation. Deploy Preview and
+  proposed production config enable it. Production config changes take effect
+  only after the approved merge and production build.
+
+Checks so far: TypeScript and changed-file lint passed. Full Vitest 61 files,
+615 tests passed. Additional release checks and preview validation remain pending.
+
+Before Friday approval:
+1. Finish candidate CI/build and review the isolated preview on desktop/mobile,
+   including light and dark themes and the full-planner switch.
+2. Verify attendance completion blocking, historical date context, note retention,
+   held/future classes, grading navigation and all existing live feature links.
+3. Confirm preview uses staging Supabase only and does not enable disposable-demo
+   mode for the live instructor dashboard. Never test writes on production.
+4. Compare production branch head to the baseline; incorporate later production
+   fixes on this staging branch and rerun relevant checks before approval.
+5. Review active-class/session handling and pending saves. Deployment is atomic,
+   but users with open tabs should finish in-flight saves before a planned refresh.
+6. Record exact candidate SHA and preview validation. Only then request approval.
+7. After approval, merge the reviewed candidate to the existing production branch;
+   monitor build/HTTP/login/workflows. If a defect is published, fix forward with
+   a reviewed revert commit. Do not publish the FABTECH demo artifact to production.

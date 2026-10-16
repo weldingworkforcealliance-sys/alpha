@@ -1,12 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getSupabase } from '@/lib/supabase-browser';
 import { eligibleCompletedHours, isActiveOpenPunch, isUnresolvedOpenPunch } from '@/lib/timeclock-safety';
+import { notifyTimeclockChanged, subscribeTimeclockChanges } from '@/lib/timeclock-events';
 
 type Employee = {
   id: string;
+  school_id: string;
   display_name: string;
   clocking_enabled: boolean;
 };
@@ -61,15 +63,19 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [now, setNow] = useState(Date.now());
+  const loadVersion = useRef(0);
 
-  const supported = pathname === '/dashboard';
+  const supported = !['/', '/login', '/account-setup', '/reset-password'].includes(pathname) && !pathname.startsWith('/demo');
 
   const load = useCallback(async () => {
     if (!supported) return;
+    const version = ++loadVersion.current;
+    setLoading(true);
     setError('');
 
     try {
       const { data: auth } = await supabase.auth.getSession();
+      if (version !== loadVersion.current) return;
       const userId = auth.session?.user.id;
       if (!userId) {
         setEmployee(null);
@@ -80,13 +86,14 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
 
       const { data: employeeData, error: employeeError } = await supabase
         .from('timeclock_employees')
-        .select('id,display_name,clocking_enabled')
+        .select('id,school_id,display_name,clocking_enabled')
         .eq('profile_id', userId)
         .eq('active', true)
         .order('created_at', { ascending: true })
         .limit(1)
         .maybeSingle();
 
+      if (version !== loadVersion.current) return;
       if (employeeError) throw employeeError;
       const nextEmployee = (employeeData ?? null) as Employee | null;
       setEmployee(nextEmployee);
@@ -115,6 +122,7 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
           .maybeSingle(),
       ]);
 
+      if (version !== loadVersion.current) return;
       if (todayResult.error) throw todayResult.error;
       if (openResult.error) throw openResult.error;
 
@@ -125,17 +133,24 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
 
       setEntries(Array.from(combined.values()));
       setOpenEntry(currentOpen);
+      setNow(Date.now());
     } catch (err) {
+      if (version !== loadVersion.current) return;
       setError(err instanceof Error ? err.message : 'Unable to load punch clock');
     } finally {
-      setLoading(false);
+      if (version === loadVersion.current) setLoading(false);
     }
   }, [supported, supabase]);
 
   useEffect(() => {
     if (!supported) return;
     void load();
-  }, [load, supported]);
+    const unsubscribe = subscribeTimeclockChanges('sidebar', () => { void load(); });
+    return () => {
+      unsubscribe();
+      loadVersion.current += 1;
+    };
+  }, [load, supported, pathname]);
 
   useEffect(() => {
     if (!supported) return;
@@ -149,7 +164,7 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
 
   const handlePunch = async () => {
     // A stale session must be corrected by a manager, never clocked out now.
-    if (!employee || busy || !employee.clocking_enabled || unresolvedOpen) return;
+    if (!employee || busy || loading || error || !employee.clocking_enabled || unresolvedOpen) return;
     setBusy(true);
     setError('');
     try {
@@ -161,6 +176,7 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
         }
       );
       if (rpcError) throw rpcError;
+      notifyTimeclockChanged('sidebar');
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Clock action failed');
@@ -185,10 +201,14 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
             <span className="ltg-punch-icon" aria-hidden="true">◷</span>
             <div>
               <h2>Punch Clock</h2>
-              <p>Track your work hours</p>
+              <p>{employee?.display_name ?? 'Track your work hours'}</p>
             </div>
           </div>
-          <Link href="/time-clock">View Time Clock →</Link>
+          <a href={employee
+            ? `/time-clock?school=${encodeURIComponent(employee.school_id)}${unresolvedOpen && openEntry ? `&review=${encodeURIComponent(openEntry.id)}` : ''}`
+            : '/time-clock'}>
+            {unresolvedOpen ? 'Review Previous Punch →' : 'View Time Clock →'}
+          </a>
         </div>
 
         {loading ? (
@@ -218,7 +238,7 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
               type="button"
               className="ltg-punch-primary"
               onClick={handlePunch}
-              disabled={busy || !employee.clocking_enabled || unresolvedOpen}
+              disabled={busy || Boolean(error) || !employee.clocking_enabled || unresolvedOpen}
             >
               {busy ? 'Working…' : unresolvedOpen ? 'Review Required' : activeOpen ? 'Clock Out' : 'Clock In'}
             </button>

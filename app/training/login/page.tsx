@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
+import { finishPasswordSignIn } from '@/lib/mfa-login';
 
 export default function TrainingLoginPage() {
   const router = useRouter();
@@ -29,8 +30,8 @@ export default function TrainingLoginPage() {
         password,
       });
       if (authError) throw authError;
-      await supabase.rpc('activate_my_invited_memberships');
-      router.push('/training');
+      setPassword('');
+      router.push(await finishPasswordSignIn(supabase, '/training'));
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {

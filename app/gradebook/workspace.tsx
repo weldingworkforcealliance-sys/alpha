@@ -1,16 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
 import { Gradebook, linkedGradebook, readGradebookRows } from '@/lib/gradebook';
 import { formatError } from '@/lib/format-error';
 import styles from './workspace.module.css';
 import TowerWorkspace from '../tower/workspace';
 import ShopWorkspace from '../shop/workspace';
+import PlannerFabricationGradingPanel from '../planner-fabrication-grading-panel';
 import CourseFinals from './course-finals';
 import WeldingHistory from '../lab/welding-history';
 import GradeGrid from './grade-grid';
 import {shopItemTitle} from '@/lib/wld110-shop';
+import { readSelectedSectionId } from '@/lib/section-selection';
 
 type Student = { student_id: string; active: boolean; display_name: string };
 type Item = { id: string; title: string; category_id: string; assessment_slug: string | null };
@@ -22,6 +25,14 @@ type TowerSelection = { student_id: string; attempt_id: string };
 type BookData = { book: Gradebook; students: Student[]; items: Item[]; categories: Category[]; statuses: Status[]; attempts: Attempt[]; towerSelections: TowerSelection[]; unresolved: number };
 
 export default function GradebookWorkspace() {
+  return <Suspense fallback={<p role="status">Loading gradebooks…</p>}><GradebookContent /></Suspense>;
+}
+
+function GradebookContent() {
+  const params = useSearchParams();
+  const requestedSection = params.get('section') ?? '';
+  const appliedSection = useRef<string | null>(null);
+  const [contextError, setContextError] = useState('');
   const [client] = useState(getSupabase);
   const [books, setBooks] = useState<Gradebook[]>([]);
   const [selected, setSelected] = useState('');
@@ -46,11 +57,24 @@ export default function GradebookWorkspace() {
     let cancelled = false;
     void readGradebookRows<Gradebook>((from, to) => client.from('gradebook_directory').select('*').order('section_name').order('id').range(from, to)).then(rows => {
       if (cancelled) return;
-      setBooks(rows); setSelected(rows.find(row => row.section_status === 'active')?.id ?? rows[0]?.id ?? '');
+      setBooks(rows);
       if (!rows.length) setLoading(false);
     }).catch(() => { if (!cancelled) { setError('Gradebooks could not load. Verify that the gradebook migrations are installed.'); setLoading(false); } });
     return () => { cancelled = true; };
   }, [client]);
+
+  useEffect(() => {
+    if (!books.length || saveBlocked || appliedSection.current === requestedSection) return;
+    const section = requestedSection || readSelectedSectionId();
+    const match = books.find(book => book.section_id === section);
+    // An explicit class link must never silently open a different class.
+    const next = match ?? (requestedSection ? null : books.find(book => book.section_status === 'active') ?? books[0]);
+    setSelected(next?.id ?? '');
+    setContextError(requestedSection && !match ? 'The selected class’s gradebook is not available to your account. Choose an available class below.' : '');
+    setProgram(''); setLevel(''); setSemester('');
+    setStudentId(''); setAssignmentId(''); setTab('grades'); setWeldingOpened(false);
+    appliedSection.current = requestedSection;
+  }, [books, requestedSection, saveBlocked]);
 
   useEffect(() => {
     let cancelled = false;
@@ -114,9 +138,10 @@ export default function GradebookWorkspace() {
 
   return <main className={styles.workspace}>
     <header><h1>Gradebook</h1><p>Grades, welding assessments and student records in one class workspace.</p></header>
+    {contextError && <p role="alert">{contextError}</p>}
     <div className={styles.filters}>
-      <label>Class<select disabled={busy || saveBlocked} value={selected} onChange={e => {setSelected(e.target.value);setStudentId('');setNotice('');}}>{!available.length && <option value="">No classes</option>}{available.map(book => <option key={book.id} value={book.id}>{book.course_code} · {book.section_name}{book.section_status !== 'active' ? ' (archived)' : ''}</option>)}</select></label>
-      {towerEnabled&&labBook&&<button className={styles.gradeAction} disabled={busy||saveBlocked||loading} aria-pressed={tab==='lab'} onClick={()=>changeTab('lab')}>Grade a weld · {labBook.course_code}</button>}
+      <label>Class<select disabled={busy || saveBlocked} value={selected} onChange={e => {setSelected(e.target.value);setStudentId('');setAssignmentId('');setNotice('');setContextError('');}}>{!selected && <option value="">{available.length ? 'Choose a class' : 'No classes'}</option>}{available.map(book => <option key={book.id} value={book.id}>{book.course_code} · {book.section_name}{book.section_status !== 'active' ? ' (archived)' : ''}</option>)}</select></label>
+      {towerEnabled&&labBook&&<button className={styles.gradeAction} disabled={busy||saveBlocked||loading} aria-pressed={tab==='lab'} onClick={()=>changeTab('lab')}>Shop grades &amp; welding rubric · {labBook.course_code}</button>}
       <label><input type="checkbox" disabled={busy || saveBlocked} checked={linked} onChange={e => {setLinked(e.target.checked);setStudentId('');}} /> Show linked course</label>
       <button disabled={loading || busy || saveBlocked || !selected} onClick={() => setReload(value => value + 1)}>Refresh roster and theory grades</button>
       <details><summary>More filters</summary><div className={styles.filters}>      <label>Program<select disabled={busy || saveBlocked} value={program} onChange={e => chooseFilter('program', e.target.value)}>{<option value="">All programs</option>}{options(books, 'program_id', 'program_name')}</select></label>
@@ -128,10 +153,12 @@ export default function GradebookWorkspace() {
       {[['grades','Class grades'],['record','Student record']].map(([id,label])=><button key={id} disabled={saveBlocked} aria-pressed={tab===id} onClick={()=>changeTab(id)}>{label}</button>)}
       {towerEnabled&&labBook&&<details className={styles.moreViews}><summary>More</summary><div>{[...(shopEnabled?[['legacy','Earlier welding assessments']]:[]),['qualifications','Qualifications']].map(([id,label])=><button key={id} disabled={saveBlocked} aria-pressed={tab===id} onClick={()=>changeTab(id)}>{label}</button>)}</div></details>}
     </nav>}
-    {saveBlocked&&<p role="status">Finish saving in the welding workspace before changing class or view.</p>}
+    {chosen?.course_role==='unassigned'&&<p role="status">Shop grading is unavailable because this class’s course mapping is incomplete. A school administrator needs to configure its theory/lab course pair.</p>}
+    {saveBlocked&&<p role="status">Finish saving grades before changing class or view.</p>}
     {towerEnabled&&labBook&&weldingOpened&&!['record','grades'].includes(tab)&&(shopEnabled&&tab==='lab'
       ? <ShopWorkspace key={labBook.id} gradebookId={labBook.id} onSaveState={setSaveBlocked}/>
       : <div hidden={tab==='grades'}>{tab==='legacy'&&<p>Earlier welding assessments use a separate rubric. Check the assignment and process before editing; these grades do not automatically complete SMAW shop competencies.</p>}<TowerWorkspace key={labBook.id} gradebookId={labBook.id} view={tab==='legacy'?'lab':tab==='qualifications'?'passport':tab} studentId={studentId} assignmentId={assignmentId} onStudentChange={setStudentId} onSaveState={setSaveBlocked}/></div>)}
+    {chosen?.course_code==='WLD 105'&&chosen.course_role==='theory'&&tab==='grades'&&<PlannerFabricationGradingPanel key={chosen.id} gradebook={chosen} onSaveState={setSaveBlocked}/>}
     {notice&&<p role="status">{notice}</p>}
     {tab==='record'&&<section aria-label="Student record">
       <h2>Student record</h2><label>Student<select value={studentId} onChange={e=>setStudentId(e.target.value)}><option value="">Choose student</option>{recordStudents.map(s=><option key={s.student_id} value={s.student_id}>{s.display_name}{!s.active?' (inactive)':''}</option>)}</select></label>

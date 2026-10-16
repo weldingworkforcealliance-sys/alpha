@@ -2,12 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { getSupabase } from '@/lib/supabase-browser';
-import { readGradebookRows, type Gradebook } from '@/lib/gradebook';
-import { readSelectedSectionId, subscribeSelectedSection } from '@/lib/section-selection';
-import {
-  nextPlannerFabricationSession,
-  plannerWld105FabricationGradebook,
-} from '@/lib/planner-fabrication-grading';
+import type { Gradebook } from '@/lib/gradebook';
 import { formatError } from '@/lib/format-error';
 import styles from './planner-fabrication-grading-panel.module.css';
 
@@ -79,11 +74,8 @@ function pct(value: number | null) {
   return value === null || value === undefined ? '—' : `${Number(value).toFixed(1)}%`;
 }
 
-export default function PlannerFabricationGradingPanel({ pathname }: { pathname: string }) {
+export default function PlannerFabricationGradingPanel({ gradebook: session, onSaveState }: { gradebook: Gradebook; onSaveState?: (blocked: boolean) => void }) {
   const [client] = useState(getSupabase);
-  const [sectionId, setSectionId] = useState(readSelectedSectionId);
-  const [books, setBooks] = useState<Gradebook[]>([]);
-  const [session, setSession] = useState<Gradebook | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
   const [attempts, setAttempts] = useState<FabricationAttempt[]>([]);
   const [tower, setTower] = useState<TowerStudent[]>([]);
@@ -107,40 +99,7 @@ export default function PlannerFabricationGradingPanel({ pathname }: { pathname:
   const enabled = process.env.NEXT_PUBLIC_GRADEBOOK_ENABLED === 'true';
 
   useEffect(() => {
-    if (!enabled) return;
-    setSectionId(readSelectedSectionId());
-    return subscribeSelectedSection(setSectionId);
-  }, [enabled, pathname]);
-
-  useEffect(() => {
-    if (!enabled || pathname !== '/dashboard') return;
-    let alive = true;
-    void readGradebookRows<Gradebook>((from, to) => client
-      .from('gradebook_directory')
-      .select('*')
-      .eq('course_role', 'theory')
-      .eq('course_code', 'WLD 105')
-      .eq('section_status', 'active')
-      .order('id')
-      .range(from, to))
-      .then(rows => { if (alive) setBooks(rows); })
-      .catch(() => { if (alive) setError('WLD 105 fabrication grading could not load.'); });
-    return () => { alive = false; };
-  }, [client, enabled, pathname]);
-
-  const requested = plannerWld105FabricationGradebook(books, sectionId);
-  useEffect(() => {
-    const next = nextPlannerFabricationSession(session, requested, saveBlocked);
-    if (next?.id === session?.id) return;
-    setSession(next);
-    setOpen(false);
-    setStudentId('');
-    setError('');
-    setSaved('');
-  }, [requested, saveBlocked, session]);
-
-  useEffect(() => {
-    if (!session || pathname !== '/dashboard') return;
+    if (!enabled || !open) return;
     let alive = true;
     setLoading(true);
     setError('');
@@ -176,7 +135,7 @@ export default function PlannerFabricationGradingPanel({ pathname }: { pathname:
       if (alive) setError(formatError(cause, 'Fabrication grading could not load.'));
     }).finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
-  }, [client, session, pathname, reload]);
+  }, [client, session, enabled, open, reload]);
 
   const selectedTower = tower.find(row => row.student_id === studentId);
   const selectedHomework = homework?.students.find(row => row.student_id === studentId);
@@ -212,6 +171,7 @@ export default function PlannerFabricationGradingPanel({ pathname }: { pathname:
   async function setHomeworkStatus(chapter: HomeworkChapter, complete: boolean) {
     if (!session || !studentId || homework?.deadline_passed) return;
     setSaveBlocked(true);
+    onSaveState?.(true);
     setError('');
     setSaved('');
     try {
@@ -232,12 +192,14 @@ export default function PlannerFabricationGradingPanel({ pathname }: { pathname:
       setError(formatError(cause, 'The AWS homework status could not be saved.'));
     } finally {
       setSaveBlocked(false);
+      onSaveState?.(false);
     }
   }
 
   async function saveGrade() {
     if (!session || !studentId) return;
     setSaveBlocked(true);
+    onSaveState?.(true);
     setError('');
     setSaved('');
     try {
@@ -263,10 +225,11 @@ export default function PlannerFabricationGradingPanel({ pathname }: { pathname:
       setError(formatError(cause, 'The fabrication grade could not be saved.'));
     } finally {
       setSaveBlocked(false);
+      onSaveState?.(false);
     }
   }
 
-  if (!enabled || (pathname !== '/dashboard' && !saveBlocked)) return null;
+  if (!enabled) return null;
   if (!session) return null;
 
   return <section className={styles.panel} aria-label="WLD 105 fabrication grading">

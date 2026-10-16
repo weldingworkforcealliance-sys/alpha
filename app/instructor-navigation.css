@@ -1,0 +1,71 @@
+/* The demo's essentials / More tools arrangement, using the live app's routes. */
+.night-shift-shell nav.ltg-sidebar[aria-label='Planner workspace navigation'] {
+  display: flex;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+}
+.night-shift-shell .ltg-sidebar-header {
+  position: static;
+  padding-top: 0;
+  background: transparent;
+}
+.night-shift-shell .ltg-sidebar .ltg-brand { min-height: 54px; }
+.night-shift-shell .ltg-sidebar-menu { min-height: 0; flex: 1; }
+.night-shift-shell .ltg-sidebar-menu,
+.night-shift-shell .ltg-sidebar-header,
+.night-shift-shell .ltg-sidebar-punch-clock { width: 100%; min-width: 0; flex-shrink: 0; box-sizing: border-box; }
+.night-shift-shell .ltg-sidebar-footer { position: static; margin-top: auto; padding-top: 16px; }
+.ltg-instructor-navigation { padding-bottom: 18px; }
+.ltg-essential-links { display: grid; gap: 5px; }
+.night-shift-shell .ltg-sidebar .ltg-nav-section-label { display: block !important; margin-top: 12px !important; margin-bottom: 8px !important; }
+.night-shift-shell nav.ltg-sidebar .ltg-nav-link {
+  min-height: 44px !important;
+  padding: 10px 12px !important;
+  line-height: 1.35;
+  background: #1c3440 !important;
+  color: #e0ebf0 !important;
+}
+.night-shift-shell nav.ltg-sidebar .ltg-nav-link::before { display: none !important; }
+.night-shift-shell nav.ltg-sidebar .ltg-nav-link:hover { background: #28434f !important; border-color: #688b9c !important; }
+.night-shift-shell nav.ltg-sidebar .ltg-nav-link.active {
+  background: #493629 !important;
+  border-color: #d59e78 !important;
+  color: #ffe0c1 !important;
+  box-shadow: none !important;
+}
+.night-shift-shell nav.ltg-sidebar .ltg-nav-link:focus-visible,
+.night-shift-shell .ltg-sidebar .ltg-more-tools-button:focus-visible {
+  outline: 2px solid #f5c89d !important;
+  outline-offset: 2px;
+}
+.night-shift-shell .ltg-sidebar .ltg-more-tools-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  margin: 7px 0 0;
+  padding: 10px 12px;
+  border: 1px solid #506b78;
+  border-radius: 7px;
+  background: transparent;
+  color: #e0ebf0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  text-align: left;
+  cursor: pointer;
+}
+.night-shift-shell .ltg-sidebar .ltg-more-tools-button:hover { background: #28434f; }
+.ltg-more-tools { display: grid; gap: 4px; padding: 0 0 0 8px; margin-top: 10px; border-left: 2px solid #436678; }
+.ltg-more-tools[hidden] { display: none !important; }
+@media (max-width: 979px) {
+  .night-shift-shell .ltg-sidebar-header { padding-top: 8px; }
+  .night-shift-shell .ltg-sidebar .ltg-mobile-menu-button { min-height: 44px; }
+}
+
+.ltg-category-links { display: grid; gap: 4px; padding: 5px 0 7px 8px; }
+.ltg-category-links[hidden] { display: none !important; }
+.night-shift-shell .ltg-sidebar .ltg-category-button { margin-top: 0; border-color: transparent; background: #172d38; }
+.night-shift-shell .ltg-sidebar .ltg-category-button[aria-expanded="true"] { border-color: #688b9c; }

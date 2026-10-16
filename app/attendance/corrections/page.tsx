@@ -93,6 +93,10 @@ export default function AttendanceCorrectionsPage() {
   const [pairs, setPairs] = useState<Pair[]>([]);
   const [pairId, setPairId] = useState('');
   const [attendanceDate, setAttendanceDate] = useState(localDate);
+  useEffect(() => {
+    const value = new URLSearchParams(window.location.search).get('date');
+    if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) setAttendanceDate(value);
+  }, []);
   const [session, setSession] = useState<Session | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
   const [records, setRecords] = useState<Record<string, EditableRecord>>({});
@@ -127,7 +131,7 @@ export default function AttendanceCorrectionsPage() {
       if (schoolsError) throw schoolsError;
       const loaded = (data ?? []) as School[];
       setSchools(loaded);
-      setSchoolId((current) => current || loaded[0]?.id || '');
+      setSchoolId((current) => current || loaded.find(row=>row.id===new URLSearchParams(window.location.search).get('school'))?.id || loaded[0]?.id || '');
       return;
     }
 
@@ -154,7 +158,7 @@ export default function AttendanceCorrectionsPage() {
     if (schoolsError) throw schoolsError;
     const loaded = (data ?? []) as School[];
     setSchools(loaded);
-    setSchoolId((current) => current || loaded[0]?.id || '');
+    setSchoolId((current) => current || loaded.find(row=>row.id===new URLSearchParams(window.location.search).get('school'))?.id || loaded[0]?.id || '');
   };
 
   const loadPairs = async (targetSchoolId: string) => {
@@ -167,7 +171,7 @@ export default function AttendanceCorrectionsPage() {
     if (pairError) throw pairError;
     const loaded = (data ?? []) as Pair[];
     setPairs(loaded);
-    setPairId((current) => loaded.some((pair) => pair.id === current) ? current : loaded[0]?.id || '');
+    setPairId((current) => loaded.some((pair) => pair.id === current) ? current : loaded.find(row=>row.id===new URLSearchParams(window.location.search).get('pair'))?.id || loaded[0]?.id || '');
   };
 
   const loadRoster = async (targetSession: Session, targetPairId: string) => {

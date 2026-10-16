@@ -48,6 +48,7 @@ export default function PlannerUtilityNavLinks() {
     <>
       <Link
         href="/training"
+        aria-current={pathname.startsWith('/training') ? 'page' : undefined}
         className={`ltg-nav-link ${pathname.startsWith('/training') ? 'active' : ''}`}
       >
         Training Mode
@@ -55,6 +56,7 @@ export default function PlannerUtilityNavLinks() {
       {canOpenSchool && (
         <Link
           href="/school"
+          aria-current={pathname.startsWith('/school') ? 'page' : undefined}
           className={`ltg-nav-link ${pathname.startsWith('/school') ? 'active' : ''}`}
         >
           School Dashboard
@@ -63,6 +65,7 @@ export default function PlannerUtilityNavLinks() {
       {canOpenOwner && (
         <Link
           href="/owner"
+          aria-current={pathname.startsWith('/owner') ? 'page' : undefined}
           className={`ltg-nav-link ${pathname.startsWith('/owner') ? 'active' : ''}`}
         >
           Owner Dashboard

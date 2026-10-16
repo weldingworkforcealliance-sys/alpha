@@ -6,6 +6,7 @@ import LabStudentClient from '../app/lab/student/student-client';
 import type {LabCoaching} from '../lib/lab-coaching';
 const mocks=vi.hoisted(()=>({rpc:vi.fn(),qr:vi.fn()}));
 vi.mock('@/lib/supabase-browser',()=>({getSupabase:()=>({rpc:mocks.rpc})}));
+vi.mock('@/lib/supabase-public',()=>({getPublicSupabase:()=>({rpc:mocks.rpc})}));
 vi.mock('qrcode',()=>({default:{toDataURL:mocks.qr}}));
 const row=(patch:Partial<LabCoaching>={}):LabCoaching=>({
  student_id:'one',display_name:'Synthetic Welder',course_code:'WLD 210',section_name:'Level 2',revision:0,

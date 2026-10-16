@@ -3,6 +3,7 @@ const PUBLIC_EXACT_ROUTES = new Set([
   '/lab/student',
   '/',
   '/login',
+  '/mfa',
   '/account-setup',
   '/reset-password',
   '/training/login',

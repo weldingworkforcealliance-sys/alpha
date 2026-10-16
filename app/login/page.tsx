@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
-import { safePostLoginRoute } from '@/lib/auth-routes';
+import { finishPasswordSignIn } from '@/lib/mfa-login';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,9 +34,9 @@ export default function LoginPage() {
         return;
       }
 
-      await supabase.rpc('activate_my_invited_memberships');
       const requestedRoute = new URLSearchParams(window.location.search).get('next');
-      router.replace(safePostLoginRoute(requestedRoute));
+      setPassword('');
+      router.replace(await finishPasswordSignIn(supabase, requestedRoute));
       router.refresh();
     } catch (err) {
       console.error(err);

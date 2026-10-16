@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getSupabase } from '@/lib/supabase-browser';
 import {
   readSelectedSectionId,
@@ -32,6 +32,7 @@ export default function PlannerScheduleStartGuard() {
   const [supabase] = useState(getSupabase);
   const [sectionId, setSectionId] = useState<string | null>(() => readSelectedSectionId());
   const [block, setBlock] = useState<FutureDayBlock | null>(null);
+  const noticeRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     return subscribeSelectedSection((nextSectionId) => setSectionId(nextSectionId));
@@ -89,6 +90,8 @@ export default function PlannerScheduleStartGuard() {
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation();
+      noticeRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      noticeRef.current?.focus({ preventScroll: true });
     };
 
     document.addEventListener('click', interceptFutureStart, true);
@@ -99,6 +102,8 @@ export default function PlannerScheduleStartGuard() {
 
   return (
     <section
+      ref={noticeRef}
+      tabIndex={-1}
       role="status"
       aria-live="polite"
       style={{

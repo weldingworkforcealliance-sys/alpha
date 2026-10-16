@@ -1,0 +1,80 @@
+.page {display:grid;gap:13px;width:min(1400px,100%);margin:0 auto;padding:16px 20px 64px;background:var(--ltg-canvas,#0b141a);color:var(--ltg-text,#ecf3f5);box-sizing:border-box}
+.page *, .page *::before, .page *::after {box-sizing:border-box}
+.dayHead,.actionBar,.objective,.plan,.resources,.collapsible,.fullAccess {border:1px solid var(--ltg-border,#35505f);border-radius:12px;background:var(--ltg-surface,#15232c)}
+.dayHead {display:flex;justify-content:space-between;align-items:start;gap:12px;padding:18px}
+.headTitle{min-width:0}
+.headTitle h1{margin:5px 0 8px;color:var(--ltg-text,#f4f7f8);font-size:clamp(21px,2.25vw,30px);line-height:1.2;overflow-wrap:anywhere}
+.eyebrow,.sectionLabel {color:var(--ltg-accent-text,#f0b28a);font-size:11px;letter-spacing:.09em;text-transform:uppercase;font-weight:850}
+.format,.muted {font-size:12px;color:var(--ltg-muted,#b9c9d2);line-height:1.5}
+.format{margin:0}
+.dayPicker{display:flex;align-items:end;gap:7px;flex:0 0 auto}
+.dayPicker label{display:grid;gap:5px;font-size:11px;color:var(--ltg-muted,#c8d7de)}
+.dayPicker button,.dayPicker select {background:#203742;border:1px solid #537385;color:#eff7fa;border-radius:7px;padding:9px 11px;min-height:44px;font:inherit;cursor:pointer}
+.dayPicker button{font-size:20px}
+.dayPicker button:disabled{opacity:.4;cursor:not-allowed}
+.previewBanner,.error{padding:14px;border-radius:9px;background:#35291f;border:1px solid #a57d56;color:#ffe1b7;line-height:1.5;font-size:13px}
+.previewBanner button,.error button{margin-left:10px;background:#54402e;color:#ffe7ca;padding:6px 9px;border:1px solid #aa825d;border-radius:6px;cursor:pointer}
+.actionBar {position:sticky;top:0;z-index:12;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#18303c;box-shadow:0 9px 20px #0005}
+.actionStatus {display:grid;gap:3px;min-width:150px}
+.actionStatus small{font-size:10px;color:#a4c0cc;letter-spacing:.1em;font-weight:850}
+.actionStatus strong{font-size:16px;color:white}
+.actionStatus span{color:#c6d8e0;font-size:12px}
+.actionButtons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:min(490px,100%)}
+.actionButtons button,.shortCutRow button,.textAction,.fullAccess button{border:1px solid #5a7a8b;background:#284251;color:#f3f7f8;font:inherit;font-size:13px;font-weight:850;border-radius:8px;padding:10px 13px;min-height:44px;cursor:pointer}
+.actionButtons .startButton{border-color:#ecb186;background:#e9b17f;color:#17242b}
+.actionButtons .gradeButton{border-color:#5d9ac0;background:#1a506e;color:#e5f4ff}
+.actionButtons .completeButton{border-color:#67a58a;background:#1b5746;color:#e1ffef}
+.actionButtons button:disabled{cursor:not-allowed;opacity:.5}
+.objective{padding:16px 19px}
+.objective>p{font-size:16px;line-height:1.5;margin:9px 0 2px;color:var(--ltg-text,#f2f7f9)}
+.safety{margin-top:15px;border-left:4px solid #dba068;padding:10px 13px;background:#382d23;color:#ffe5ca;border-radius:6px}
+.safety strong{font-size:13px}
+.safety p{margin:5px 0 0;line-height:1.55;font-size:13px}
+.plan,.resources{overflow:hidden}
+.planHead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid #35505b}
+.planHead h2{margin:5px 0 0;font-size:20px;color:var(--ltg-text,#f4f8f9)}
+.toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ltg-text,#c4d9df);cursor:pointer}
+.toggle input{width:17px;height:17px;accent-color:#f1b17d}
+.step{display:grid;grid-template-columns:35px minmax(0,1fr);gap:13px;padding:13px 18px;border-bottom:1px solid #2d4351}
+.step:last-child{border:0}
+.stepNumber{display:grid;place-items:center;width:34px;height:34px;background:#203d4c;color:#bde3f5;border:1px solid #477189;border-radius:7px;font-size:12px;font-weight:900}
+.stepName{display:block;color:var(--ltg-text,#f2f7fa);font-size:14px}
+.stepTime{display:block;margin-top:3px;color:var(--ltg-info-text,#9dc3d4);font-size:11px}
+.step p{font-size:13px;line-height:1.55;color:var(--ltg-text,#e0eaf0);margin:8px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.step .studentActions{padding:8px;border-left:3px solid #6ca58b;background:#1c3931;color:#e0f5e9}
+.resourceList{display:grid;gap:8px;padding:12px 16px 4px}
+.resource{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;border:1px solid #334f5c;border-radius:8px;padding:11px 13px;background:var(--ltg-surface-2,#1b303b)}
+.resource>div{flex:1;min-width:0}
+.resource strong{font-size:13px;color:var(--ltg-text,#f2f7fa)}
+.resource span{display:block;font-size:11px;color:var(--ltg-muted,#adc5d1);margin-top:4px}
+.resource p{white-space:pre-wrap;font-size:12px;color:var(--ltg-muted,#c4d3dc);line-height:1.5;margin:6px 0 0}
+.resource button,.shortCutRow button,.textAction{border:1px solid #537d97;background:#234457;color:#d8f0fd;font-size:12px;border-radius:7px;padding:10px 12px;cursor:pointer;min-height:42px;font-weight:850}
+.shortcutRow{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px 16px}
+.shortcutRow button{border:1px solid #537d97;background:#234457;color:#d8f0fd;font-size:12px;border-radius:7px;padding:10px 12px;cursor:pointer;min-height:42px;font-weight:850}
+.collapsible>summary,.subDetails>summary{display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;padding:16px 19px;cursor:pointer;font-size:15px;font-weight:850;color:var(--ltg-text,#eff7f8);min-height:48px}
+.collapsible>summary span{color:var(--ltg-muted,#b5cbd5);font-size:12px;font-weight:500}
+.detailBody{padding:12px 18px 17px;display:grid;gap:12px;border-top:1px solid #36525f}
+.tip{border-left:2px solid #6993a6;padding-left:12px}
+.tip h3{font-size:13px;margin:0 0 5px;color:var(--ltg-text,#e4f1f8)}
+.tip p{white-space:pre-wrap;font-size:12px;line-height:1.55;color:var(--ltg-text,#d5e2e9);margin:4px 0;overflow-wrap:anywhere}
+.subDetails{border:1px solid #304b5a;border-radius:8px;margin:10px 15px}
+.subDetails>summary{font-size:13px;padding:12px 15px}
+.subDetails .detailBody{padding:13px}
+.field{display:grid;gap:7px;color:var(--ltg-text,#d6e9f2);font-size:13px;font-weight:750}
+.field textarea{width:100%;min-height:74px;background:#0d1e27;color:#f0f6f7;border:1px solid #688798;border-radius:8px;padding:11px;font:inherit;font-size:14px;resize:vertical}
+.field textarea:focus-visible,.page button:focus-visible,.page select:focus-visible,.page summary:focus-visible{outline:3px solid #eaae83;outline-offset:2px}
+.fullAccess{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:15px;padding:16px}
+.fullAccess strong{color:var(--ltg-text,#f4f8f9);font-size:14px}
+.fullAccess p{margin:3px 0 0;color:var(--ltg-muted,#b3c9d6);font-size:12px}
+.fullAccess button{background:#264553;border-color:#558a9f}
+.empty {padding:20px;font-size:14px}
+@media(max-width:1000px){.actionBar{flex-direction:column;align-items:stretch}.actionButtons{width:100%;max-width:none}}
+@media(max-width:700px){.page{padding:8px 9px 85px;gap:9px}.dayHead{flex-direction:column;padding:13px}.dayPicker{width:100%;justify-content:space-between}.actionBar{position:relative;top:auto;padding:10px}.objective{padding:12px}.objective>p{font-size:14px}.planHead{padding:12px}.planHead h2{font-size:18px}.step{padding:12px;grid-template-columns:30px minmax(0,1fr);gap:8px}.stepNumber{width:29px;height:29px}.step p{font-size:13px}.collapsible>summary{padding:13px}.resourceList{padding:9px}.fullAccess{padding:12px}}
+/* Match the demo's direct actions while keeping the live shell and permissions. */
+.actionButtons a,.resource a,.shortcutRow a,.textAction{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:1px solid #537d97;border-radius:8px;padding:10px 13px;min-height:44px;background:#234457;color:#f3f7f8;font-size:13px;font-weight:800}
+.field input{max-width:240px;min-height:44px;padding:8px;border:1px solid #688798;border-radius:8px;background:#0d1e27;color:#f0f6f7;font:inherit}
+.page a:focus-visible,.page input:focus-visible{outline:3px solid #eaae83;outline-offset:2px}
+.mobileNav{display:none}
+@media(max-width:700px){.mobileNav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:30;padding-bottom:env(safe-area-inset-bottom);background:#18303c;border-top:2px solid #6a8d9d}.mobileNav a,.mobileNav button{flex:1;text-align:center;padding:18px 6px;background:transparent;color:#f4f7f8;border:0;font:inherit;font-weight:800;text-decoration:none;min-height:54px}.mobileNav a[aria-current]{background:#284251;border-top:3px solid #e9b17f}}
+
+

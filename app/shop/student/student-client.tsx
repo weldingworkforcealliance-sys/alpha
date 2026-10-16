@@ -1,12 +1,12 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
-import {getSupabase} from '@/lib/supabase-browser';
+import {getPublicSupabase} from '@/lib/supabase-public';
 import {formatError} from '@/lib/format-error';
 import type {ShopStudent} from '@/lib/wld110-shop';
 import {StudentShopCard} from '../components';
 import styles from '../shop.module.css';
 export default function StudentPageClient(){
- const [client]=useState(getSupabase),[student,setStudent]=useState<ShopStudent|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
+ const [client]=useState(getPublicSupabase),[student,setStudent]=useState<ShopStudent|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
  const token=useRef(''),requesting=useRef(false),generation=useRef(0);
  useEffect(()=>{
   let alive=true;

@@ -53,5 +53,21 @@ export async function updateSession(request: NextRequest) {
   }
 
   response.headers.set('Cache-Control', 'private, no-store');
+  if (isAuthenticated && !isPublicRoute(request.nextUrl.pathname)) {
+    // Fetch enrolled factors from Auth; cookie-backed session.user is user-controlled.
+    const { data: verifiedUser, error: assuranceError } = await supabase.auth.getUser();
+    const requiresMfa = verifiedUser?.user?.factors?.some(factor => factor.status === 'verified');
+    if (assuranceError || !verifiedUser?.user ||
+        (requiresMfa && data?.claims?.aal !== 'aal2')) {
+      const verificationUrl = request.nextUrl.clone();
+      verificationUrl.pathname = '/mfa';
+      verificationUrl.search = '';
+      verificationUrl.searchParams.set('next', `${request.nextUrl.pathname}${request.nextUrl.search}`);
+      const redirect = NextResponse.redirect(verificationUrl);
+      copySessionCookies(response, redirect);
+      redirect.headers.set('Cache-Control', 'private, no-store');
+      return redirect;
+    }
+  }
   return response;
 }

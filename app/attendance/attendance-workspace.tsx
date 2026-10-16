@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
+import { notifyAttendanceFinalized } from '@/lib/attendance-events';
 import {
   publishSelectedSection,
   readSelectedSectionId,
@@ -108,6 +109,7 @@ function AttendanceWorkspaceContent({
   lockedDate = null,
 }: AttendanceWorkspaceProps) {
   const router = useRouter();
+  const confirmationId = useId();
   const [supabase] = useState(getSupabase);
   const [sections, setSections] = useState<TeachingSection[]>([]);
   const [sectionId, setSectionId] = useState('');
@@ -370,7 +372,7 @@ function AttendanceWorkspaceContent({
       });
       if (rpcError) throw rpcError;
       if (version !== requestVersion.current) return;
-      setNotice('Attendance saved.');
+      setNotice('Student attendance saved. The pair is not finalized yet.');
     } catch (err) {
       if (version !== requestVersion.current) return;
       if (next) {
@@ -478,18 +480,15 @@ function AttendanceWorkspaceContent({
         p_general_notes: generalNotes.trim() || null,
       });
       if (rpcError) throw rpcError;
+      notifyAttendanceFinalized();
       if (version !== requestVersion.current) return;
       const updated = { ...session, finalized: true };
       setSession(updated);
+      setNotice(`Finalized: ${session.pair_name} · ${session.attendance_date}. Attendance for both courses is complete.`);
       await loadRoster(updated, version);
       if (version !== requestVersion.current) return;
       await loadReportQueue(updated, version);
       if (version !== requestVersion.current) return;
-      setNotice(
-        session.attendance_mode === 'pvhs'
-          ? 'Attendance finalized. The PVHS report is queued for delayed delivery.'
-          : 'Attendance finalized for the class pair.'
-      );
     } catch (err) {
       if (version !== requestVersion.current) return;
       setError(err instanceof Error ? err.message : String(err));
@@ -508,7 +507,7 @@ function AttendanceWorkspaceContent({
           )}
         </div>
       )}
-      {notice && <div className={`${styles.notice} ${styles.success}`}>{notice}</div>}
+      {notice && <div role="status" className={`${styles.notice} ${styles.success}`}>{notice}</div>}
 
       {session && (
         <>
@@ -517,7 +516,7 @@ function AttendanceWorkspaceContent({
             <span className={styles.modePill}>{session.attendance_mode}</span>
             <span>{attendanceDate}</span>
             <span>{session.is_completion_section ? 'End-of-pair confirmation course' : 'Daily attendance course'}</span>
-            <span>{session.finalized ? 'Finalized' : 'Open'}</span>
+            <span>{session.finalized ? 'Finalized' : 'Not finalized'}</span>
             <span>{markedCount}/{students.length} marked</span>
             {reportQueue && (
               <span>
@@ -548,12 +547,15 @@ function AttendanceWorkspaceContent({
             </div>
           )}
 
-          {session.is_completion_section && (
+          {session.is_completion_section && !session.finalized && (
             <div className={styles.notice}>
               Initial attendance comes from saved attendance in the primary course for this date.
               {markedCount === 0 && !session.finalized
                 ? ' No primary-course attendance has been saved for this date yet. Enter and save it in WLD 105/205 first, then reopen this course to record completion.'
-                : ' Make corrections for this course under Final attendance, then save.'}
+                : ' Save any student corrections, then use Finalize Pair Attendance to confirm both courses.'}
+              {markedCount > 0 && (
+                <div><a href={`#${confirmationId}`}>Go to Finalize Pair Attendance ↓</a></div>
+              )}
             </div>
           )}
           {session.finalized && (
@@ -656,14 +658,18 @@ function AttendanceWorkspaceContent({
           )}
 
           {session.is_completion_section && students.length > 0 && (
-            <section className={styles.finalizeCard}>
+            <section id={confirmationId} className={styles.finalizeCard}>
               <div className={styles.finalizeHeader}>
                 <div>
                   <div className={styles.eyebrow}>End-of-Day Confirmation</div>
-                  <h2>Confirm attendance for the full course pair</h2>
+                  <h2>{session.finalized ? 'Pair attendance finalized' : 'Final step: confirm both courses'}</h2>
                 </div>
                 <span className={styles.modePill}>{session.finalized ? 'Finalized' : 'Required before Complete Day'}</span>
               </div>
+              <p className={styles.reportLine}>
+                {session.pair_name} · {session.attendance_date}
+                {!session.finalized && ' — Saving student statuses does not finalize this session. Confirm the full pair below to clear its dashboard reminder.'}
+              </p>
               <textarea
                 rows={3}
                 value={generalNotes}

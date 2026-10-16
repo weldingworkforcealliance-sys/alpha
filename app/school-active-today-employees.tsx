@@ -76,7 +76,7 @@ function workedTodayMs(entries: Entry[], nowMs: number) {
   }, 0);
 }
 
-export default function SchoolActiveTodayEmployees({ pathname }: { pathname: string }) {
+export default function SchoolActiveTodayEmployees({ pathname, schoolId, canManage = false }: { pathname: string; schoolId?: string; canManage?: boolean }) {
   const [supabase] = useState(getSupabase);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
@@ -94,11 +94,13 @@ export default function SchoolActiveTodayEmployees({ pathname }: { pathname: str
       const { data: auth } = await supabase.auth.getSession();
       if (!auth.session) return;
 
-      const employeeResult = await supabase
+      let employeeQuery = supabase
         .from('timeclock_employees')
         .select('id,school_id,display_name,active,clocking_enabled')
         .eq('active', true)
         .order('display_name');
+      if (schoolId) employeeQuery = employeeQuery.eq('school_id', schoolId);
+      const employeeResult = await employeeQuery;
 
       if (employeeResult.error) throw employeeResult.error;
       const loadedEmployees = (employeeResult.data ?? []) as Employee[];
@@ -150,7 +152,7 @@ export default function SchoolActiveTodayEmployees({ pathname }: { pathname: str
     } finally {
       setLoading(false);
     }
-  }, [pathname, supabase]);
+  }, [pathname, supabase, schoolId]);
 
   useEffect(() => {
     if (pathname !== '/school') return;
@@ -217,7 +219,7 @@ export default function SchoolActiveTodayEmployees({ pathname }: { pathname: str
       <div className="ltg-school-live-punch-header">
         <div>
           <span className="ltg-school-live-punch-eyebrow">Live Time Clock</span>
-          <h2>Active Today Employees</h2>
+          <h2>Today’s punches</h2>
           <p>Only current shifts count as clocked in. Prior open punches require manager reconciliation in Employee Time Clock.</p>
           {unresolvedCount > 0 && <p role="status">{unresolvedCount} unresolved previous {unresolvedCount === 1 ? 'shift' : 'shifts'} require review.</p>}
         </div>
@@ -278,6 +280,7 @@ export default function SchoolActiveTodayEmployees({ pathname }: { pathname: str
                 <span className={`ltg-school-live-punch-status ${active ? 'active' : 'complete'}`}>
                   {unresolved ? 'REVIEW NEEDED' : active ? 'CLOCKED IN' : 'CLOCKED OUT'}
                 </span>
+                {canManage && <a href={`/time-clock?school=${encodeURIComponent(row.employee.school_id)}&review=${encodeURIComponent(last.id)}`}>Review punch</a>}
               </article>
             );
           })}

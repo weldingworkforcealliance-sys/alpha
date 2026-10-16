@@ -2,6 +2,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import AttendanceWorkspace from '@/app/attendance/attendance-workspace';
+import AttendanceFinalizationAlert from '@/app/attendance-finalization-alert';
 
 const mocks = vi.hoisted(() => ({ rpc: vi.fn(), from: vi.fn(), replace: vi.fn(), selection: null as null | ((id:string)=>void) }));
 vi.mock('next/navigation',()=>{const router={replace:mocks.replace};return {useRouter:()=>router};});
@@ -18,6 +19,7 @@ const finalized = new Set<string>();
 let delayOpen: null | ((key:string)=>Promise<unknown> | undefined) = null;
 let delayRecords: null | ((key:string)=>Promise<unknown> | undefined) = null;
 let delaySave: null | (()=>Promise<unknown> | undefined) = null;
+let finalizeError: Error | null = null;
 function keyOf(section:string,date=day){return `${Number(section)%100===10?Number(section)-5:section}/${date}`;}
 function row(key:string):Row {
   if(!rows.has(key))rows.set(key,{id:`record/${key}`,session_id:key,student_id:'student',initial_status:null,final_status:null,completion_flags:[],completion_confirmed:false,notes:null});
@@ -27,11 +29,21 @@ function info(section:string,date=day){const key=keyOf(section,date);return {dat
 function deferred<T>(){let resolve!:(value:T)=>void;const promise=new Promise<T>(r=>{resolve=r;});return {promise,resolve};}
 
 beforeEach(()=>{
-  rows.clear();finalized.clear();delayOpen=null;delayRecords=null;delaySave=null;
+  rows.clear();finalized.clear();delayOpen=null;delayRecords=null;delaySave=null;finalizeError=null;
+  window.localStorage.clear();
   mocks.rpc.mockReset();mocks.from.mockReset();
   window.history.replaceState(null,'',`/attendance?section=105&date=${day}`);
   mocks.rpc.mockImplementation(async(name:string,args:Record<string,string>)=>{
     if(name==='can_manage_school')return {data:false};
+    if(name==='get_unfinalized_attendance_alerts')return {data:[...rows.values()].filter(r=>r.initial_status&&!finalized.has(r.session_id)).map(r=>({
+      session_id:r.session_id,pair_id:r.session_id.split('/')[0],pair_name:`Pair ${r.session_id.split('/')[0]}`,
+      attendance_date:day,completion_section_id:String(Number(r.session_id.split('/')[0])+5),attendance_mode:'standard',marked_count:1,student_count:1,is_overdue:true,
+    })),error:null};
+    if(name==='finalize_section_attendance') {
+      if(finalizeError)return {error:finalizeError};
+      finalized.add(args.p_session_id);
+      return {data:null,error:null};
+    }
     if(name==='open_attendance_session') {
       const key=keyOf(args.p_section_id,args.p_attendance_date);
       if(delayOpen){const pending=delayOpen(key);if(pending)return pending;}
@@ -73,7 +85,7 @@ describe.each([105,205])('WLD %i attendance screen',primary=>{
     for(const status of ['Present','Absent','Late','Excused'])expect(pressed(status)).toBe('false');
     expect(mocks.rpc.mock.calls.filter(([name])=>name.includes('set_')||name.includes('mark_'))).toHaveLength(0);
     fireEvent.click(screen.getByRole('button',{name:'Late'}));
-    await screen.findByText('Attendance saved.');
+    await screen.findByText('Student attendance saved. The pair is not finalized yet.');
     expect(mocks.rpc).toHaveBeenCalledWith('set_section_attendance_record',expect.objectContaining({p_section_id:String(primary),p_attendance_date:day,p_session_id:`${primary}/${day}`,p_initial_status:'late'}));
     cleanup();render(<AttendanceWorkspace {...primaryProps(primary)}/>);await take();expect(pressed('Late')).toBe('true');
   });
@@ -91,7 +103,7 @@ describe.each([105,205])('WLD %i attendance screen',primary=>{
     render(<AttendanceWorkspace {...primaryProps(primary+5)}/>);await take();expect(pressed('Late')).toBe('true');
     fireEvent.change(screen.getByRole('combobox',{name:'Final attendance'}),{target:{value:'left_early'}});
     expect(mocks.rpc.mock.calls.filter(([name])=>name==='set_section_attendance_record')).toHaveLength(0);
-    fireEvent.click(screen.getByRole('button',{name:'Save Completion'}));await screen.findByText('Attendance saved.');
+    fireEvent.click(screen.getByRole('button',{name:'Save Completion'}));await screen.findByText('Student attendance saved. The pair is not finalized yet.');
     cleanup();render(<AttendanceWorkspace {...primaryProps(primary)}/>);await take();expect(pressed('Late')).toBe('true');
   });
   it('switching the locked date clears prior-day marks and restores the correct saved notes',async()=>{
@@ -148,4 +160,60 @@ it('never falls back to another class when the locked section is unavailable',as
   const takeButton=await screen.findByRole('button',{name:'Take Attendance'});
   expect(takeButton).toHaveProperty('disabled',true);
   expect(mocks.rpc.mock.calls.filter(([name])=>name==='open_attendance_session')).toHaveLength(0);
+});
+
+it('keeps the dashboard reminder after saving a student and clears it only after pair finalization succeeds',async()=>{
+  row(`105/${day}`).initial_status='present';
+  render(<><AttendanceFinalizationAlert pathname="/dashboard"/><AttendanceWorkspace {...primaryProps(110)}/></>);
+  await take();
+  await screen.findByRole('alert');
+  expect(screen.queryByText(/PVHS email/)).toBeNull();
+  const jump=screen.getByRole('link',{name:'Go to Finalize Pair Attendance ↓'});
+  expect(document.getElementById(jump.getAttribute('href')!.slice(1))?.textContent).toContain('Final step: confirm both courses');
+  fireEvent.click(screen.getByRole('button',{name:'Save Completion'}));
+  await screen.findByText('Student attendance saved. The pair is not finalized yet.');
+  expect(screen.getByRole('alert')).toBeTruthy();
+  expect(finalized.size).toBe(0);
+  fireEvent.click(screen.getByRole('button',{name:'Finalize Pair Attendance'}));
+  await screen.findByText(`Finalized: Pair 105 · ${day}. Attendance for both courses is complete.`);
+  await waitFor(()=>expect(screen.queryByRole('alert')).toBeNull());
+  expect(mocks.rpc).toHaveBeenCalledWith('finalize_section_attendance',{
+    p_session_id:`105/${day}`,p_section_id:'110',p_attendance_date:day,p_general_notes:`Saved notes 105/${day}`,
+  });
+  expect(screen.queryByRole('button',{name:'Finalize Pair Attendance'})).toBeNull();
+  expect(window.localStorage.getItem('ltg_attendance_finalized')).toBeTruthy();
+});
+
+it('does not clear the reminder or show a finalization receipt when finalization fails',async()=>{
+  row(`105/${day}`).initial_status='present';finalizeError=new Error('Attendance could not be finalized');
+  render(<><AttendanceFinalizationAlert pathname="/dashboard"/><AttendanceWorkspace {...primaryProps(110)}/></>);
+  await take();await screen.findByRole('alert');
+  fireEvent.click(screen.getByRole('button',{name:'Finalize Pair Attendance'}));
+  await screen.findByText('Attendance could not be finalized');
+  expect(screen.getByRole('alert')).toBeTruthy();
+  expect(screen.queryByText(/Finalized: Pair/)).toBeNull();
+  expect(finalized.size).toBe(0);
+  expect(window.localStorage.getItem('ltg_attendance_finalized')).toBeNull();
+});
+
+it('keeps another pair pending when only the selected pair is finalized',async()=>{
+  row(`105/${day}`).initial_status='present';row(`205/${day}`).initial_status='present';
+  render(<><AttendanceFinalizationAlert pathname="/dashboard"/><AttendanceWorkspace {...primaryProps(210)}/></>);
+  await take();await screen.findByRole('alert');
+  fireEvent.click(screen.getByRole('button',{name:'Finalize Pair Attendance'}));
+  await screen.findByText(`Finalized: Pair 205 · ${day}. Attendance for both courses is complete.`);
+  await waitFor(()=>expect(screen.getAllByRole('link',{name:'Review & Finalize'})).toHaveLength(1));
+  expect(screen.getByRole('link',{name:'Review & Finalize'}).getAttribute('href')).toBe(`/attendance?section=110&date=${day}`);
+  expect(finalized.has(`105/${day}`)).toBe(false);
+});
+
+it('keeps a successful finalization receipt if the subsequent roster reload fails',async()=>{
+  row(`105/${day}`).initial_status='present';
+  render(<AttendanceWorkspace {...primaryProps(110)}/>);await take();
+  delayRecords=()=>Promise.resolve({error:new Error('Roster reload failed')});
+  fireEvent.click(screen.getByRole('button',{name:'Finalize Pair Attendance'}));
+  await screen.findByText('Roster reload failed');
+  expect(screen.getByText(`Finalized: Pair 105 · ${day}. Attendance for both courses is complete.`)).toBeTruthy();
+  expect(screen.queryByRole('button',{name:'Finalize Pair Attendance'})).toBeNull();
+  expect(finalized.has(`105/${day}`)).toBe(true);
 });
