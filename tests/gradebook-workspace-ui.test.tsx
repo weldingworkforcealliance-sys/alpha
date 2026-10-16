@@ -8,7 +8,7 @@ vi.mock('../app/tower/workspace',()=>({default:({gradebookId,onSaveState}:{grade
 vi.mock('../app/shop/workspace',()=>({default:({gradebookId}:{gradebookId:string})=> <section aria-label="Shop workspace"><p>Shop workspace</p><span>{gradebookId}</span></section>}));
 vi.mock('../app/lab/welding-history',()=>({default:({studentId,gradebookId}:{studentId:string;gradebookId:string})=><p>Welding evidence {gradebookId} {studentId}</p>}));
 vi.mock('@/lib/supabase-browser',()=>({getSupabase:()=>({rpc:state.rpc,from:(table:string)=>{
- const filters:Record<string,string>={};const q={select:()=>q,eq:(key:string,value:string)=>{filters[key]=value;return q;},order:()=>q,range:async()=>{
+ const filters:Record<string,string>={};const q={select:()=>q,eq:(key:string,value:string)=>{filters[key]=value;return q;},order:()=>q,then:(resolve:(value:unknown)=>unknown)=>Promise.resolve({data:table==='gradebook_roster'?[{student_id:'s1',display_name:'Student Alpha',active:true}]:[],error:null}).then(resolve),range:async()=>{
  const shared={section_status:'active',course_pair_id:'pair',cohort_id:'cohort',term_id:'term',program_id:'p',program_name:'Welding',level_id:'l',level_name:'Level 1',semester_id:'sem',semester_name:'Semester 1'};
  const data=table==='gradebook_directory'?[{...shared,id:'theory',section_id:'section-105',course_role:'theory',course_code:'WLD 105',section_name:'Example 105'},{...shared,id:'lab',section_id:'section-110',course_role:'lab',course_code:'WLD 110',section_name:'Example 110'},{...shared,id:'lab210',section_id:'section-210',course_pair_id:state.unassigned?null:'pair2',cohort_id:'cohort2',course_role:state.unassigned?'unassigned':'lab',course_code:'WLD 210',section_name:'Example 210'}]:table==='gradebook_roster'?[{student_id:'s1',display_name:'Student Alpha',active:true},{student_id:'s2',display_name:'Student Beta',active:true}]:table==='gradebook_items'?[{id:'i1',title:'Fractions',category_id:'c',assessment_slug:'math'}]:table==='gradebook_latest_attempts'&&filters.gradebook_id==='theory'?[{id:'a1',student_id:'s1',item_id:'i1',score:8,possible_score:10,status_code:'graded',status_label:'Graded',attempted_at:'2026-10-01',revision_id:1}]:[];
  return {data,error:null};}};return q;
@@ -82,4 +82,25 @@ it('keeps an open rubric and its class until the pending save finishes',async()=
  fireEvent.click(screen.getByText('Finish rubric'));
  await waitFor(()=>expect(screen.getByLabelText('Class')).toHaveProperty('value','lab'));
  expect(screen.queryByRole('region',{name:'Qualification workspace'})).toBeNull();
+});
+
+
+it('keeps WLD 105 fabrication tools in Grading and loads them only when opened',async()=>{
+ vi.stubEnv('NEXT_PUBLIC_GRADEBOOK_ENABLED','true');state.search='section=section-105';
+ state.rpc.mockImplementation(async(name:string)=>({data:name==='get_wld105_homework_status'?{students:[]}:name==='get_wld105_grade_tower'?{students:[]}:{unresolved:0},error:null}));
+ render(<Workspace/>);
+ const action=await screen.findByRole('button',{name:/WLD 105 Grade Tower/});
+ expect(state.rpc.mock.calls.some(c=>c[0]==='ensure_wld105_gradebook_setup')).toBe(false);
+ fireEvent.click(action);
+ await screen.findByRole('button',{name:'Save fabrication grade'});
+ expect(state.rpc).toHaveBeenCalledWith('ensure_wld105_gradebook_setup',{p_gradebook_id:'theory'});
+ let finish:(value:unknown)=>void=()=>{};
+ state.rpc.mockImplementation((name:string)=>name==='record_wld105_fabrication_grade'?new Promise(resolve=>{finish=resolve;}):Promise.resolve({data:{students:[]},error:null}));
+ fireEvent.change(screen.getByLabelText('Blueprint / Layout Accuracy score'),{target:{value:'20'}});
+ fireEvent.click(screen.getByRole('button',{name:'Save fabrication grade'}));
+ await waitFor(()=>expect(screen.getByLabelText('Class')).toHaveProperty('disabled',true));
+ finish({data:{percent:100},error:null});
+ await waitFor(()=>expect(screen.getByLabelText('Class')).toHaveProperty('disabled',false));
+ fireEvent.change(screen.getByLabelText('Class'),{target:{value:'lab210'}});
+ expect(screen.queryByRole('button',{name:/WLD 105 Grade Tower/})).toBeNull();
 });

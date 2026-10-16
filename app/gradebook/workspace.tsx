@@ -8,6 +8,7 @@ import { formatError } from '@/lib/format-error';
 import styles from './workspace.module.css';
 import TowerWorkspace from '../tower/workspace';
 import ShopWorkspace from '../shop/workspace';
+import PlannerFabricationGradingPanel from '../planner-fabrication-grading-panel';
 import CourseFinals from './course-finals';
 import WeldingHistory from '../lab/welding-history';
 import GradeGrid from './grade-grid';
@@ -153,10 +154,11 @@ function GradebookContent() {
       {towerEnabled&&labBook&&<details className={styles.moreViews}><summary>More</summary><div>{[...(shopEnabled?[['legacy','Earlier welding assessments']]:[]),['qualifications','Qualifications']].map(([id,label])=><button key={id} disabled={saveBlocked} aria-pressed={tab===id} onClick={()=>changeTab(id)}>{label}</button>)}</div></details>}
     </nav>}
     {chosen?.course_role==='unassigned'&&<p role="status">Shop grading is unavailable because this class’s course mapping is incomplete. A school administrator needs to configure its theory/lab course pair.</p>}
-    {saveBlocked&&<p role="status">Finish saving in the welding workspace before changing class or view.</p>}
+    {saveBlocked&&<p role="status">Finish saving grades before changing class or view.</p>}
     {towerEnabled&&labBook&&weldingOpened&&!['record','grades'].includes(tab)&&(shopEnabled&&tab==='lab'
       ? <ShopWorkspace key={labBook.id} gradebookId={labBook.id} onSaveState={setSaveBlocked}/>
       : <div hidden={tab==='grades'}>{tab==='legacy'&&<p>Earlier welding assessments use a separate rubric. Check the assignment and process before editing; these grades do not automatically complete SMAW shop competencies.</p>}<TowerWorkspace key={labBook.id} gradebookId={labBook.id} view={tab==='legacy'?'lab':tab==='qualifications'?'passport':tab} studentId={studentId} assignmentId={assignmentId} onStudentChange={setStudentId} onSaveState={setSaveBlocked}/></div>)}
+    {chosen?.course_code==='WLD 105'&&chosen.course_role==='theory'&&tab==='grades'&&<PlannerFabricationGradingPanel key={chosen.id} gradebook={chosen} onSaveState={setSaveBlocked}/>}
     {notice&&<p role="status">{notice}</p>}
     {tab==='record'&&<section aria-label="Student record">
       <h2>Student record</h2><label>Student<select value={studentId} onChange={e=>setStudentId(e.target.value)}><option value="">Choose student</option>{recordStudents.map(s=><option key={s.student_id} value={s.student_id}>{s.display_name}{!s.active?' (inactive)':''}</option>)}</select></label>
