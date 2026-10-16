@@ -57,6 +57,7 @@ export default function RootLayout({
   const isTrainingRoute = pathname.startsWith('/training');
   const isAuthRoute =
     pathname === '/login' ||
+    pathname === '/mfa' ||
     pathname === '/account-setup' ||
     pathname === '/forgot-password' ||
     pathname === '/reset-password' ||
@@ -186,3 +187,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+
