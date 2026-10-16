@@ -3,12 +3,13 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { finishPasswordSignIn } from '@/lib/mfa-login';
 import { NextRequest } from 'next/server';
 import { updateSession } from '@/lib/supabase-proxy';
-const mock = vi.hoisted(() => ({ auth: { getClaims: vi.fn(), mfa: { getAuthenticatorAssuranceLevel: vi.fn() } }, rpc: vi.fn() }));
+const mock = vi.hoisted(() => ({ auth: { getClaims: vi.fn(), getUser: vi.fn(), mfa: { getAuthenticatorAssuranceLevel: vi.fn() } }, rpc: vi.fn() }));
 vi.mock('@supabase/ssr', () => ({ createServerClient: () => mock }));
 beforeEach(() => {
   vi.resetAllMocks();
-  mock.auth.getClaims.mockResolvedValue({ data: { claims: { sub: 'synthetic' } }, error: null });
+  mock.auth.getClaims.mockResolvedValue({ data: { claims: { sub: 'synthetic', aal: 'aal1' } }, error: null });
   mock.auth.mfa.getAuthenticatorAssuranceLevel.mockResolvedValue({ data: { currentLevel: 'aal1', nextLevel: 'aal2' }, error: null });
+  mock.auth.getUser.mockResolvedValue({ data: { user: { id: 'synthetic', factors: [{status:'verified'}] } }, error: null });
   mock.rpc.mockResolvedValue({ error: null });
 });
 const client = mock as unknown as SupabaseClient;
@@ -44,11 +45,23 @@ describe('MFA login boundary', () => {
     expect(mock.auth.mfa.getAuthenticatorAssuranceLevel).not.toHaveBeenCalled();
   });
   it('allows AAL2 protected requests', async () => {
+    mock.auth.getClaims.mockResolvedValue({ data: { claims: { sub: 'synthetic', aal: 'aal2' } }, error: null });
     mock.auth.mfa.getAuthenticatorAssuranceLevel.mockResolvedValue({ data: { currentLevel: 'aal2', nextLevel: 'aal2' }, error: null });
     expect((await updateSession(new NextRequest('https://staging.example/school'))).headers.get('location')).toBeNull();
   });
   it('fails closed on server assurance errors', async () => {
+    mock.auth.getUser.mockResolvedValue({ data: { user: null }, error: new Error('offline') });
     mock.auth.mfa.getAuthenticatorAssuranceLevel.mockResolvedValue({ data: null, error: new Error('offline') });
     expect((await updateSession(new NextRequest('https://staging.example/school'))).headers.get('location')).toContain('/mfa?');
   });
+});
+
+it('does not trust cookie-backed factor lists to bypass server verification', async () => {
+  mock.auth.mfa.getAuthenticatorAssuranceLevel.mockResolvedValue({data:{currentLevel:'aal1',nextLevel:'aal1'},error:null});
+  expect((await updateSession(new NextRequest('https://staging.example/school'))).headers.get('location')).toContain('/mfa?');
+  expect(mock.auth.getUser).toHaveBeenCalled();
+});
+it('preserves access for accounts without an enrolled factor', async () => {
+  mock.auth.getUser.mockResolvedValue({data:{user:{id:'synthetic',factors:[]}},error:null});
+  expect((await updateSession(new NextRequest('https://staging.example/school'))).headers.get('location')).toBeNull();
 });

@@ -54,9 +54,11 @@ export async function updateSession(request: NextRequest) {
 
   response.headers.set('Cache-Control', 'private, no-store');
   if (isAuthenticated && !isPublicRoute(request.nextUrl.pathname)) {
-    const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (assuranceError || !assurance?.currentLevel ||
-        (assurance.nextLevel === 'aal2' && assurance.currentLevel !== 'aal2')) {
+    // Fetch enrolled factors from Auth; cookie-backed session.user is user-controlled.
+    const { data: verifiedUser, error: assuranceError } = await supabase.auth.getUser();
+    const requiresMfa = verifiedUser?.user?.factors?.some(factor => factor.status === 'verified');
+    if (assuranceError || !verifiedUser?.user ||
+        (requiresMfa && data?.claims?.aal !== 'aal2')) {
       const verificationUrl = request.nextUrl.clone();
       verificationUrl.pathname = '/mfa';
       verificationUrl.search = '';
