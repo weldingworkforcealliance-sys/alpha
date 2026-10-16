@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
+import SchoolOperations from './operations';
 import { guardedSignOut } from '@/lib/guarded-signout';
 
-type TabName = 'overview' | 'instructors' | 'sections' | 'activity' | 'reports';
+type TabName = 'operations' | 'overview' | 'instructors' | 'sections' | 'activity' | 'reports';
 
 interface School {
   id: string;
@@ -144,7 +145,9 @@ export default function SchoolDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [dataLoading, setDataLoading] = useState(false);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<TabName>('overview');
+  const [reload, setReload] = useState(0);
+  const [loadedSchoolId, setLoadedSchoolId] = useState('');
+  const [activeTab, setActiveTab] = useState<TabName>('operations');
 
   const [userId, setUserId] = useState<string | null>(null);
   const [isPlatformOwner, setIsPlatformOwner] = useState(false);
@@ -229,7 +232,8 @@ export default function SchoolDashboardPage() {
           return;
         }
 
-        setSelectedSchoolId(allowedSchools[0].id);
+        const requestedSchool = new URLSearchParams(window.location.search).get('school');
+        setSelectedSchoolId(allowedSchools.find(school=>school.id===requestedSchool)?.id ?? allowedSchools[0].id);
       } catch (err) {
         console.error(err);
         setError(
@@ -246,6 +250,7 @@ export default function SchoolDashboardPage() {
   useEffect(() => {
     if (!selectedSchoolId || !userId) return;
 
+    let alive = true;
     const loadSchool = async () => {
       setDataLoading(true);
       setError('');
@@ -341,6 +346,8 @@ export default function SchoolDashboardPage() {
           loadedProfiles = (profileData ?? []) as Profile[];
         }
 
+        if (!alive) return;
+        setLoadedSchoolId(selectedSchoolId);
         setCourses((coursesResult.data ?? []) as Course[]);
         setSections((sectionsResult.data ?? []) as Section[]);
         setProgress((progressResult.data ?? []) as SectionProgress[]);
@@ -358,17 +365,19 @@ export default function SchoolDashboardPage() {
           ) ?? null
         );
       } catch (err) {
+        if (!alive) return;
         console.error(err);
         setError(
           err instanceof Error ? err.message : 'Failed to load school data.'
         );
       } finally {
-        setDataLoading(false);
+        if (alive) setDataLoading(false);
       }
     };
 
     loadSchool();
-  }, [selectedSchoolId, supabase, userId]);
+    return () => { alive = false; };
+  }, [selectedSchoolId, supabase, userId, reload]);
 
   const selectedSchool = useMemo(
     () => schools.find((school) => school.id === selectedSchoolId) ?? null,
@@ -587,7 +596,7 @@ export default function SchoolDashboardPage() {
           <h1>School Dashboard</h1>
         </div>
 
-        <div className="header-actions">
+        <details className="school-tools"><summary>School tools</summary><div className="header-actions">
           {isPlatformOwner && (
             <button className="secondary" onClick={() => router.push('/owner')}>
               Owner Dashboard
@@ -607,7 +616,7 @@ export default function SchoolDashboardPage() {
           <button className="secondary" onClick={handleLogout}>
             Log Out
           </button>
-        </div>
+        </div></details>
       </header>
 
       <main className="page">
@@ -627,7 +636,7 @@ export default function SchoolDashboardPage() {
               <span>School</span>
               <select
                 value={selectedSchoolId}
-                onChange={(event) => setSelectedSchoolId(event.target.value)}
+                onChange={(event) => { setSelectedSchoolId(event.target.value); const url = new URL(window.location.href); url.searchParams.set('school',event.target.value); window.history.replaceState(null,'',url); }}
               >
                 {schools.map((school) => (
                   <option key={school.id} value={school.id}>
@@ -639,12 +648,13 @@ export default function SchoolDashboardPage() {
           )}
         </section>
 
-        {error && <div className="error-box">{error}</div>}
+        {error && <div className="error-box" role="alert">{error} <button onClick={()=>setReload(value=>value+1)}>Retry</button></div>}
 
         <nav className="tabs" aria-label="School Dashboard sections">
           {(
             [
-              ['overview', 'Overview'],
+              ['operations', 'Daily administration'],
+              ['overview', 'Teaching progress'],
               ['instructors', 'Instructors'],
               ['sections', 'Sections'],
               ['activity', 'Activity'],
@@ -654,6 +664,7 @@ export default function SchoolDashboardPage() {
             <button
               key={tab}
               className={activeTab === tab ? 'active' : ''}
+              aria-pressed={activeTab === tab}
               onClick={() => setActiveTab(tab)}
             >
               {label}
@@ -661,13 +672,14 @@ export default function SchoolDashboardPage() {
           ))}
         </nav>
 
-        {dataLoading ? (
+        {error && loadedSchoolId !== selectedSchoolId ? <p>School records are unavailable. Retry to load this school.</p> : dataLoading || loadedSchoolId !== selectedSchoolId ? (
           <section className="loading-panel">
             <div className="spinner" />
             <p>Loading school information…</p>
           </section>
         ) : (
           <>
+            {activeTab === 'operations' && <SchoolOperations key={selectedSchoolId} schoolId={selectedSchoolId} canManage={canManage} canTimeManage={canManage || myMembership?.role==='lead_instructor'} classes={sectionRows.map(row=>({id:row.section.id,name:row.section.section_name??row.section.section_code??'Unnamed class',course:row.course?.course_code??'Course',instructors:row.instructorNames.join(', '),status:row.section.status??'active'}))}/>}
             {activeTab === 'overview' && (
               <section className="stack">
                 <div className="metric-grid">
@@ -846,8 +858,7 @@ export default function SchoolDashboardPage() {
 
                 {canManage && (
                   <div className="management-note">
-                    Instructor assignment controls will be added after this dashboard
-                    view is verified against real school data.
+                    <a href="/accounts">Manage instructor accounts and assignments</a>
                   </div>
                 )}
               </section>
@@ -1078,14 +1089,14 @@ function Metric({
 
 const styles = `
   :global(body) {
-    background: #0a0a0a;
+    background: #10232d;
   }
 
   .school-shell {
     min-height: 100vh;
     background:
-      radial-gradient(circle at 18% 0%, rgba(0,255,136,.07), transparent 26rem),
-      #0a0a0a;
+      radial-gradient(circle at 18% 0%, rgba(237,189,141,.07), transparent 26rem),
+      #10232d;
     color: #e0e0e0;
   }
 
@@ -1131,13 +1142,16 @@ const styles = `
   }
 
   .eyebrow {
-    color: #00ff88;
+    color: #edbd8d;
     text-transform: uppercase;
     letter-spacing: .12em;
     font-size: 11px;
     font-weight: 800;
   }
 
+  .school-tools summary { cursor:pointer; min-height:44px; padding:12px; border:1px solid #668391; border-radius:8px; }
+  .school-tools[open] .header-actions { margin-top:12px; }
+  .tabs { flex-wrap:wrap; }
   .header-actions, .report-actions {
     display: flex;
     gap: 10px;
@@ -1166,8 +1180,8 @@ const styles = `
   .secondary:hover,
   .report-actions button:hover,
   .access-card button:hover {
-    border-color: #00ff88;
-    color: #00ff88;
+    border-color: #edbd8d;
+    color: #edbd8d;
   }
 
   .page {
@@ -1196,7 +1210,7 @@ const styles = `
   }
 
   .school-selector span {
-    color: #777;
+    color: #b9cbd3;
     font-size: 11px;
     font-weight: 800;
     text-transform: uppercase;
@@ -1233,13 +1247,13 @@ const styles = `
 
   .tabs button:hover {
     color: #ddd;
-    background: #151515;
+    background: #172f3a;
   }
 
   .tabs button.active {
-    color: #00ff88;
-    border-color: rgba(0,255,136,.45);
-    background: rgba(0,255,136,.08);
+    color: #edbd8d;
+    border-color: rgba(237,189,141,.45);
+    background: rgba(237,189,141,.08);
   }
 
   .stack {
@@ -1279,12 +1293,12 @@ const styles = `
   }
 
   .metric.accent {
-    border-color: rgba(0,255,136,.55);
-    box-shadow: inset 0 0 24px rgba(0,255,136,.04);
+    border-color: rgba(237,189,141,.55);
+    box-shadow: inset 0 0 24px rgba(237,189,141,.04);
   }
 
   .metric.accent strong {
-    color: #00ff88;
+    color: #edbd8d;
   }
 
   .metric.warn strong {
@@ -1294,7 +1308,7 @@ const styles = `
   .panel {
     border: 1px solid #292929;
     border-radius: 10px;
-    background: #151515;
+    background: #172f3a;
     padding: 22px;
   }
 
@@ -1347,7 +1361,7 @@ const styles = `
   .section-main span,
   .activity-row span,
   small {
-    color: #828282;
+    color: #b9cbd3;
     font-size: 12px;
   }
 
@@ -1365,7 +1379,7 @@ const styles = `
   }
 
   .progress-copy strong {
-    color: #00ff88;
+    color: #edbd8d;
   }
 
   .progress-track {
@@ -1377,7 +1391,7 @@ const styles = `
 
   .progress-fill {
     height: 100%;
-    background: #00ff88;
+    background: #edbd8d;
     border-radius: inherit;
   }
 
@@ -1398,8 +1412,8 @@ const styles = `
 
   .status.normal,
   .status.completed {
-    color: #00ff88;
-    background: rgba(0,255,136,.08);
+    color: #edbd8d;
+    background: rgba(237,189,141,.08);
   }
 
   .status.hold {
@@ -1453,7 +1467,7 @@ const styles = `
   th {
     padding: 11px 12px;
     text-align: left;
-    color: #666;
+    color: #b9cbd3;
     text-transform: uppercase;
     letter-spacing: .06em;
     font-size: 10px;
@@ -1523,8 +1537,8 @@ const styles = `
   }
 
   .report-actions button:first-child {
-    border-color: rgba(0,255,136,.45);
-    color: #00ff88;
+    border-color: rgba(237,189,141,.45);
+    color: #edbd8d;
   }
 
   .error-box {
@@ -1550,7 +1564,7 @@ const styles = `
     width: 42px;
     height: 42px;
     border: 3px solid #2b2b2b;
-    border-top-color: #00ff88;
+    border-top-color: #edbd8d;
     border-radius: 50%;
     animation: spin .8s linear infinite;
   }
@@ -1570,7 +1584,7 @@ const styles = `
     padding: 28px;
     border: 1px solid #292929;
     border-radius: 10px;
-    background: #151515;
+    background: #172f3a;
   }
 
   .access-card h1 {

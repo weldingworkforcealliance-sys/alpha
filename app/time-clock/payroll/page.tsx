@@ -271,7 +271,8 @@ export default function WeeklyTimeReportPage() {
 
         const loadedSchools = (schoolResult.data ?? []) as School[];
         setSchools(loadedSchools);
-        setSchoolId(loadedSchools[0]?.id ?? '');
+        const requestedSchool = new URLSearchParams(window.location.search).get('school');
+        setSchoolId(loadedSchools.find(school=>school.id===requestedSchool)?.id ?? loadedSchools[0]?.id ?? '');
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unable to open weekly time reporting.');
       } finally {

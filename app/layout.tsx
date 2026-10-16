@@ -15,7 +15,6 @@ import DashboardPunchClock from './dashboard-punch-clock';
 import PlannerLabGradingPanel from './planner-lab-grading-panel';
 import AttendanceFinalizationAlert from './attendance-finalization-alert';
 import ClassTimeWatchdog from './class-time-watchdog';
-import SchoolActiveTodayEmployees from './school-active-today-employees';
 import UsageTracker from './usage-tracker';
 import DemoSessionGuard from './demo-session-guard';
 import PasswordRecoveryRedirect from './password-recovery-redirect';
@@ -171,7 +170,6 @@ export default function RootLayout({
               {!isDemoRoute && (
                 <>
                   {pathname === '/dashboard' && <DashboardHero />}
-                  <SchoolActiveTodayEmployees pathname={pathname} />
                   {!isStudentDisplay && <CohortWorkspaceBar pathname={pathname} />}
                   {!isStudentDisplay && <TeacherIdentityBar pathname={pathname} />}
                   <AttendanceFinalizationAlert pathname={pathname} />

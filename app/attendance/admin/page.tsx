@@ -107,7 +107,7 @@ export default function AttendanceAdminPage() {
       if (error) throw error;
       const loaded = (data ?? []) as School[];
       setSchools(loaded);
-      if (!schoolId && loaded[0]) setSchoolId(loaded[0].id);
+      if (!schoolId && loaded[0]) setSchoolId(loaded.find(row=>row.id===new URLSearchParams(window.location.search).get('school'))?.id ?? loaded[0].id);
       return;
     }
 
@@ -134,7 +134,7 @@ export default function AttendanceAdminPage() {
     if (error) throw error;
     const loaded = (data ?? []) as School[];
     setSchools(loaded);
-    if (!schoolId && loaded[0]) setSchoolId(loaded[0].id);
+    if (!schoolId && loaded[0]) setSchoolId(loaded.find(row=>row.id===new URLSearchParams(window.location.search).get('school'))?.id ?? loaded[0].id);
   };
 
   const loadSchoolData = async (targetSchoolId: string) => {
