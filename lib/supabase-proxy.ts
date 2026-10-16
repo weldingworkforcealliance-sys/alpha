@@ -53,5 +53,19 @@ export async function updateSession(request: NextRequest) {
   }
 
   response.headers.set('Cache-Control', 'private, no-store');
+  if (isAuthenticated && !isPublicRoute(request.nextUrl.pathname)) {
+    const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (assuranceError || !assurance?.currentLevel ||
+        (assurance.nextLevel === 'aal2' && assurance.currentLevel !== 'aal2')) {
+      const verificationUrl = request.nextUrl.clone();
+      verificationUrl.pathname = '/mfa';
+      verificationUrl.search = '';
+      verificationUrl.searchParams.set('next', `${request.nextUrl.pathname}${request.nextUrl.search}`);
+      const redirect = NextResponse.redirect(verificationUrl);
+      copySessionCookies(response, redirect);
+      redirect.headers.set('Cache-Control', 'private, no-store');
+      return redirect;
+    }
+  }
   return response;
 }
