@@ -14,6 +14,27 @@ function props(): TeachingViewProps {
 }
 afterEach(() => { cleanup(); vi.unstubAllEnvs(); });
 describe('live Teaching View', () => {
+  it('explains future starts beside the disabled control instead of saying Ready to teach', () => {
+    const p = props(); p.section.scheduled_date = '2099-11-09';
+    render(<TeachingView {...p} />);
+    expect(screen.queryByText('Ready to teach')).toBeNull();
+    expect(screen.getByText(/Start Today becomes available on that date/)).toBeTruthy();
+    const button = screen.getByRole('button', { name: 'Start Today' });
+    expect(button).toHaveProperty('disabled', true);
+    expect(button.getAttribute('aria-describedby')).toBe('start-availability');
+    fireEvent.click(button); expect(p.onStart).not.toHaveBeenCalled();
+  });
+  it('starts an available day and reports a hold without blocking lesson access', () => {
+    const p = props(); p.section.scheduled_date = '2020-01-01';
+    const view = render(<TeachingView {...p} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Start Today' }));
+    expect(p.onStart).toHaveBeenCalledOnce();
+    view.rerender(<TeachingView {...p} section={{...p.section, manual_hold:true, hold_reason:'Waiting for class approval'}} />);
+    expect(screen.getByText('Class on hold')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Start Today' })).toHaveProperty('disabled', true);
+    fireEvent.click(screen.getByRole('button', {name:'Open Full Detailed Planner →'}));
+    expect(p.onDetailed).toHaveBeenCalledOnce();
+  });
   it('locks preview writes while preserving lesson navigation', () => {
     const p = {...props(), current:false, inProgress:true};
     render(<TeachingView {...p} />);

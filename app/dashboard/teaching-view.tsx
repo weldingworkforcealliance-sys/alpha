@@ -45,6 +45,21 @@ export default function TeachingView(props: TeachingViewProps) {
   const index = days.findIndex(day => day.id === guide?.id);
   const budget = getPlannerTimeBudget(segments);
   const locked = props.loading || props.busy || !props.current;
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const futureDay = Boolean(section.scheduled_date && section.scheduled_date > today);
+  const scheduledLabel = section.scheduled_date
+    ? new Date(`${section.scheduled_date}T12:00:00`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : '';
+  const startReason = section.manual_hold
+    ? section.hold_reason || 'An administrator must release this class hold before it can start.'
+    : futureDay ? `This day is scheduled for ${scheduledLabel}. Start Today becomes available on that date. Contact an administrator if the schedule needs correcting.`
+    : !section.planner_day_id ? 'This class needs a current planner day before it can start.'
+    : !props.actualDate ? 'Choose an Actual Date to start this class.' : '';
+  const status = props.loading ? 'Loading…' : !props.current ? 'Preview only'
+    : props.completed ? 'Completed' : props.inProgress ? `In progress · ${props.elapsed}`
+    : props.busy ? 'Starting class…' : section.manual_hold ? 'Class on hold'
+    : futureDay ? `Scheduled · ${scheduledLabel}` : startReason ? 'Not ready to start' : 'Ready to teach';
+  const showStartReason = !props.loading && props.current && !props.inProgress && !props.completed && Boolean(startReason);
   const sectionQuery = `section=${encodeURIComponent(section.section_id)}`;
   const contextHref = (path: string) => `${path}${path.includes('?') ? '&' : '?'}${sectionQuery}`;
   const attendanceHref = props.attendanceDate
@@ -68,9 +83,9 @@ export default function TeachingView(props: TeachingViewProps) {
     {!props.current && guide && <div className={styles.previewBanner} role="status">Preview only. Class progress is unchanged. <button type="button" onClick={props.onCurrentDay}>Back to current day</button></div>}
     {section.manual_hold && <p role="status" className={styles.previewBanner}>{section.hold_reason || 'This class is on hold.'}</p>}
     <section className={styles.actionBar} aria-label="Today's class actions">
-      <div className={styles.actionStatus}><small>CLASS STATUS</small><strong>{props.loading ? 'Loading…' : !props.current ? 'Preview only' : props.completed ? 'Completed' : props.inProgress ? `In progress · ${props.elapsed}` : 'Ready to teach'}</strong></div>
+      <div className={styles.actionStatus} role="status"><small>CLASS STATUS</small><strong>{status}</strong>{showStartReason && <span id="start-availability">{startReason}</span>}</div>
       <div className={styles.actionButtons}>
-        <button type="button" className={`${styles.startButton} start-button`} disabled={locked || !props.actualDate || props.inProgress || props.completed || section.manual_hold} onClick={props.onStart}>Start Today</button>
+        <button type="button" className={`${styles.startButton} start-button`} aria-describedby={showStartReason ? 'start-availability' : undefined} disabled={locked || Boolean(startReason) || props.inProgress || props.completed} onClick={props.onStart}>Start Today</button>
         {attendanceHref ? <a href={attendanceHref}>Attendance</a> : <button disabled>Attendance loading…</button>}
         {process.env.NEXT_PUBLIC_GRADEBOOK_ENABLED === 'true' && <a href={contextHref('/gradebook')} className={styles.gradeButton}>Grading</a>}
         <button type="button" className={`${styles.completeButton} complete-button`} disabled={locked || !props.actualDate || !props.inProgress || !props.attendanceDate} onClick={props.onComplete}>{props.busy ? 'Working…' : 'Complete Day'}</button>
