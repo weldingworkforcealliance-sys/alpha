@@ -54,6 +54,13 @@ async function waitForServer() {
 await waitForServer();
 
 const failures = [];
+// Check actual HTTP output, including the static workspace used inside the Tower.
+for (const route of ['/login', '/tower-ui/index.html']) {
+  const response = await fetch(`${baseUrl}${route}`, { redirect: 'manual' });
+  if (response.headers.get('x-content-type-options') !== 'nosniff') failures.push(`${route}: missing MIME protection`);
+  if (response.headers.get('x-frame-options') !== 'SAMEORIGIN') failures.push(`${route}: same-origin Tower framing policy missing`);
+  if (!response.headers.get('content-security-policy')?.includes("frame-ancestors 'self'")) failures.push(`${route}: missing frame ancestry protection`);
+}
 for (const route of publicRoutes) {
   try {
     const response = await fetch(`${baseUrl}${route}`, { redirect: 'manual' });

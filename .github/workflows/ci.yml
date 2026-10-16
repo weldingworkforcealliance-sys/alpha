@@ -50,6 +50,9 @@ jobs:
       - name: Migration filename guard
         run: npm run check:migrations
 
+      - name: Dependency security audit
+        run: npm audit --audit-level=high
+
       - name: TypeScript check
         run: npm run typecheck
 
