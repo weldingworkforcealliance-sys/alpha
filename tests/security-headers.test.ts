@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import config from '../next.config';
+import { readFileSync } from 'node:fs';
 
 describe('browser security policy', () => {
   it('protects all routes while permitting the embedded grading Tower', async () => {
@@ -16,5 +17,10 @@ describe('browser security policy', () => {
     expect(headers['X-Content-Type-Options']).toBe('nosniff');
     expect(headers['Referrer-Policy']).toBe('strict-origin-when-cross-origin');
     expect(config.poweredByHeader).toBe(false);
+    const netlify = readFileSync('netlify.toml', 'utf8');
+    expect(netlify).toContain('for = "/*"');
+    for (const [key, value] of Object.entries(headers)) {
+      expect(netlify).toContain(`${key} = "${value}"`);
+    }
   });
 });
