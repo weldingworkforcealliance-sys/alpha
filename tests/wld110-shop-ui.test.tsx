@@ -95,7 +95,8 @@ describe('instructor board saves and coaching',()=>{
   const calls=mocks.rpc.mock.calls.filter(c=>c[0]==='decide_wld110_weld');
   expect(calls).toHaveLength(2);expect(calls[1][1]).toEqual(originalCall);
   expect(screen.queryByRole('region',{name:'Grade weld'})).toBeNull();
-  expect(blocked).toHaveBeenLastCalledWith(false);
+  // The saved notice renders before the passive onSaveState effect settles.
+  await waitFor(()=>expect(blocked).toHaveBeenLastCalledWith(false));
   expect(screen.getByText('Practice')).toBeTruthy();
  });
  it('shows pacing review at six meetings, and practice records no grade',async()=>{
