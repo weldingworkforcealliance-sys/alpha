@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
 import { guardedSignOut } from '@/lib/guarded-signout';
+import { startTrainingRefresh } from '@/lib/training-refresh';
 import PlannerTeachingConsole, {
   type PlannerDayOption,
   type PlannerLaunchResource,
@@ -280,7 +281,10 @@ export default function TrainingTeacherPage() {
       memberResult.error,
     ].find(Boolean);
     if (firstError) throw new Error(firstError?.message ?? 'Training session failed to load.');
-    if (!sessionResult.data) throw new Error('Training session is no longer active.');
+    if (!sessionResult.data) {
+      router.replace('/training');
+      throw new Error('Training session is no longer active.');
+    }
 
     const loadedStates = (stateResult.data ?? []) as StateRow[];
     const sourceIds = loadedStates.map((state) => state.source_section_id);
@@ -324,10 +328,7 @@ export default function TrainingTeacherPage() {
     setMembers((memberResult.data ?? []) as Member[]);
     setProfiles(loadedProfiles);
 
-    if (!sectionId && loadedStates[0]) {
-      setSectionId(loadedStates[0].source_section_id);
-      setViewingDay(loadedStates[0].simulated_current_day);
-    }
+    setSectionId(current => current || loadedStates[0]?.source_section_id || '');
   };
 
   const ensureJoined = async () => {
@@ -363,22 +364,23 @@ export default function TrainingTeacherPage() {
       }
     })();
 
+    const updates = startTrainingRefresh(fetchMain, err => setError(err instanceof Error ? err.message : String(err)));
     const channel = supabase
       .channel(`training-teacher-${sessionId}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'training_section_state', filter: `training_session_id=eq.${sessionId}` },
-        () => fetchMain()
+        updates.refresh
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'training_day_delivery', filter: `training_session_id=eq.${sessionId}` },
-        () => fetchMain()
+        updates.refresh
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'training_session_members', filter: `training_session_id=eq.${sessionId}` },
-        () => fetchMain()
+        updates.refresh
       )
       .subscribe();
 
@@ -388,6 +390,7 @@ export default function TrainingTeacherPage() {
     );
 
     return () => {
+      updates.stop();
       window.clearInterval(heartbeat);
       supabase.removeChannel(channel);
     };

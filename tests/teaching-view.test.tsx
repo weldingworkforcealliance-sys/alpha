@@ -14,6 +14,25 @@ function props(): TeachingViewProps {
 }
 afterEach(() => { cleanup(); vi.unstubAllEnvs(); });
 describe('live Teaching View', () => {
+  it('retains preparation and teaching tips alongside coaching and math notes when changing days', () => {
+    const p = props();
+    p.guide = {...p.guide!, instructor_prep:'Check the practice coupons.\nLay out the gauges.', teaching_tips:'Model the setup before independent practice.', coaching_focus:'Ask students to explain their settings.', safety_focus:'Check ventilation before striking an arc.', record_link_expectation:'Save the inspection record.'};
+    p.mathLesson = {id:'math', math_day_number:1, title:'Measurement', planned_minutes:10, goal:'Read a ruler', book_connection:'Measurement reference', instructor_notes:'Check the units before calculating.', answers_quick_check:'One inch has sixteen sixteenths.'};
+    const view = render(<TeachingView {...p} />);
+    fireEvent.click(screen.getByText('Teacher Guidance'));
+    expect(screen.getByText('Teacher Guidance').closest('details')?.open).toBe(true);
+    expect(screen.getByText('Check the practice coupons. Lay out the gauges.')).toBeTruthy();
+    expect(screen.getByText('Model the setup before independent practice.')).toBeTruthy();
+    expect(screen.getByText('Ask students to explain their settings.')).toBeTruthy();
+    expect(screen.getByText('Check ventilation before striking an arc.')).toBeTruthy();
+    expect(screen.getByText('Save the inspection record.')).toBeTruthy();
+    expect(screen.getByText('Check the units before calculating.')).toBeTruthy();
+    view.rerender(<TeachingView {...p} guide={{...props().guide!, instructor_prep:'Prepare the next lesson.', teaching_tips:'   '}} mathLesson={null} />);
+    expect(screen.getByText('Prepare the next lesson.')).toBeTruthy();
+    expect(screen.queryByText('Model the setup before independent practice.')).toBeNull();
+    expect(screen.queryByText('Teaching Tips')).toBeNull();
+    expect(screen.queryByText('Check the units before calculating.')).toBeNull();
+  });
   it('explains future starts beside the disabled control instead of saying Ready to teach', () => {
     const p = props(); p.section.scheduled_date = '2099-11-09';
     render(<TeachingView {...p} />);

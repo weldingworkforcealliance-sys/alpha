@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import PlannerActivity from '../planner-activity';
 import PlannerTimeBudget from '../planner-time-budget';
 import { getPlannerTimeBudget } from '@/lib/planner-time-budget';
+import { TEACHER_GUIDANCE_FIELDS } from '@/lib/teacher-guidance';
 import type { TeachingSection, GuideDay, GuideDayRef, GuideSegment, GuideResource, ProtectedOutcome, MathLesson, MathSegment } from './page';
 import styles from './teaching-view.module.css';
 
@@ -113,8 +114,8 @@ export default function TeachingView(props: TeachingViewProps) {
         <div className={styles.resourceList}>{resources.map(resource => <div className={styles.resource} key={resource.id}><div><strong>{resource.resource_title}</strong><span>{resource.resource_type.replaceAll('_', ' ')}{resource.required ? ' · Required' : ''}</span><p>{resource.resource_notes}</p></div>{resource.resource_url && <a href={resource.resource_url.startsWith('/classroom') ? contextHref(resource.resource_url) : resource.resource_url} target="_blank" rel="noreferrer">Open resource</a>}</div>)}</div>
         <div className={styles.shortcutRow}><a href={contextHref('/classroom/planner')}>Classroom Activities</a><a href={contextHref('/classroom/job-card')}>Student Job Cards</a></div>
       </section>
-      <details className={styles.collapsible}><summary>Instructor Toolkit <span>Coaching · Math · Outcomes</span></summary><div className={styles.detailBody}>
-        {(['materials_equipment','corresponding_application','evidence_check_for_understanding','weekly_coaching_focus','coaching_focus','if_students_struggle','keep_momentum'] as const).map(key => guide[key] && <section className={styles.tip} key={key}><h3>{key.replaceAll('_', ' ')}</h3><p>{guide[key]}</p></section>)}
+      <details className={styles.collapsible}><summary>Teacher Guidance <span>Preparation · Teaching tips · Coaching · Math</span></summary><div className={styles.detailBody}>
+        {TEACHER_GUIDANCE_FIELDS.map(([key, label]) => guide[key]?.trim() && <section className={styles.tip} key={key}><h3>{label}</h3><p>{guide[key]}</p></section>)}
         {mathLesson && <section className={styles.tip}><h3>Math instructor reference</h3><p>{mathLesson.book_connection}</p><p>{mathLesson.instructor_notes}</p><p>{mathLesson.answers_quick_check}</p></section>}
         <details><summary>Protected curriculum outcomes ({props.outcomes.length})</summary>{props.outcomes.map(outcome => <p key={outcome.id}><strong>{outcome.outcome_code}</strong> · {outcome.outcome_text}</p>)}</details>
       </div></details>
