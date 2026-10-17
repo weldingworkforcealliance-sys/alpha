@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
 import { guardedSignOut } from '@/lib/guarded-signout';
+import { startTrainingRefresh } from '@/lib/training-refresh';
 
 interface TrainingSession { id:string; school_id:string; session_name:string; status:string; started_at:string; expires_at:string; }
 interface StateRow { id:string; source_section_id:string; simulated_current_day:number; manual_hold:boolean; hold_reason:string|null; active_timer_started_at:string|null; }
@@ -33,7 +34,7 @@ export default function TrainingSchoolPage(){
       supabase.from('training_activity').select('id,user_id,action,entity_type,details,created_at').eq('training_session_id',sessionId).order('created_at',{ascending:false}).limit(100),
       supabase.rpc('can_manage_training_session',{check_training_session_id:sessionId})
     ]);
-    const first=[sess.error,st.error,del.error,mem.error,act.error,manage.error].find(Boolean); if(first)throw new Error(first?.message??'Training school dashboard failed to load.'); if(!sess.data)throw new Error('Training session has ended.');
+    const first=[sess.error,st.error,del.error,mem.error,act.error,manage.error].find(Boolean); if(first)throw new Error(first?.message??'Training school dashboard failed to load.'); if(!sess.data){router.replace('/training');throw new Error('Training session has ended.');}
     const loadedStates=(st.data??[]) as StateRow[]; const ids=loadedStates.map(x=>x.source_section_id);
     let loadedSections:Section[]=[];let loadedCourses:Course[]=[];
     if(ids.length){const sr=await supabase.from('sections').select('id,section_name,section_code,course_id,planned_instructional_days').in('id',ids);if(sr.error)throw sr.error;loadedSections=(sr.data??[]) as Section[];const courseIds=Array.from(new Set(loadedSections.map(s=>s.course_id)));if(courseIds.length){const cr=await supabase.from('courses').select('id,course_code,course_name').in('id',courseIds);if(cr.error)throw cr.error;loadedCourses=(cr.data??[]) as Course[];}}
@@ -43,14 +44,15 @@ export default function TrainingSchoolPage(){
 
   useEffect(()=>{
     (async()=>{try{const {data:auth}=await supabase.auth.getSession();if(!auth.session){router.replace('/training/login');return;}const {data:m}=await supabase.rpc('is_training_session_member',{check_training_session_id:sessionId});if(!m){const j=await supabase.rpc('join_training_session',{p_training_session_id:sessionId});if(j.error)throw j.error;}await fetchData();}catch(err){setError(err instanceof Error?err.message:String(err));}finally{setLoading(false);}})();
+    const updates=startTrainingRefresh(fetchData,err=>setError(err instanceof Error?err.message:String(err)));
     const ch=supabase.channel(`training-school-${sessionId}`)
-      .on('postgres_changes',{event:'*',schema:'public',table:'training_section_state',filter:`training_session_id=eq.${sessionId}`},()=>fetchData())
-      .on('postgres_changes',{event:'*',schema:'public',table:'training_day_delivery',filter:`training_session_id=eq.${sessionId}`},()=>fetchData())
-      .on('postgres_changes',{event:'*',schema:'public',table:'training_session_members',filter:`training_session_id=eq.${sessionId}`},()=>fetchData())
-      .on('postgres_changes',{event:'*',schema:'public',table:'training_activity',filter:`training_session_id=eq.${sessionId}`},()=>fetchData())
+      .on('postgres_changes',{event:'*',schema:'public',table:'training_section_state',filter:`training_session_id=eq.${sessionId}`},updates.refresh)
+      .on('postgres_changes',{event:'*',schema:'public',table:'training_day_delivery',filter:`training_session_id=eq.${sessionId}`},updates.refresh)
+      .on('postgres_changes',{event:'*',schema:'public',table:'training_session_members',filter:`training_session_id=eq.${sessionId}`},updates.refresh)
+      .on('postgres_changes',{event:'*',schema:'public',table:'training_activity',filter:`training_session_id=eq.${sessionId}`},updates.refresh)
       .subscribe();
     const heartbeat=window.setInterval(()=>supabase.rpc('touch_training_session',{p_training_session_id:sessionId}),60000);
-    return()=>{window.clearInterval(heartbeat);supabase.removeChannel(ch);};
+    return()=>{updates.stop();window.clearInterval(heartbeat);supabase.removeChannel(ch);};
   },[sessionId]);
 
   const completed=deliveries.filter(d=>d.delivery_status==='completed'); const minutes=completed.reduce((n,d)=>n+(d.actual_minutes??0),0); const followups=deliveries.filter(d=>d.follow_up_needed).length; const holds=states.filter(s=>s.manual_hold).length; const activeTimers=states.filter(s=>s.active_timer_started_at).length;

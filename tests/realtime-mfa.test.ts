@@ -6,7 +6,8 @@ const db = new PGlite();
 const instructor = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const owner = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 const unrelated = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
-const tables = ['classroom_submissions', 'job_card_submissions'];
+const trainingTables = ['training_activity','training_day_delivery','training_notes','training_section_state','training_session_members','training_sessions'];
+const tables = ['classroom_submissions', 'job_card_submissions', ...trainingTables];
 const identity = (aal: unknown = 'aal1', sub = instructor) => ({role:'authenticated', sub, aal});
 beforeAll(async () => {
   await db.exec(`create role authenticated; create role anon; create schema auth; create schema private;
@@ -14,9 +15,9 @@ beforeAll(async () => {
     alter table auth.mfa_factors enable row level security;
     create function public.fixture_uid() returns uuid language sql stable as
       $$select (current_setting('request.jwt.claims',true)::jsonb->>'sub')::uuid$$;
-    create table public.classroom_submissions(id int primary key, instructor_id uuid);
-    create table public.job_card_submissions(id int primary key, instructor_id uuid);`);
+    create table public.training_report_outbox(id int primary key);`);
   for (const table of tables) await db.exec(`
+    create table public.${table}(id int primary key, instructor_id uuid);
     insert into public.${table} values(1,'${instructor}');
     alter table public.${table} enable row level security;
     grant select on public.${table} to authenticated;
@@ -24,6 +25,7 @@ beforeAll(async () => {
       using (instructor_id = public.fixture_uid() or public.fixture_uid() = '${owner}'::uuid);`);
   await db.exec('create publication supabase_realtime for table public.classroom_submissions, public.job_card_submissions');
   await db.exec(readFileSync('supabase/migrations/20261017122536_enforce_realtime_enrolled_mfa.sql','utf8'));
+  await db.exec(readFileSync('supabase/migrations/20261017134838_complete_training_realtime_mfa.sql','utf8'));
 });
 beforeEach(async () => {
   await db.exec(`reset role; truncate auth.mfa_factors;
@@ -85,6 +87,28 @@ it('cannot be bypassed by another permissive owner policy', async () => {
 it('retains INSERT/UPDATE publication while suppressing DELETE and TRUNCATE payloads that bypass row checks', async () => {
   const result = await db.query('select pubinsert,pubupdate,pubdelete,pubtruncate from pg_publication where pubname=$1',['supabase_realtime']);
   expect(result.rows).toEqual([{pubinsert:true,pubupdate:true,pubdelete:false,pubtruncate:false}]);
+  const members = await db.query<{tablename:string}>("select tablename from pg_publication_tables where pubname='supabase_realtime'");
+  expect(members.rows.map(row=>row.tablename).sort()).toEqual([...tables,'training_report_outbox'].sort());
   const helpers = await db.query('select prosecdef,provolatile,proconfig from pg_proc where oid=$1::regprocedure',['private.meets_enrolled_mfa()']);
   expect(helpers.rows).toEqual([{prosecdef:true,provolatile:'s',proconfig:['search_path=""']}]);
+});
+it.each(['production', 'unexpected'])('checks the %s publication layout before changing event semantics', async layout => {
+  const isolated = new PGlite();
+  try {
+    await isolated.exec(`create role authenticated; create schema auth; create schema private;
+      create table auth.mfa_factors(user_id uuid,status text);`);
+    const members = [...tables,'training_report_outbox', ...(layout === 'unexpected' ? ['unreviewed_table'] : [])];
+    for (const table of members) await isolated.exec(`create table public.${table}(id int primary key);`);
+    await isolated.exec(`create publication supabase_realtime for table ${members.map(table=>'public.'+table).join(',')}`);
+    const migration = readFileSync('supabase/migrations/20261017122536_enforce_realtime_enrolled_mfa.sql','utf8');
+    if (layout === 'unexpected') {
+      await expect(isolated.exec(migration)).rejects.toThrow('Review Realtime publication membership');
+      await isolated.exec('rollback');
+      expect((await isolated.query('select pubdelete from pg_publication')).rows).toEqual([{pubdelete:true}]);
+    } else {
+      await isolated.exec(migration);
+      await isolated.exec(readFileSync('supabase/migrations/20261017134838_complete_training_realtime_mfa.sql','utf8'));
+      expect((await isolated.query("select count(*)::int n from pg_publication_tables where pubname='supabase_realtime'")).rows).toEqual([{n:9}]);
+    }
+  } finally { await isolated.close(); }
 });

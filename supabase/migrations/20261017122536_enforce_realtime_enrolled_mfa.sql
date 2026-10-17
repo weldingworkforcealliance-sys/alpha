@@ -48,12 +48,22 @@ using ((select private.meets_enrolled_mfa()));
 
 -- Postgres Changes DELETE payloads do not undergo RLS. Neither submission UI
 -- has a delete workflow: normal operations are student INSERT / teacher UPDATE.
--- Refuse to change publication semantics if unrelated tables were added.
+-- Production also publishes the reviewed training tables. Their screens use
+-- authenticated refresh for session purge detection, never DELETE payloads.
+-- Accept only the two reviewed environment layouts; retain every member.
 do $$
+declare
+  members text[];
 begin
-  if (select array_agg(schemaname || '.' || tablename order by schemaname, tablename)
-      from pg_publication_tables where pubname = 'supabase_realtime')
-     is distinct from array['public.classroom_submissions', 'public.job_card_submissions'] then
+  select array_agg(schemaname || '.' || tablename order by schemaname, tablename)
+  into members from pg_publication_tables where pubname = 'supabase_realtime';
+  if members is distinct from array['public.classroom_submissions', 'public.job_card_submissions']
+     and members is distinct from array[
+       'public.classroom_submissions', 'public.job_card_submissions',
+       'public.training_activity', 'public.training_day_delivery', 'public.training_notes',
+       'public.training_report_outbox', 'public.training_section_state',
+       'public.training_session_members', 'public.training_sessions'
+     ] then
     raise exception 'Review Realtime publication membership before applying the MFA boundary';
   end if;
 end;
