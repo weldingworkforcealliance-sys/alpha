@@ -23,7 +23,7 @@ beforeAll(async () => {
     create policy fixture_instructor_or_owner on public.${table} for select to authenticated
       using (instructor_id = public.fixture_uid() or public.fixture_uid() = '${owner}'::uuid);`);
   await db.exec('create publication supabase_realtime for table public.classroom_submissions, public.job_card_submissions');
-  await db.exec(readFileSync('supabase/migrations/20261017121931_enforce_realtime_enrolled_mfa.sql','utf8'));
+  await db.exec(readFileSync('supabase/migrations/20261017122536_enforce_realtime_enrolled_mfa.sql','utf8'));
 });
 beforeEach(async () => {
   await db.exec(`reset role; truncate auth.mfa_factors;
