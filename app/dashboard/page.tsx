@@ -7,6 +7,7 @@ import PlannerAttendancePanel from '../planner-attendance-panel';
 import PlannerActivity from '../planner-activity';
 import PlannerTimeBudget from '../planner-time-budget';
 import { getPlannerTimeBudget } from '@/lib/planner-time-budget';
+import { TEACHING_GUIDE_DAY_SELECT, type TeacherGuidance } from '@/lib/teacher-guidance';
 import { getSupabase } from '@/lib/supabase-browser';
 import { SCHOOL_DASHBOARD_ROLES } from '@/lib/access-roles';
 import { guardedSignOut } from '@/lib/guarded-signout';
@@ -63,7 +64,7 @@ interface DayDelivery {
   updated_at: string | null;
 }
 
-export interface GuideDay {
+export interface GuideDay extends TeacherGuidance {
   id: string;
   guide_id: string;
   planner_day_number: number;
@@ -328,9 +329,7 @@ function DashboardContent() {
       await Promise.all([
         supabase
           .from('course_guide_days')
-          .select(
-            'id, guide_id, planner_day_number, title, objective, materials_equipment, corresponding_application, evidence_check_for_understanding, weekly_coaching_focus, coaching_focus, if_students_struggle, keep_momentum'
-          )
+          .select(TEACHING_GUIDE_DAY_SELECT)
           .eq('id', guideDayId)
           .maybeSingle(),
         supabase
