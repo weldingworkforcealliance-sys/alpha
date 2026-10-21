@@ -26,6 +26,7 @@ type TimeEntry = {
   clock_in_method: string;
   clock_out_method: string | null;
   notes: string | null;
+  requires_correction: boolean;
 };
 
 type Membership = {
@@ -178,7 +179,7 @@ export default function TimeClockPage() {
   const openByEmployee = useMemo(() => {
     const map = new Map<string, TimeEntry>();
     entries.forEach((entry) => {
-      if (!entry.clock_out_at) map.set(entry.employee_id, entry);
+      if (!entry.clock_out_at && !entry.requires_correction) map.set(entry.employee_id, entry);
     });
     return map;
   }, [entries]);
@@ -266,14 +267,14 @@ export default function TimeClockPage() {
           .order('display_name'),
         supabase
           .from('timeclock_entries')
-          .select('id,school_id,employee_id,clock_in_at,clock_out_at,clock_in_method,clock_out_method,notes')
+          .select('id,school_id,employee_id,clock_in_at,clock_out_at,clock_in_method,clock_out_method,notes,requires_correction')
           .eq('school_id', schoolId)
           .gte('clock_in_at', startIso)
           .lte('clock_in_at', endIso)
           .order('clock_in_at', { ascending: false }),
         supabase
           .from('timeclock_entries')
-          .select('id,school_id,employee_id,clock_in_at,clock_out_at,clock_in_method,clock_out_method,notes')
+          .select('id,school_id,employee_id,clock_in_at,clock_out_at,clock_in_method,clock_out_method,notes,requires_correction')
           .eq('school_id', schoolId)
           .is('clock_out_at', null),
       ]);
@@ -400,6 +401,7 @@ export default function TimeClockPage() {
 
   const handlePunch = async (employee: Employee) => {
     const openEntry = openByEmployee.get(employee.id);
+    const overdue = Boolean(openEntry && new Date(openEntry.clock_in_at).toDateString() !== new Date().toDateString());
     const selfPunch = employee.profile_id === userId;
     const enteredPin = selfPunch ? null : pin.trim();
 
@@ -417,14 +419,14 @@ export default function TimeClockPage() {
     setError('');
     setNotice('');
     try {
-      const functionName = openEntry ? 'timeclock_clock_out' : 'timeclock_clock_in';
+      const functionName = openEntry && !overdue ? 'timeclock_clock_out' : 'timeclock_clock_in';
       const { error: rpcError } = await supabase.rpc(functionName, {
         p_employee_id: employee.id,
         p_pin: enteredPin,
       });
       if (rpcError) throw rpcError;
 
-      setNotice(`${employee.display_name} ${openEntry ? 'clocked out' : 'clocked in'} successfully.`);
+      setNotice(`${employee.display_name} ${openEntry && !overdue ? 'clocked out' : 'clocked in'} successfully.`);
       setPin('');
       await loadSchoolData();
     } catch (err) {
@@ -628,6 +630,7 @@ export default function TimeClockPage() {
 
         {error && <div className={styles.error}>{error}</div>}
         {notice && <div className={styles.notice}>{notice}</div>}
+        {entries.some((entry) => entry.requires_correction) && <div className={styles.error}>Unresolved prior-day punches require manager correction. They are not completed payroll hours.</div>}
 
         <section className={styles.summaryGrid}>
           <div className={styles.summaryCard}>
@@ -673,11 +676,11 @@ export default function TimeClockPage() {
                 )}
 
                 <button
-                  className={openByEmployee.has(myEmployee.id) ? styles.clockOutButton : styles.clockInButton}
+                  className={openByEmployee.has(myEmployee.id) && new Date(openByEmployee.get(myEmployee.id)!.clock_in_at).toDateString() === new Date().toDateString() ? styles.clockOutButton : styles.clockInButton}
                   disabled={actionLoading || !myEmployee.clocking_enabled}
                   onClick={() => handlePunch(myEmployee)}
                 >
-                  {openByEmployee.has(myEmployee.id) ? 'CLOCK OUT' : 'CLOCK IN'}
+                  {openByEmployee.has(myEmployee.id) && new Date(openByEmployee.get(myEmployee.id)!.clock_in_at).toDateString() === new Date().toDateString() ? 'CLOCK OUT' : 'CLOCK IN'}
                 </button>
 
                 <div className={styles.pinRow}>
@@ -757,11 +760,11 @@ export default function TimeClockPage() {
                   )}
 
                   <button
-                    className={openByEmployee.has(selectedEmployee.id) ? styles.clockOutButton : styles.clockInButton}
+                    className={openByEmployee.has(selectedEmployee.id) && new Date(openByEmployee.get(selectedEmployee.id)!.clock_in_at).toDateString() === new Date().toDateString() ? styles.clockOutButton : styles.clockInButton}
                     disabled={actionLoading || !selectedEmployee.clocking_enabled}
                     onClick={() => handlePunch(selectedEmployee)}
                   >
-                    {openByEmployee.has(selectedEmployee.id) ? 'CLOCK OUT' : 'CLOCK IN'}
+                    {openByEmployee.has(selectedEmployee.id) && new Date(openByEmployee.get(selectedEmployee.id)!.clock_in_at).toDateString() === new Date().toDateString() ? 'CLOCK OUT' : 'CLOCK IN'}
                   </button>
                 </>
               )}
