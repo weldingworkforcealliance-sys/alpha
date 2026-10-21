@@ -15,6 +15,7 @@ type TimeEntry = {
   id: string;
   clock_in_at: string;
   clock_out_at: string | null;
+  requires_correction: boolean;
 };
 
 function localDayBounds() {
@@ -100,15 +101,16 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
       const [todayResult, openResult] = await Promise.all([
         supabase
           .from('timeclock_entries')
-          .select('id,clock_in_at,clock_out_at')
+          .select('id,clock_in_at,clock_out_at,requires_correction')
           .eq('employee_id', nextEmployee.id)
           .gte('clock_in_at', start.toISOString())
           .order('clock_in_at', { ascending: false }),
         supabase
           .from('timeclock_entries')
-          .select('id,clock_in_at,clock_out_at')
+          .select('id,clock_in_at,clock_out_at,requires_correction')
           .eq('employee_id', nextEmployee.id)
           .is('clock_out_at', null)
+          .eq('requires_correction', false)
           .order('clock_in_at', { ascending: false })
           .limit(1)
           .maybeSingle(),
@@ -144,13 +146,15 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
 
   const todayHours = useMemo(() => hoursToday(entries, now), [entries, now]);
 
+  const isOverdue = Boolean(openEntry && new Date(openEntry.clock_in_at).toDateString() !== new Date().toDateString());
+
   const handlePunch = async () => {
     if (!employee || busy || !employee.clocking_enabled) return;
     setBusy(true);
     setError('');
     try {
       const { error: rpcError } = await supabase.rpc(
-        openEntry ? 'timeclock_clock_out' : 'timeclock_clock_in',
+        openEntry && !isOverdue ? 'timeclock_clock_out' : 'timeclock_clock_in',
         {
           p_employee_id: employee.id,
           p_pin: null,
@@ -201,7 +205,7 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
           <FinsenSierraClock
             displayName={employee.display_name}
             department="LTG Employee"
-            clockedIn={Boolean(openEntry)}
+            clockedIn={Boolean(openEntry) && !isOverdue}
             sinceLabel={openEntry ? formatClockTime(openEntry.clock_in_at) : null}
             todayTotal={formatDuration(todayHours)}
             busy={busy}
@@ -211,6 +215,7 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
             viewTimeHref="/time-clock"
           />
         )}
+        {isOverdue && <div className="ltg-punch-error">An earlier shift is still open. Clock in to start today's shift; the previous shift will be flagged for manager correction, not counted as completed hours.</div>}
         {error && <div className="ltg-punch-error">{error}</div>}
       </div>
 
@@ -222,7 +227,7 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
         </div>
         <div className="ltg-today-session">
           <span aria-hidden="true">◷</span>
-          {openEntry ? `Active since ${formatClockTime(openEntry.clock_in_at)}` : 'No active clock session'}
+          {openEntry && !isOverdue ? `Active since ${formatClockTime(openEntry.clock_in_at)}` : 'No active clock session'}
         </div>
         <div className="ltg-today-total">
           <span>Total Hours Today</span>
