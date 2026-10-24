@@ -15,7 +15,10 @@ vi.mock('@/app/demo/welding/_lib/demo-classroom-api', () => ({
   getDemoClassroomSubmissionReport: vi.fn(),
 }));
 vi.mock('@/app/demo/_components/DemoProgramWorkspace', () => ({ default: () => (
+  <>
+  <button onClick={() => sessionStorage.setItem(key, JSON.stringify({ activeModule: 'planner', liveSession: live }))}>Planner</button>
   <button onClick={() => sessionStorage.setItem(key, JSON.stringify({ activeModule: 'classroom', liveSession: null }))}>End Demo Session</button>
+  </>
 ) }));
 beforeEach(() => {
   vi.useFakeTimers();
@@ -27,6 +30,14 @@ beforeEach(() => {
   api.results.mockResolvedValue({ participants: [], submissions: [] });
 });
 afterEach(() => { cleanup(); vi.useRealTimers(); });
+
+it('offers an exit from the full-screen classroom without ending the session', async () => {
+  await act(async () => { render(<WeldingDemoLiveWorkspace program={program} />); });
+  fireEvent.click(screen.getByRole('button', { name: 'Back to planner' }));
+  await act(async () => { await vi.advanceTimersByTimeAsync(300); });
+  expect(screen.queryByRole('region', { name: 'Working Live Classroom demo' })).toBeNull();
+  expect(api.end).not.toHaveBeenCalled();
+});
 
 it('ending a remote session does not recreate it before the storage poll', async () => {
   await act(async () => { render(<WeldingDemoLiveWorkspace program={program} />); });
