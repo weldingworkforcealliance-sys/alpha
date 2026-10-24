@@ -98,6 +98,8 @@ export default function WeldingDemoLiveWorkspace({ program }: { program: DemoPro
           sessionStorage.removeItem(ownerStorageKey(program.id, owner.startedAt));
         }
         if (!cancelled) {
+          creatingFor.current = null;
+          setCreating(false);
           setOwner(null);
           setResults(null);
           setReport(null);
@@ -135,6 +137,10 @@ export default function WeldingDemoLiveWorkspace({ program }: { program: DemoPro
           courseCode: liveCourse || 'DEMO',
           dayNumber: liveDay,
         });
+        if (cancelled) {
+          await endDemoClassroomSession(created.session_id, created.instructor_token);
+          return;
+        }
         const nextOwner: RemoteOwnerSession = {
           sessionId: created.session_id,
           instructorToken: created.instructor_token,
@@ -150,7 +156,7 @@ export default function WeldingDemoLiveWorkspace({ program }: { program: DemoPro
       } catch (cause) {
         if (!cancelled) setSessionError(cause instanceof Error ? cause.message : 'Unable to create the temporary Live Classroom session.');
       } finally {
-        creatingFor.current = null;
+        if (creatingFor.current === liveStart) creatingFor.current = null;
         if (!cancelled) setCreating(false);
       }
     };
@@ -252,6 +258,9 @@ export default function WeldingDemoLiveWorkspace({ program }: { program: DemoPro
     }
     sessionStorage.removeItem(ownerStorageKey(program.id, owner.startedAt));
     sessionStorage.removeItem(summaryStorageKey(program.id));
+    // Close the local session in the same render as its remote owner; waiting
+    // for the storage poll would recreate the session we just ended.
+    setGenericState((current) => current ? { ...current, liveSession: null } : current);
     setOwner(null);
     setResults(null);
     setReport(null);
@@ -263,13 +272,20 @@ export default function WeldingDemoLiveWorkspace({ program }: { program: DemoPro
 
   return (
     <>
-      <DemoProgramWorkspace program={program} />
+      <DemoProgramWorkspace program={program} remoteClassroom />
 
       {liveMode && (
-        <div className="live-overlay" role="region" aria-label="Working Live Classroom demo">
+        <div className="live-overlay" role="region" aria-label="Working Live Classroom demo"
+          style={{ top: process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging' ? 32 : 0 }}>
           <div className="live-shell">
             <header className="live-header">
               <div>
+                <button className="back-to-planner" onClick={() => {
+                  const planner = Array.from(document.querySelectorAll<HTMLButtonElement>('button')).find(
+                    (button) => button.textContent?.trim() === 'Planner' && !button.closest('.live-overlay')
+                  );
+                  planner?.click();
+                }}>Back to planner</button>
                 <span className="kicker">LTG LIVE CLASSROOM · CLOSED DEMO</span>
                 <h1>Day {genericState?.currentDay ?? 1} connected activities</h1>
                 <p>Separate phones, tablets, and computers can join this temporary session. No live school record is created.</p>
@@ -372,6 +388,7 @@ export default function WeldingDemoLiveWorkspace({ program }: { program: DemoPro
 
           <style jsx>{`
             .live-overlay { position:fixed; z-index:90; top:0; right:0; bottom:0; left:270px; overflow:auto; background:#090d10; color:#dce7eb; }
+            .back-to-planner { display:block; margin-bottom:12px; min-height:44px; }
             .live-shell { min-height:100%; padding:24px 28px 40px; background:radial-gradient(circle at top right,#102a34 0,#090d10 38%); }
             .live-header { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; padding:0 0 20px; border-bottom:1px solid #243139; }.live-header h1 { margin:5px 0; color:#fff; font-size:28px; }.live-header p { margin:0; color:#83959c; font-size:11px; }.kicker { color:#61dcff; font-size:9px; font-weight:950; letter-spacing:.12em; }.status { padding:8px 12px; border:1px solid #3c494f; border-radius:999px; color:#8a999f; font-size:10px; font-weight:950; }.status.active { border-color:#28764f; background:#103324; color:#71e8b4; }
             .session-error { display:flex; gap:10px; margin-top:14px; padding:12px 14px; border:1px solid #70404a; border-radius:8px; background:#28171c; color:#efa4b2; font-size:11px; }.session-error strong { color:#fff; }

@@ -144,7 +144,7 @@ function supportItems(day: DemoCourseDay): PlannerSupportItem[] {
   ].map(([key, label, body]) => ({ key: String(key), label: String(label), body: body as string | null | undefined }));
 }
 
-export default function DemoProgramWorkspace({ program }: { program: DemoProgram }) {
+export default function DemoProgramWorkspace({ program, remoteClassroom = false }: { program: DemoProgram; remoteClassroom?: boolean }) {
   const router = useRouter();
   const storageKey = `ltg_demo_${program.id}_full_system_v1`;
   const firstCourse = program.courses[0];
@@ -616,14 +616,14 @@ export default function DemoProgramWorkspace({ program }: { program: DemoProgram
               <>
                 <div className="classroom-session-head">
                   <div><span>{state.liveSession.courseCode} · Day {state.liveSession.dayNumber}</span><h3>{state.liveSession.title}</h3></div>
-                  <div className="join-code"><span>Student join code</span><strong>{state.liveSession.joinCode}</strong></div>
+                  {!remoteClassroom && <div className="join-code"><span>Simulated join code</span><strong>{state.liveSession.joinCode}</strong></div>}
                 </div>
-                <div className="live-grid">
+                {!remoteClassroom && <div className="live-grid">
                   <article><span>CONNECTED</span><strong>{program.students.length}</strong><small>students</small></article>
                   <article><span>RESPONDED</span><strong>{Math.max(1, program.students.length - 1)}</strong><small>students</small></article>
                   <article><span>NEEDS REVIEW</span><strong>1</strong><small>response</small></article>
                   <article><span>COMPLETE</span><strong>{Math.round(((program.students.length - 1) / program.students.length) * 100)}%</strong><small>activity</small></article>
-                </div>
+                </div>}
                 <div className="session-actions"><button onClick={() => update({ liveSession: null })}>End Demo Session</button></div>
               </>
             )}

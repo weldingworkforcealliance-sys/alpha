@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getSupabase } from '@/lib/supabase-browser';
-import { eligibleCompletedHours, isActiveOpenPunch, isUnresolvedOpenPunch } from '@/lib/timeclock-safety';
+import { canRecoverPriorDayPunch, eligibleCompletedHours, isActiveOpenPunch, isUnresolvedOpenPunch } from '@/lib/timeclock-safety';
 import { notifyTimeclockChanged, subscribeTimeclockChanges } from '@/lib/timeclock-events';
 
 type Employee = {
@@ -17,6 +17,7 @@ type TimeEntry = {
   id: string;
   clock_in_at: string;
   clock_out_at: string | null;
+  requires_correction?: boolean;
 };
 
 function localDayBounds() {
@@ -108,15 +109,16 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
       const [todayResult, openResult] = await Promise.all([
         supabase
           .from('timeclock_entries')
-          .select('id,clock_in_at,clock_out_at')
+          .select('id,clock_in_at,clock_out_at,requires_correction')
           .eq('employee_id', nextEmployee.id)
           .gte('clock_in_at', start.toISOString())
           .order('clock_in_at', { ascending: false }),
         supabase
           .from('timeclock_entries')
-          .select('id,clock_in_at,clock_out_at')
+          .select('id,clock_in_at,clock_out_at,requires_correction')
           .eq('employee_id', nextEmployee.id)
           .is('clock_out_at', null)
+          .eq('requires_correction', false)
           .order('clock_in_at', { ascending: false })
           .limit(1)
           .maybeSingle(),
@@ -162,9 +164,11 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
   const activeOpen = Boolean(openEntry && isActiveOpenPunch(openEntry, now));
   const unresolvedOpen = Boolean(openEntry && isUnresolvedOpenPunch(openEntry, now));
 
+  const recoverable = canRecoverPriorDayPunch(openEntry, now);
+
   const handlePunch = async () => {
-    // A stale session must be corrected by a manager, never clocked out now.
-    if (!employee || busy || loading || error || !employee.clocking_enabled || unresolvedOpen) return;
+    // Recover prior-day punches through clock-in; never fabricate a clock-out.
+    if (!employee || busy || loading || error || !employee.clocking_enabled || (unresolvedOpen && !recoverable)) return;
     setBusy(true);
     setError('');
     try {
@@ -228,7 +232,7 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
               <strong>{unresolvedOpen ? 'Previous Punch Needs Review' : activeOpen ? 'Clocked In' : 'Clocked Out'}</strong>
               <span>
                 {unresolvedOpen && openEntry
-                  ? `Previous punch from ${new Date(openEntry.clock_in_at).toLocaleString('en-US')} must be corrected by a manager.`
+                  ? `Previous punch from ${new Date(openEntry.clock_in_at).toLocaleString('en-US')} needs manager correction. Start New Shift preserves it for review.`
                   : activeOpen && openEntry
                     ? `Since ${formatClockTime(openEntry.clock_in_at)}`
                     : 'You are not currently on the clock.'}
@@ -238,9 +242,9 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
               type="button"
               className="ltg-punch-primary"
               onClick={handlePunch}
-              disabled={busy || Boolean(error) || !employee.clocking_enabled || unresolvedOpen}
+              disabled={busy || Boolean(error) || !employee.clocking_enabled || (unresolvedOpen && !recoverable)}
             >
-              {busy ? 'Working…' : unresolvedOpen ? 'Review Required' : activeOpen ? 'Clock Out' : 'Clock In'}
+              {busy ? 'Working…' : recoverable ? 'Start New Shift' : unresolvedOpen ? 'Review Required' : activeOpen ? 'Clock Out' : 'Clock In'}
             </button>
           </div>
         )}

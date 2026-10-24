@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  canRecoverPriorDayPunch,
   DEFAULT_REVIEW_HOURS,
   eligibleCompletedHours,
   eligibleWorkbookHours,
@@ -25,10 +26,10 @@ describe('time-clock stale-session protections', () => {
     expect(eligibleCompletedHours(anthony)).toBe(0);
   });
 
-  it('permits valid current and overnight work while requiring review after the threshold', () => {
+  it('matches the production prior-day boundary and retains same-day long-shift review', () => {
     const clockIn = at('2026-10-11T22:00:00-04:00');
     const open = { clock_in_at: clockIn, clock_out_at: null };
-    expect(isActiveOpenPunch(open, Date.parse('2026-10-12T02:00:00-04:00'))).toBe(true);
+    expect(isActiveOpenPunch(open, Date.parse('2026-10-12T02:00:00-04:00'))).toBe(false);
     expect(isUnresolvedOpenPunch(open, Date.parse('2026-10-12T14:00:01-04:00'))).toBe(true);
     expect(isActiveOpenPunch(open, Date.parse('2026-10-12T14:00:00-04:00'))).toBe(false);
     // An open shift that starts today can reach exactly 16 hours before
@@ -46,9 +47,9 @@ describe('time-clock stale-session protections', () => {
     expect(isUnresolvedOpenPunch(overnight, nextMorning)).toBe(true);
     expect(isActiveOpenPunch(overnight, nextMorning)).toBe(false);
 
-    // A legitimate short overnight shift is not blocked simply at midnight.
+    // The current production RPC requires recovery after New York midnight.
     const nightShift = { clock_in_at: at('2026-10-12T22:00:00-04:00'), clock_out_at: null };
-    expect(isActiveOpenPunch(nightShift, Date.parse('2026-10-13T06:00:00-04:00'))).toBe(true);
+    expect(isActiveOpenPunch(nightShift, Date.parse('2026-10-13T06:00:00-04:00'))).toBe(false);
     expect(isUnresolvedOpenPunch(nightShift, Date.parse('2026-10-13T09:00:00-04:00'))).toBe(true);
   });
 
@@ -120,4 +121,18 @@ describe('weekly Excel payroll exception isolation', () => {
     expect(punchExceptions(samples[3]).join(' ')).toContain('EXCLUDED');
     expect(punchExceptions(samples[4]).join(' ')).toContain('EXCLUDED');
   });
+});
+
+
+describe('production overdue recovery contract', () => {
+ it('uses New York midnight regardless of the browser timezone', () => {
+  const entry = { clock_in_at: '2026-10-23T23:00:00-04:00', clock_out_at: null };
+  expect(canRecoverPriorDayPunch(entry, Date.parse('2026-10-24T03:59:59Z'))).toBe(false);
+  expect(canRecoverPriorDayPunch(entry, Date.parse('2026-10-24T04:00:00Z'))).toBe(true);
+  expect(canRecoverPriorDayPunch({ ...entry, clock_out_at: '2026-10-24T03:30:00Z' })).toBe(false);
+  expect(canRecoverPriorDayPunch({ clock_in_at: 'invalid', clock_out_at: null })).toBe(false);
+ });
+ it('does not count a completed entry still marked for correction', () => {
+  expect(eligibleCompletedHours({ clock_in_at: '2026-10-15T12:09:00Z', clock_out_at: '2026-10-15T18:10:00Z', requires_correction: true })).toBe(0);
+ });
 });

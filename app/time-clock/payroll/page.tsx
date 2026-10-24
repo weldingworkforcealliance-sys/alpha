@@ -46,6 +46,7 @@ type ReportEntry = {
   clock_in_method_snapshot: string;
   clock_out_method_snapshot: string | null;
   hours_snapshot: number;
+  requires_correction_snapshot?: boolean;
   adjustment_count: number;
   open_shift: boolean;
   long_shift: boolean;
@@ -210,7 +211,7 @@ export default function WeeklyTimeReportPage() {
       supabase
         .from('timeclock_weekly_report_entries')
         .select(
-          'id,report_id,report_line_id,employee_id,clock_in_at_snapshot,clock_out_at_snapshot,clock_in_method_snapshot,clock_out_method_snapshot,hours_snapshot,adjustment_count,open_shift,long_shift,cross_midnight'
+          'id,report_id,report_line_id,employee_id,clock_in_at_snapshot,clock_out_at_snapshot,clock_in_method_snapshot,clock_out_method_snapshot,hours_snapshot,adjustment_count,open_shift,long_shift,cross_midnight,requires_correction_snapshot'
         )
         .eq('report_id', selectedReportId)
         .order('clock_in_at_snapshot'),
@@ -518,7 +519,7 @@ export default function WeeklyTimeReportPage() {
 
                     {canManageSelected && selectedReport.status === 'draft' && (
                       <button
-                        disabled={busy || selectedReport.open_shift_count > 0}
+                        disabled={busy || selectedReport.open_shift_count > 0 || selectedReport.long_shift_count > 0 || entries.some((entry) => entry.requires_correction_snapshot)}
                         onClick={finalizeReport}
                       >
                         Finalize Week
@@ -555,9 +556,12 @@ export default function WeeklyTimeReportPage() {
 
                 {(selectedReport.open_shift_count > 0 ||
                   selectedReport.adjusted_entry_count > 0 ||
-                  selectedReport.long_shift_count > 0) && (
+                  selectedReport.long_shift_count > 0 || entries.some((entry) => entry.requires_correction_snapshot)) && (
                   <div className={styles.exceptions}>
                     <strong>Review flags</strong>
+                    {entries.some((entry) => entry.requires_correction_snapshot) && (
+                      <em>Corrections are excluded from totals. Resolve them and regenerate this draft before finalization.</em>
+                    )}
                     <span>{selectedReport.open_shift_count} open shift(s)</span>
                     <span>
                       {selectedReport.adjusted_entry_count} adjusted entr
@@ -644,7 +648,7 @@ export default function WeeklyTimeReportPage() {
                               <td>{new Date(entry.clock_in_at_snapshot).toLocaleDateString('en-US')}</td>
                               <td>{formatTime(entry.clock_in_at_snapshot)}</td>
                               <td>{formatTime(entry.clock_out_at_snapshot)}</td>
-                              <td>{Number(entry.hours_snapshot).toFixed(2)}</td>
+                              <td>{Number(entry.hours_snapshot).toFixed(2)}{entry.requires_correction_snapshot || entry.open_shift || entry.long_shift ? ' (excluded)' : ''}</td>
                               <td>
                                 {entry.clock_in_method_snapshot}
                                 {entry.clock_out_method_snapshot
@@ -653,6 +657,7 @@ export default function WeeklyTimeReportPage() {
                               </td>
                               <td>
                                 {entry.open_shift ? 'OPEN ' : ''}
+                                {entry.requires_correction_snapshot ? 'CORRECTION REQUIRED ' : ''}
                                 {entry.adjustment_count > 0
                                   ? `Adjusted(${entry.adjustment_count}) `
                                   : ''}

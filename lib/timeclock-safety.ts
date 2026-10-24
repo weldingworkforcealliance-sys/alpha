@@ -22,7 +22,16 @@ const HOUR_MS = 3_600_000;
 export type ClockInterval = {
   clock_in_at: string;
   clock_out_at: string | null;
+  requires_correction?: boolean;
 };
+
+/** Matches the production recovery RPC's New York calendar-day boundary. */
+export function canRecoverPriorDayPunch(entry: ClockInterval | null | undefined, nowMs = Date.now()): boolean {
+  if (!entry || entry.clock_out_at !== null) return false;
+  const start = Date.parse(entry.clock_in_at);
+  return Number.isFinite(start) && start < nowMs &&
+    localCalendarDay(start, DEFAULT_TIMEZONE) !== localCalendarDay(nowMs, DEFAULT_TIMEZONE);
+}
 
 export function recordedShiftHours(entry: ClockInterval, nowMs = Date.now()): number | null {
   const start = Date.parse(entry.clock_in_at);
@@ -38,6 +47,7 @@ export function isUnresolvedOpenPunch(
   timeZone = DEFAULT_TIMEZONE,
 ): boolean {
   if (entry.clock_out_at !== null) return false;
+  if (entry.requires_correction || canRecoverPriorDayPunch(entry, nowMs)) return true;
   const hours = recordedShiftHours(entry, nowMs);
   if (hours === null || hours > reviewHours) return true;
 
@@ -62,7 +72,7 @@ export function eligibleCompletedHours(
   entry: ClockInterval,
   reviewHours = DEFAULT_REVIEW_HOURS,
 ): number {
-  if (entry.clock_out_at === null) return 0;
+  if (entry.clock_out_at === null || entry.requires_correction) return 0;
   const hours = recordedShiftHours(entry);
   return hours !== null && hours <= reviewHours ? hours : 0;
 }
