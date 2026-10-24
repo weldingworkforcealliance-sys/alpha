@@ -98,6 +98,8 @@ export default function WeldingDemoLiveWorkspace({ program }: { program: DemoPro
           sessionStorage.removeItem(ownerStorageKey(program.id, owner.startedAt));
         }
         if (!cancelled) {
+          creatingFor.current = null;
+          setCreating(false);
           setOwner(null);
           setResults(null);
           setReport(null);
@@ -135,6 +137,10 @@ export default function WeldingDemoLiveWorkspace({ program }: { program: DemoPro
           courseCode: liveCourse || 'DEMO',
           dayNumber: liveDay,
         });
+        if (cancelled) {
+          await endDemoClassroomSession(created.session_id, created.instructor_token);
+          return;
+        }
         const nextOwner: RemoteOwnerSession = {
           sessionId: created.session_id,
           instructorToken: created.instructor_token,
@@ -150,7 +156,7 @@ export default function WeldingDemoLiveWorkspace({ program }: { program: DemoPro
       } catch (cause) {
         if (!cancelled) setSessionError(cause instanceof Error ? cause.message : 'Unable to create the temporary Live Classroom session.');
       } finally {
-        creatingFor.current = null;
+        if (creatingFor.current === liveStart) creatingFor.current = null;
         if (!cancelled) setCreating(false);
       }
     };
@@ -252,6 +258,9 @@ export default function WeldingDemoLiveWorkspace({ program }: { program: DemoPro
     }
     sessionStorage.removeItem(ownerStorageKey(program.id, owner.startedAt));
     sessionStorage.removeItem(summaryStorageKey(program.id));
+    // Close the local session in the same render as its remote owner; waiting
+    // for the storage poll would recreate the session we just ended.
+    setGenericState((current) => current ? { ...current, liveSession: null } : current);
     setOwner(null);
     setResults(null);
     setReport(null);
@@ -263,7 +272,7 @@ export default function WeldingDemoLiveWorkspace({ program }: { program: DemoPro
 
   return (
     <>
-      <DemoProgramWorkspace program={program} />
+      <DemoProgramWorkspace program={program} remoteClassroom />
 
       {liveMode && (
         <div className="live-overlay" role="region" aria-label="Working Live Classroom demo">
