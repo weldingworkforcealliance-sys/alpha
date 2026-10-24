@@ -35,8 +35,8 @@ beforeEach(() => {
       { id: 'my-employee', school_id: 'mine', profile_id: 'me', display_name: 'My Employee', active: true, clocking_enabled: true },
     ],
     timeclock_entries: [
-      { id: 'other-punch', school_id: 'mine', employee_id: 'other', clock_in_at: inTime, clock_out_at: null },
-      { id: 'my-punch', school_id: 'mine', employee_id: 'my-employee', clock_in_at: inTime, clock_out_at: null },
+      { id: 'other-punch', school_id: 'mine', employee_id: 'other', clock_in_at: inTime, clock_out_at: null, requires_correction: false },
+      { id: 'my-punch', school_id: 'mine', employee_id: 'my-employee', clock_in_at: inTime, clock_out_at: null, requires_correction: false },
     ],
   };
   mock.rpc.mockImplementation(async (name: string, args: Record<string, string | null>) => {
@@ -94,7 +94,7 @@ describe('persistent sidebar punch clock', () => {
     await sidebar().findByText('Previous Punch Needs Review');
     expect(sidebar().getByText('My Employee')).toBeTruthy();
     expect(sidebar().getByRole('link', { name: 'Review Previous Punch →' }).getAttribute('href')).toBe('/time-clock?school=mine&review=my-punch');
-    expect((sidebar().getByRole('button', { name: 'Review Required' }) as HTMLButtonElement).disabled).toBe(true);
+    expect((sidebar().getByRole('button', { name: 'Start New Shift' }) as HTMLButtonElement).disabled).toBe(false);
   });
 
   it('opens the linked employee correction and refreshes the sidebar after saving', async () => {
@@ -175,4 +175,14 @@ describe('persistent sidebar punch clock', () => {
     expect(sidebar().queryByText('Previous Punch Needs Review')).toBeNull();
     expect(sidebar().getByText('Clocked Out')).toBeTruthy();
   });
+});
+
+
+it('starts a fresh shift through recovery without fabricating an old clock-out', async () => {
+ render(<DashboardPunchClock pathname="/dashboard" />);
+ const button = await sidebar().findByRole('button', { name: 'Start New Shift' });
+ fireEvent.click(button);
+ await waitFor(() => expect(mock.rpc).toHaveBeenCalledWith('timeclock_clock_in', { p_employee_id: 'my-employee', p_pin: null }));
+ expect(mock.rpc.mock.calls.some(([name]) => name === 'timeclock_clock_out')).toBe(false);
+ expect(rows.timeclock_entries[1].clock_out_at).toBeNull();
 });

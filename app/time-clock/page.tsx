@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
-import { eligibleCompletedHours, isUnresolvedOpenPunch } from '@/lib/timeclock-safety';
+import { canRecoverPriorDayPunch, eligibleCompletedHours, isUnresolvedOpenPunch } from '@/lib/timeclock-safety';
 import { notifyTimeclockChanged, subscribeTimeclockChanges } from '@/lib/timeclock-events';
 import { PAYROLL_ROLES, SCHOOL_MANAGEMENT_ROLES } from '@/lib/access-roles';
 import styles from './time-clock.module.css';
@@ -25,6 +25,7 @@ type TimeEntry = {
   employee_id: string;
   clock_in_at: string;
   clock_out_at: string | null;
+  requires_correction?: boolean;
   clock_in_method: string;
   clock_out_method: string | null;
   notes: string | null;
@@ -171,7 +172,7 @@ export default function TimeClockPage() {
   const openByEmployee = useMemo(() => {
     const map = new Map<string, TimeEntry>();
     entries.forEach((entry) => {
-      if (!entry.clock_out_at) map.set(entry.employee_id, entry);
+      if (!entry.clock_out_at && !entry.requires_correction) map.set(entry.employee_id, entry);
     });
     return map;
   }, [entries]);
@@ -233,14 +234,14 @@ export default function TimeClockPage() {
           .order('display_name'),
         supabase
           .from('timeclock_entries')
-          .select('id,school_id,employee_id,clock_in_at,clock_out_at,clock_in_method,clock_out_method,notes')
+          .select('id,school_id,employee_id,clock_in_at,clock_out_at,clock_in_method,clock_out_method,notes,requires_correction')
           .eq('school_id', schoolId)
           .gte('clock_in_at', startIso)
           .lte('clock_in_at', endIso)
           .order('clock_in_at', { ascending: false }),
         supabase
           .from('timeclock_entries')
-          .select('id,school_id,employee_id,clock_in_at,clock_out_at,clock_in_method,clock_out_method,notes')
+          .select('id,school_id,employee_id,clock_in_at,clock_out_at,clock_in_method,clock_out_method,notes,requires_correction')
           .eq('school_id', schoolId)
           .is('clock_out_at', null),
       ]);
@@ -370,7 +371,8 @@ export default function TimeClockPage() {
 
   const handlePunch = async (employee: Employee) => {
     const openEntry = openByEmployee.get(employee.id);
-    if (openEntry && isUnresolvedOpenPunch(openEntry, Date.now())) {
+    const recoverable = canRecoverPriorDayPunch(openEntry);
+    if (openEntry && isUnresolvedOpenPunch(openEntry, Date.now()) && !recoverable) {
       setError('A previous shift is still open and requires a manager correction. Do not clock out at the current time.');
       return;
     }
@@ -391,14 +393,14 @@ export default function TimeClockPage() {
     setError('');
     setNotice('');
     try {
-      const functionName = openEntry ? 'timeclock_clock_out' : 'timeclock_clock_in';
+      const functionName = openEntry && !recoverable ? 'timeclock_clock_out' : 'timeclock_clock_in';
       const { error: rpcError } = await supabase.rpc(functionName, {
         p_employee_id: employee.id,
         p_pin: enteredPin,
       });
       if (rpcError) throw rpcError;
 
-      setNotice(`${employee.display_name} ${openEntry ? 'clocked out' : 'clocked in'} successfully.`);
+      setNotice(`${employee.display_name} ${openEntry && !recoverable ? 'clocked out' : 'clocked in'} successfully.`);
       setPin('');
       notifyTimeclockChanged('workspace');
       await loadSchoolData();
@@ -535,7 +537,7 @@ export default function TimeClockPage() {
         clockIn: formatTime(entry.clock_in_at),
         clockOut: formatTime(entry.clock_out_at),
         hours: Number(hoursBetween(entry.clock_in_at, entry.clock_out_at, now).toFixed(4)),
-        status: entry.clock_out_at ? 'Complete' : 'Clocked In',
+        status: entry.requires_correction ? 'Correction Required' : entry.clock_out_at ? 'Complete' : 'Clocked In',
         methodIn: entry.clock_in_method,
         methodOut: entry.clock_out_method ?? '',
         entryId: entry.id,
@@ -644,7 +646,7 @@ export default function TimeClockPage() {
                 {myUnresolved && (
                   <div className={styles.reviewNotice} role="alert">
                     A previous clock-in from {formatDate(openByEmployee.get(myEmployee.id)!.clock_in_at)} is unresolved.
-                    Ask a manager to record the actual clock-out time before punching again.
+                    Start New Shift preserves the previous punch for a manager to record the actual clock-out time.
                     This open shift is excluded from payroll totals.
                     {isManager && <button type="button" disabled={actionLoading} onClick={() => beginAdjustment(openByEmployee.get(myEmployee.id)!)}>Correct My Previous Punch</button>}
                   </div>
@@ -652,10 +654,10 @@ export default function TimeClockPage() {
 
                 <button
                   className={openByEmployee.has(myEmployee.id) ? styles.clockOutButton : styles.clockInButton}
-                  disabled={actionLoading || !myEmployee.clocking_enabled || myUnresolved}
+                  disabled={actionLoading || !myEmployee.clocking_enabled || (myUnresolved && !canRecoverPriorDayPunch(openByEmployee.get(myEmployee.id), now))}
                   onClick={() => handlePunch(myEmployee)}
                 >
-                  {myUnresolved ? 'REVIEW REQUIRED' : openByEmployee.has(myEmployee.id) ? 'CLOCK OUT' : 'CLOCK IN'}
+                  {canRecoverPriorDayPunch(openByEmployee.get(myEmployee.id), now) ? 'START NEW SHIFT' : myUnresolved ? 'REVIEW REQUIRED' : openByEmployee.has(myEmployee.id) ? 'CLOCK OUT' : 'CLOCK IN'}
                 </button>
 
                 <div className={styles.pinRow}>
@@ -728,13 +730,13 @@ export default function TimeClockPage() {
                     </label>
                   )}
 
-                  {kioskUnresolved && <div className={styles.reviewNotice}>This employee has an unresolved earlier shift. A manager must correct it before clocking again.</div>}
+                  {kioskUnresolved && <div className={styles.reviewNotice}>This employee has an unresolved earlier shift. Start New Shift preserves it for manager correction.</div>}
                   <button
                     className={openByEmployee.has(selectedEmployee.id) ? styles.clockOutButton : styles.clockInButton}
-                    disabled={actionLoading || !selectedEmployee.clocking_enabled || kioskUnresolved}
+                    disabled={actionLoading || !selectedEmployee.clocking_enabled || (kioskUnresolved && !canRecoverPriorDayPunch(openByEmployee.get(selectedEmployee.id), now))}
                     onClick={() => handlePunch(selectedEmployee)}
                   >
-                    {kioskUnresolved ? 'REVIEW REQUIRED' : openByEmployee.has(selectedEmployee.id) ? 'CLOCK OUT' : 'CLOCK IN'}
+                    {canRecoverPriorDayPunch(openByEmployee.get(selectedEmployee.id), now) ? 'START NEW SHIFT' : kioskUnresolved ? 'REVIEW REQUIRED' : openByEmployee.has(selectedEmployee.id) ? 'CLOCK OUT' : 'CLOCK IN'}
                   </button>
                 </>
               )}
@@ -924,7 +926,7 @@ export default function TimeClockPage() {
                       <td>{hoursBetween(entry.clock_in_at, entry.clock_out_at, now).toFixed(2)}{longCompleted || staleOpen ? ' (excluded)' : ''}</td>
                       <td>
                         <span className={longCompleted || staleOpen ? styles.statusReview : entry.clock_out_at ? styles.completePill : styles.openPill}>
-                          {longCompleted ? 'REVIEW LONG SHIFT' : staleOpen ? 'REVIEW OLD PUNCH' : entry.clock_out_at ? 'Complete' : 'Clocked In'}
+                          {entry.requires_correction ? 'CORRECTION REQUIRED' : longCompleted ? 'REVIEW LONG SHIFT' : staleOpen ? 'REVIEW OLD PUNCH' : entry.clock_out_at ? 'Complete' : 'Clocked In'}
                         </span>
                       </td>
                       {isManager && (
