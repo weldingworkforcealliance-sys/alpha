@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
 import { finishPasswordSignIn } from '@/lib/mfa-login';
 
+const IS_STAGING = process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging';
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -70,7 +72,7 @@ export default function LoginPage() {
           <div className="mode-stack" aria-label="Platform access modes">
             <div className="mode-row live">
               <span className="mode-dot" />
-              <div><strong>Live Platform</strong><small>Production planner and reporting</small></div>
+              <div><strong>{IS_STAGING ? 'Staging Platform' : 'Live Platform'}</strong><small>{IS_STAGING ? 'Isolated testing and verification' : 'Production planner and reporting'}</small></div>
             </div>
             <div className="mode-row training-row">
               <span className="mode-dot" />
@@ -122,7 +124,7 @@ export default function LoginPage() {
             {error && <div className="error">{error}</div>}
 
             <button className="primary signin-button" type="submit" disabled={isLoading}>
-              {isLoading ? 'Signing in…' : 'Enter Live Platform'}
+              {isLoading ? 'Signing in…' : IS_STAGING ? 'Enter Staging Platform' : 'Enter Live Platform'}
             </button>
           </form>
 
