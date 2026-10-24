@@ -275,7 +275,8 @@ export default function WeldingDemoLiveWorkspace({ program }: { program: DemoPro
       <DemoProgramWorkspace program={program} remoteClassroom />
 
       {liveMode && (
-        <div className="live-overlay" role="region" aria-label="Working Live Classroom demo">
+        <div className="live-overlay" role="region" aria-label="Working Live Classroom demo"
+          style={{ top: process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging' ? 32 : 0 }}>
           <div className="live-shell">
             <header className="live-header">
               <div>
