@@ -11,7 +11,7 @@ export default function PlannerLayout({ children }: { children: ReactNode }) {
       <PlannerScheduleStartGuard />
       <DayCompletionNotesPanel />
       {process.env.NEXT_PUBLIC_SUPABASE_URL === 'https://ezlvivmeneefiiwqwgqd.supabase.co' && (
-        <p><Link href="/signoffs">Instructor safety and QC signoffs — staging review</Link></p>
+        <p><a href="/pvhs-review/index.html">PVHS 55-day planners and proposed dates</a> · <Link href="/signoffs">Instructor safety and QC signoffs — staging review</Link></p>
       )}
       {children}
     </>

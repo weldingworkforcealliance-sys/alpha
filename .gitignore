@@ -43,3 +43,6 @@ yarn-error.log*
 Thumbs.db
 .AppleDouble
 .LSOverride
+
+# Local Netlify deployment state
+.netlify/
