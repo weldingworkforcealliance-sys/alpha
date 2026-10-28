@@ -1,0 +1,1116 @@
+{
+  "status": "proposal_only_not_for_import",
+  "basis": "User start December 21, 2026; supplied PVHS calendar approved February 24, 2026",
+  "source_path": "C:\\Users\\weldi\\Downloads\\PVRHSAcademicCalendar26-27.pdf",
+  "source_sha256": "0dcf3f322dd3d27fa23a4b96650557301c5a5b0ae915e9ad74f79e2c2dbd3b3d",
+  "assumptions": [
+    "Monday-Friday student days; closed and staff-only days excluded",
+    "Early-dismissal and exam days counted provisionally as one meeting per paired course",
+    "WLD120/150 starts the next student day after WLD114/115 day55",
+    "Both cohorts share proposed dates; 60/120-minute allocations require confirmation",
+    "No weather or emergency calendar changes assumed"
+  ],
+  "available_student_days_through_june18": 112,
+  "rows": [
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 1,
+      "proposed_date": "2026-12-21",
+      "weekday": "Monday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 2,
+      "proposed_date": "2026-12-22",
+      "weekday": "Tuesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 3,
+      "proposed_date": "2026-12-23",
+      "weekday": "Wednesday",
+      "calendar_flag": "Early dismissal",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 4,
+      "proposed_date": "2027-01-04",
+      "weekday": "Monday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 5,
+      "proposed_date": "2027-01-05",
+      "weekday": "Tuesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 6,
+      "proposed_date": "2027-01-06",
+      "weekday": "Wednesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 7,
+      "proposed_date": "2027-01-07",
+      "weekday": "Thursday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 8,
+      "proposed_date": "2027-01-08",
+      "weekday": "Friday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 9,
+      "proposed_date": "2027-01-11",
+      "weekday": "Monday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 10,
+      "proposed_date": "2027-01-12",
+      "weekday": "Tuesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 11,
+      "proposed_date": "2027-01-13",
+      "weekday": "Wednesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 12,
+      "proposed_date": "2027-01-14",
+      "weekday": "Thursday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 13,
+      "proposed_date": "2027-01-15",
+      "weekday": "Friday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 14,
+      "proposed_date": "2027-01-19",
+      "weekday": "Tuesday",
+      "calendar_flag": "Exams / early dismissal",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 15,
+      "proposed_date": "2027-01-20",
+      "weekday": "Wednesday",
+      "calendar_flag": "Exams / early dismissal",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 16,
+      "proposed_date": "2027-01-21",
+      "weekday": "Thursday",
+      "calendar_flag": "Exams / early dismissal",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 17,
+      "proposed_date": "2027-01-22",
+      "weekday": "Friday",
+      "calendar_flag": "Exams / early dismissal",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 18,
+      "proposed_date": "2027-01-25",
+      "weekday": "Monday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 19,
+      "proposed_date": "2027-01-26",
+      "weekday": "Tuesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 20,
+      "proposed_date": "2027-01-27",
+      "weekday": "Wednesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 21,
+      "proposed_date": "2027-01-28",
+      "weekday": "Thursday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 22,
+      "proposed_date": "2027-01-29",
+      "weekday": "Friday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 23,
+      "proposed_date": "2027-02-01",
+      "weekday": "Monday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 24,
+      "proposed_date": "2027-02-02",
+      "weekday": "Tuesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 25,
+      "proposed_date": "2027-02-03",
+      "weekday": "Wednesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 26,
+      "proposed_date": "2027-02-04",
+      "weekday": "Thursday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 27,
+      "proposed_date": "2027-02-05",
+      "weekday": "Friday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 28,
+      "proposed_date": "2027-02-08",
+      "weekday": "Monday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 29,
+      "proposed_date": "2027-02-09",
+      "weekday": "Tuesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 30,
+      "proposed_date": "2027-02-10",
+      "weekday": "Wednesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 31,
+      "proposed_date": "2027-02-11",
+      "weekday": "Thursday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 32,
+      "proposed_date": "2027-02-12",
+      "weekday": "Friday",
+      "calendar_flag": "Early dismissal",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 33,
+      "proposed_date": "2027-02-17",
+      "weekday": "Wednesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 34,
+      "proposed_date": "2027-02-18",
+      "weekday": "Thursday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 35,
+      "proposed_date": "2027-02-19",
+      "weekday": "Friday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 36,
+      "proposed_date": "2027-02-22",
+      "weekday": "Monday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 37,
+      "proposed_date": "2027-02-23",
+      "weekday": "Tuesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 38,
+      "proposed_date": "2027-02-24",
+      "weekday": "Wednesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 39,
+      "proposed_date": "2027-02-25",
+      "weekday": "Thursday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 40,
+      "proposed_date": "2027-02-26",
+      "weekday": "Friday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 41,
+      "proposed_date": "2027-03-01",
+      "weekday": "Monday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 42,
+      "proposed_date": "2027-03-02",
+      "weekday": "Tuesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 43,
+      "proposed_date": "2027-03-03",
+      "weekday": "Wednesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 44,
+      "proposed_date": "2027-03-04",
+      "weekday": "Thursday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 45,
+      "proposed_date": "2027-03-05",
+      "weekday": "Friday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 46,
+      "proposed_date": "2027-03-08",
+      "weekday": "Monday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 47,
+      "proposed_date": "2027-03-10",
+      "weekday": "Wednesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 48,
+      "proposed_date": "2027-03-11",
+      "weekday": "Thursday",
+      "calendar_flag": "Early dismissal",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 49,
+      "proposed_date": "2027-03-12",
+      "weekday": "Friday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 50,
+      "proposed_date": "2027-03-15",
+      "weekday": "Monday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 51,
+      "proposed_date": "2027-03-16",
+      "weekday": "Tuesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 52,
+      "proposed_date": "2027-03-17",
+      "weekday": "Wednesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 53,
+      "proposed_date": "2027-03-18",
+      "weekday": "Thursday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 54,
+      "proposed_date": "2027-03-19",
+      "weekday": "Friday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 114 / WLD 115",
+      "instructional_day": 55,
+      "proposed_date": "2027-03-22",
+      "weekday": "Monday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 1,
+      "proposed_date": "2027-03-23",
+      "weekday": "Tuesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 2,
+      "proposed_date": "2027-03-24",
+      "weekday": "Wednesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 3,
+      "proposed_date": "2027-03-25",
+      "weekday": "Thursday",
+      "calendar_flag": "Early dismissal",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 4,
+      "proposed_date": "2027-04-05",
+      "weekday": "Monday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 5,
+      "proposed_date": "2027-04-06",
+      "weekday": "Tuesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 6,
+      "proposed_date": "2027-04-07",
+      "weekday": "Wednesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 7,
+      "proposed_date": "2027-04-08",
+      "weekday": "Thursday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 8,
+      "proposed_date": "2027-04-09",
+      "weekday": "Friday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 9,
+      "proposed_date": "2027-04-12",
+      "weekday": "Monday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 10,
+      "proposed_date": "2027-04-13",
+      "weekday": "Tuesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 11,
+      "proposed_date": "2027-04-14",
+      "weekday": "Wednesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 12,
+      "proposed_date": "2027-04-15",
+      "weekday": "Thursday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 13,
+      "proposed_date": "2027-04-16",
+      "weekday": "Friday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 14,
+      "proposed_date": "2027-04-19",
+      "weekday": "Monday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 15,
+      "proposed_date": "2027-04-20",
+      "weekday": "Tuesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 16,
+      "proposed_date": "2027-04-21",
+      "weekday": "Wednesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 17,
+      "proposed_date": "2027-04-22",
+      "weekday": "Thursday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 18,
+      "proposed_date": "2027-04-23",
+      "weekday": "Friday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 19,
+      "proposed_date": "2027-04-26",
+      "weekday": "Monday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 20,
+      "proposed_date": "2027-04-27",
+      "weekday": "Tuesday",
+      "calendar_flag": "",
+      "checkpoint": "WLD 120 QC gate 1",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 21,
+      "proposed_date": "2027-04-28",
+      "weekday": "Wednesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 22,
+      "proposed_date": "2027-04-29",
+      "weekday": "Thursday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 23,
+      "proposed_date": "2027-04-30",
+      "weekday": "Friday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 24,
+      "proposed_date": "2027-05-03",
+      "weekday": "Monday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 25,
+      "proposed_date": "2027-05-04",
+      "weekday": "Tuesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 26,
+      "proposed_date": "2027-05-05",
+      "weekday": "Wednesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 27,
+      "proposed_date": "2027-05-06",
+      "weekday": "Thursday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 28,
+      "proposed_date": "2027-05-07",
+      "weekday": "Friday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 29,
+      "proposed_date": "2027-05-10",
+      "weekday": "Monday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 30,
+      "proposed_date": "2027-05-11",
+      "weekday": "Tuesday",
+      "calendar_flag": "",
+      "checkpoint": "WLD 120 QC gate 2",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 31,
+      "proposed_date": "2027-05-12",
+      "weekday": "Wednesday",
+      "calendar_flag": "",
+      "checkpoint": "WLD 150 bend-test review",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 32,
+      "proposed_date": "2027-05-13",
+      "weekday": "Thursday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 33,
+      "proposed_date": "2027-05-14",
+      "weekday": "Friday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 34,
+      "proposed_date": "2027-05-17",
+      "weekday": "Monday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 35,
+      "proposed_date": "2027-05-18",
+      "weekday": "Tuesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 36,
+      "proposed_date": "2027-05-19",
+      "weekday": "Wednesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 37,
+      "proposed_date": "2027-05-20",
+      "weekday": "Thursday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 38,
+      "proposed_date": "2027-05-21",
+      "weekday": "Friday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 39,
+      "proposed_date": "2027-05-24",
+      "weekday": "Monday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 40,
+      "proposed_date": "2027-05-25",
+      "weekday": "Tuesday",
+      "calendar_flag": "",
+      "checkpoint": "WLD 120 QC gate 3",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 41,
+      "proposed_date": "2027-05-26",
+      "weekday": "Wednesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 42,
+      "proposed_date": "2027-05-27",
+      "weekday": "Thursday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 43,
+      "proposed_date": "2027-05-28",
+      "weekday": "Friday",
+      "calendar_flag": "Early dismissal",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 44,
+      "proposed_date": "2027-06-01",
+      "weekday": "Tuesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 45,
+      "proposed_date": "2027-06-02",
+      "weekday": "Wednesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 46,
+      "proposed_date": "2027-06-03",
+      "weekday": "Thursday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 47,
+      "proposed_date": "2027-06-04",
+      "weekday": "Friday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 48,
+      "proposed_date": "2027-06-07",
+      "weekday": "Monday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 49,
+      "proposed_date": "2027-06-08",
+      "weekday": "Tuesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 50,
+      "proposed_date": "2027-06-09",
+      "weekday": "Wednesday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 51,
+      "proposed_date": "2027-06-10",
+      "weekday": "Thursday",
+      "calendar_flag": "",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 52,
+      "proposed_date": "2027-06-11",
+      "weekday": "Friday",
+      "calendar_flag": "Exams / early dismissal",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 53,
+      "proposed_date": "2027-06-14",
+      "weekday": "Monday",
+      "calendar_flag": "Exams / early dismissal",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 54,
+      "proposed_date": "2027-06-15",
+      "weekday": "Tuesday",
+      "calendar_flag": "Exams / early dismissal",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    },
+    {
+      "pair": "WLD 120 / WLD 150",
+      "instructional_day": 55,
+      "proposed_date": "2027-06-16",
+      "weekday": "Wednesday",
+      "calendar_flag": "Exams / early dismissal",
+      "checkpoint": "",
+      "minutes_confirmed": false,
+      "status": "proposal_only"
+    }
+  ]
+}
