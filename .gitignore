@@ -52,3 +52,8 @@ Thumbs.db
 
 # Local Netlify build state
 .netlify/
+
+# Generated PVHS import batches
+/curriculum/pvhs55/live-import.sql
+/curriculum/pvhs55/live-batches/
+/scripts/prepare-pvhs55-live.py
