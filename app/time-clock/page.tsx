@@ -208,6 +208,29 @@ export default function TimeClockPage() {
     [filteredEntries]
   );
 
+  const employeeReportRows = useMemo(() => {
+    type Row = { id: string; name: string; punches: number; completedHours: number; open: number; review: number };
+    const byId = new Map<string, Row>();
+    for (const employee of employees) {
+      byId.set(employee.id, { id: employee.id, name: employee.display_name, punches: 0, completedHours: 0, open: 0, review: 0 });
+    }
+    for (const entry of filteredEntries) {
+      const row = byId.get(entry.employee_id) ?? {
+        id: entry.employee_id, name: 'Former or unknown employee', punches: 0, completedHours: 0, open: 0, review: 0,
+      };
+      row.punches += 1;
+      if (!entry.clock_out_at) {
+        row.open += 1;
+      } else {
+        const eligibleHours = eligibleCompletedHours(entry);
+        row.completedHours += eligibleHours;
+        if (eligibleHours === 0) row.review += 1;
+      }
+      byId.set(entry.employee_id, row);
+    }
+    return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
+  }, [employees, filteredEntries]);
+
   const completedReviewCount = filteredEntries.filter(
     (entry) => entry.clock_out_at !== null && eligibleCompletedHours(entry) === 0
   ).length;
@@ -541,7 +564,10 @@ export default function TimeClockPage() {
         entryId: entry.id,
         clockInAt: entry.clock_in_at,
         clockOutAt: entry.clock_out_at,
-      })), rangeStart, rangeEnd);
+      })), rangeStart, rangeEnd, employees.map((employee) => ({
+        employeeId: employee.id,
+        employee: employee.display_name,
+      })));
       const bytes = await workbook.xlsx.writeBuffer();
       const blob = new Blob([new Uint8Array(bytes)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = URL.createObjectURL(blob);
@@ -843,7 +869,7 @@ export default function TimeClockPage() {
               <h2>{canReport ? 'Attendance Report' : 'My Attendance'}</h2>
             </div>
             <div className={styles.reportActions}>
-              {canReport && <button onClick={exportWorkbook} disabled={actionLoading || filteredEntries.length === 0}>Export Weekly Excel</button>}
+              {canReport && <button onClick={exportWorkbook} disabled={actionLoading || (filteredEntries.length === 0 && employees.length === 0)}>Export Weekly Excel</button>}
               <button onClick={() => { notifyTimeclockChanged('workspace'); void loadSchoolData(); }} disabled={refreshing}>{refreshing ? 'Refreshing…' : 'Refresh'}</button>
             </div>
           </div>
@@ -862,6 +888,32 @@ export default function TimeClockPage() {
               <strong>{totalHours.toFixed(2)}</strong>
             </div>
           </div>
+
+          {canReport && (
+            <div>
+              <h3>Recorded hours by employee</h3>
+              <p>All active employees remain listed even when no punches were recorded. Missing punches require a schedule check; they do not prove an employee did not work.</p>
+              <div className={styles.tableWrap}>
+                <table>
+                  <thead><tr><th>Employee</th><th>Punches</th><th>Completed reviewed hours</th><th>Review status</th></tr></thead>
+                  <tbody>
+                    {employeeReportRows.map((row) => (
+                      <tr key={row.id}>
+                        <td><strong>{row.name}</strong></td>
+                        <td>{row.punches}</td>
+                        <td>{row.punches === 0 ? '—' : row.completedHours.toFixed(2)}</td>
+                        <td>
+                          {row.punches === 0 ? 'No punches recorded: verify schedule and missing time' :
+                            row.open || row.review ? `${row.open} open punch(es); ${row.review} shift(s) requiring review` : 'Recorded'}
+                        </td>
+                      </tr>
+                    ))}
+                    {employeeReportRows.length === 0 && <tr><td colSpan={4} className={styles.emptyCell}>No employees or punches available for this school.</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
           {adjustingEntryId && isManager && (
             <div id="time-entry-correction" ref={adjustmentRef} className={styles.adjustBox} role="region" aria-labelledby="time-entry-correction-title">
