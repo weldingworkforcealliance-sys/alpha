@@ -69,4 +69,40 @@ describe('weekly attendance workbook', () => {
     const book = buildTimeclockWorkbook([punch({ employee: '=HYPERLINK("bad")' })], '2026-09-28', '2026-09-28');
     expect(book.worksheets[0].getCell('A6').type).toBe(ExcelJS.ValueType.String);
   });
+  it('lists active employees with no punches without inventing hours or deleting raw history', () => {
+    const roster = [
+      { employeeId: 'naji', employee: 'Naji Halil' },
+      { employeeId: 'finsen', employee: 'Finsen Sierra' },
+    ];
+    const book = buildTimeclockWorkbook([], '2026-10-19', '2026-10-25', roster);
+    const week = book.getWorksheet('Week 2026-10-19')!;
+    expect(week.getCell('A6').value).toBe('Finsen Sierra');
+    expect(week.getCell('A7').value).toBe('Naji Halil');
+    expect(week.getCell('B7').value).toBe(0);
+    expect(week.getCell('I7').value).toEqual({ formula: 'SUM(B7:H7)' });
+    expect(week.getCell('J7').value).toBeNull();
+    expect(week.getCell('K7').text).toContain('No punches recorded in selected dates');
+    expect(book.getWorksheet('Raw Data')?.rowCount).toBe(1);
+  });
+
+  it('preserves historical punch-only staff and keeps active employees visible in every week', () => {
+    const punches = [
+      punch({ employeeId: 'former', employee: 'Past Employee', date: '2026-10-26' }),
+      punch({ employeeId: 'naji', employee: 'Old Profile Name', date: '2026-10-28', hours: 4 }),
+      punch({ employeeId: 'naji', employee: 'Old Profile Name', date: '2026-10-29', status: 'Clocked In', clockOut: '—', hours: 2 }),
+    ];
+    const book = buildTimeclockWorkbook(punches, '2026-10-19', '2026-11-01', [
+      { employeeId: 'naji', employee: 'Naji Halil' },
+    ]);
+    const first = book.getWorksheet('Week 2026-10-19')!;
+    expect(first.getCell('A6').value).toBe('Naji Halil');
+    expect(first.getCell('K6').text).toContain('No punches recorded');
+    const second = book.getWorksheet('Week 2026-10-26')!;
+    expect(second.getCell('A6').value).toBe('Naji Halil');
+    expect(second.getCell('A7').value).toBe('Past Employee');
+    expect(second.getCell('I6').value).toEqual({ formula: 'SUM(B6:H6)', result: 4 });
+    expect(second.getCell('K6').text).toContain('Open punch');
+    expect(book.getWorksheet('Raw Data')?.rowCount).toBe(4);
+  });
+
 });
