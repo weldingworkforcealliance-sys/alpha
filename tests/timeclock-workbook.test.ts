@@ -78,7 +78,8 @@ describe('weekly attendance workbook', () => {
     const week = book.getWorksheet('Week 2026-10-19')!;
     expect(week.getCell('A6').value).toBe('Finsen Sierra');
     expect(week.getCell('A7').value).toBe('Naji Halil');
-    expect(week.getCell('I7').value).toEqual({ formula: 'SUM(B7:H7)', result: 0 });
+    expect(week.getCell('B7').value).toBe(0);
+    expect(week.getCell('I7').value).toEqual({ formula: 'SUM(B7:H7)' });
     expect(week.getCell('J7').value).toBeNull();
     expect(week.getCell('K7').text).toContain('No punches recorded in selected dates');
     expect(book.getWorksheet('Raw Data')?.rowCount).toBe(1);
