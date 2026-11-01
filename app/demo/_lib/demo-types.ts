@@ -3,6 +3,7 @@ export type DemoModule =
   | 'agenda'
   | 'resources'
   | 'classroom'
+  | 'grading'
   | 'attendance'
   | 'review'
   | 'timeclock'
