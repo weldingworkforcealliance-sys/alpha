@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase-browser';
-import { eligibleCompletedHours, isUnresolvedOpenPunch } from '@/lib/timeclock-safety';
+import { clockErrorMessage, eligibleCompletedHours, isUnresolvedOpenPunch, preferredOpenPunch, punchAction } from '@/lib/timeclock-safety';
 import { notifyTimeclockChanged, subscribeTimeclockChanges } from '@/lib/timeclock-events';
 import { PAYROLL_ROLES, SCHOOL_MANAGEMENT_ROLES } from '@/lib/access-roles';
 import styles from './time-clock.module.css';
@@ -25,6 +25,7 @@ type TimeEntry = {
   employee_id: string;
   clock_in_at: string;
   clock_out_at: string | null;
+  requires_correction: boolean;
   clock_in_method: string;
   clock_out_method: string | null;
   notes: string | null;
@@ -171,18 +172,21 @@ export default function TimeClockPage() {
   const openByEmployee = useMemo(() => {
     const map = new Map<string, TimeEntry>();
     entries.forEach((entry) => {
-      if (!entry.clock_out_at) map.set(entry.employee_id, entry);
+      if (!entry.clock_out_at) {
+        const preferred = preferredOpenPunch([...(map.has(entry.employee_id) ? [map.get(entry.employee_id)!] : []), entry]);
+        if (preferred) map.set(entry.employee_id, preferred);
+      }
     });
     return map;
   }, [entries]);
 
   const unresolvedByEmployee = useMemo(() => {
     const map = new Map<string, TimeEntry>();
-    openByEmployee.forEach((entry, employeeId) => {
-      if (isUnresolvedOpenPunch(entry, now)) map.set(employeeId, entry);
+    entries.forEach((entry) => {
+      if ((isUnresolvedOpenPunch(entry, now) || (entry.clock_out_at === null && punchAction(entry, now) === 'in'))) map.set(entry.employee_id, entry);
     });
     return map;
-  }, [openByEmployee, now]);
+  }, [entries, now]);
 
   const myEmployee = useMemo(
     () => employees.find((employee) => employee.profile_id === userId) ?? null,
@@ -233,14 +237,14 @@ export default function TimeClockPage() {
           .order('display_name'),
         supabase
           .from('timeclock_entries')
-          .select('id,school_id,employee_id,clock_in_at,clock_out_at,clock_in_method,clock_out_method,notes')
+          .select('id,school_id,employee_id,clock_in_at,clock_out_at,clock_in_method,clock_out_method,notes,requires_correction')
           .eq('school_id', schoolId)
           .gte('clock_in_at', startIso)
           .lte('clock_in_at', endIso)
           .order('clock_in_at', { ascending: false }),
         supabase
           .from('timeclock_entries')
-          .select('id,school_id,employee_id,clock_in_at,clock_out_at,clock_in_method,clock_out_method,notes')
+          .select('id,school_id,employee_id,clock_in_at,clock_out_at,clock_in_method,clock_out_method,notes,requires_correction')
           .eq('school_id', schoolId)
           .is('clock_out_at', null),
       ]);
@@ -370,7 +374,8 @@ export default function TimeClockPage() {
 
   const handlePunch = async (employee: Employee) => {
     const openEntry = openByEmployee.get(employee.id);
-    if (openEntry && isUnresolvedOpenPunch(openEntry, Date.now())) {
+    const action = punchAction(openEntry);
+    if (action === 'review') {
       setError('A previous shift is still open and requires a manager correction. Do not clock out at the current time.');
       return;
     }
@@ -391,19 +396,19 @@ export default function TimeClockPage() {
     setError('');
     setNotice('');
     try {
-      const functionName = openEntry ? 'timeclock_clock_out' : 'timeclock_clock_in';
+      const functionName = action === 'out' ? 'timeclock_clock_out' : 'timeclock_clock_in';
       const { error: rpcError } = await supabase.rpc(functionName, {
         p_employee_id: employee.id,
         p_pin: enteredPin,
       });
       if (rpcError) throw rpcError;
 
-      setNotice(`${employee.display_name} ${openEntry ? 'clocked out' : 'clocked in'} successfully.`);
+      setNotice(`${employee.display_name} ${action === 'out' ? 'clocked out' : 'clocked in'} successfully.`);
       setPin('');
       notifyTimeclockChanged('workspace');
       await loadSchoolData();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Clock action failed';
+      const message = clockErrorMessage(err, 'Clock action failed');
       setError(message);
     } finally {
       setActionLoading(false);
@@ -556,7 +561,9 @@ export default function TimeClockPage() {
       setActionLoading(false);
     }
   };
+  const myAction = punchAction(myEmployee ? openByEmployee.get(myEmployee.id) : null, now);
   const myUnresolved = Boolean(myEmployee && unresolvedByEmployee.has(myEmployee.id));
+  const kioskAction = punchAction(selectedEmployee ? openByEmployee.get(selectedEmployee.id) : null, now);
   const kioskUnresolved = Boolean(selectedEmployee && unresolvedByEmployee.has(selectedEmployee.id));
 
   if (loading) {
@@ -601,7 +608,7 @@ export default function TimeClockPage() {
           </div>
           <div className={styles.summaryCard}>
             <span>Clocked In Now</span>
-            <strong>{openByEmployee.size - unresolvedByEmployee.size}</strong>
+            <strong>{[...openByEmployee.values()].filter(entry => punchAction(entry, now) === 'out').length}</strong>
           </div>
           <div className={styles.summaryCard}>
             <span>Completed Hours (excluding exceptions)</span>
@@ -629,12 +636,12 @@ export default function TimeClockPage() {
                     <strong>{myEmployee.display_name}</strong>
                     <span>{myEmployee.employee_code || 'LTG employee'}</span>
                   </div>
-                  <div className={myUnresolved ? styles.statusReview : openByEmployee.has(myEmployee.id) ? styles.statusIn : styles.statusOut}>
-                    {myUnresolved ? 'REVIEW NEEDED' : openByEmployee.has(myEmployee.id) ? 'CLOCKED IN' : 'CLOCKED OUT'}
+                  <div className={myAction === 'out' ? styles.statusIn : myUnresolved ? styles.statusReview : styles.statusOut}>
+                    {myAction === 'out' ? 'CLOCKED IN' : myUnresolved ? 'CLOCKED OUT · PREVIOUS SHIFT NEEDS REVIEW' : 'CLOCKED OUT'}
                   </div>
                 </div>
 
-                {openByEmployee.get(myEmployee.id) && !myUnresolved && (
+                {openByEmployee.get(myEmployee.id) && myAction === 'out' && (
                   <div className={styles.elapsed}>
                     Clocked in at {formatTime(openByEmployee.get(myEmployee.id)!.clock_in_at)} ·{' '}
                     {elapsedLabel(openByEmployee.get(myEmployee.id)!.clock_in_at, now)}
@@ -643,19 +650,19 @@ export default function TimeClockPage() {
 
                 {myUnresolved && (
                   <div className={styles.reviewNotice} role="alert">
-                    A previous clock-in from {formatDate(openByEmployee.get(myEmployee.id)!.clock_in_at)} is unresolved.
-                    Ask a manager to record the actual clock-out time before punching again.
+                    A previous clock-in from {formatDate(unresolvedByEmployee.get(myEmployee.id)!.clock_in_at)} is unresolved.
+                    {myAction === 'in' ? 'You can clock in for a new shift. ' : ''}Ask a manager to correct the previous shift separately.
                     This open shift is excluded from payroll totals.
-                    {isManager && <button type="button" disabled={actionLoading} onClick={() => beginAdjustment(openByEmployee.get(myEmployee.id)!)}>Correct My Previous Punch</button>}
+                    {isManager && <button type="button" disabled={actionLoading} onClick={() => beginAdjustment(unresolvedByEmployee.get(myEmployee.id)!)}>Correct My Previous Punch</button>}
                   </div>
                 )}
 
                 <button
-                  className={openByEmployee.has(myEmployee.id) ? styles.clockOutButton : styles.clockInButton}
-                  disabled={actionLoading || !myEmployee.clocking_enabled || myUnresolved}
+                  className={myAction === 'out' ? styles.clockOutButton : styles.clockInButton}
+                  disabled={actionLoading || !myEmployee.clocking_enabled || myAction === 'review'}
                   onClick={() => handlePunch(myEmployee)}
                 >
-                  {myUnresolved ? 'REVIEW REQUIRED' : openByEmployee.has(myEmployee.id) ? 'CLOCK OUT' : 'CLOCK IN'}
+                  {myAction === 'review' ? 'REVIEW REQUIRED' : myAction === 'out' ? 'CLOCK OUT' : 'CLOCK IN'}
                 </button>
 
                 <div className={styles.pinRow}>
@@ -709,8 +716,8 @@ export default function TimeClockPage() {
                         {selectedEmployee.profile_id ? ' · LTG linked' : ' · Kiosk only'}
                       </span>
                     </div>
-                    <div className={kioskUnresolved ? styles.statusReview : openByEmployee.has(selectedEmployee.id) ? styles.statusIn : styles.statusOut}>
-                      {kioskUnresolved ? 'REVIEW' : openByEmployee.has(selectedEmployee.id) ? 'IN' : 'OUT'}
+                    <div className={kioskAction === 'out' ? styles.statusIn : kioskUnresolved ? styles.statusReview : styles.statusOut}>
+                      {kioskAction === 'out' ? 'IN' : kioskUnresolved ? 'OUT · PREVIOUS SHIFT NEEDS REVIEW' : 'OUT'}
                     </div>
                   </div>
 
@@ -728,13 +735,13 @@ export default function TimeClockPage() {
                     </label>
                   )}
 
-                  {kioskUnresolved && <div className={styles.reviewNotice}>This employee has an unresolved earlier shift. A manager must correct it before clocking again.</div>}
+                  {kioskUnresolved && <div className={styles.reviewNotice}>This employee has an unresolved earlier shift. {kioskAction === 'in' ? 'Clock in to start a new shift. ' : ''}A manager must correct the earlier shift separately.</div>}
                   <button
-                    className={openByEmployee.has(selectedEmployee.id) ? styles.clockOutButton : styles.clockInButton}
-                    disabled={actionLoading || !selectedEmployee.clocking_enabled || kioskUnresolved}
+                    className={kioskAction === 'out' ? styles.clockOutButton : styles.clockInButton}
+                    disabled={actionLoading || !selectedEmployee.clocking_enabled || kioskAction === 'review'}
                     onClick={() => handlePunch(selectedEmployee)}
                   >
-                    {kioskUnresolved ? 'REVIEW REQUIRED' : openByEmployee.has(selectedEmployee.id) ? 'CLOCK OUT' : 'CLOCK IN'}
+                    {kioskAction === 'review' ? 'REVIEW REQUIRED' : kioskAction === 'out' ? 'CLOCK OUT' : 'CLOCK IN'}
                   </button>
                 </>
               )}
@@ -914,7 +921,7 @@ export default function TimeClockPage() {
                 {filteredEntries.map((entry) => {
                   const employee = employeeById.get(entry.employee_id);
                   const longCompleted = entry.clock_out_at !== null && eligibleCompletedHours(entry) === 0;
-                  const staleOpen = isUnresolvedOpenPunch(entry, now);
+                  const staleOpen = (isUnresolvedOpenPunch(entry, now) || (entry.clock_out_at === null && punchAction(entry, now) === 'in'));
                   return (
                     <tr key={entry.id}>
                       {canReport && <td><strong>{employee?.display_name ?? 'Unknown employee'}</strong></td>}

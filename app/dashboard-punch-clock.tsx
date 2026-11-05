@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getSupabase } from '@/lib/supabase-browser';
-import { eligibleCompletedHours, isActiveOpenPunch, isUnresolvedOpenPunch } from '@/lib/timeclock-safety';
+import { clockErrorMessage, eligibleCompletedHours, punchAction } from '@/lib/timeclock-safety';
 import { notifyTimeclockChanged, subscribeTimeclockChanges } from '@/lib/timeclock-events';
 
 type Employee = {
@@ -17,6 +17,7 @@ type TimeEntry = {
   id: string;
   clock_in_at: string;
   clock_out_at: string | null;
+  requires_correction: boolean;
 };
 
 function localDayBounds() {
@@ -30,7 +31,7 @@ function localDayBounds() {
 function hoursToday(entries: TimeEntry[], now: number) {
   const { start, end } = localDayBounds();
   return entries.reduce((sum, entry) => {
-    if (entry.clock_out_at === null ? !isActiveOpenPunch(entry, now) : eligibleCompletedHours(entry) === 0) return sum;
+    if (entry.clock_out_at === null ? punchAction(entry, now) !== 'out' : eligibleCompletedHours(entry) === 0) return sum;
     const inMs = Math.max(new Date(entry.clock_in_at).getTime(), start.getTime());
     const outMs = Math.min(
       entry.clock_out_at ? new Date(entry.clock_out_at).getTime() : now,
@@ -108,15 +109,16 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
       const [todayResult, openResult] = await Promise.all([
         supabase
           .from('timeclock_entries')
-          .select('id,clock_in_at,clock_out_at')
+          .select('id,clock_in_at,clock_out_at,requires_correction')
           .eq('employee_id', nextEmployee.id)
           .gte('clock_in_at', start.toISOString())
           .order('clock_in_at', { ascending: false }),
         supabase
           .from('timeclock_entries')
-          .select('id,clock_in_at,clock_out_at')
+          .select('id,clock_in_at,clock_out_at,requires_correction')
           .eq('employee_id', nextEmployee.id)
           .is('clock_out_at', null)
+          .order('requires_correction', { ascending: true })
           .order('clock_in_at', { ascending: false })
           .limit(1)
           .maybeSingle(),
@@ -136,7 +138,7 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
       setNow(Date.now());
     } catch (err) {
       if (version !== loadVersion.current) return;
-      setError(err instanceof Error ? err.message : 'Unable to load punch clock');
+      setError(clockErrorMessage(err, 'Unable to load punch clock'));
     } finally {
       if (version === loadVersion.current) setLoading(false);
     }
@@ -159,17 +161,18 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
   }, [supported]);
 
   const todayHours = useMemo(() => hoursToday(entries, now), [entries, now]);
-  const activeOpen = Boolean(openEntry && isActiveOpenPunch(openEntry, now));
-  const unresolvedOpen = Boolean(openEntry && isUnresolvedOpenPunch(openEntry, now));
+  const action = punchAction(openEntry, now);
+  const activeOpen = action === 'out';
+  const unresolvedOpen = Boolean(openEntry && !activeOpen);
 
   const handlePunch = async () => {
-    // A stale session must be corrected by a manager, never clocked out now.
-    if (!employee || busy || loading || error || !employee.clocking_enabled || unresolvedOpen) return;
+    // The RPC flags prior-day shifts without inventing a clock-out.
+    if (!employee || busy || loading || error || !employee.clocking_enabled || punchAction(openEntry) === 'review') return;
     setBusy(true);
     setError('');
     try {
       const { error: rpcError } = await supabase.rpc(
-        activeOpen ? 'timeclock_clock_out' : 'timeclock_clock_in',
+        punchAction(openEntry) === 'out' ? 'timeclock_clock_out' : 'timeclock_clock_in',
         {
           p_employee_id: employee.id,
           p_pin: null,
@@ -179,7 +182,7 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
       notifyTimeclockChanged('sidebar');
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Clock action failed');
+      setError(clockErrorMessage(err, 'Clock action failed'));
     } finally {
       setBusy(false);
     }
@@ -228,7 +231,7 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
               <strong>{unresolvedOpen ? 'Previous Punch Needs Review' : activeOpen ? 'Clocked In' : 'Clocked Out'}</strong>
               <span>
                 {unresolvedOpen && openEntry
-                  ? `Previous punch from ${new Date(openEntry.clock_in_at).toLocaleString('en-US')} must be corrected by a manager.`
+                  ? `Previous punch from ${new Date(openEntry.clock_in_at).toLocaleString('en-US')} needs manager correction.${action === 'in' ? ' You can clock in for a new shift.' : ''}`
                   : activeOpen && openEntry
                     ? `Since ${formatClockTime(openEntry.clock_in_at)}`
                     : 'You are not currently on the clock.'}
@@ -238,9 +241,9 @@ export default function DashboardPunchClock({ pathname }: { pathname: string }) 
               type="button"
               className="ltg-punch-primary"
               onClick={handlePunch}
-              disabled={busy || Boolean(error) || !employee.clocking_enabled || unresolvedOpen}
+              disabled={busy || Boolean(error) || !employee.clocking_enabled || action === 'review'}
             >
-              {busy ? 'Working…' : unresolvedOpen ? 'Review Required' : activeOpen ? 'Clock Out' : 'Clock In'}
+              {busy ? 'Working…' : action === 'review' ? 'Review Required' : activeOpen ? 'Clock Out' : 'Clock In'}
             </button>
           </div>
         )}

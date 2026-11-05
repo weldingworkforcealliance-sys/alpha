@@ -94,7 +94,7 @@ describe('persistent sidebar punch clock', () => {
     await sidebar().findByText('Previous Punch Needs Review');
     expect(sidebar().getByText('My Employee')).toBeTruthy();
     expect(sidebar().getByRole('link', { name: 'Review Previous Punch →' }).getAttribute('href')).toBe('/time-clock?school=mine&review=my-punch');
-    expect((sidebar().getByRole('button', { name: 'Review Required' }) as HTMLButtonElement).disabled).toBe(true);
+    expect((sidebar().getByRole('button', { name: 'Clock In' }) as HTMLButtonElement).disabled).toBe(false);
   });
 
   it('opens the linked employee correction and refreshes the sidebar after saving', async () => {
@@ -175,4 +175,54 @@ describe('persistent sidebar punch clock', () => {
     expect(sidebar().queryByText('Previous Punch Needs Review')).toBeNull();
     expect(sidebar().getByText('Clocked Out')).toBeTruthy();
   });
+});
+
+describe('review recovery without payroll mutation', () => {
+  it.each([false, true])('sidebar sends clock-in for a prior-day punch flagged=%s', async (flagged) => {
+    rows.timeclock_entries[1].requires_correction = flagged;
+    const before = JSON.stringify(rows.timeclock_entries);
+    render(<DashboardPunchClock pathname="/dashboard" />);
+    const button = await sidebar().findByRole('button', { name: 'Clock In' });
+    fireEvent.click(button);
+    await waitFor(() => expect(mock.rpc).toHaveBeenCalledWith('timeclock_clock_in', { p_employee_id: 'my-employee', p_pin: null }));
+    expect(mock.rpc.mock.calls.some(([name]) => name === 'timeclock_clock_out' || name === 'timeclock_adjust_entry')).toBe(false);
+    expect(JSON.stringify(rows.timeclock_entries)).toBe(before);
+  });
+
+  it('self-service allows clock-in while the previous punch remains in review', async () => {
+    owner = false;
+    rows.timeclock_entries[1].requires_correction = true;
+    render(<TimeClockPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'CLOCK IN' }));
+    await waitFor(() => expect(mock.rpc).toHaveBeenCalledWith('timeclock_clock_in', { p_employee_id: 'my-employee', p_pin: null }));
+    expect(rows.timeclock_entries[1].clock_out_at).toBeNull();
+  });
+
+  it('uses a current shift ahead of older flagged history regardless of row order', async () => {
+    owner = false;
+    rows.timeclock_entries[1].requires_correction = true;
+    rows.timeclock_entries.unshift({ id: 'current', school_id: 'mine', employee_id: 'my-employee', clock_in_at: new Date().toISOString(), clock_out_at: null, requires_correction: false });
+    render(<TimeClockPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'CLOCK OUT' }));
+    await waitFor(() => expect(mock.rpc).toHaveBeenCalledWith('timeclock_clock_out', { p_employee_id: 'my-employee', p_pin: null }));
+  });
+
+  it('shows the actual plain-object RPC error', async () => {
+    mock.rpc.mockResolvedValue({ error: { message: 'Authentication required', code: 'P0001' } });
+    render(<DashboardPunchClock pathname="/dashboard" />);
+    fireEvent.click(await sidebar().findByRole('button', { name: 'Clock In' }));
+    await sidebar().findByText('Authentication required');
+  });
+});
+
+it('kiosk recovery retains the employee PIN requirement', async () => {
+  render(<TimeClockPage />);
+  await screen.findByText('Manager Mode');
+  const buttons = await screen.findAllByRole('button', { name: 'CLOCK IN' });
+  fireEvent.click(buttons[1]);
+  await screen.findAllByText('Enter the employee PIN before using kiosk clocking.');
+  expect(mock.rpc.mock.calls.some(([name]) => name === 'timeclock_clock_in')).toBe(false);
+  fireEvent.change(screen.getByLabelText('Employee PIN'), { target: { value: '1234' } });
+  fireEvent.click(buttons[1]);
+  await waitFor(() => expect(mock.rpc).toHaveBeenCalledWith('timeclock_clock_in', { p_employee_id: 'other', p_pin: '1234' }));
 });
