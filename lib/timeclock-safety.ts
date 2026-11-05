@@ -22,6 +22,7 @@ const HOUR_MS = 3_600_000;
 export type ClockInterval = {
   clock_in_at: string;
   clock_out_at: string | null;
+  requires_correction?: boolean;
 };
 
 export function recordedShiftHours(entry: ClockInterval, nowMs = Date.now()): number | null {
@@ -38,6 +39,7 @@ export function isUnresolvedOpenPunch(
   timeZone = DEFAULT_TIMEZONE,
 ): boolean {
   if (entry.clock_out_at !== null) return false;
+  if (entry.requires_correction) return true;
   const hours = recordedShiftHours(entry, nowMs);
   if (hours === null || hours > reviewHours) return true;
 
@@ -76,4 +78,26 @@ export function eligibleWorkbookHours(
   return status === 'Complete' && Number.isFinite(hours) && hours >= 0 && hours <= reviewHours
     ? hours
     : 0;
+}
+
+/** Match the deployed RPC's Eastern-calendar-day recovery contract. */
+export function punchAction(entry: ClockInterval | null | undefined, nowMs = Date.now()): 'in' | 'out' | 'review' {
+  if (!entry || entry.clock_out_at !== null || entry.requires_correction) return 'in';
+  const start = Date.parse(entry.clock_in_at);
+  if (!Number.isFinite(start) || start > nowMs) return 'review';
+  if (localCalendarDay(start, DEFAULT_TIMEZONE) !== localCalendarDay(nowMs, DEFAULT_TIMEZONE)) return 'in';
+  return isUnresolvedOpenPunch(entry, nowMs) ? 'review' : 'out';
+}
+
+/** Unresolved history must never replace the employee's current shift. */
+export function preferredOpenPunch<T extends ClockInterval>(entries: T[]): T | null {
+  return entries.filter(entry => entry.clock_out_at === null).sort((a, b) =>
+    Number(Boolean(a.requires_correction)) - Number(Boolean(b.requires_correction)) ||
+    Date.parse(b.clock_in_at) - Date.parse(a.clock_in_at)
+  )[0] ?? null;
+}
+
+export function clockErrorMessage(error: unknown, fallback: string): string {
+  return typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string'
+    ? error.message : fallback;
 }
