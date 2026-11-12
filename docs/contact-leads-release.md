@@ -29,10 +29,11 @@ Netlify project: `livingtguide` (`c042bc07-fa6f-426d-8256-ceffee86f5cb`). Deploy
 | `CONTACT_NOTIFICATION_EMAIL` | Configured as `corvenmor@gmail.com` |
 | `CONTACT_FROM_EMAIL` | Configured as `LTG <notifications@mail.communityweldingworkforcealliance.org>`; this sending domain is verified in Resend |
 | `CONTACT_SIGNING_SECRET` | Random secret configured |
-| `CONTACT_SUPABASE_SERVICE_ROLE_KEY` | Missing: supply the Gltg server credential, never the production key |
-| `CONTACT_RESEND_API_KEY` | Missing: supply a sending key authorized for the verified domain |
+| `CONTACT_SUPABASE_SERVICE_ROLE_KEY` | Configured as a secret for Gltg only; persistence verified |
+| `CONTACT_RESEND_API_KEY` | Configured as a secret, sending-only and restricted to the verified domain; delivery verified |
+| `CONTACT_SITE_ORIGIN` | `https://deploy-preview-148--livingtguide.netlify.app`; set the matching public origin for any other preview or future production deployment |
 
-The connected Supabase tools provide database access but not server API credentials; local Supabase CLI is not authenticated. The application deliberately disables submission while its database credential is missing. Never put either secret in a `NEXT_PUBLIC_` variable or commit it. After setting credentials, rebuild the preview. Email subjects are prefixed `[STAGING]` there.
+The user supplied the Gltg secret through Netlify. Both credentials are secret, scoped to deploy-preview only and Builds/Functions. Never put either secret in a `NEXT_PUBLIC_` variable or commit it. Email subjects are prefixed `[STAGING]`. Netlify rewrites the internal request origin, so the server validates against CONTACT_SITE_ORIGIN rather than caller-supplied forwarding headers.
 
 ## Acceptance before production
 
@@ -58,4 +59,16 @@ Production website, existing email workers, attendance, grading, payroll, and pu
 - Browser automation is unavailable in this session, so desktop/mobile screenshot review and signed-in owner browser acceptance remain unverified. Form interaction, demo preselection, attribution, error retention, and notification failure/success handling were exercised in component/unit tests.
 - Supabase's advisor reports RLS with no policies on `contact_rate_limits`: intentional server-only storage with all public/authenticated grants revoked and service-role access only. Existing unrelated staging advisor findings were left unchanged.
 
-This is a deployed **staging preview with submission disabled pending credentials**, not a production release or a verified end-to-end email delivery.
+## Completed hosted acceptance after credential setup
+
+Deployed application commit: `634e0bd729e0824279d6902f742e09fb28853937`; Netlify deploy `6af60c2c0ad011cb7670e3e9` succeeded.
+
+- Contact API challenge and actual POST succeeded (HTTP 200) through the deployed staging application. One synthetic lead remains clearly labeled “Synthetic Test School — Not a Real Lead” for review; ID `c4d2a537-a3c6-4660-8115-da338b030054`.
+- All submitted contact/institution/inquiry/attribution fields were read back correctly from Gltg. Status is New, notification status sent.
+- Resend confirms **delivered** to the designated inbox at November 12, 2026, 1:59 PM Eastern. Subject: `[STAGING] New LTG inquiry`. Provider email ID: `01a1d120-b836-7bba-95b8-73e23550ac86`.
+- Repeating the identical POST returned success without a second lead or second notification.
+- Hosted rejection tests passed: cross-origin 403, unsigned 400, oversized 413; honeypot returned success without persisting a lead.
+- Hosted owner-role transaction exercised all six pipeline stages and notes, producing six audit records before rollback. The synthetic lead remains New; test-only pipeline changes were rolled back.
+- The origin correction passed 23 focused validation/API/notification tests and lint. Earlier full-suite and build results above remain applicable; Netlify rebuilt the final application successfully.
+
+Credentials and end-to-end server submission/email delivery are verified in staging. Browser screenshot review and signed-in owner UI interaction remain separate manual acceptance items. Production has not been deployed, migrated, or configured by this work.
