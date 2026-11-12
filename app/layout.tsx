@@ -50,7 +50,7 @@ export default function RootLayout({
 }) {
   const pathname = usePathname();
   const [navOpen, setNavOpen] = useState(false);
-  const isMarketingRoute = pathname === '/';
+  const isMarketingRoute = pathname === '/' || pathname === '/contact';
   const isDemoRoute = pathname.startsWith('/demo');
   const isStudentJoin = pathname.startsWith('/join/') || pathname === '/shop/student' || pathname === '/lab/student';
   const isStudentDisplay = pathname.startsWith('/student-display/');
@@ -168,7 +168,7 @@ export default function RootLayout({
             )}
 
             <div className={hideWorkspaceNav ? 'ltg-public-content' : 'ltg-main-content'}>
-              {!isDemoRoute && (
+              {!isDemoRoute && pathname !== '/contact' && (
                 <>
                   {pathname === '/dashboard' && <DashboardHero />}
                   {!isStudentDisplay && <CohortWorkspaceBar pathname={pathname} />}
