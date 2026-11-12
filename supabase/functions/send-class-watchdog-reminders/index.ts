@@ -36,6 +36,14 @@ function errorText(error: unknown) {
   }
 }
 
+function easternDate(value: string) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date(value));
+  const part = (type: string) => parts.find((entry) => entry.type === type)?.value;
+  return `${part('year')}-${part('month')}-${part('day')}`;
+}
+
 function formatEastern(value: string) {
   return new Intl.DateTimeFormat('en-US', {
     timeZone: 'America/New_York',
@@ -124,9 +132,10 @@ Deno.serve(async (req) => {
 
       const sectionLabel = section.section_name || section.section_code || courseCode;
       const endTime = formatEastern(row.scheduled_end_at);
+      const attendanceDate = easternDate(row.scheduled_end_at);
       const dashboardUrl = 'https://ltgeducation.com/dashboard';
       const attendanceUrl =
-        `https://ltgeducation.com/attendance?section=${encodeURIComponent(row.section_id)}&date=${encodeURIComponent(day.scheduled_date)}`;
+        `https://ltgeducation.com/attendance?section=${encodeURIComponent(row.section_id)}&date=${encodeURIComponent(attendanceDate)}`;
 
       const html = `<!doctype html>
 <html>
@@ -137,7 +146,7 @@ Deno.serve(async (req) => {
         <strong>${esc(courseCode)}</strong> · ${esc(sectionLabel)} · Day ${esc(day.planner_day_number)}
       </p>
       <p>The scheduled class time ended at <strong>${esc(endTime)}</strong>, and LTG still shows the class day or required attendance as incomplete.</p>
-      <p>Please close the class timer and complete attendance. This reminder is sent 30 minutes after the scheduled class end.</p>
+      <p>Please close the class timer and complete attendance. Reminders begin 30 minutes after the scheduled class end.</p>
       <p style="margin-top:22px;">
         <a href="${dashboardUrl}" style="display:inline-block;padding:10px 14px;border-radius:7px;background:#145d68;color:#fff;text-decoration:none;font-weight:700;margin-right:8px;">Open LTG Planner</a>
         <a href="${attendanceUrl}" style="display:inline-block;padding:10px 14px;border-radius:7px;background:#17663f;color:#fff;text-decoration:none;font-weight:700;">Open Attendance</a>
@@ -146,6 +155,21 @@ Deno.serve(async (req) => {
     </div>
   </body>
 </html>`;
+
+      // Class state can change after claim while the worker loads email content.
+      const { data: stillDue, error: dueError } = await supabase.rpc(
+        'class_watchdog_reminder_is_due', { p_queue_id: row.queue_id }
+      );
+      if (dueError) throw dueError;
+      if (!stillDue) {
+        const { error: cancelError } = await supabase.from('class_watchdog_queue')
+          .update({ status: 'cancelled', last_error: 'Closeout resolved or reminder window expired.',
+            updated_at: new Date().toISOString() })
+          .eq('id', row.queue_id).eq('status', 'processing');
+        if (cancelError) throw cancelError;
+        results.push({ queue_id: row.queue_id, status: 'cancelled' });
+        continue;
+      }
 
       const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -188,7 +212,8 @@ Deno.serve(async (req) => {
           last_error: message.slice(0, 2000),
           updated_at: new Date().toISOString(),
         })
-        .eq('id', row.queue_id);
+        .eq('id', row.queue_id)
+        .eq('status', 'processing');
       results.push({ queue_id: row.queue_id, status: 'failed', error: message });
     }
   }
