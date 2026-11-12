@@ -56,7 +56,7 @@ Production website, existing email workers, attendance, grading, payroll, and pu
 - Real PostgreSQL-compatible permission tests cover anonymous denial, non-owner isolation, owner-only stage/notes updates, immutable contact details, audit history, duplicate handling, and rate limiting.
 - Hosted staging transaction saved a synthetic inquiry and rolled it back; zero leads remained. Hosted grants confirm anonymous read/RPC denial and no authenticated email-edit privilege.
 - Preview HTTP smoke checks: homepage/contact return 200; missing-credential contact API returns 503 without accepting an inquiry; owner pipeline/retry route and attendance/time-clock/gradebook redirect anonymous visitors to login.
-- Browser automation is unavailable in this session, so desktop/mobile screenshot review and signed-in owner browser acceptance remain unverified. Form interaction, demo preselection, attribution, error retention, and notification failure/success handling were exercised in component/unit tests.
+- Initial browser access was blocked; this was resolved using an isolated Chrome test browser. See completed browser acceptance below.
 - Supabase's advisor reports RLS with no policies on `contact_rate_limits`: intentional server-only storage with all public/authenticated grants revoked and service-role access only. Existing unrelated staging advisor findings were left unchanged.
 
 ## Completed hosted acceptance after credential setup
@@ -71,4 +71,19 @@ Deployed application commit: `634e0bd729e0824279d6902f742e09fb28853937`; Netlify
 - Hosted owner-role transaction exercised all six pipeline stages and notes, producing six audit records before rollback. The synthetic lead remains New; test-only pipeline changes were rolled back.
 - The origin correction passed 23 focused validation/API/notification tests and lint. Earlier full-suite and build results above remain applicable; Netlify rebuilt the final application successfully.
 
-Credentials and end-to-end server submission/email delivery are verified in staging. Browser screenshot review and signed-in owner UI interaction remain separate manual acceptance items. Production has not been deployed, migrated, or configured by this work.
+## Completed browser acceptance
+
+- Used an existing staging owner's one-time session in an isolated Chrome browser. No password or account permissions were changed. The user's password-reset loop is not a dependency for these tests and was not represented as repaired.
+- Desktop and 390px phone contact layouts reviewed. Corrected public-route classification so the contact page has no instructor sidebar, operational widgets, or conflicting dark workspace styles.
+- Homepage Request a Demo navigation reaches the contact form with LTG demonstration selected. Mobile navigation, CTA, and footer links are present.
+- Submitted all form fields through the phone layout; confirmation displayed and persisted institution/contact/attribution data verified. Synthetic browser inquiry notification delivered at 19:20:30 UTC; Resend ID `01a1d134-54d3-7807-a2b0-49e66d39d5c4`.
+- Signed-in owner UI saved every pipeline stage, persisted notes after reload, displayed all six audit transitions, and filtered New/Closed correctly. The original synthetic lead was returned to New.
+- Exercised notification retry from the owner UI by marking only the synthetic browser inquiry failed; retry succeeded using the original provider idempotency key.
+- Signed-in non-owner could read zero lead rows, update zero rows, and received HTTP 403 from notification retry. Anonymous owner/attendance/time-clock/gradebook routes still redirect to login.
+- Fixed the lead detail background to follow the workspace theme. The new lead administration route has its own Back to Administration link and omits the teaching sidebar/widgets, which otherwise obstructed phone interactions. Existing operational routes retain their layout behavior.
+- Latest focused suite: 5 files / 30 tests passed. TypeScript and changed-file ESLint passed; preview builds passed.
+
+Production has not been deployed, migrated, or configured by this work. The live Netlify deploy remains `6aecb5eb6e84b91eeacae2f6`. Release requires applying the additive contact migration to the production project, configuring the production-scoped contact service/email/signing/origin settings, and building from the approved branch with production database settings. Do not promote a preview artifact containing staging settings. There are no missing staging credentials.
+
+Final application commit: 48347c1; staging deploy 6af6123578d3a5fa1fe67bf0 is ready. Phone owner controls were visually reviewed at 390px, showed no horizontal overflow, and saved a stage change through the UI. Both synthetic inquiries remain clearly labeled; no real prospects were modified.
+
