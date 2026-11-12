@@ -248,7 +248,7 @@ export default function OwnerAdminPage() {
 
   return <div className="shell">
     <header className="topbar">
-      <div><div className="eyebrow">Living Teacher Planner</div><h1>God-Level Administration</h1></div>
+      <div><div className="eyebrow">Living Teacher Planner</div><h1>God-Level Administration</h1><button onClick={() => router.push('/owner/admin/prospective-schools')}>Prospective Schools</button></div>
       <div className="nav"><button onClick={() => router.push('/owner')}>Owner Dashboard</button><button onClick={() => router.push('/school')}>School Dashboard</button><button onClick={() => router.push('/dashboard')}>Teacher Dashboard</button></div>
     </header>
 
