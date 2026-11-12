@@ -37,6 +37,7 @@ export default function Home() {
           <a href="#beta">Beta Partners</a>
         </nav>
         <div className="ltg-marketing-nav-actions">
+          <Link href="/contact?interest=demo&source=home-nav" className="ltg-marketing-demo ltg-contact-nav">Request a Demo</Link>
           <Link href="/login" className="ltg-marketing-login">Open LTG</Link>
           <Link href="/reports" className="ltg-marketing-demo">Open Reports</Link>
         </div>
@@ -250,9 +251,13 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="ltg-beta" id="contact">
+        <div><span>LET’S TALK ABOUT YOUR PROGRAM</span><h2>See what LTG could look like in your program.</h2><p>LTG can be configured around your existing curriculum, instructional workflow, attendance requirements, assessments, and reporting needs.</p></div>
+        <div className="ltg-beta-actions"><Link href="/contact?interest=demo&source=home-cta" className="ltg-marketing-primary">Request a Demo</Link><Link href="/contact?source=home-cta" className="ltg-marketing-secondary">Contact LTG</Link></div>
+      </section>
       <footer className="ltg-marketing-footer">
         <div><strong>LTG</strong><span>Living Teacher Guide · Education Operating System</span></div>
-        <div><a href="#reporting">Reporting</a><a href="#platform">Platform</a><a href="#programs">Programs</a><Link href="/login">Login</Link></div>
+        <div><Link href="/contact">Contact LTG</Link><a href="#reporting">Reporting</a><a href="#platform">Platform</a><a href="#programs">Programs</a><Link href="/login">Login</Link></div>
       </footer>
     </main>
   );

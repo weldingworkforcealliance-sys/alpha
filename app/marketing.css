@@ -99,3 +99,5 @@
 @media(max-width:460px){
   .ltg-kpi-band{grid-template-columns:1fr}.ltg-shot-kpis{grid-template-columns:1fr}.ltg-shot-foot{grid-template-columns:1fr}.ltg-shot-health>div{grid-template-columns:1fr}.ltg-shot-health i{height:7px}.ltg-shot-health>div>strong{text-align:left}.ltg-live-use{grid-template-columns:1fr}.ltg-school-card{padding:18px}.ltg-quality-card{padding:18px}.ltg-program-grid article{grid-template-columns:1fr}.ltg-program-code{min-height:68px}.ltg-marketing-actions a,.ltg-beta-actions a{width:100%}
 }
+.ltg-marketing-nav-actions .ltg-contact-nav{display:inline-flex;align-items:center;white-space:nowrap}
+@media(min-width:1101px) and (max-width:1400px){.ltg-marketing-nav{grid-template-columns:1fr auto}.ltg-marketing-nav nav{display:none}}

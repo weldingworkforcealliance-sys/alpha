@@ -1,4 +1,6 @@
 const PUBLIC_EXACT_ROUTES = new Set([
+  '/contact',
+  '/api/contact',
   '/shop/student',
   '/lab/student',
   '/',
