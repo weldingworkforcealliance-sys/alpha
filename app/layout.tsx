@@ -51,6 +51,7 @@ export default function RootLayout({
   const pathname = usePathname();
   const [navOpen, setNavOpen] = useState(false);
   const isMarketingRoute = pathname === '/' || pathname === '/contact';
+  const isLeadAdminRoute = pathname === '/owner/admin/prospective-schools';
   const isDemoRoute = pathname.startsWith('/demo');
   const isStudentJoin = pathname.startsWith('/join/') || pathname === '/shop/student' || pathname === '/lab/student';
   const isStudentDisplay = pathname.startsWith('/student-display/');
@@ -66,7 +67,7 @@ export default function RootLayout({
     pathname === '/planner' || pathname === '/dashboard' || pathname === '/agenda';
 
   const hideWorkspaceNav =
-    isMarketingRoute || isDemoRoute || isAuthRoute || isStudentJoin || isStudentDisplay;
+    isMarketingRoute || isLeadAdminRoute || isDemoRoute || isAuthRoute || isStudentJoin || isStudentDisplay;
   const useNightShift = !isStudentJoin && !isMarketingRoute && !isDemoRoute;
   const isSecondaryRoute =
     useNightShift &&
@@ -168,7 +169,7 @@ export default function RootLayout({
             )}
 
             <div className={hideWorkspaceNav ? 'ltg-public-content' : 'ltg-main-content'}>
-              {!isDemoRoute && pathname !== '/contact' && (
+              {!isDemoRoute && pathname !== '/contact' && !isLeadAdminRoute && (
                 <>
                   {pathname === '/dashboard' && <DashboardHero />}
                   {!isStudentDisplay && <CohortWorkspaceBar pathname={pathname} />}
