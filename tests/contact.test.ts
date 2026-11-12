@@ -16,4 +16,9 @@ describe('contact validation and request security',()=>{
   });
   it('requires the same origin',()=>{expect(sameOrigin(new Request('https://ltgeducation.com/api/contact',{headers:{origin:'https://evil.example'}}))).toBe(false);expect(sameOrigin(new Request('https://ltgeducation.com/api/contact',{headers:{origin:'https://ltgeducation.com'}}))).toBe(true);});
   it('opens only the intended public endpoints',()=>{expect(isPublicRoute('/contact')).toBe(true);expect(isPublicRoute('/api/contact')).toBe(true);expect(isPublicRoute('/api/contact/notify')).toBe(false);expect(isPublicRoute('/owner/admin/prospective-schools')).toBe(false);});
+  it('checks the configured public origin behind a hosting proxy',()=>{
+    vi.stubEnv('CONTACT_SITE_ORIGIN','https://deploy-preview-148--livingtguide.netlify.app');
+    expect(sameOrigin(new Request('https://internal.example/api/contact',{headers:{origin:'https://deploy-preview-148--livingtguide.netlify.app'}}))).toBe(true);
+    expect(sameOrigin(new Request('https://internal.example/api/contact',{headers:{origin:'https://evil.example','x-forwarded-host':'evil.example'}}))).toBe(false);
+  });
 });

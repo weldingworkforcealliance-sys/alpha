@@ -29,7 +29,11 @@ export function verifyChallenge(token: unknown, now = Date.now()) {
 export function contactFingerprint(ip: string) { return sign(`contact-ip:${ip}`); }
 export function sameOrigin(request: Request) {
   const origin = request.headers.get('origin');
-  return Boolean(origin && origin === new URL(request.url).origin);
+  // Hosting adapters may give Request an internal origin. Use our configured
+  // public origin rather than trusting caller-supplied forwarding headers.
+  const expected = process.env.CONTACT_SITE_ORIGIN || new URL(request.url).origin;
+  try { return Boolean(origin && origin === new URL(expected).origin); }
+  catch { return false; }
 }
 
 export async function notifyLead(id: string, lead: ContactInput) {
