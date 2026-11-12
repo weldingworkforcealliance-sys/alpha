@@ -1,4 +1,21 @@
-# LTG contact and demo inquiries — staged release
+# LTG contact and demo inquiries — production release
+
+## Production completion — November 12, 2026
+
+The production release was explicitly authorized after staging acceptance. This section supersedes the historical staging-only statements below.
+
+- PR #148 merged as `581140d4f9a2a2230f3d8d54b816bd2572b091f9`. Final production rebuild commit: `23e8e4a3acba02bd92d8c9df9664d7c3e5d54680` (no code changes).
+- Current published Netlify deploy: `6af61472aba16aace3d5f62e`, published 2026-11-12 19:33:56 UTC. Public page: https://ltgeducation.com/contact.
+- Applied the additive contact migration to production `qsmvgyyaemjmklceyikr`; all three new tables have RLS. Anonymous table reads/submission RPC and authenticated email-field edits are denied.
+- Added production-scoped contact service credential, independent random signing secret, domain-restricted sending-only Resend credential, sender/recipient and canonical origin. Existing non-contact settings were compared before/after and are unchanged; preview settings remain separate.
+- Initial production notification failed because Netlify's read API returned a masked credential, which was copied. Replaced only the production contact Resend setting with a dedicated valid credential and rebuilt. The original saved inquiry was retried through the signed-in owner UI successfully.
+- Live browser submission confirmed persistence and demo preselection. Test inquiry `6becaa3e-76a9-40b1-8ec7-a1c70d795d77` is clearly labeled “Release verification — Not a real prospect”, remains New, and has notification status sent. Resend confirmed delivery to the requested recipient at 19:34:26 UTC; provider ID `01a1d141-162d-7b4e-ac0f-4300da6250b5`.
+- Signed-in production owner pipeline displayed the inquiry. Signed-in attendance, time-clock, and gradebook pages returned HTTP 200 without an application-error page. Anonymous redirects for these protected routes match the pre-release baseline. No operational form was submitted.
+- Targeted regression run: 22 files / 168 tests passed (contact, attendance, time clock, grading). Operational application files, package dependencies and Netlify routing configuration have no changes versus the previous production baseline.
+- Production record counts before migration and after deployment: attendance_records 1,027; timeclock_entries 141; gradebook_attempts 86. No operational records were changed by release work.
+- Existing Supabase dashboard warning: billing grace period has ended and requests can stop if quota is exhausted. Billing was not changed. Existing production platform-owner membership was preserved.
+
+The remaining sections retain staging evidence and rollout history.
 
 Production baseline: `b71725be67df5e693cdd4b39a4b71d068b4c58c4` on `product/standalone-mainline-2026-09-11`.
 Feature branch: `feature/contact-leads-20261112`.
