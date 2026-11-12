@@ -44,3 +44,18 @@ The connected Supabase tools provide database access but not server API credenti
 6. Review the diff and test results before authorizing any production release. Production needs the additive migration and its own server/email settings; do not promote a staging artifact containing staging database settings.
 
 Production website, existing email workers, attendance, grading, payroll, and punch-clock code/configuration were not modified by this work.
+
+## Verification results — November 12, 2026
+
+- Draft PR: https://github.com/weldingworkforcealliance-sys/alpha/pull/148
+- Staging preview: https://deploy-preview-148--livingtguide.netlify.app/contact?interest=demo
+- Optimized Next.js/Turbopack build passed locally and Netlify preview build succeeded.
+- Full existing plus contact suite: 82 files / 774 tests passed on the final full run. Five additional form and notification tests passed separately (779 passing tests across those runs). An earlier concurrent run hit an existing planner timing failure; isolated baseline and final full rerun passed. No planner files were changed.
+- TypeScript, repository-wide ESLint, migration filename guard, and diff whitespace checks passed.
+- Real PostgreSQL-compatible permission tests cover anonymous denial, non-owner isolation, owner-only stage/notes updates, immutable contact details, audit history, duplicate handling, and rate limiting.
+- Hosted staging transaction saved a synthetic inquiry and rolled it back; zero leads remained. Hosted grants confirm anonymous read/RPC denial and no authenticated email-edit privilege.
+- Preview HTTP smoke checks: homepage/contact return 200; missing-credential contact API returns 503 without accepting an inquiry; owner pipeline/retry route and attendance/time-clock/gradebook redirect anonymous visitors to login.
+- Browser automation is unavailable in this session, so desktop/mobile screenshot review and signed-in owner browser acceptance remain unverified. Form interaction, demo preselection, attribution, error retention, and notification failure/success handling were exercised in component/unit tests.
+- Supabase's advisor reports RLS with no policies on `contact_rate_limits`: intentional server-only storage with all public/authenticated grants revoked and service-role access only. Existing unrelated staging advisor findings were left unchanged.
+
+This is a deployed **staging preview with submission disabled pending credentials**, not a production release or a verified end-to-end email delivery.
