@@ -11,9 +11,9 @@ describe('standalone LTG product shell', () => {
     const layout = read('app/layout.tsx');
     const home = read('app/page.tsx');
 
-    expect(layout).toContain("const isMarketingRoute = pathname === '/';");
+    expect(layout).toContain("const isMarketingRoute = pathname === '/' || pathname === '/contact';");
     expect(layout).toContain("const isDemoRoute = pathname.startsWith('/demo');");
-    expect(layout).toContain('isMarketingRoute || isDemoRoute || isAuthRoute');
+    expect(layout).toContain('isMarketingRoute || isLeadAdminRoute || isDemoRoute || isAuthRoute || isStudentJoin || isStudentDisplay');
     expect(home).toContain('FOUNDING SCHOOL BETA');
     expect(home).toContain('href="/login"');
   });

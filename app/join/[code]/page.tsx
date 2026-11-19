@@ -51,6 +51,8 @@ export default function StudentAssessmentPage(){
   const [referenceMaximized,setReferenceMaximized]=useState(false);
   const [referenceZoom,setReferenceZoom]=useState(1);
   const [busy,setBusy]=useState(false);
+  const [verifying,setVerifying]=useState(false);
+  const [identityRejected,setIdentityRejected]=useState(false);
   const [error,setError]=useState('');
   const [result,setResult]=useState<{score:number;possible_score:number;percent:number}|null>(null);
   const storageKey=`ltg-assessment-${String(code).toUpperCase()}`;
@@ -118,6 +120,47 @@ export default function StudentAssessmentPage(){
 
   const activeReference=referenceAssets.find(asset=>asset.key===activeReferenceKey)??referenceAssets[0]??null;
 
+  const editStudentIdentity=()=>{
+    // Questions stay in React state and in the local device draft.
+    setStarted(false);
+    setReferenceMaximized(false);
+    setError('');
+  };
+
+  const beginActivity=async()=>{
+    if(verifying)return;
+    setError('');
+    if(name.trim().length<2 || !studentId.trim()){
+      setError('Enter your name and the Student ID shown in LTG.');
+      return;
+    }
+    setVerifying(true);
+    try{
+      const {data,error:verifyError}=await supabase.rpc('validate_classroom_student_identity',{
+        p_join_code:String(code).toUpperCase(),
+        p_student_name:name.trim(),
+        p_student_id:studentId.trim()
+      });
+      if(verifyError){
+        setError('Unable to check your Student ID right now. Your answers are saved on this device. Retry or ask your instructor.');
+        return;
+      }
+      if(data!==true){
+        setIdentityRejected(true);
+        setError('Student ID not recognized for this class or this ID already submitted. Check the ID shown in LTG or ask your instructor.');
+        return;
+      }
+      setIdentityRejected(false);
+      setStarted(true);
+      setReferenceOpen(Boolean(referenceAssets.length||info?.reference_body));
+      setReferenceMaximized(false);
+    }catch{
+      setError('Unable to verify your Student ID. Keep this page open and try again. Your answers are saved on this device.');
+    }finally{
+      setVerifying(false);
+    }
+  };
+
   const submit=async()=>{
     if(Object.keys(answers).length!==questions.length){
       setError(`Answer all ${questions.length} questions before submitting.`);
@@ -125,18 +168,31 @@ export default function StudentAssessmentPage(){
     }
     setBusy(true);
     setError('');
-    const {data,error:e}=await supabase.rpc('submit_classroom_assessment_v2',{
-      p_join_code:String(code).toUpperCase(),
-      p_student_name:name.trim(),
-      p_student_id:studentId.trim(),
-      p_team_members:teamMembers.trim(),
-      p_answers:answers
-    });
-    setBusy(false);
-    if(e)setError(e.message);
-    else{
+    try{
+      const {data,error:e}=await supabase.rpc('submit_classroom_assessment_v2',{
+        p_join_code:String(code).toUpperCase(),
+        p_student_name:name.trim(),
+        p_student_id:studentId.trim(),
+        p_team_members:teamMembers.trim(),
+        p_answers:answers
+      });
+      if(e){
+        const identityFailure=/student id not recognized|student id has already submitted/i.test(e.message);
+        setError(e.message);
+        if(identityFailure){
+          // The failed submission did not clear the draft; reopen the ID field.
+          setIdentityRejected(true);
+          setStarted(false);
+          setReferenceMaximized(false);
+        }
+        return;
+      }
       localStorage.removeItem(storageKey);
       setResult(data);
+    }catch{
+      setError('The submission could not be completed. Your answers are saved on this device. Please retry.');
+    }finally{
+      setBusy(false);
     }
   };
 
@@ -270,16 +326,21 @@ export default function StudentAssessmentPage(){
         <h1>{info.assessment_title}</h1>
         <p>{info.question_count} live-check items · Results are sent directly to your instructor.</p>
         {info.instructions&&<div className="instructions">{info.instructions}</div>}
-        {error&&<div className="error">{error}</div>}
+        {error&&<div className="error" role="alert">{error}</div>}
+        {identityRejected&&Object.keys(answers).length>0&&
+          <p className="draft-recovery" role="status">{Object.keys(answers).length} saved {Object.keys(answers).length===1?'answer is':'answers are'} ready to resubmit after you correct your Student ID.</p>
+        }
         <label>Student Name<input value={name} onChange={e=>setName(e.target.value)} autoComplete="name"/></label>
-        <label>Student ID<input value={studentId} onChange={e=>setStudentId(e.target.value)} inputMode="numeric"/></label>
+        <label>Student ID<input value={studentId} onChange={e=>setStudentId(e.target.value)} autoComplete="off" inputMode="numeric"/></label>
         {info.allow_team_members&&
           <label>Team Members (optional)
             <input value={teamMembers} onChange={e=>setTeamMembers(e.target.value)} placeholder="Names of students working with you"/>
           </label>
         }
-        <button disabled={!name.trim()||!studentId.trim()} onClick={()=>{setReferenceOpen(Boolean(referenceAssets.length||info.reference_body));setReferenceMaximized(false);setStarted(true);}}>Begin Live Activity</button>
-        <p className="draft-note">Your answers are saved on this device until you submit.</p>
+        <button disabled={verifying||!name.trim()||!studentId.trim()} onClick={beginActivity}>
+          {verifying?'Checking Student ID…':Object.keys(answers).length?'Resume Live Activity':'Begin Live Activity'}
+        </button>
+        <p className="draft-note">Your Student ID is checked against this class first. Your answers remain on this device until successfully submitted.</p>
       </div>
       <ReferencePanel/>
     </div>
@@ -291,7 +352,11 @@ export default function StudentAssessmentPage(){
       <div><div className="eyebrow">{info.assessment_title}</div><h1>{name}</h1></div>
       <div>{Object.keys(answers).length}/{questions.length} answered</div>
     </div>
-    {error&&<div className="error">{error}</div>}
+    <div className="identity-review">
+      <span>Student ID ending in {studentId.trim().slice(-4)}</span>
+      <button type="button" onClick={editStudentIdentity}>Correct Student ID / Name</button>
+    </div>
+    {error&&<div className="error" role="alert">{error}</div>}
     <ReferencePanel/>
     <div className="questions">
       {questions.map(q=>
@@ -335,7 +400,10 @@ label:not(.option){display:grid;gap:7px;margin-top:16px;color:#999;font-size:11p
 input{box-sizing:border-box;width:100%;padding:12px;border:1px solid #383838;border-radius:7px;background:#090909;color:#fff;font-size:16px}
 button{width:100%;margin-top:18px;padding:14px;border:1px solid #9adf4b;border-radius:8px;background:rgba(154,223,75,.08);color:#caff77;font-size:15px;font-weight:900}
 button:disabled{opacity:.4}
-.draft-note{text-align:center;font-size:11px}
+ .draft-note{text-align:center;font-size:11px}
+.draft-recovery{padding:12px;border:1px solid #638b35;border-radius:7px;background:#15200f;color:#caff77!important;font-size:13px}
+.identity-review{width:min(720px,100%);margin:0 auto 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;color:#aaa;font-size:12px}
+.identity-review button{width:auto;flex:0 0 auto;margin:0;padding:9px 12px;font-size:12px}
 .top{width:min(720px,100%);margin:0 auto 18px;display:flex;justify-content:space-between;align-items:center}
 .questions{display:grid;gap:2px}
 .option{display:grid;grid-template-columns:22px 28px 1fr;align-items:center;margin-top:9px;padding:12px;border:1px solid #303030;border-radius:8px;background:#0d0d0d;cursor:pointer}
@@ -381,5 +449,5 @@ button.reference-toggle{width:auto;flex:0 0 auto;margin:0;padding:9px 12px;font-
 .reference-overlay-footer button{width:auto;margin:0;padding:8px 11px;font-size:11px}
 .reference-overlay-footer button.selected-reference{background:rgba(154,223,75,.2);box-shadow:inset 0 0 0 1px #9adf4b}
 .reference-overlay-footer span{margin-left:auto}
-@media(max-width:600px){main{padding:14px}.card{padding:16px}.top{align-items:flex-start}.top h1{font-size:20px}.reference-head{align-items:flex-start;flex-direction:column}.reference-head button.reference-toggle{width:100%}.reference-choice{align-items:flex-start;flex-direction:column}.reference-choice-actions{width:100%}.reference-choice-actions button{flex:1}.reference-active-head{align-items:flex-start;flex-direction:column}.reference-active-head button{width:100%}.reference-image{max-height:55vh}.reference-overlay{padding:8px}.reference-overlay-toolbar{align-items:flex-start;flex-direction:column}.reference-overlay-controls{width:100%;justify-content:stretch}.reference-overlay-controls button{flex:1}.reference-overlay-controls .reference-exit{flex-basis:100%}.reference-overlay-canvas{padding:8px;margin-top:8px}.reference-overlay-footer span{width:100%;margin-left:0}}
+@media(max-width:600px){main{padding:14px}.card{padding:16px}.top{align-items:flex-start}.top h1{font-size:20px}.reference-head{align-items:flex-start;flex-direction:column}.reference-head button.reference-toggle{width:100%}.reference-choice{align-items:flex-start;flex-direction:column}.reference-choice-actions{width:100%}.reference-choice-actions button{flex:1}.reference-active-head{align-items:flex-start;flex-direction:column}.reference-active-head button{width:100%}.reference-image{max-height:55vh}.reference-overlay{padding:8px}.reference-overlay-toolbar{align-items:flex-start;flex-direction:column}.reference-overlay-controls{width:100%;justify-content:stretch}.reference-overlay-controls button{flex:1}.reference-overlay-controls .reference-exit{flex-basis:100%}.reference-overlay-canvas{padding:8px;margin-top:8px} .reference-overlay-footer span{width:100%;margin-left:0}.identity-review{align-items:flex-start;flex-direction:column}.identity-review button{width:100%}}
 `;

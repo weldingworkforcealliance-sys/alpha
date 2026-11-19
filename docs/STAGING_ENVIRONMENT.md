@@ -42,7 +42,7 @@ Before invitation, password-reset, or email-confirmation QA in a Netlify Deploy 
 
 Staging QA has validated cross-school isolation for Planner, Attendance, Live Classroom, Live Job Card, Reports, Account Management, Training Mode, Time Clock/Payroll, and Platform Owner controls.
 
-Anonymous execution is intentionally limited to the four student join/submit RPCs used by Live Classroom and Live Job Card. Other privileged RPCs require authenticated role checks and/or school/owner authorization inside the function.
+Anonymous execution is intentionally restricted to the student join/submit RPCs used by Live Classroom and Live Job Card, plus the boolean-only `validate_classroom_student_identity(text,text,text)` preflight. The preflight is bound to an active classroom join code, returns no roster/student details, and performs no writes. Other privileged RPCs require authenticated role checks and/or school/owner authorization inside the function.
 
 Supabase Security Advisor still reports leaked-password protection as disabled at the Auth project-setting level. Enable it before external staging users are invited if the project plan supports the feature.
 
