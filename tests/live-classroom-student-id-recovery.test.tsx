@@ -138,7 +138,7 @@ describe('Live Classroom Student ID preflight and draft recovery', () => {
     fireEvent.click(screen.getAllByRole('radio')[1]);
     fireEvent.click(screen.getByRole('button', { name: 'Submit Live Activity' }));
     await screen.findByRole('alert');
-    expect(screen.getByText(/1 saved answers are ready/)).toBeTruthy();
+    expect(screen.getByText(/1 saved answer is ready/)).toBeTruthy();
     expect(screen.getByRole('textbox', { name: 'Student ID' })).toHaveProperty('value', '999999');
 
     fireEvent.change(screen.getByRole('textbox', { name: 'Student ID' }), {
