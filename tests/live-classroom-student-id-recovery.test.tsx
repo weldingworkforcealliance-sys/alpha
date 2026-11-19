@@ -155,7 +155,7 @@ describe('Live Classroom Student ID preflight and draft recovery', () => {
     }));
   });
 
-  it('fails closed if preflight cannot be reached and does not clear the student's local draft', async () => {
+  it("fails closed if preflight cannot be reached and does not clear the student's local draft", async () => {
     setupRpc(name => name === 'validate_classroom_student_identity'
       ? Promise.resolve({ data: null, error: { message: 'Network error' } })
       : null
