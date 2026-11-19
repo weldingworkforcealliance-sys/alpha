@@ -13,7 +13,7 @@ describe('standalone LTG product shell', () => {
 
     expect(layout).toContain("const isMarketingRoute = pathname === '/' || pathname === '/contact';");
     expect(layout).toContain("const isDemoRoute = pathname.startsWith('/demo');");
-    expect(layout).toContain('isMarketingRoute || isDemoRoute || isAuthRoute');
+    expect(layout).toContain('isMarketingRoute || isLeadAdminRoute || isDemoRoute || isAuthRoute || isStudentJoin || isStudentDisplay');
     expect(home).toContain('FOUNDING SCHOOL BETA');
     expect(home).toContain('href="/login"');
   });
