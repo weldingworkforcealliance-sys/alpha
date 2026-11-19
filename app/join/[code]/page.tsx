@@ -328,7 +328,7 @@ export default function StudentAssessmentPage(){
         {info.instructions&&<div className="instructions">{info.instructions}</div>}
         {error&&<div className="error" role="alert">{error}</div>}
         {identityRejected&&Object.keys(answers).length>0&&
-          <p className="draft-recovery" role="status">{Object.keys(answers).length} saved answers are ready to resubmit after you correct your Student ID.</p>
+          <p className="draft-recovery" role="status">{Object.keys(answers).length} saved {Object.keys(answers).length===1?'answer is':'answers are'} ready to resubmit after you correct your Student ID.</p>
         }
         <label>Student Name<input value={name} onChange={e=>setName(e.target.value)} autoComplete="name"/></label>
         <label>Student ID<input value={studentId} onChange={e=>setStudentId(e.target.value)} autoComplete="off" inputMode="numeric"/></label>
