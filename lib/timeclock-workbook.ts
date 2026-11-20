@@ -16,6 +16,9 @@ export type ReportPunch = {
   clockOutAt?: string | null;
 };
 
+/** Include active employees even when a reporting period has no punches for them. */
+export type ReportEmployee = Pick<ReportPunch, 'employeeId' | 'employee'>;
+
 const DAY = 86_400_000;
 const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const isoDay = (value: number) => new Date(value).toISOString().slice(0, 10);
@@ -47,7 +50,12 @@ export function punchExceptions(punch: ReportPunch): string[] {
   return flags;
 }
 
-export function buildTimeclockWorkbook(punches: readonly ReportPunch[], start: string, end: string) {
+export function buildTimeclockWorkbook(
+  punches: readonly ReportPunch[],
+  start: string,
+  end: string,
+  activeEmployees: readonly ReportEmployee[] = [],
+) {
   const first = dateMs(start);
   const last = dateMs(end);
   if (!Number.isFinite(first) || !Number.isFinite(last) || first > last) {
@@ -87,16 +95,30 @@ export function buildTimeclockWorkbook(punches: readonly ReportPunch[], start: s
       cell.font = { bold: true, color: { argb: 'FFFFFF' } };
       cell.alignment = { vertical: 'middle', wrapText: true };
     });
+    // Start with the complete active roster. Punch-only employees also remain
+    // visible, so historical shifts are not lost when someone is deactivated.
     const byEmployee = new Map<string, ReportPunch[]>();
+    const rosterNames = new Map<string, string>();
+    for (const employee of activeEmployees) {
+      if (!employee.employeeId) continue;
+      rosterNames.set(employee.employeeId, employee.employee);
+      byEmployee.set(employee.employeeId, []);
+    }
     for (const punch of selected) {
       if (punch.date < weekStart || punch.date > weekEnd) continue;
       const group = byEmployee.get(punch.employeeId) ?? [];
       group.push(punch);
       byEmployee.set(punch.employeeId, group);
     }
-    const groups = [...byEmployee.values()].sort((a, b) => a[0].employee.localeCompare(b[0].employee) || a[0].employeeId.localeCompare(b[0].employeeId));
-    for (const group of groups) {
+    const displayName = (id: string, group: readonly ReportPunch[]) =>
+      rosterNames.get(id) || group[0]?.employee || 'Unknown employee';
+    const groups = [...byEmployee.entries()].sort(([idA, groupA], [idB, groupB]) =>
+      displayName(idA, groupA).localeCompare(displayName(idB, groupB)) || idA.localeCompare(idB));
+    for (const [employeeId, group] of groups) {
       const flags = group.flatMap(p => punchExceptions(p).map(flag => `${shortDate(p.date)}: ${flag}`));
+      if (group.length === 0) {
+        flags.push('No punches recorded in selected dates — verify schedule and missing time before payroll');
+      }
       const hours = dayNames.map((_, i) => {
         const date = isoDay(week + i * DAY);
         if (date < start || date > end) return null;
@@ -106,7 +128,7 @@ export function buildTimeclockWorkbook(punches: readonly ReportPunch[], start: s
       });
       const total = hours.reduce<number>((sum, value) => sum + (value ?? 0), 0);
       if (total > 40) flags.push('Weekly total >40 hours');
-      const row = sheet.addRow([group[0].employee, ...hours, null, null, [...new Set(flags)].join('\n') || null]);
+      const row = sheet.addRow([displayName(employeeId, group), ...hours, null, null, [...new Set(flags)].join('\n') || null]);
       row.getCell(9).value = { formula: `SUM(B${row.number}:H${row.number})`, result: total };
       row.height = Math.max(30, [...new Set(flags)].length * 15);
       row.eachCell({ includeEmpty: true }, (cell, column) => {
