@@ -31,6 +31,11 @@ export default function ProgramDemoSelectorPage() {
               <span>Shop / Lab</span><span>Performance Testing</span><span>Attendance</span><span>Time Clock</span><span>Resources</span><span>Reporting</span>
             </div>
             <button onClick={() => router.push('/demo/welding')}>Open Welding Demo</button>
+            {process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging' && (
+              <button type="button" onClick={() => router.push('/demo/welding/ux-lab')}>
+                Compare Original vs Teaching View v2
+              </button>
+            )}
           </article>
 
           <article className="card nursing">

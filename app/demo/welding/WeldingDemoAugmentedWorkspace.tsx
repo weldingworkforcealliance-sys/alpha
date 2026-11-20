@@ -97,7 +97,7 @@ const INLINE_CLOCK_BACKGROUND = `data:image/svg+xml;charset=UTF-8,${encodeURICom
 </svg>
 `)}`;
 
-export default function WeldingDemoAugmentedWorkspace({ program }: { program: DemoProgram }) {
+export default function WeldingDemoAugmentedWorkspace({ program, uxLab = false }: { program: DemoProgram; uxLab?: boolean }) {
   const [genericState, setGenericState] = useState<GenericDemoState | null>(null);
   const [remoteOwner, setRemoteOwner] = useState<RemoteOwnerSession | null>(null);
   const [qrHost, setQrHost] = useState<HTMLElement | null>(null);
@@ -180,7 +180,7 @@ export default function WeldingDemoAugmentedWorkspace({ program }: { program: De
 
   return (
     <>
-      <WeldingDemoLiveWorkspace program={program} />
+      <WeldingDemoLiveWorkspace program={program} uxLab={uxLab} />
 
       {qrHost && remoteOwner && createPortal(
         <div className="demo-qr-insert" aria-label="Student QR join code">
